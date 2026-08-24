@@ -33,7 +33,7 @@ from chemsim.reactions import (
     detailed_balance,
     reaction_deltas,
 )
-from chemsim.reactions.thermo import T_REF
+from chemsim.reactions.thermo import COLLISION_LIMIT, T_REF
 
 # Reaction phase -> the index Layer 4 splits on. Explicit and total: an
 # unrecognised phase RAISES rather than falling through to the liquid block.
@@ -452,6 +452,17 @@ def _concrete_in_phase(
             f"dH={db.dH:.0f} J/mol. An elementary barrier cannot be lower than "
             f"dH; raised to {db.Ea_fwd:.0f} J/mol so the reverse barrier stays "
             f"non-negative. Forward rate is slower than declared."
+        )
+
+    if db.rate_capped < 1.0:
+        notices[f"{fwd.key()}|capped"] = (
+            f"[build_network] NOTICE: template {tmpl.name!r} on "
+            f"'{' + '.join(r_smiles)} -> {' + '.join(p_smiles)}' ({phase} phase) "
+            f"implies a rate constant above the collision limit "
+            f"({COLLISION_LIMIT:.0e} L/(mol s)) in one direction. Both "
+            f"pre-exponentials scaled by {db.rate_capped:.3e} so the faster "
+            f"direction sits at the limit. K(T) is unchanged -- only how fast "
+            f"the equilibrium is reached."
         )
 
     return [

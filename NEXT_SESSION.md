@@ -226,7 +226,7 @@ above and the invariants table below, which is still the contract.
 | **2** | **CHAIN 1: aspirin from wintergreen** | Steps 1-3 are the flagship prep with different species. Salicylate's pKa (2.97) is in and the ion prices at Gf -410.3. Still needs an anhydride-FORMATION template and an anhydride-ACYLATION template. ⚠ **The forced dependency is the point and nothing should enforce it**: anhydride formation is reversible with WATER as the product, so you cannot make acetic anhydride in dilute vinegar -- the vinegar must be distilled first, and only Le Chatelier says so. And you NEED the anhydride because a phenol will not esterify with acetic acid in water. ⚠ The CARBONATE lines are NOT a data job -- see below. **Safe to build before item 1**: a non-catalytic network at ordinary temperatures is nowhere near the band. |
 | 3 | **A curated overlay for aspirin and salicylic acid** | Both formation halves are Joback (`validation/game_gates.py` panel 3 names them), so the acetylation K is chain 1's weakest number. Joback's aspirin Tm is 433.1 K against a real ~408. Same overlay job `_CURATED_FUSION` already does for four solids. |
 | 4 | **SOLID-PHASE REACTIONS** | Chain 2's green-vitriol seed is `FeSO4 -> Fe2O3 + SO3`, a dry decomposition with no liquid for the solid to dissolve into. The solid-basis formation data is curated and waiting. |
-| 5 | ⚠ **THEN dissociation as an equilibrium** | Stiffness ratio **7.05e21**, all of it acid/base recombination (water at 9.431e18 against the esterification's 1.157e-2). The value integrating gives IS the equilibrium value. Largest single piece of engine work; the five pH invariants are the regression test and must come back IDENTICAL. ⚠ **It also owns the 600 K residual above** -- the stiff-reactant-at-zero overshoot is the same phenomenon, and it now has a convergence test to measure a fix against. |
+| 5 | **Dissociation as an equilibrium** | **M12 TOOK MOST OF THIS ITEM'S JUSTIFICATION AWAY, 2026-08-24.** The stiffness ratio was **7.05e21**, and it was quoted as all acid/base recombination -- water at **9.431e18** against the esterification's 1.157e-2. That 9.431e18 was a rate constant 9.4e7x the collision limit and is now capped at **1.0e11**, so the ratio is **8.6e12**: still stiff, no longer the largest number in the project by eight orders. The value integrating gives IS still the equilibrium value, and the five pH invariants are still the regression test and must come back IDENTICAL. It also still owns the 600 K residual -- the stiff-reactant-at-zero overshoot -- which M12 made MORE visible at the default rung, not less: the prep now creates 2.53e-05 mol of benzoyl there, converging to -4.4e-15 by rtol 1e-8. |
 | 6 | A plot against time; a rig in the window; UNIFAC-LLE parameters | The old UI list, unchanged. |
 
 ⚠ **THE CARBONATE pKa LINES ARE NOT A ONE-LINE DATA JOB.**
@@ -427,18 +427,22 @@ this session (its docstring says why, and why it must not be "fixed" to match).
   * **Sodium bicarbonate and Prussian blue have no lattice entry**, and PbCrO4
     is refused for want of an S0s in any database shared with its Hfs -- three
     of the five `precipitation-metathesis` rows.
-  * ⚠⚠ ~~**AN ADIABATIC FLASK'S TEMPERATURE TAIL...**~~ **SETTLED 2026-08-24 AND
-    THE HYPOTHESIS WAS WRONG. It is an ENERGY LEAK, it is now MILESTONES M12,
-    and it is a measured wrong answer of the same class as M0.** HANDOFF 81.
-    The control that "did not finish in two minutes" finishes in **0.2 s**, and a
-    warm insulated flask with no precipitation holds **+0.15992 K to five
-    decimals** over the same single 3600 s call. So there is no generic
-    evaporative loss and no generic BDF weighting problem.
-    **495.6 J leaves against a 0.0087 J chemical budget** (largest mole change in
-    any block, 1.332e-07 mol, priced at 65 kJ/mol). It needs the precipitation
-    EVENT; the term's mere presence is free; a settled flask with a solid at rest
-    does NOT leak. ⚠ **And `conservation_report` cannot see it -- it audits
-    MATTER only**, so an energy audit is part of the fix, not a nicety.
+  * OK ~~**AN ADIABATIC FLASK'S TEMPERATURE TAIL**~~ -- **CLOSED 2026-08-24 as
+    MILESTONES M12.** HANDOFF 82. Two hypotheses died on the way: it was not a
+    generic solver weakness (HANDOFF 81 refuted that), and it was not the
+    precipitation term, the energy equation's algebra, the tolerance or the
+    integrator either -- all four measured. **The cause was a DERIVED rate
+    constant 9.4e7 times the collision limit**: water autoionization's `Ea = 60
+    kJ/mol` is chosen so the barrier clamp misses water's 55.8 kJ/mol
+    dissociation enthalpy, which hands the reverse a 4.2 kJ/mol barrier and
+    9.4e18 L/(mol s). Its two heat terms sat at +-5.2e9 W around a net of a
+    fraction of a watt, and three BDF steps of 167.63 s destroyed 467 J with the
+    composition unmoved. `reactions.thermo.COLLISION_LIMIT` scales BOTH
+    pre-exponentials by one factor, so Kw is invariant at 1.0022e-14 and no pH
+    moves. The flask now reads **+0.15759 K at 3600 s**, converged at every
+    rung, and the prep got **6.6x faster**.
+    STILL OPEN, reported: the guard runs at 298 K only, and
+    `carboxylic_acid_dissociation_rev` crosses the ceiling at **416.6 K**.
   * ⚠ **`anhydrite`, NOT gypsum.** M1's three `acid-displacement-precipitating`
     steps want the DIHYDRATE; the engine is anhydrous and the entry is named for
     what it actually is.

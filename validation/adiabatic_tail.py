@@ -1,23 +1,59 @@
-"""HANDOFF 79's open hypothesis, settled -- decisive controls only.
+"""M12: an insulated flask that destroyed 495 J -- the controls, and the cause.
 
-The claim recorded as OPEN: an insulated metathesis warms 0.1578 K at t = 1200 s
-(predicted 0.1577) and reads 0.038 K when the SAME run goes to 3600 s in one
-call, extent unmoved. Chunking recovers it; rtol 1e-9 recovers it. *Whether that
-tail behaviour predates the precipitation term* was never measured, because the
-control did not finish inside two minutes.
+The symptom: an insulated metathesis (UA = 0, no wall mass) reached its predicted
++0.1577 K at t = 600 s, still read +0.1575 at t = 1200 s, and then decayed to
++0.0378 by t = 3600 s in the SAME single call -- **after the chemistry had
+stopped**. Between those two points the largest mole change in any block was
+1.4e-07 mol, worth 0.0087 J at 65 kJ/mol, against 495.6 J of heat. No sink
+existed, and ``conservation_report`` could not see it because it audits matter.
 
-Only the flasks that settle it, in cost order:
+WHAT EACH CONTROL BELOW REFUTED, in the order they were run:
 
-    D  the NULL      -- ions, no precipitation, started AT ambient
-    C  no ions       -- water + headspace, started 0.16 K WARM
-    B  the CONTROL   -- the metathesis flask, precipitation OFF, started WARM
+    D  ions, no precipitation, at ambient      -- no drift without an event
+    C  water only, started 0.16 K WARM         -- no generic evaporative loss
+    B  the metathesis flask, precipitation OFF -- no generic BDF weighting problem
+    E1/E2  the term present but nothing supersaturated -- the CODE is free
+    E3/E4  the event actually happening        -- the EVENT is what cost
 
-If C and B decay from +0.16 K the way A decayed to +0.038 K, the tail is generic
-and predates the term. If they hold, it belongs to precipitation.
+So it needed the event, and it was not the term's arithmetic. Two more controls
+finished it, and both are worth remembering because each refuted a fix:
 
-A2 (ten chunked calls to 3600 s) is NOT here. Measured: it burns >25 min of CPU
-without finishing, and it settles nothing that ``tests/test_precipitation.py``
-does not already assert at 1200 s.
+    * TOLERANCE IS NOT THE LEVER, IN EITHER DIRECTION. Tightening ``atol`` alone
+      recovered the answer (-1.2e-1 K -> -1.5e-4 K) even though ``atol`` never
+      reaches the temperature, whose scale is ``rtol * 298 K``. And integrating
+      (T - T0) instead of T -- which tightens the temperature's error budget by
+      three orders -- made it WORSE, +2.0e-2 K at default and 31,324 steps at
+      rtol 1e-8. A fix aimed at the temperature's tolerance was the obvious one
+      and it was wrong.
+    * IT WAS NOT THE FORMULATION EITHER. Same RHS, same tolerances: Radau lands
+      at -5.5e-5 K and LSODA at +8.8e-5 K where BDF lands at -1.2e-1. But
+      neither survives the project's real work -- Radau does not finish the
+      benzoic-acid prep in 8 minutes where BDF takes 39 s, and LSODA fails it
+      outright at t = 0.013 s -- so "use another integrator" was not available.
+
+THE CAUSE, and it was in Layer 2 rather than in the solver at all. Water
+autoionization declares ``Ea = 60 kJ/mol``, chosen to sit just above water's
+dissociation enthalpy of 55.8 so the elementary-barrier clamp does not fire.
+``detailed_balance`` then hands the REVERSE a barrier of 4.2 kJ/mol and a rate
+constant of **9.4e18 L/(mol s) -- 9.4e7 times the collision limit**, for a
+recombination measured at 1.4e11 (Eigen). The very choice that avoids one clamp
+put the derived reverse eight orders past what a collision can deliver.
+
+A pair running 1e8 times too fast turns over 9.4e4 mol/s in a 1 L flask, so its
+two heat terms sit at +-5.2e9 W either side of a net of a fraction of a watt: a
+twelve-order cancellation, on the stiffest mode in the vessel, invisible to a
+solver whose error control is denominated in kelvin and moles and never in
+joules. Per-step, three consecutive BDF steps of exactly 167.63 s destroyed
+253 + 145 + 69 = 467 of the 495 J while the composition did not move by a
+picomole.
+
+THE FIX is ``reactions.thermo.COLLISION_LIMIT``: if either direction's rate
+constant at 298 K exceeds it, BOTH pre-exponentials are scaled by the same
+factor, which leaves K = k_f/k_r invariant EXACTLY -- Kw stays 1.0022e-14, so no
+pKa and no pH can move. Water's equilibrium then arrives in ~0.3 ms instead of
+~0.5 ps, which is still instant against any chemistry here. Measured after:
+E4 reads +0.15759 K at 3600 s, agrees with itself at every tolerance rung from
+1e-6 to 1e-9, and costs 132 steps instead of 186.
 
 ⚠ PROGRESS METER. ``OdeSolver.step`` is wrapped to print the solver's own ``t``
 every 200 steps. It is a print and nothing else -- no state is touched, no
@@ -146,16 +182,55 @@ if _sat is not None:
 
 print("""
    !! READ THE PAIRS. E1 == E2 to five decimals, so the term's mere presence in
-   the RHS is free. E3 against E2 is the same flask with only the EVENT turned
-   on, and it is 0.05 K poorer. E4 is the original: it reaches the predicted
-   +0.1577 K at t=600s, still reads +0.1575 at t=1200s -- which is why the
-   1200 s test passes and is right to -- and then decays to +0.0378 AFTER the
-   chemistry has stopped.
+   the RHS is free. E3 against E2 was once 0.05 K poorer and E4 read +0.0378
+   where it should read +0.1576; both are now whole. E3 finishes at its 0.16 K
+   head start PLUS its own reaction heat, which are independent quantities that
+   used to interfere.
 
-   !! AND THE BOUND IS WHAT MAKES IT A DEFECT. Between t=1200 and t=3600 the
-   largest mole change in ANY block is 1.332e-07 mol; at 65 kJ/mol that is
-   0.0087 J, against 495.6 J of heat actually lost. UA = 0, the gas block holds
-   no water, the solid is flat. No sink exists.
+   !! WHAT MADE IT A DEFECT WAS THE BOUND. Between t=1200 and t=3600 the largest
+   mole change in ANY block was 1.4e-07 mol; at 65 kJ/mol that is 0.0087 J,
+   against 495.6 J of heat actually lost. UA = 0, the gas block held no water,
+   the solid was flat. No sink existed.
 
-   !! conservation_report CANNOT SEE THIS. It audits MATTER. A flask can hold
-   every element to 1e-12 while destroying half a kilojoule. See MILESTONES M12.""")
+   !! AND THE CAUSE WAS A DERIVED RATE CONSTANT, NOT THE SOLVER. Detailed
+   balance gave water's reverse 9.4e18 L/(mol s), 9.4e7x the collision limit,
+   so its two heat terms were +-5.2e9 W around a net of a fraction of a watt.
+   Three BDF steps of 167.63 s destroyed 467 J of the 495. The guard is
+   reactions.thermo.COLLISION_LIMIT; the standing audit is
+   validation/rate_ceiling.py; Kw is unmoved at 1.0022e-14.""")
+
+# ---------------------------------------------------------------------------
+# THE STEP AUDIT. This is the panel that localised it, and it is kept because a
+# per-step energy budget is the only view in which "the composition did not move
+# and the temperature did" is a single readable line.
+# ---------------------------------------------------------------------------
+print("\n=== PER-STEP ENERGY BUDGET of the E4 flask, worst steps ===",
+      flush=True)
+v = charged(298.15, precipitation=True, mol=0.01)
+_itg = v.integrator
+_y0 = _itg.pack(v._nL, v._nL2, v._nG, v._nS, v.T)
+_sol = _itg.run(_y0, (0.0, SPAN))
+_n = _itg.n
+_jh = list(NET.species).index("[OH3+]")
+_dH = float(_itg.kin.dH[0])
+_Cp = _itg.energy_terms(_sol.y[:, 0], boundary=_y0)["Cp_total"]
+_rows = []
+for _i in range(1, len(_sol.t)):
+    _dT = _sol.y[-1, _i] - _sol.y[-1, _i - 1]
+    _dn = _sol.y[_jh, _i] - _sol.y[_jh, _i - 1]
+    _rows.append((_sol.t[_i - 1], _sol.t[_i] - _sol.t[_i - 1], _dT, _dn,
+                  _Cp * _dT + _dH * _dn))
+_late = [r for r in _rows if r[0] >= 1182.0]
+print(f"  Cp {_Cp:.2f} J/K   steps {len(_rows)}   "
+      f"unaccounted after t=1182 s: {sum(r[4] for r in _late):+.3f} J")
+print(f"  {'t_from':>9} {'h/s':>9} {'dT/K':>13} {'dn(H3O+)':>13} "
+      f"{'unaccounted J':>15}")
+for _r in sorted(_rows, key=lambda r: -abs(r[4]))[:5]:
+    print(f"  {_r[0]:9.1f} {_r[1]:9.2f} {_r[2]:+13.4e} {_r[3]:+13.3e} "
+          f"{_r[4]:+15.3f}")
+print("""
+   !! BEFORE THE GUARD this table's top three rows were three CONSECUTIVE steps
+   of exactly 167.63 s, at -253.4, -145.2 and -69.0 J, with dn(H3O+) of order
+   1e-10 -- a temperature falling on its own while the composition stood still.
+   That shape is the signature to look for: energy leaving with no matter
+   moving. If it comes back, read validation/rate_ceiling.py first.""")

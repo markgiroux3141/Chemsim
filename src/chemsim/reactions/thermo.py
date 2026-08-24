@@ -28,6 +28,37 @@ from chemsim.reactions.reaction import ConcreteReaction
 
 T_REF = 298.15  # K
 
+# ⚠ THE CEILING ON A DERIVED RATE CONSTANT, and it is the project's own number.
+#
+# ``reactions/library.py`` already refuses a hand-authored pre-exponential above
+# the gas-kinetic collision limit -- "buying a prettier threshold with an
+# impossible pre-exponential is the wrong trade", written there about a burner
+# that wanted A = 1e14. Nothing applied the same standard to the rate constants
+# this module DERIVES, and detailed balance derives one for every reversible
+# template in the project.
+#
+# It should have: an elementary bimolecular step in solution cannot proceed
+# faster than the reactants meet. In water that ceiling is Smoluchowski
+# diffusion, ~1e10 L/(mol s) for ordinary small ions and 1.4e11 for H3O+ + OH-,
+# which is the fastest bimolecular reaction known and is fast only because of
+# Grotthuss proton hopping (Eigen). In the gas the ceiling is the collision
+# frequency, the same 1e11 to an order of magnitude at ordinary temperatures.
+# One number covers both to the accuracy anything here needs.
+#
+# ⚠ THE CEILING IS ON k(T_REF), NOT ON A. Every acid dissociation in this project
+# carries Ea = 60 kJ/mol with a pre-exponential many orders above 1e11, and their
+# rate constants are nonetheless 1e-4 of the limit or below -- the barrier is what
+# makes them physical. Capping A instead of k would slow every acid/base
+# equilibration in the project by 1e7 and would be measuring the wrong quantity.
+#
+# ⚠ MOLECULARITY: the ceiling applies to a step with TWO OR MORE reactants. A
+# unimolecular step's ceiling is a bond vibration frequency, ~1e14 s^-1, which is
+# a different quantity in different units; it is NOT guarded here, because
+# nothing in this project approaches it (measured -- see
+# ``validation/rate_ceiling.py``) and a guard with no case behind it is an
+# invention rather than a bound.
+COLLISION_LIMIT = 1.0e11  # L/(mol s), k of a bimolecular step at T_REF
+
 
 def reaction_deltas(
     reaction: ConcreteReaction,
@@ -161,6 +192,10 @@ class DetailedBalance:
     barrier_raised: bool = False   # True if Ea_fwd was raised to stay physical
     n_fwd: float = 0.0             # modified-Arrhenius exponents, k = A T**n e^(-Ea/RT)
     n_rev: float = 0.0
+    # The factor BOTH pre-exponentials were scaled by to keep the faster
+    # direction at or below ``COLLISION_LIMIT``. 1.0 means the pair was already
+    # physical. Scaling both preserves K(T) exactly -- see ``detailed_balance``.
+    rate_capped: float = 1.0
 
 
 def detailed_balance(
@@ -210,6 +245,38 @@ def detailed_balance(
        ``(T/T_ref)**delta_n`` -- about 1.3x per unit delta_n over a 100 K
        excursion. ``T_ref`` is therefore no longer used for anything and is
        retained only so existing callers keep working.
+
+    3. **An impossible derived rate.** ⚠ This is the third correction and it was
+       added by M12, because leaving it out cost a measured wrong answer rather
+       than an untidy number. A template declares the FORWARD rate; detailed
+       balance then hands the reverse whatever K demands, and nothing checked
+       that the result was a rate matter can actually go at. Water
+       autoionization is the case: ``Ea_fwd = 60 kJ/mol`` is chosen to sit just
+       above water's dissociation enthalpy of 55.8 so correction 1 does not
+       fire, which leaves the reverse a barrier of 4.2 kJ/mol and a rate
+       constant of **9.4e18 L/(mol s) -- 9.4e7 times the collision limit**, for
+       a recombination measured at 1.4e11. The very choice that avoids the
+       barrier clamp is what puts the reverse eight orders past what a collision
+       can deliver.
+
+       That is not a cosmetic error. A pair running 1e8 times too fast turns
+       over 9.4e4 mol/s in a 1 L flask, so its two heat terms are +-5.2e9 W
+       either side of a net that is a fraction of a watt -- a twelve-order
+       cancellation in the temperature equation, sitting on the stiffest mode in
+       the vessel, and invisible to a solver whose error control is denominated
+       in kelvin and moles rather than in joules. Three consecutive BDF steps of
+       168 s then destroyed 467 J in an insulated flask whose composition did not
+       move by a picomole. See ``validation/adiabatic_tail.py``.
+
+       So: if either direction's rate constant at ``T_ref`` exceeds
+       ``COLLISION_LIMIT``, BOTH pre-exponentials are scaled by the same factor
+       and ``rate_capped`` reports it. ⚠ **Scaling both is what keeps this a
+       correction rather than a change of chemistry: K = k_f/k_r is invariant
+       under it, exactly**, so every equilibrium, every pKa and every pH is
+       untouched -- measured, Kw stays 1.0022e-14 to five figures across eight
+       orders of A. What changes is only how fast the equilibrium is REACHED,
+       and water's still arrives in ~0.3 ms, which is instant against any
+       chemistry in this project.
     """
     dH_kJ, _ = reaction_deltas(reaction, provider, volatility)
     dH = dH_kJ * 1000.0                              # J/mol
@@ -223,6 +290,25 @@ def detailed_balance(
     A_rev = A_fwd * math.exp(-dS / R)
     if dn != 0:
         A_rev *= (R_L_BAR * C_STD_M / P_STD_BAR) ** dn
+    n_rev = n_fwd + dn
+
+    # Correction 3: neither direction may go faster than the reactants meet.
+    # Only a step of molecularity >= 2 has a collision limit to breach, and the
+    # ceiling is on the rate CONSTANT rather than on A -- see COLLISION_LIMIT.
+    rate_capped = 1.0
+    for A, Ea, n, reactants in (
+        (A_fwd, Ea_fwd_out, n_fwd, reaction.reactants),
+        (A_rev, Ea_rev, n_rev, reaction.products),
+    ):
+        if len(reactants) < 2:
+            continue
+        k = A * T_ref**n * math.exp(-Ea / (R * T_ref))
+        if k > COLLISION_LIMIT:
+            rate_capped = min(rate_capped, COLLISION_LIMIT / k)
+    if rate_capped < 1.0:
+        # BOTH, by the same factor: K = k_f / k_r is what must not move.
+        A_fwd *= rate_capped
+        A_rev *= rate_capped
 
     return DetailedBalance(
         A_fwd=A_fwd,
@@ -233,5 +319,6 @@ def detailed_balance(
         dS=dS,
         barrier_raised=barrier_raised,
         n_fwd=n_fwd,
-        n_rev=n_fwd + dn,
+        n_rev=n_rev,
+        rate_capped=rate_capped,
     )

@@ -556,15 +556,29 @@ the emergent-failure content the design wants.
 
 ---
 
-## M7 — Dissociation as an equilibrium  *(largest single engine job)*
+## M7 -- Dissociation as an equilibrium  *(M12 TOOK MOST OF ITS CASE AWAY)*
 
-Stiffness ratio **7.05e21**, essentially all acid/base recombination. The value
-integrating gives IS the equilibrium value. It now also owns the
-stiff-reactant-at-zero residual (1e-4 level, reported, converges) and **has a
-convergence test to measure a fix against**, which it did not before.
+**RE-SCOPE THIS BEFORE SCHEDULING IT.** The headline was a stiffness ratio of
+**7.05e21**, essentially all acid/base recombination -- and 9.431e18 of that was
+water's reverse autoionization, **a rate constant 9.4e7 times the collision
+limit**. M12 capped it at 1.0e11 (HANDOFF 82), so the ratio is now **8.6e12**:
+still stiff, no longer the largest number in the project by eight orders, and
+the flask it was worst on now integrates 6.6x FASTER than before rather than
+needing a new representation to be affordable.
+
+What genuinely survives, and it is the real argument:
+
+* **The value integrating gives IS the equilibrium value.** That was always the
+  principled reason and it is untouched by how fast the pair runs.
+* **It still owns the stiff-reactant-at-zero residual** (1e-4 level, reported,
+  converges) -- and M12 made that MORE visible at the default rung, not less:
+  the prep creates 2.53e-05 mol of benzoyl there now, against 3.5e-12, because
+  fewer and larger steps cover the same span. It converges to -4.4e-15 by rtol
+  1e-8, and `conservation_report` says so unprompted.
 
 **Done when:** the five pH invariants come back IDENTICAL and the stiffness ratio
-falls by orders of magnitude.
+falls by orders of magnitude. Measure the ratio again first -- the number in
+every previous planning document is the pre-M12 one.
 
 ---
 
@@ -712,43 +726,51 @@ the 10-boiling-point bucket is empty.
 
 ---
 
-## ⚠⚠ M12 — The adiabatic energy leak  *(a measured WRONG ANSWER, same class as M0)*
+## ✔ M12 — The adiabatic energy leak  **DONE 2026-08-24**  *(engine)*
 
-**An insulated flask destroys 495 J after a precipitation event, against a
-0.0087 J chemical budget.** Measured 2026-08-24, HANDOFF 81. This was carried as
-a hypothesis ("probably generic, probably pre-dates the term") until a control
-finally ran; the hypothesis is REFUTED and what is left is a defect.
+**An insulated flask destroyed 495 J after a precipitation event, against a
+0.0087 J chemical budget.** Now reads **+0.15759 K at 3600 s in one call**,
+agreeing with itself at every tolerance rung from 1e-6 to 1e-9, with **+0.005 J**
+unaccounted over the post-event window. HANDOFF 82 has the full account.
 
-    t=600s  dT = +0.15774 K   <- the enthalpy prediction from the two tables
-    t=1200s dT = +0.15751 K   <- still right; this is why the 1200 s test passes
-    t=3600s dT = +0.03782 K   <- and the chemistry stopped at t=1200
+**The cause was in Layer 2, not in the solver, the energy equation or the
+precipitation term.** `dissociation_templates` sets `Ea = 60 kJ/mol` for water
+autoionization so the elementary-barrier clamp does not fire on water's 55.8
+kJ/mol dissociation enthalpy — which leaves detailed balance handing the REVERSE
+a 4.2 kJ/mol barrier and a rate constant of **9.4e18 L/(mol s), 9.4e7 times the
+collision limit**, for a recombination measured at 1.4e11. Its two heat terms
+then sat at ±5.2e9 W around a net of a fraction of a watt, and three consecutive
+BDF steps of 167.63 s destroyed 467 of the 495 J while the composition did not
+move by a picomole.
 
-⚠ **The bound is what makes it a defect rather than physics.** Between 1200 s
-and 3600 s the largest mole change in ANY block is 1.332e-07 mol; priced at
-65 kJ/mol that is 0.0087 J against 495.6 J of heat. UA = 0 so nothing reaches the
-room, the gas block holds no water so there is no latent heat, and the solid is
-flat. **No sink exists.**
+⚠ **The asymmetry that allowed it, in one sentence: this project has always
+refused an impossible hand-authored pre-exponential and never checked the ones it
+DERIVES.** `reactions.thermo.COLLISION_LIMIT` closes that — both pre-exponentials
+scaled by one factor, so `K = k_f/k_r` is invariant exactly and Kw stays
+1.0022e-14. Exactly one reaction in the project needed it.
 
-**What is already narrowed, so the next session does not re-measure it:**
-* NOT generic — a warm insulated flask with no event holds +0.15992 K to five
-  decimals over the same single 3600 s call, at default AND at rtol 1e-9.
-* NOT the term's code — with nothing supersaturated, precipitation ON and
-  precipitation OFF agree to five decimals.
-* NOT a solid phase at rest — a settled flask, precipitation or ordinary
-  crystallisation, holds to +0.00001 K over another idle 3600 s.
-* It needs the EVENT, and it happens in the window AFTER the event finishes
-  while the solver is expanding its step.
+**Four fixes were refuted by measurement first**, and each will be proposed
+again: the precipitation term (controlled for), the energy equation's algebra
+(`q_rxn / (-dH·dn) = 1.000000` pointwise), tolerance in BOTH directions
+(tightening the temperature's own budget made it *worse* — 31,324 steps), and the
+integrator (Radau and LSODA both get it right and neither survives the prep).
 
-⚠ **`conservation_report` cannot see this, and that is the second finding.** It
-audits MATTER only. A flask can conserve every element exactly while destroying
-half a kilojoule. **An energy audit is the deliverable here, not just the fix** —
-without one, the next leak is invisible too.
+**The audit shipped too**, which was the other half: `Vessel.energy_report()`
+prints the GROSS reaction heat beside the net — a net of 1e-3 W looks identical
+whether a flask is at rest or whether two 5.2e9 W terms are cancelling to twelve
+digits — plus `VesselIntegrator.energy_terms`, `validation/rate_ceiling.py` and
+`tests/test_energy_balance.py`.
 
-**The reproduction is `validation/adiabatic_tail.py`** — every control above, in
-about 7 seconds. Nothing here needs a long run.
+**It also made everything faster.** The stiffest mode in every aqueous flask got
+6.7e7× slower: the benzoic-acid prep runs in **6.0 s where it took 39.4 s**, and
+its converged benzoate is unchanged to nine figures (0.199993746).
 
-**Done when:** the insulated metathesis reads its predicted 0.1577 K at 3600 s in
-one call, and a vessel can report an energy balance the way it reports a mass one.
+⚠ **STILL OPEN, REPORTED RATHER THAN FIXED:** the guard is evaluated at 298.15 K,
+and `carboxylic_acid_dissociation_rev` **crosses the ceiling at 416.6 K** — a
+temperature a reflux reaches. `validation/rate_ceiling.py` prints every crossing.
+⚠ And `born_A` is zero for `[Ag+]`, so silver is carried as a NEUTRAL by the ion
+transfer term; harmless in one aqueous phase, wrong in an extraction, and
+nothing says so.
 
 ---
 

@@ -1332,7 +1332,7 @@ class VesselIntegrator:
         p = self.equilibrium_pressures(n_liquid, T, n_liquid2)
         return float(p[self.ph.condensable].sum())
 
-    def make_rhs(self, y0: np.ndarray | None = None):
+    def make_rhs(self, y0: np.ndarray | None = None, probe: dict | None = None):
         """Compile dy/dt. Everything below is array arithmetic on plain floats.
 
         ``y0`` is the state at the INTEGRATION BOUNDARY, and the only thing it is
@@ -1340,6 +1340,15 @@ class VesselIntegrator:
         ``FREEZE_LAYER_PERMITTIVITY``. Passing ``None`` recomputes the mixture
         permittivity from the composition on every call, which is what this did
         before and is what the harness compares against.
+
+        ``probe``, if given, is a dict the RHS overwrites with the energy balance
+        it just evaluated -- every watt the temperature equation saw, term by
+        term, plus the fluxes each was priced against. It exists because the
+        temperature equation is the one place where a sum of nearly-cancelling
+        terms cannot be checked against a conserved total: matter is audited by
+        ``conservation_report`` and energy was audited by nothing (M12). One
+        ``is not None`` test per evaluation, against a call that does dozens of
+        matmuls; ``energy_terms`` is the supported way in.
         """
         kin, ph, cond = self.kin, self.ph, self.cond
         n = self.n
@@ -1397,7 +1406,7 @@ class VesselIntegrator:
             if self.just_seeded:
                 frozen1 = frozen2 = None
 
-        def _phase_rates(idx, C, V, T, ln_gamma_ion=None):
+        def _phase_rates(idx, C, V, T, ln_gamma_ion=None, sink=None):
             """Reaction source term (mol/s) and heat release (J/s) for one phase.
 
             ``ln_gamma_ion`` is the layer's BORN transfer term (see
@@ -1446,6 +1455,12 @@ class VesselIntegrator:
                     np.clip(-(ion_products[idx] @ ln_gamma_ion), -50.0, 50.0)
                 )
             rates = k * np.prod(C**order[idx], axis=1)      # mol/(L s)
+            if sink is not None:
+                # Per-reaction watts, for the cancellation audit only. The NET is
+                # what the temperature sees; the GROSS is what M12 turned out to
+                # be about, and a report that shows only the net cannot tell a
+                # quiet zero from two 5.2e9 W terms that happen to cancel.
+                sink.append(-dH[idx] * rates * V)
             return delta[idx].T @ rates * V, -float(dH[idx] @ rates) * V
 
         prec = self.prec
@@ -1485,8 +1500,9 @@ class VesselIntegrator:
             dn_rxn2 = np.zeros(n)
             q_rxn = 0.0
             q_rxn2 = 0.0
+            sink = [] if probe is not None else None
             if V_L1 > V_LIQUID_MIN:
-                d, q = _phase_rates(liq_rxn, nL1 / V_L1, V_L1, T, ln_ion1)
+                d, q = _phase_rates(liq_rxn, nL1 / V_L1, V_L1, T, ln_ion1, sink)
                 dn_rxn1 += d
                 q_rxn += q
             if V_L2 > V_LIQUID_MIN:
@@ -1783,6 +1799,22 @@ class VesselIntegrator:
                 q_rxn + q_vap + q_fus + q_loss + q_vent + cond.Q_input
             ) / max(Cp_total, CP_MIN)
 
+            if probe is not None:
+                probe.clear()
+                probe.update(
+                    T=T, Cp_total=Cp_total, dT=dT,
+                    q_rxn=q_rxn, q_vap=q_vap, q_fus=q_fus, q_loss=q_loss,
+                    q_vent=q_vent, Q_input=cond.Q_input,
+                    q_sum=q_rxn + q_vap + q_fus + q_loss + q_vent
+                    + cond.Q_input,
+                    evap=evap, solute=solute, vent=vent,
+                    precipitate=precipitate if np.ndim(precipitate) else
+                    np.zeros(n),
+                    dn_rxn1=dn_rxn1, dn_rxn2=dn_rxn2, dn_gas_rxn=dn_gas_rxn,
+                    lle=lle,
+                    q_rxn_terms=np.concatenate(sink) if sink else np.zeros(0),
+                )
+
             return np.concatenate([
                 dn_rxn1 - evap1 - evap_dry + solute1 - lle - precipitate,
                 dn_rxn2 - evap2 + solute2 + lle,              # liquid layer 2
@@ -2055,6 +2087,48 @@ class VesselIntegrator:
         out[: 4 * n] = np.concatenate(blocks)
         self.created += created
         return out
+
+    # -- the energy balance, which nothing used to audit ---------------------
+
+    def energy_terms(
+        self, y: np.ndarray, boundary: np.ndarray | None = None
+    ) -> dict:
+        """Every watt the temperature equation sees at state ``y``, term by term.
+
+        The mass balance can be audited against a conserved total; ``dT/dt``
+        cannot, because it is a SUM and not a difference of two tallies. M12 is
+        what that costs: an insulated flask destroyed 495 J while conserving
+        every atom to 1e-12, and no report in the project could see it. This is
+        the instrument. It evaluates the RHS once, with the probe attached, and
+        hands back the terms rather than the derivative.
+
+        ⚠ It is a snapshot of one state, not an accumulated balance -- a term
+        that is small here may still be the one that integrates to a kilojoule,
+        because the temperature equation has no restoring force to correct it.
+        Read it alongside ``Vessel.energy_report``.
+
+        ⚠⚠ ``boundary`` IS NOT OPTIONAL WHEN READING A TRAJECTORY, and getting it
+        wrong is not a small error. The RHS a ``run`` used froze each layer's
+        permittivity at the state it STARTED from (``FREEZE_LAYER_PERMITTIVITY``),
+        and ``q_rxn`` for a fast reversible pair is a difference of two terms of
+        order 5e9 W. Re-freezing at ``y`` instead perturbs the Bronsted-Bjerrum
+        factor in the fifth digit, which is 1e5 W of a cancellation that nets a
+        fraction of a watt: measured on M12's flask at t = 1183 s, the SAME state
+        reads q_rxn = -4.69e6 W frozen at itself and -5e-3 W frozen at the run's
+        own boundary. Pass the state the run began with, or read a number that is
+        pure artefact.
+        """
+        y = np.asarray(y, dtype=float)
+        if boundary is None:
+            boundary = y
+        probe: dict = {}
+        rhs = self.make_rhs(
+            np.asarray(boundary, dtype=float)
+            if FREEZE_LAYER_PERMITTIVITY else None,
+            probe=probe,
+        )
+        rhs(0.0, y)
+        return dict(probe)
 
     # -- the one decision that cannot be a rate ------------------------------
 

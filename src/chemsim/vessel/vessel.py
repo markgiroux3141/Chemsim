@@ -1506,6 +1506,63 @@ class Vessel:
             f"round-off it could not settle against a positive holding: {worst}"
         )
 
+    def energy_report(self) -> str:
+        """The energy balance, the way ``state`` and ``conservation_report`` are
+        the mass one: every watt the temperature equation sees, and how much
+        cancellation each one is hiding.
+
+        ⚠ WHY THE GROSS COLUMN EXISTS, AND IT IS THE WHOLE POINT OF THIS REPORT.
+        M12 was an insulated flask that destroyed 495 J while conserving every
+        atom to 1e-12. Nothing could see it: ``conservation_report`` audits
+        MATTER, and a net reaction heat of 1e-3 W looks like a flask at rest
+        whether it is one or whether it is two terms of 5.2e9 W cancelling to
+        twelve digits. It was the second case. A cancellation that large turns
+        the solver's ordinary error control -- denominated in kelvin and in
+        moles, never in joules -- into an amplifier, and the temperature is the
+        only slow variable it can accumulate in.
+
+        So this reports the GROSS as well as the net, and the ratio between them
+        is the number to read. A ratio near 1 is a flask doing chemistry; a ratio
+        of 1e12 is a number about to be wrong. The standing bound is
+        ``reactions.thermo.COLLISION_LIMIT``, which stops a DERIVED rate constant
+        from being faster than the reactants can meet and is what keeps the ratio
+        finite; see ``validation/rate_ceiling.py``.
+
+        ⚠ It is a SNAPSHOT, not an accumulated balance. It says what the flask is
+        doing now, not what it did over the last hour.
+        """
+        y = self.integrator.pack(self._nL, self._nL2, self._nG, self._nS, self.T)
+        p = self.integrator.energy_terms(y)
+        terms = p.get("q_rxn_terms")
+        gross = float(np.abs(terms).sum()) if terms is not None else 0.0
+        net = float(terms.sum()) if terms is not None and terms.size else 0.0
+        lines = [
+            f"energy balance at T = {p['T']:.4f} K, "
+            f"heat capacity {p['Cp_total']:.2f} J/K",
+            f"  reaction        {p['q_rxn']:+12.4e} W",
+            f"  vaporisation    {p['q_vap']:+12.4e} W",
+            f"  fusion/lattice  {p['q_fus']:+12.4e} W",
+            f"  wall loss       {p['q_loss']:+12.4e} W",
+            f"  vent            {p['q_vent']:+12.4e} W",
+            f"  applied         {p['Q_input']:+12.4e} W",
+            f"  --------------- {p['q_sum']:+12.4e} W  "
+            f"= {p['dT']:+.4e} K/s",
+        ]
+        if gross > 0.0:
+            ratio = gross / abs(net) if net else float("inf")
+            lines.append(
+                f"  reaction heat is {gross:.4e} W gross against "
+                f"{net:+.4e} W net (cancellation {ratio:.2e}x)"
+            )
+            if ratio > 1.0e6:
+                lines.append(
+                    "  !! THE NET REACTION HEAT IS A CANCELLATION OF TERMS MORE "
+                    "THAN A MILLION TIMES LARGER. The temperature is integrating "
+                    "the difference of two big numbers and no error control in "
+                    "the solver is denominated in joules. See M12."
+                )
+        return "\n".join(lines)
+
     def state(self) -> VesselState:
         return VesselState(
             n_liquid={s: float(self._nL[i]) for i, s in enumerate(self.species)},

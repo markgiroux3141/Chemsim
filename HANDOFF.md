@@ -3434,6 +3434,179 @@ the measurements that justify them.
     `tests/test_precipitation.py` (docstring corrected to stop stating the
     refuted hypothesis — the test itself is unchanged and still right).
 
+82. ✔✔ **M12 IS CLOSED, AND THE CAUSE WAS IN LAYER 2 RATHER THAN IN THE SOLVER,
+    THE ENERGY EQUATION OR THE PRECIPITATION TERM. A DERIVED RATE CONSTANT WAS
+    9.4e7 TIMES THE COLLISION LIMIT, AND ITS TWO HEAT TERMS WERE ±5.2e9 W EITHER
+    SIDE OF A NET OF A FRACTION OF A WATT.**
+
+    The insulated metathesis reads **+0.15759 K at 3600 s in one call** (was
+    +0.03782 against a prediction of ~0.1577), agrees with itself at **every**
+    tolerance rung from 1e-6 to 1e-9, and the per-step energy budget over the
+    post-event window is **+0.005 J** where it was **−495.843 J**.
+
+    ## THE CAUSE, AND IT IS A ONE-LINE CONSEQUENCE OF AVOIDING ANOTHER CLAMP
+
+    `dissociation_templates` declares `Ea = 60 kJ/mol` for water autoionization,
+    chosen — the comment says so — to sit just above water's dissociation
+    enthalpy of 55.8 so `detailed_balance`'s elementary-barrier clamp does not
+    fire. Detailed balance then gives the REVERSE `Ea_rev = 60000 − 55800 =
+    4200 J/mol` and, with `A_rev = 5.13e19`, a rate constant of
+
+        k_rev(298) = 9.43e18 L/(mol s)      vs 1.4e11 measured (Eigen)
+
+    ⚠ **The very choice that avoids one clamp puts the derived reverse eight
+    orders past what a collision can deliver.** Every other pair in the project
+    has `dH ≈ 0`, hence `Ea_rev = 60000`, hence a perfectly ordinary rate — which
+    is why water was the *only* offender out of 29 bimolecular reactions across
+    three real networks.
+
+    A pair running 1e8× too fast turns over 9.4e4 mol/s in a 1 L flask, so its
+    two heat terms are ±5.2e9 W around a net of a fraction of a watt: **a
+    twelve-order cancellation in the temperature equation, on the stiffest mode
+    in the vessel, invisible to a solver whose error control is denominated in
+    kelvin and in moles and never in joules.**
+
+    ## THE FIX: A CEILING THE PROJECT ALREADY APPLIED TO THE OTHER HALF
+
+    `reactions/library.py` has always refused a hand-authored A above the
+    collision limit — *"buying a prettier threshold with an impossible
+    pre-exponential is the wrong trade"*, written about a burner that wanted
+    1e14. ⚠ **Nothing applied that standard to the rate constants this project
+    DERIVES**, and it derives one for every reversible template there is. That
+    asymmetry is the whole defect in one sentence.
+
+    `reactions.thermo.COLLISION_LIMIT = 1.0e11 L/(mol s)`: if either direction's
+    rate constant at 298 K exceeds it, **both** pre-exponentials are scaled by
+    the same factor and `DetailedBalance.rate_capped` reports it (surfaced by
+    `build_network` as a NOTICE, exactly like `barrier_raised`).
+
+    ⚠ **Scaling BOTH is what keeps this a correction to a rate rather than a
+    change of chemistry: K = k_f/k_r is invariant under it exactly.** Measured —
+    Kw stays **1.0022e-14** across eight orders of A. No pKa, no pH, no
+    equilibrium can move. Water now equilibrates in ~0.3 ms instead of ~0.5 ps,
+    which is still instant against anything here.
+
+    ⚠ **THE CEILING IS ON k(298), NOT ON A.** Every acid dissociation carries
+    `Ea = 60 kJ/mol` with a pre-exponential many orders above 1e11 and a rate
+    constant 1e-4 of the limit or below — the barrier is what makes them
+    physical. Capping A instead would have slowed every acid/base equilibration
+    in the project by 1e7 and would have been measuring the wrong quantity.
+
+    ## FOUR THINGS THAT WERE REFUTED BEFORE THE RIGHT ONE WAS FOUND
+
+    Each cost real time and each is a fix someone will propose again:
+
+    * **The precipitation term.** Controlled for in the last session; with
+      nothing supersaturated, term ON and OFF agree to five decimals.
+    * **The energy equation's algebra.** ⚠ Measured pointwise:
+      `q_rxn / (−dH·dn_rxn[H3O+]) = 1.000000` at every solver point. The heat IS
+      exactly the price of the extent it drives — so rewriting `q_rxn` as
+      `−Hf·dn` (which was designed and nearly built) would have changed nothing.
+    * **TOLERANCE, IN BOTH DIRECTIONS.** Tightening `atol` alone recovered it
+      (−1.2e-1 → −1.5e-4 K) even though `atol` never reaches T, whose scale is
+      `rtol·298 K`. And integrating `(T − T0)` — which tightens the temperature's
+      own budget by three orders — made it **worse**: +2.0e-2 K at default and
+      **31,324 steps / 265 s** at rtol 1e-8. ⚠ *The obvious fix, aimed at the
+      variable the error appeared in, was measurably the wrong one.*
+    * **THE INTEGRATOR.** Same RHS, same tolerances: **Radau −5.5e-5 K, LSODA
+      +8.8e-5 K, BDF −1.2e-1 K.** So BDF specifically mishandled it — but
+      neither alternative survives the project's real work: **Radau does not
+      finish the benzoic-acid prep in 8 minutes where BDF takes 39 s, and LSODA
+      fails it outright at t = 0.013 s.** "Use a better solver" was measured and
+      unavailable.
+
+    ⚠ **The transferable shape: the leak was localised by a PER-STEP energy
+    budget, not by a better hypothesis.** Three consecutive BDF steps of exactly
+    167.63 s, at −253.4, −145.2 and −69.0 J, with `dn(H3O+)` of order 1e-10.
+    *Energy leaving with no matter moving*, three times, at a fixed step size —
+    that shape named the mode. It is in `validation/adiabatic_tail.py` now.
+
+    ## THE COST WENT DOWN, AND THE CONVERGED CHEMISTRY DID NOT MOVE
+
+    The stiffest mode in every aqueous flask got 6.7e7× slower, so the prep got
+    **6.6× faster (39.4 s → 6.0 s)**. Rule 4 applied to the answer itself — the
+    prep's benzoate on a tolerance ladder:
+
+    | rtol | BEFORE benzoate | BEFORE s | AFTER benzoate | AFTER s |
+    |---|---|---:|---|---:|
+    | 1e-6 | 0.199999990 | 39.8 | 0.200025315 | 6.1 |
+    | 1e-7 | 0.199999991 | 88.0 | **0.199993746** | 10.7 |
+    | 1e-8 | **0.199993746** | 156.7 | **0.199993745** | 9.3 |
+
+    ⚠ **The two CONVERGED answers are identical to nine figures**, which is what
+    Kw's invariance predicts and is the claim worth making. What changed is that
+    the default rung now lands on the converged answer instead of 3.1e-5 away
+    from it, and converging costs 10.7 s instead of 156.7 s. `T_final` is
+    353.0012 K at all three rungs after, against 352.9823 / 353.0001 / 353.0024
+    before — ⚠ the old default was **0.019 K** off and the old ladder had not
+    converged in temperature at all.
+
+    ## ⚠ ONE HONEST REGRESSION AT THE DEFAULT RUNG, AND IT IS THE OLD ONE
+
+    At rtol 1e-6 the prep now creates **2.53e-05 mol of benzoyl** where it used
+    to create 3.5e-12 — the projection cannot settle ethyl benzoate, which is
+    driven to exactly zero. That is the standing *"a stiff reactant driven to
+    EXACTLY zero still overshoots, at the 1e-4 level"* item, made visible because
+    fewer, larger steps now cover the same span. It **converges**: 2.53e-05 →
+    −1.70e-13 → −4.41e-15. And `conservation_report` says so unprompted, which is
+    the honest path working rather than failing. ⚠ Note what it replaced: the old
+    default's projection created **1.88e-03 mol of `[OH3+]`** — 76× larger, and
+    already sitting in the invariants table as a tolerance artefact.
+
+    ## THE OTHER HALF OF THE MILESTONE: AN ENERGY AUDIT
+
+    `conservation_report` audits MATTER; a flask held every element to 1e-12
+    while destroying half a kilojoule. New:
+
+    * `VesselIntegrator.energy_terms(y, boundary=None)` — every watt the
+      temperature equation saw, term by term, plus the per-reaction heats.
+      Implemented as an optional `probe` dict on `make_rhs`: one `is not None`
+      test per evaluation, against a call that does dozens of matmuls.
+    * `Vessel.energy_report()` — the balance, **and the GROSS reaction heat
+      beside the net**. ⚠ That column is the point: a net of 1e-3 W looks the
+      same whether the flask is at rest or whether two 5.2e9 W terms are
+      cancelling to twelve digits, and it was the second. It flags any
+      cancellation above 1e6×; the metathesis now reads **2.26e3×**.
+    * `validation/rate_ceiling.py` — the standing audit of every derived rate
+      constant against the ceiling, cold and hot.
+    * `tests/test_energy_balance.py` — 10 tests, asserting **convergence and
+      physics**, never a default-tolerance value.
+
+    ⚠ **A TRAP THE INSTRUMENT ITSELF SET, AND IT COST A WHOLE WRONG READING.**
+    `energy_terms` must be given the state the RUN started from, because the RHS
+    freezes each layer's permittivity at its integration boundary. Re-freezing at
+    a later state perturbs the Bronsted-Bjerrum factor in the fifth digit — which
+    is 1e5 W out of a twelve-order cancellation. The same state at t = 1183 s
+    reads **q_rxn = −4.69e6 W** frozen at itself and **−5e-3 W** frozen at the
+    run's own boundary. Hence the `boundary=` argument, and a test for it.
+
+    ## ⚠ WHAT IS STILL OPEN, REPORTED RATHER THAN FIXED
+
+    **The guard is evaluated at 298.15 K only, and a barrier climbs with
+    temperature faster than a collision frequency does.**
+    `validation/rate_ceiling.py` prints the crossings:
+    `carboxylic_acid_dissociation_rev` **crosses the ceiling at 416.6 K** and is
+    1.16e3× over it at 700 K. Nothing runs a carboxylic acid that hot today, so
+    it is latent — but a reflux reaches 416 K, and a route that wants to must
+    read that panel first. Water's own pair is *pinned at* the ceiling at 298 K,
+    so it is nominally 2.6× over at 700 K — against 9.4e7× before, and the real
+    ceiling rises with temperature while a fixed 1e11 does not.
+
+    ⚠ **AND A SECOND THING THE AUDIT FOUND IN PASSING, NOT YET CHASED:
+    `born_A` is ZERO for `[Ag+]`** while every other ion in the flask has one
+    (Cl⁻ 3.84e5, Na⁺ 6.81e5, NO₃⁻ 2.86e5, H₃O⁺ 3.55e5, OH⁻ 5.07e5 J/mol). Since
+    `born_A` is also the ion mask, silver is being carried as a NEUTRAL by the
+    transfer term. Harmless in a single aqueous phase, where the Born term is
+    exactly zero anyway; it is an extraction of a silver salt that would be
+    wrong, and nothing says so.
+
+    **Files:** `src/chemsim/reactions/thermo.py` (COLLISION_LIMIT, correction 3,
+    `rate_capped`); `src/chemsim/network/builder.py` (the NOTICE);
+    `src/chemsim/numerics/vessel_integrator.py` (`probe`, `energy_terms`);
+    `src/chemsim/vessel/vessel.py` (`energy_report`);
+    `validation/rate_ceiling.py` (NEW); `tests/test_energy_balance.py` (NEW);
+    `validation/adiabatic_tail.py` (now the verification, with the step budget).
+
 IMMEDIATE NEXT TASK: see **`MILESTONES.md`**, which is the plan of record as of
 2026-08-22 and supersedes the ordering below. It is derived from `data/catalog`
 (1,583 compounds, 173 routes) plus four measured capability probes, and it
