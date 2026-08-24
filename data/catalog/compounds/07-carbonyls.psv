@@ -1,0 +1,77 @@
+# G. ALDEHYDES, KETONES, QUINONES
+formaldehyde | methanal | C=O | aldehyde | intermediate | bakelite;methanol-oxidation;urea-resin | formalin
+acetaldehyde | ethanal | CC=O | aldehyde | intermediate | wacker;ethanol-oxidation;acetic-acid | the classic intermediate
+propionaldehyde | propanal | CCC=O | aldehyde | intermediate | oxo-process;propanol | propanal
+butyraldehyde | butanal | CCCC=O | aldehyde | intermediate | oxo-process;2-ethylhexanol | n-butanal
+isobutyraldehyde | 2-methylpropanal | CC(C)C=O | aldehyde | byproduct | oxo-process | branched oxo product
+valeraldehyde | pentanal | CCCCC=O | aldehyde | intermediate | oxo-process | n-pentanal
+hexanal | hexanal | CCCCCC=O | aldehyde | product | flavour;lipid-oxidation | grassy note
+heptanal | heptanal | CCCCCCC=O | aldehyde | product | fragrance | from castor oil
+octanal | octanal | CCCCCCCC=O | aldehyde | product | fragrance;citrus | C8 aldehyde
+decanal | decanal | CCCCCCCCCC=O | aldehyde | product | fragrance;citrus | C10 aldehyde
+dodecanal | dodecanal | CCCCCCCCCCCC=O | aldehyde | product | fragrance | lauric aldehyde
+acrolein | 2-propenal | C=CC=O | aldehyde | intermediate | acrylic-acid;glycerol-dehydration | lachrymator
+methacrolein | methacrolein | CC(=C)C=O | aldehyde | intermediate | methacrylic-acid | alpha-methylacrolein
+crotonaldehyde | 2-butenal | C/C=C/C=O | aldehyde | intermediate | aldol-condensation;butanol | from acetaldehyde
+glyoxal | ethanedial | O=CC=O | aldehyde | intermediate | crosslinker;glyoxylic-acid | dialdehyde
+glutaraldehyde | pentanedial | O=CCCCC=O | aldehyde | reagent | disinfectant;fixative | dialdehyde
+malondialdehyde | propanedial | O=CCC=O | aldehyde | byproduct | lipid-peroxidation-marker | MDA
+glycolaldehyde | glycolaldehyde | OCC=O | aldehyde | intermediate | formose;sugar-chemistry | simplest sugar
+glyceraldehyde | D-glyceraldehyde | OC[C@@H](O)C=O | aldehyde | intermediate | sugar-chemistry;chirality-reference | triose
+benzaldehyde | benzaldehyde | O=Cc1ccccc1 | aldehyde | intermediate | almond;cinnamaldehyde;mandelonitrile | oil of bitter almonds
+salicylaldehyde | 2-hydroxybenzaldehyde | O=Cc1ccccc1O | aldehyde | intermediate | coumarin;chelators | reimer-tiemann product
+4-methylbenzaldehyde | para-tolualdehyde | Cc1ccc(C=O)cc1 | aldehyde | intermediate | fragrance | tolualdehyde
+anisaldehyde | 4-methoxybenzaldehyde | COc1ccc(C=O)cc1 | aldehyde | product | fragrance;stain | hawthorn note
+piperonal | piperonal | O=Cc1ccc2OCOc2c1 | aldehyde | product | fragrance;heliotrope | from safrole
+cinnamaldehyde | trans-cinnamaldehyde | O=C/C=C/c1ccccc1 | aldehyde | product | cinnamon;perkin | aryl enal
+furfural | 2-furaldehyde | O=Cc1ccco1 | aldehyde | feedstock | pentosan-hydrolysis;furan-chemistry | from bran
+5-hydroxymethylfurfural | 5-HMF | OCc1ccc(C=O)o1 | aldehyde | intermediate | biomass-platform;fdca | HMF
+2-ethylhexenal | 2-ethyl-2-hexenal | CCC/C=C(\CC)C=O | aldehyde | intermediate | 2-ethylhexanol | aldol product
+citral | citral | CC(C)=CCC/C(C)=C/C=O | aldehyde | product | lemon;vitamin-a | geranial/neral
+citronellal | citronellal | CC(CCC=C(C)C)CC=O | aldehyde | product | fragrance;menthol-synthesis | terpene aldehyde
+acetone | propanone | CC(C)=O | ketone | solvent | cumene;fermentation;isopropanol | dimethyl ketone
+butanone | 2-butanone | CCC(C)=O | ketone | solvent | mek;coatings | MEK
+2-pentanone | 2-pentanone | CCCC(C)=O | ketone | solvent | esters | methyl propyl ketone
+3-pentanone | 3-pentanone | CCC(=O)CC | ketone | solvent | fine-chemicals | diethyl ketone
+methyl-isobutyl-ketone | 4-methyl-2-pentanone | CC(C)CC(C)=O | ketone | solvent | coatings;extraction | MIBK
+mesityl-oxide | mesityl oxide | CC(C)=CC(C)=O | ketone | intermediate | mibk;aldol | acetone aldol dehydration
+diacetone-alcohol | diacetone alcohol | CC(C)(O)CC(C)=O | ketone | intermediate | mibk;solvent | acetone aldol
+phorone | phorone | CC(C)=CC(=O)C=C(C)C | ketone | byproduct | acetone-condensation | triacetone
+isophorone | isophorone | CC1=CC(=O)CC(C)(C)C1 | ketone | solvent | coatings;ipda | cyclic aldol trimer
+cyclohexanone | cyclohexanone | O=C1CCCCC1 | ketone | intermediate | caprolactam;adipic-acid | KA oil component
+cyclopentanone | cyclopentanone | O=C1CCCC1 | ketone | intermediate | fragrance;jasmone | C5 cyclic ketone
+cyclohexane-1,2-dione | 1,2-cyclohexanedione | O=C1CCCCC1=O | ketone | intermediate | heterocycle-synthesis | vicinal diketone
+cyclododecanone | cyclododecanone | O=C1CCCCCCCCCCC1 | ketone | intermediate | nylon-12;musk | macrocyclic ketone
+acetophenone | acetophenone | CC(=O)c1ccccc1 | ketone | intermediate | styrene-co-product;fragrance | phenyl methyl ketone
+propiophenone | propiophenone | CCC(=O)c1ccccc1 | ketone | intermediate | ephedrine-synthesis | aryl ketone
+benzophenone | benzophenone | O=C(c1ccccc1)c1ccccc1 | ketone | reagent | photoinitiator;drying-indicator | diaryl ketone
+benzil | benzil | O=C(C(=O)c1ccccc1)c1ccccc1 | ketone | intermediate | benzilic-rearrangement;photoinitiator | 1,2-diketone
+benzoin | benzoin | OC(C(=O)c1ccccc1)c1ccccc1 | ketone | intermediate | benzoin-condensation | acyloin
+dibenzylideneacetone | dibenzylideneacetone | O=C(/C=C/c1ccccc1)/C=C/c1ccccc1 | ketone | product | aldol-teaching;pd-ligand | dba
+chalcone | chalcone | O=C(/C=C/c1ccccc1)c1ccccc1 | ketone | intermediate | flavonoid-synthesis | aryl enone
+methyl-vinyl-ketone | 3-buten-2-one | C=CC(C)=O | ketone | reagent | michael-acceptor;robinson-annulation | MVK
+diacetyl | 2,3-butanedione | CC(=O)C(C)=O | ketone | product | butter-flavour;fermentation | vicinal diketone
+acetylacetone | 2,4-pentanedione | CC(=O)CC(C)=O | ketone | reagent | chelation;heterocycles | acac
+acetoin | 3-hydroxy-2-butanone | CC(O)C(C)=O | ketone | intermediate | fermentation;butter | acyloin
+hydroxyacetone | hydroxyacetone | CC(=O)CO | ketone | intermediate | glycerol-dehydration | acetol
+dihydroxyacetone | 1,3-dihydroxyacetone | OCC(=O)CO | ketone | product | self-tanning;glycolysis | DHA
+camphor | camphor | CC1(C)[C@@H]2CC[C@]1(C)C(=O)C2 | ketone | product | celluloid;medicine | bicyclic terpene ketone
+carvone | R-carvone | CC(=C)[C@@H]1CC=C(C)C(=O)C1 | ketone | product | spearmint;caraway | terpene ketone
+menthone | menthone | CC(C)[C@H]1CC[C@@H](C)CC1=O | ketone | product | peppermint | terpene ketone
+fenchone | fenchone | CC1(C)[C@@H]2CC[C@](C)(C2)C1=O | ketone | product | fennel;fragrance | bicyclic ketone
+jasmone | cis-jasmone | CC/C=C\CC1=C(C)CCC1=O | ketone | product | jasmine;fragrance | cyclopentenone
+muscone | muscone | C[C@@H]1CCCCCCCCCCCCC1=O | ketone | product | musk | macrocyclic ketone
+civetone | civetone | O=C1CCCCCCC/C=C\CCCCCCC1 | ketone | product | musk | macrocyclic enone
+benzoquinone | 1,4-benzoquinone | O=C1C=CC(=O)C=C1 | quinone | intermediate | hydroquinone-oxidation;dehydrogenation | para-quinone
+ortho-benzoquinone | 1,2-benzoquinone | O=C1C=CC=CC1=O | quinone | transient | catechol-oxidation;melanin | unstable
+naphthoquinone | 1,4-naphthoquinone | O=C1C=CC(=O)c2ccccc21 | quinone | intermediate | vitamin-k;dyes | from naphthalene
+anthraquinone | 9,10-anthraquinone | O=C1c2ccccc2C(=O)c2ccccc21 | quinone | intermediate | alizarin;hydrogen-peroxide;pulping | AQ
+alizarin | 1,2-dihydroxyanthraquinone | O=C1c2ccccc2C(=O)c2c1ccc(O)c2O | quinone | product | madder-dye | the first synthetic natural dye
+ddq | 2,3-dichloro-5,6-dicyano-1,4-benzoquinone | N#CC1=C(C#N)C(=O)C(Cl)=C(Cl)C1=O | quinone | reagent | dehydrogenation;oxidation | DDQ
+chloranil | tetrachloro-1,4-benzoquinone | O=C1C(Cl)=C(Cl)C(=O)C(Cl)=C1Cl | quinone | reagent | dehydrogenation;fungicide | chloranil
+ubiquinone-0 | 2,3-dimethoxy-5-methyl-1,4-benzoquinone | COC1=C(OC)C(=O)C(C)=CC1=O | quinone | reference | coenzyme-q-core | Q0
+juglone | 5-hydroxy-1,4-naphthoquinone | O=C1C=CC(=O)c2c1cccc2O | quinone | product | walnut;allelopathy | natural dye
+lawsone | 2-hydroxy-1,4-naphthoquinone | O=C1C(O)=CC(=O)c2ccccc21 | quinone | product | henna | natural dye
+ketene | ethenone | C=C=O | ketene | intermediate | acetic-anhydride;acetylation | Wolff/pyrolysis product
+diketene | diketene | C=C1CC1=O | ketene | intermediate | acetoacetate-esters | ketene dimer
+dimethylketene | dimethylketene | CC(C)=C=O | ketene | transient | polyester;cycloaddition | disubstituted ketene

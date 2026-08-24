@@ -1,0 +1,149 @@
+# H. CARBOXYLIC ACIDS, ESTERS, ANHYDRIDES, ACYL HALIDES, AMIDES, LACTONES, LACTAMS
+formic-acid | methanoic acid | O=CO | acid | product | ant;leather;silage | HCOOH
+acetic-acid | ethanoic acid | CC(=O)O | acid | feedstock | vinegar;monsanto;cativa | the archetypal acid
+propionic-acid | propanoic acid | CCC(=O)O | acid | product | preservative;herbicides | C3 acid
+butyric-acid | butanoic acid | CCCC(=O)O | acid | product | rancid-butter;esters | C4 acid
+isobutyric-acid | 2-methylpropanoic acid | CC(C)C(=O)O | acid | product | esters | branched C4
+valeric-acid | pentanoic acid | CCCCC(=O)O | acid | product | esters;valerian | C5 acid
+isovaleric-acid | 3-methylbutanoic acid | CC(C)CC(=O)O | acid | product | cheese-odour | branched C5
+caproic-acid | hexanoic acid | CCCCCC(=O)O | acid | product | goat-odour;esters | C6 acid
+caprylic-acid | octanoic acid | CCCCCCCC(=O)O | acid | product | coconut;antimicrobial | C8 acid
+capric-acid | decanoic acid | CCCCCCCCCC(=O)O | acid | product | coconut | C10 acid
+lauric-acid | dodecanoic acid | CCCCCCCCCCCC(=O)O | acid | feedstock | coconut;surfactants | C12 acid
+myristic-acid | tetradecanoic acid | CCCCCCCCCCCCCC(=O)O | acid | feedstock | nutmeg;soap | C14 acid
+palmitic-acid | hexadecanoic acid | CCCCCCCCCCCCCCCC(=O)O | acid | feedstock | palm-oil;soap | C16 acid
+stearic-acid | octadecanoic acid | CCCCCCCCCCCCCCCCCC(=O)O | acid | feedstock | tallow;candles;soap | C18 acid
+arachidic-acid | eicosanoic acid | CCCCCCCCCCCCCCCCCCCC(=O)O | acid | product | peanut-oil | C20 acid
+oleic-acid | cis-9-octadecenoic acid | CCCCCCCC/C=C\CCCCCCCC(=O)O | acid | feedstock | olive-oil;soap | C18:1
+elaidic-acid | trans-9-octadecenoic acid | CCCCCCCC/C=C/CCCCCCCC(=O)O | acid | byproduct | hydrogenation | trans fat
+linoleic-acid | 9,12-octadecadienoic acid | CCCCC/C=C\C/C=C\CCCCCCCC(=O)O | acid | feedstock | seed-oils;drying-oils | C18:2
+linolenic-acid | alpha-linolenic acid | CC/C=C\C/C=C\C/C=C\CCCCCCCC(=O)O | acid | feedstock | linseed-oil | C18:3
+ricinoleic-acid | ricinoleic acid | CCCCCC[C@@H](O)C/C=C\CCCCCCCC(=O)O | acid | feedstock | castor-oil;sebacic-acid | hydroxy fatty acid
+erucic-acid | erucic acid | CCCCCCCC/C=C\CCCCCCCCCCCC(=O)O | acid | feedstock | rapeseed;erucamide | C22:1
+arachidonic-acid | arachidonic acid | CCCCC/C=C\C/C=C\C/C=C\C/C=C\CCCC(=O)O | acid | intermediate | prostaglandins | C20:4
+acrylic-acid | 2-propenoic acid | C=CC(=O)O | acid | monomer | superabsorbents;acrylates | from propylene
+methacrylic-acid | 2-methylpropenoic acid | CC(=C)C(=O)O | acid | monomer | pmma | MAA
+crotonic-acid | trans-2-butenoic acid | C/C=C/C(=O)O | acid | intermediate | copolymers | alpha-beta unsaturated
+sorbic-acid | 2,4-hexadienoic acid | C/C=C/C=C/C(=O)O | acid | product | preservative | E200
+cinnamic-acid | trans-cinnamic acid | O=C(O)/C=C/c1ccccc1 | acid | intermediate | perkin;phenylalanine | aryl acrylic acid
+oxalic-acid | ethanedioic acid | OC(=O)C(=O)O | acid | product | rust-removal;rhubarb | simplest diacid
+malonic-acid | propanedioic acid | OC(=O)CC(=O)O | acid | intermediate | knoevenagel;barbiturates | C3 diacid
+succinic-acid | butanedioic acid | OC(=O)CCC(=O)O | acid | intermediate | fermentation;polyesters | C4 diacid
+glutaric-acid | pentanedioic acid | OC(=O)CCCC(=O)O | acid | byproduct | nylon-byproduct | C5 diacid
+adipic-acid | hexanedioic acid | OC(=O)CCCCC(=O)O | acid | intermediate | nylon-66 | C6 diacid
+pimelic-acid | heptanedioic acid | OC(=O)CCCCCC(=O)O | acid | intermediate | biotin-synthesis | C7 diacid
+suberic-acid | octanedioic acid | OC(=O)CCCCCCC(=O)O | acid | intermediate | polyamides | C8 diacid
+azelaic-acid | nonanedioic acid | OC(=O)CCCCCCCC(=O)O | acid | product | ozonolysis-of-oleic;acne | C9 diacid
+sebacic-acid | decanedioic acid | OC(=O)CCCCCCCCC(=O)O | acid | intermediate | nylon-610;castor-oil | C10 diacid
+dodecanedioic-acid | dodecanedioic acid | OC(=O)CCCCCCCCCCC(=O)O | acid | intermediate | nylon-612 | DDDA
+maleic-acid | cis-butenedioic acid | OC(=O)/C=C\C(=O)O | acid | intermediate | resins;isomerisation | Z diacid
+fumaric-acid | trans-butenedioic acid | OC(=O)/C=C/C(=O)O | acid | product | food-acid;krebs | E diacid
+itaconic-acid | itaconic acid | C=C(CC(=O)O)C(=O)O | acid | monomer | fermentation;latex | methylenesuccinic
+tartaric-acid | L-tartaric acid | OC(=O)[C@H](O)[C@@H](O)C(=O)O | acid | product | wine;baking;chirality | dihydroxysuccinic
+malic-acid | L-malic acid | OC(=O)C[C@H](O)C(=O)O | acid | product | apple;krebs | hydroxysuccinic
+citric-acid | citric acid | OC(=O)CC(O)(CC(=O)O)C(=O)O | acid | product | fermentation;food;chelation | tricarboxylic
+isocitric-acid | isocitric acid | OC(=O)C(O)C(CC(=O)O)C(=O)O | acid | intermediate | krebs-cycle | TCA intermediate
+aconitic-acid | cis-aconitic acid | OC(=O)C/C(=C\C(=O)O)C(=O)O | acid | intermediate | krebs-cycle | dehydration product
+alpha-ketoglutaric-acid | 2-oxoglutaric acid | OC(=O)CCC(=O)C(=O)O | acid | intermediate | krebs;transamination | 2-OG
+oxaloacetic-acid | oxaloacetic acid | OC(=O)CC(=O)C(=O)O | acid | intermediate | krebs;gluconeogenesis | OAA
+pyruvic-acid | 2-oxopropanoic acid | CC(=O)C(=O)O | acid | intermediate | glycolysis;fermentation | keto acid
+lactic-acid | 2-hydroxypropanoic acid | C[C@H](O)C(=O)O | acid | product | fermentation;pla | L-lactic
+glycolic-acid | hydroxyacetic acid | OCC(=O)O | acid | product | peels;pga | simplest AHA
+glyoxylic-acid | oxoacetic acid | O=CC(=O)O | acid | intermediate | vanillin;allantoin | aldehyde acid
+mandelic-acid | DL-mandelic acid | OC(c1ccccc1)C(=O)O | acid | intermediate | resolution;antibacterial | from benzaldehyde
+levulinic-acid | 4-oxopentanoic acid | CC(=O)CCC(=O)O | acid | intermediate | biomass-platform | from HMF
+benzoic-acid | benzenecarboxylic acid | OC(=O)c1ccccc1 | acid | product | preservative;plasticiser | from toluene
+salicylic-acid | 2-hydroxybenzoic acid | OC(=O)c1ccccc1O | acid | intermediate | aspirin;kolbe-schmitt | willow bark
+4-hydroxybenzoic-acid | para-hydroxybenzoic acid | OC(=O)c1ccc(O)cc1 | acid | intermediate | parabens;lcp | PHBA
+gallic-acid | 3,4,5-trihydroxybenzoic acid | OC(=O)c1cc(O)c(O)c(O)c1 | acid | feedstock | tannin;ink;pyrogallol | from tannins
+vanillic-acid | vanillic acid | COc1cc(C(=O)O)ccc1O | acid | intermediate | lignin | oxidised vanillin
+anthranilic-acid | 2-aminobenzoic acid | Nc1ccccc1C(=O)O | acid | intermediate | indigo;tryptophan;saccharin | vitamin L1
+phthalic-acid | 1,2-benzenedicarboxylic acid | OC(=O)c1ccccc1C(=O)O | acid | intermediate | plasticisers | ortho diacid
+isophthalic-acid | 1,3-benzenedicarboxylic acid | OC(=O)c1cccc(C(=O)O)c1 | acid | intermediate | resins;pet-modifier | meta diacid
+terephthalic-acid | 1,4-benzenedicarboxylic acid | OC(=O)c1ccc(C(=O)O)cc1 | acid | intermediate | pet;polyester | TPA
+trimellitic-acid | 1,2,4-benzenetricarboxylic acid | OC(=O)c1ccc(C(=O)O)c(C(=O)O)c1 | acid | intermediate | plasticisers | TMA
+pyromellitic-acid | 1,2,4,5-benzenetetracarboxylic acid | OC(=O)c1cc(C(=O)O)c(C(=O)O)cc1C(=O)O | acid | intermediate | polyimides | PMA
+naphthenic-acid | cyclohexanecarboxylic acid | OC(=O)C1CCCCC1 | acid | product | petroleum;driers | naphthenate soaps
+chloroacetic-acid | chloroacetic acid | OC(=O)CCl | acid | intermediate | cmc;glycine;herbicides | MCA
+dichloroacetic-acid | dichloroacetic acid | OC(=O)C(Cl)Cl | acid | intermediate | pharma | DCA
+trichloroacetic-acid | trichloroacetic acid | OC(=O)C(Cl)(Cl)Cl | acid | reagent | protein-precipitation;peels | TCA
+bromoacetic-acid | bromoacetic acid | OC(=O)CBr | acid | reagent | alkylation | reactive
+methyl-formate | methyl formate | COC=O | ester | intermediate | formic-acid;formamide | HCOOMe
+ethyl-formate | ethyl formate | CCOC=O | ester | product | flavour;solvent | rum note
+methyl-acetate | methyl acetate | COC(C)=O | ester | solvent | pva-byproduct;acetic-anhydride | MeOAc
+ethyl-acetate | ethyl acetate | CCOC(C)=O | ester | solvent | coatings;extraction | EtOAc
+propyl-acetate | propyl acetate | CCCOC(C)=O | ester | solvent | coatings | pear note
+isopropyl-acetate | isopropyl acetate | CC(C)OC(C)=O | ester | solvent | coatings | IPAc
+butyl-acetate | n-butyl acetate | CCCCOC(C)=O | ester | solvent | lacquers | BuOAc
+isobutyl-acetate | isobutyl acetate | CC(C)COC(C)=O | ester | solvent | lacquers | fruity
+amyl-acetate | isoamyl acetate | CC(C)CCOC(C)=O | ester | product | banana-flavour | pear oil
+benzyl-acetate | benzyl acetate | CC(=O)OCc1ccccc1 | ester | product | jasmine-fragrance | floral
+vinyl-acetate | vinyl acetate | C=COC(C)=O | ester | monomer | pva;evA | VAM
+methyl-methacrylate | methyl methacrylate | C=C(C)C(=O)OC | ester | monomer | pmma;perspex | MMA
+methyl-acrylate | methyl acrylate | C=CC(=O)OC | ester | monomer | acrylics | MA
+ethyl-acrylate | ethyl acrylate | C=CC(=O)OCC | ester | monomer | acrylics;adhesives | EA
+butyl-acrylate | butyl acrylate | C=CC(=O)OCCCC | ester | monomer | latex-paints | BA
+2-ethylhexyl-acrylate | 2-ethylhexyl acrylate | C=CC(=O)OCC(CC)CCCC | ester | monomer | adhesives | 2-EHA
+ethyl-propionate | ethyl propionate | CCOC(=O)CC | ester | product | flavour;solvent | fruity
+methyl-benzoate | methyl benzoate | COC(=O)c1ccccc1 | ester | product | fragrance;solvent | niobe oil
+ethyl-benzoate | ethyl benzoate | CCOC(=O)c1ccccc1 | ester | product | fragrance | fruity
+methyl-salicylate | methyl salicylate | COC(=O)c1ccccc1O | ester | product | wintergreen;liniment | oil of wintergreen
+ethyl-acetoacetate | ethyl acetoacetate | CCOC(=O)CC(C)=O | ester | reagent | acetoacetic-synthesis;claisen | EAA
+diethyl-malonate | diethyl malonate | CCOC(=O)CC(=O)OCC | ester | reagent | malonic-ester-synthesis | DEM
+dimethyl-carbonate | dimethyl carbonate | COC(=O)OC | ester | reagent | green-methylation;solvent | DMC
+diethyl-carbonate | diethyl carbonate | CCOC(=O)OCC | ester | solvent | battery-electrolyte | DEC
+ethylene-carbonate | ethylene carbonate | O=C1OCCO1 | ester | solvent | battery-electrolyte | EC
+propylene-carbonate | propylene carbonate | CC1COC(=O)O1 | ester | solvent | battery-electrolyte;polar-aprotic | PC
+dimethyl-terephthalate | dimethyl terephthalate | COC(=O)c1ccc(C(=O)OC)cc1 | ester | intermediate | pet;transesterification | DMT
+diethyl-phthalate | diethyl phthalate | CCOC(=O)c1ccccc1C(=O)OCC | ester | product | plasticiser | DEP
+dibutyl-phthalate | dibutyl phthalate | CCCCOC(=O)c1ccccc1C(=O)OCCCC | ester | product | plasticiser | DBP
+dioctyl-phthalate | bis(2-ethylhexyl) phthalate | CCCCC(CC)COC(=O)c1ccccc1C(=O)OCC(CC)CCCC | ester | product | pvc-plasticiser | DEHP / DOP
+triacetin | glyceryl triacetate | CC(=O)OCC(OC(C)=O)COC(C)=O | ester | product | plasticiser;food | triacetin
+tributyl-phosphate | tributyl phosphate | CCCCOP(=O)(OCCCC)OCCCC | ester | solvent | purex;extractant | TBP
+triethyl-phosphate | triethyl phosphate | CCOP(=O)(OCC)OCC | ester | reagent | flame-retardant | TEP
+tristearin | glyceryl tristearate | CCCCCCCCCCCCCCCCCC(=O)OCC(OC(=O)CCCCCCCCCCCCCCCCC)COC(=O)CCCCCCCCCCCCCCCCC | ester | feedstock | tallow;saponification | triglyceride
+triolein | glyceryl trioleate | CCCCCCCC/C=C\CCCCCCCC(=O)OCC(OC(=O)CCCCCCC/C=C\CCCCCCCC)COC(=O)CCCCCCC/C=C\CCCCCCCC | ester | feedstock | olive-oil;biodiesel | triglyceride
+methyl-oleate | methyl oleate | CCCCCCCC/C=C\CCCCCCCC(=O)OC | ester | product | biodiesel;fame | FAME
+methyl-stearate | methyl stearate | CCCCCCCCCCCCCCCCCC(=O)OC | ester | product | biodiesel;fame | FAME
+cellulose-acetate | cellulose acetate (repeat unit) | CC(=O)OC[C@H]1O[C@@H](O)[C@H](OC(C)=O)[C@@H](OC(C)=O)[C@@H]1O | ester | product | film;textiles | acetylated glucose unit
+nitroglycerin | glyceryl trinitrate | [O-][N+](=O)OCC(O[N+]([O-])=O)CO[N+]([O-])=O | ester | product | explosive;angina | NG
+acetic-anhydride | acetic anhydride | CC(=O)OC(C)=O | anhydride | reagent | acetylation;aspirin | Ac2O
+propionic-anhydride | propionic anhydride | CCC(=O)OC(=O)CC | anhydride | reagent | acylation | Pr2O
+maleic-anhydride | maleic anhydride | O=C1C=CC(=O)O1 | anhydride | intermediate | resins;diels-alder | MA
+succinic-anhydride | succinic anhydride | O=C1CCC(=O)O1 | anhydride | reagent | acylation | SA
+phthalic-anhydride | phthalic anhydride | O=C1OC(=O)c2ccccc21 | anhydride | intermediate | plasticisers;anthraquinone | PA
+trimellitic-anhydride | trimellitic anhydride | O=C(O)c1ccc2c(c1)C(=O)OC2=O | anhydride | intermediate | polyimides;plasticisers | TMA
+pyromellitic-dianhydride | pyromellitic dianhydride | O=C1OC(=O)c2cc3c(cc21)C(=O)OC3=O | anhydride | intermediate | polyimide;kapton | PMDA
+benzoic-anhydride | benzoic anhydride | O=C(OC(=O)c1ccccc1)c1ccccc1 | anhydride | reagent | benzoylation | Bz2O
+acetyl-chloride | acetyl chloride | CC(=O)Cl | acyl-halide | reagent | acetylation | AcCl
+propionyl-chloride | propionyl chloride | CCC(=O)Cl | acyl-halide | reagent | acylation | reactive
+benzoyl-chloride | benzoyl chloride | O=C(Cl)c1ccccc1 | acyl-halide | reagent | benzoylation;schotten-baumann | BzCl
+oxalyl-chloride | oxalyl chloride | O=C(Cl)C(=O)Cl | acyl-halide | reagent | swern;acid-chloride-formation | mild activator
+adipoyl-chloride | adipoyl chloride | O=C(Cl)CCCCC(=O)Cl | acyl-halide | intermediate | nylon-rope-trick | diacid chloride
+sebacoyl-chloride | sebacoyl chloride | O=C(Cl)CCCCCCCCC(=O)Cl | acyl-halide | intermediate | interfacial-polymerisation | diacid chloride
+terephthaloyl-chloride | terephthaloyl chloride | O=C(Cl)c1ccc(C(=O)Cl)cc1 | acyl-halide | intermediate | kevlar | diacid chloride
+formamide | formamide | NC=O | amide | solvent | hcn;purines | simplest amide
+acetamide | acetamide | CC(N)=O | amide | reagent | plasticiser;solvent | mousy odour
+n-methylformamide | N-methylformamide | CNC=O | amide | solvent | polar-aprotic | NMF
+dimethylformamide | N,N-dimethylformamide | CN(C)C=O | amide | solvent | polar-aprotic;vilsmeier | DMF
+dimethylacetamide | N,N-dimethylacetamide | CN(C)C(C)=O | amide | solvent | polar-aprotic;spandex | DMAc
+n-methylpyrrolidone | N-methyl-2-pyrrolidone | CN1CCCC1=O | amide | solvent | polar-aprotic;lithium-batteries | NMP
+benzamide | benzamide | NC(=O)c1ccccc1 | amide | product | pharma-intermediate | aryl amide
+acetanilide | N-phenylacetamide | CC(=O)Nc1ccccc1 | amide | intermediate | paracetamol;antifebrin | early analgesic
+urea | carbamide | NC(N)=O | amide | product | fertiliser;resins;wohler | the Wohler synthesis product
+thiourea | thiourea | NC(N)=S | amide | reagent | thiols;photography | S analogue of urea
+biuret | biuret | NC(=O)NC(N)=O | amide | byproduct | urea-condensation;protein-test | urea dimer
+guanidine | guanidine | N=C(N)N | amide | reagent | strong-base;pharma | superbase
+caprolactam | epsilon-caprolactam | O=C1CCCCCN1 | lactam | monomer | nylon-6 | from cyclohexanone oxime
+laurolactam | laurolactam | O=C1CCCCCCCCCCCN1 | lactam | monomer | nylon-12 | C12 lactam
+2-pyrrolidone | 2-pyrrolidone | O=C1CCCN1 | lactam | intermediate | nmp;pvp | gamma-lactam
+gamma-butyrolactone | gamma-butyrolactone | O=C1CCCO1 | lactone | solvent | nmp;pyrrolidone | GBL
+gamma-valerolactone | gamma-valerolactone | CC1CCC(=O)O1 | lactone | solvent | biomass-platform | GVL
+epsilon-caprolactone | epsilon-caprolactone | O=C1CCCCCO1 | lactone | monomer | polycaprolactone | from cyclohexanone
+beta-propiolactone | beta-propiolactone | O=C1CCO1 | lactone | reagent | acrylic-acid;sterilant | strained lactone
+coumarin | 2H-chromen-2-one | O=c1ccc2ccccc2o1 | lactone | product | fragrance;tonka;anticoagulant | benzopyranone
+phthalide | phthalide | O=C1OCc2ccccc21 | lactone | intermediate | fragrance | benzo lactone
+ascorbic-acid | L-ascorbic acid | OC[C@H](O)[C@H]1OC(=O)C(O)=C1O | lactone | product | vitamin-c;reichstein | enediol lactone
+glucono-delta-lactone | glucono-delta-lactone | OC[C@H]1OC(=O)[C@H](O)[C@@H](O)[C@@H]1O | lactone | product | food-acidulant | GDL
+lactide | L-lactide | C[C@H]1OC(=O)[C@@H](C)OC1=O | lactone | monomer | pla | cyclic diester
+glycolide | glycolide | O=C1COC(=O)CO1 | lactone | monomer | pga;sutures | cyclic diester

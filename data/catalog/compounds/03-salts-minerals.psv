@@ -1,0 +1,133 @@
+# C. SALTS, MINERALS AND IONIC SOLIDS -- written as dissociated ion pairs, the convention in properties/electrolyte
+sodium-chloride | sodium chloride | [Na+].[Cl-] | salt | feedstock | chloralkali;solvay;alchemy | rock salt
+potassium-chloride | potassium chloride | [K+].[Cl-] | salt | feedstock | fertiliser | sylvite
+ammonium-chloride | ammonium chloride | [NH4+].[Cl-] | salt | reagent | solvay;fluxing;alchemy | sal ammoniac
+calcium-chloride | calcium chloride | [Ca+2].[Cl-].[Cl-] | salt | byproduct | solvay;drying | deliquescent
+magnesium-chloride | magnesium chloride | [Mg+2].[Cl-].[Cl-] | salt | feedstock | seawater;magnesium | bischofite
+sodium-hydroxide | sodium hydroxide | [Na+].[OH-] | salt | reagent | chloralkali;leblanc;saponification | caustic soda
+potassium-hydroxide | potassium hydroxide | [K+].[OH-] | salt | reagent | soap;electrolyte | caustic potash
+calcium-hydroxide | calcium hydroxide | [Ca+2].[OH-].[OH-] | salt | reagent | mortar;solvay;liming | slaked lime
+ammonium-hydroxide | ammonia solution | [NH4+].[OH-] | salt | reagent | cleaning;precipitation | aqueous ammonia
+sodium-carbonate | sodium carbonate | [Na+].[Na+].[O-]C([O-])=O | salt | product | solvay;leblanc;glass | soda ash
+sodium-bicarbonate | sodium bicarbonate | [Na+].OC([O-])=O | salt | intermediate | solvay;baking | baking soda
+potassium-carbonate | potassium carbonate | [K+].[K+].[O-]C([O-])=O | salt | reagent | glass;soap | potash
+calcium-carbonate | calcium carbonate | [Ca+2].[O-]C([O-])=O | mineral | feedstock | lime;solvay;cement | calcite / limestone
+magnesium-carbonate | magnesium carbonate | [Mg+2].[O-]C([O-])=O | mineral | feedstock | magnesia | magnesite
+ammonium-carbonate | ammonium carbonate | [NH4+].[NH4+].[O-]C([O-])=O | salt | reagent | smelling-salts;baking | hartshorn
+ammonium-bicarbonate | ammonium bicarbonate | [NH4+].OC([O-])=O | salt | intermediate | solvay | ammonium hydrogencarbonate
+sodium-sulfate | sodium sulfate | [Na+].[Na+].[O-]S([O-])(=O)=O | salt | byproduct | leblanc;glass;drying | Glauber salt
+sodium-bisulfate | sodium bisulfate | [Na+].OS([O-])(=O)=O | salt | byproduct | leblanc;pickling | niter cake
+potassium-sulfate | potassium sulfate | [K+].[K+].[O-]S([O-])(=O)=O | salt | product | fertiliser | arcanite
+ammonium-sulfate | ammonium sulfate | [NH4+].[NH4+].[O-]S([O-])(=O)=O | salt | product | fertiliser;caprolactam | mascagnite
+calcium-sulfate | calcium sulfate | [Ca+2].[O-]S([O-])(=O)=O | mineral | byproduct | gypsum;plaster;phosphoric | anhydrite
+copper-ii-sulfate | copper(II) sulfate | [Cu+2].[O-]S([O-])(=O)=O | salt | reagent | electroplating;fungicide | blue vitriol
+iron-ii-sulfate | iron(II) sulfate | [Fe+2].[O-]S([O-])(=O)=O | salt | feedstock | ink;vitriol-distillation | green vitriol
+iron-iii-sulfate | iron(III) sulfate | [Fe+3].[Fe+3].[O-]S([O-])(=O)=O.[O-]S([O-])(=O)=O.[O-]S([O-])(=O)=O | salt | reagent | coagulation | ferric sulfate
+zinc-sulfate | zinc sulfate | [Zn+2].[O-]S([O-])(=O)=O | salt | reagent | galvanising | white vitriol
+aluminium-sulfate | aluminium sulfate | [Al+3].[Al+3].[O-]S([O-])(=O)=O.[O-]S([O-])(=O)=O.[O-]S([O-])(=O)=O | salt | reagent | papermaking;water-treatment | papermaker alum
+potash-alum | potassium aluminium sulfate | [K+].[Al+3].[O-]S([O-])(=O)=O.[O-]S([O-])(=O)=O | salt | product | dyeing;tanning;alchemy | alum
+sodium-sulfite | sodium sulfite | [Na+].[Na+].[O-]S([O-])=O | salt | reagent | pulping;antioxidant | reducing agent
+sodium-bisulfite | sodium bisulfite | [Na+].OS([O-])=O | salt | reagent | bisulfite-adduct;bleaching | aldehyde scavenger
+sodium-metabisulfite | sodium metabisulfite | [Na+].[Na+].[O-]S(=O)S([O-])(=O)=O | salt | reagent | preservative | Na2S2O5
+sodium-thiosulfate | sodium thiosulfate | [Na+].[Na+].[O-]S([O-])(=O)=S | salt | reagent | photography;iodometry | hypo
+sodium-dithionite | sodium dithionite | [Na+].[Na+].[O-]S(=O)S([O-])=O | salt | reagent | vat-dyeing;reduction | hydrosulfite
+sodium-sulfide | sodium sulfide | [Na+].[Na+].[S-2] | salt | reagent | leblanc;tanning;kraft | black ash product
+sodium-hydrosulfide | sodium hydrosulfide | [Na+].[SH-] | salt | reagent | thiol-synthesis | NaSH
+calcium-sulfide | calcium sulfide | [Ca+2].[S-2] | salt | byproduct | leblanc | galligu waste
+iron-ii-sulfide | iron(II) sulfide | [Fe+2].[S-2] | mineral | feedstock | h2s-generation | troilite
+iron-disulfide | pyrite | [Fe+2].[S-]S[S-] | mineral | feedstock | vitriol;sulfuric-acid | fool gold
+zinc-sulfide | zinc sulfide | [Zn+2].[S-2] | mineral | feedstock | zinc-smelting;phosphors | sphalerite
+lead-sulfide | lead sulfide | [Pb+2].[S-2] | mineral | feedstock | lead-smelting | galena
+copper-sulfide | copper(II) sulfide | [Cu+2].[S-2] | mineral | feedstock | copper-smelting | covellite
+mercury-sulfide | mercury(II) sulfide | [Hg+2].[S-2] | mineral | feedstock | mercury;pigment | cinnabar / vermilion
+sodium-nitrate | sodium nitrate | [Na+].[O-][N+]([O-])=O | mineral | feedstock | nitric-acid;fertiliser;gunpowder | Chile saltpetre
+potassium-nitrate | potassium nitrate | [K+].[O-][N+]([O-])=O | mineral | feedstock | gunpowder;curing | saltpetre
+ammonium-nitrate | ammonium nitrate | [NH4+].[O-][N+]([O-])=O | salt | product | fertiliser;explosives | ANFO oxidiser
+calcium-nitrate | calcium nitrate | [Ca+2].[O-][N+]([O-])=O.[O-][N+]([O-])=O | salt | product | fertiliser | Norwegian saltpetre
+silver-nitrate | silver nitrate | [Ag+].[O-][N+]([O-])=O | salt | reagent | photography;tollens | lunar caustic
+sodium-nitrite | sodium nitrite | [Na+].[O-]N=O | salt | reagent | diazotisation;curing | NaNO2
+potassium-nitrite | potassium nitrite | [K+].[O-]N=O | salt | reagent | diazotisation | KNO2
+sodium-phosphate | trisodium phosphate | [Na+].[Na+].[Na+].[O-]P([O-])([O-])=O | salt | product | detergent;cleaning | TSP
+disodium-phosphate | disodium hydrogen phosphate | [Na+].[Na+].OP([O-])([O-])=O | salt | reagent | buffer;food | Na2HPO4
+monosodium-phosphate | monosodium phosphate | [Na+].OP(O)([O-])=O | salt | reagent | buffer | NaH2PO4
+calcium-phosphate | tricalcium phosphate | [Ca+2].[Ca+2].[Ca+2].[O-]P([O-])([O-])=O.[O-]P([O-])([O-])=O | mineral | feedstock | fertiliser;phosphorus | phosphate rock
+monocalcium-phosphate | monocalcium phosphate | [Ca+2].OP(O)([O-])=O.OP(O)([O-])=O | salt | product | superphosphate | fertiliser
+sodium-tripolyphosphate | sodium tripolyphosphate | [Na+].[Na+].[Na+].[Na+].[Na+].[O-]P([O-])(=O)OP([O-])(=O)OP([O-])([O-])=O | salt | product | detergent | STPP builder
+borax | borax (sodium tetraborate) | [Na+].[Na+].[O-]B1OB([O-])OB(O)OB(O)O1 | mineral | reagent | glass;flux;buffer | tincal
+sodium-silicate | sodium metasilicate | [Na+].[Na+].[O-][Si]([O-])=O | salt | product | glass;detergent | water glass
+sodium-aluminate | sodium aluminate | [Na+].[O-][Al]=O | salt | intermediate | bayer-process | NaAlO2
+sodium-hypochlorite | sodium hypochlorite | [Na+].[O-]Cl | salt | reagent | bleach;disinfection | liquid bleach
+calcium-hypochlorite | calcium hypochlorite | [Ca+2].[O-]Cl.[O-]Cl | salt | reagent | bleaching-powder | Tennant bleach
+sodium-chlorate | sodium chlorate | [Na+].[O-]Cl(=O)=O | salt | reagent | herbicide;chlorine-dioxide | NaClO3
+potassium-chlorate | potassium chlorate | [K+].[O-]Cl(=O)=O | salt | reagent | matches;pyrotechnics | Berthollet salt
+potassium-perchlorate | potassium perchlorate | [K+].[O-]Cl(=O)(=O)=O | salt | reagent | pyrotechnics | KClO4
+ammonium-perchlorate | ammonium perchlorate | [NH4+].[O-]Cl(=O)(=O)=O | salt | product | solid-rocket-propellant | AP oxidiser
+potassium-permanganate | potassium permanganate | [K+].[O-][Mn](=O)(=O)=O | salt | reagent | oxidation;titration | Condy crystals
+potassium-dichromate | potassium dichromate | [K+].[K+].[O-][Cr](=O)(=O)O[Cr]([O-])(=O)=O | salt | reagent | oxidation;tanning | chromic oxidant
+sodium-dichromate | sodium dichromate | [Na+].[Na+].[O-][Cr](=O)(=O)O[Cr]([O-])(=O)=O | salt | reagent | oxidation | Na2Cr2O7
+potassium-chromate | potassium chromate | [K+].[K+].[O-][Cr]([O-])(=O)=O | salt | reagent | titration;pigment | yellow salt
+sodium-chromate | sodium chromate | [Na+].[Na+].[O-][Cr]([O-])(=O)=O | salt | intermediate | chromate-process | Na2CrO4
+potassium-ferrocyanide | potassium ferrocyanide | [K+].[K+].[K+].[K+].N#C[Fe-4](C#N)(C#N)(C#N)(C#N)C#N | salt | reagent | prussian-blue;anticaking | yellow prussiate
+potassium-ferricyanide | potassium ferricyanide | [K+].[K+].[K+].N#C[Fe-3](C#N)(C#N)(C#N)(C#N)C#N | salt | reagent | cyanotype;oxidation | red prussiate
+sodium-cyanide | sodium cyanide | [Na+].[C-]#N | salt | reagent | gold-leaching;nitriles | NaCN
+potassium-cyanide | potassium cyanide | [K+].[C-]#N | salt | reagent | gold-leaching;electroplating | KCN
+calcium-carbide | calcium carbide | [Ca+2].[C-]#[C-] | salt | intermediate | acetylene;cyanamide | CaC2
+calcium-cyanamide | calcium cyanamide | [Ca+2].[N-]=C=[N-] | salt | product | fertiliser;frank-caro | nitrolime
+sodium-acetate | sodium acetate | [Na+].CC([O-])=O | salt | reagent | buffer;acetic-anhydride | NaOAc
+sodium-formate | sodium formate | [Na+].[O-]C=O | salt | intermediate | oxalate;formic-acid | HCOONa
+sodium-oxalate | sodium oxalate | [Na+].[Na+].[O-]C(=O)C([O-])=O | salt | intermediate | oxalic-acid | Na2C2O4
+calcium-oxalate | calcium oxalate | [Ca+2].[O-]C(=O)C([O-])=O | salt | byproduct | kidney-stones;rhubarb | insoluble
+sodium-benzoate | sodium benzoate | [Na+].[O-]C(=O)c1ccccc1 | salt | product | preservative | E211
+sodium-salicylate | sodium salicylate | [Na+].[O-]C(=O)c1ccccc1O | salt | intermediate | kolbe-schmitt;aspirin | analgesic
+sodium-phenoxide | sodium phenoxide | [Na+].[O-]c1ccccc1 | salt | intermediate | kolbe-schmitt;williamson | phenolate
+sodium-ethoxide | sodium ethoxide | [Na+].CC[O-] | salt | reagent | claisen;williamson | strong base
+sodium-methoxide | sodium methoxide | [Na+].C[O-] | salt | reagent | transesterification;biodiesel | strong base
+potassium-tert-butoxide | potassium tert-butoxide | [K+].CC(C)(C)[O-] | salt | reagent | e2-elimination | bulky base
+sodium-amide | sodium amide | [Na+].[NH2-] | salt | reagent | alkyne-deprotonation;chichibabin | sodamide
+sodium-hydride | sodium hydride | [Na+].[H-] | salt | reagent | deprotonation | NaH
+lithium-aluminium-hydride | lithium aluminium hydride | [Li+].[AlH4-] | salt | reagent | reduction | LAH
+sodium-borohydride | sodium borohydride | [Na+].[BH4-] | salt | reagent | reduction | NaBH4
+lithium-diisopropylamide | lithium diisopropylamide | [Li+].CC(C)[N-]C(C)C | salt | reagent | enolate-chemistry | LDA
+sodium-lauryl-sulfate | sodium dodecyl sulfate | [Na+].CCCCCCCCCCCCOS([O-])(=O)=O | salt | product | surfactant | SDS
+sodium-stearate | sodium stearate | [Na+].CCCCCCCCCCCCCCCCCC([O-])=O | salt | product | soap;saponification | hard soap
+potassium-oleate | potassium oleate | [K+].CCCCCCCCC=CCCCCCCCC([O-])=O | salt | product | soft-soap | liquid soap
+calcium-oxide | calcium oxide | [Ca+2].[O-2] | mineral | reagent | lime;cement;solvay | quicklime
+magnesium-oxide | magnesium oxide | [Mg+2].[O-2] | mineral | reagent | refractory | magnesia
+zinc-oxide | zinc oxide | [Zn+2].[O-2] | mineral | reagent | pigment;vulcanisation | Chinese white
+iron-ii-oxide | iron(II) oxide | [Fe+2].[O-2] | mineral | intermediate | blast-furnace | wuestite
+iron-iii-oxide | iron(III) oxide | [Fe+3].[Fe+3].[O-2].[O-2].[O-2] | mineral | feedstock | blast-furnace;pigment | haematite / rouge
+aluminium-oxide | aluminium oxide | [Al+3].[Al+3].[O-2].[O-2].[O-2] | mineral | feedstock | bayer;hall-heroult | alumina / corundum
+titanium-dioxide | titanium dioxide | O=[Ti]=O | mineral | product | pigment;photocatalysis | titanium white
+lead-ii-oxide | lead(II) oxide | [Pb+2].[O-2] | mineral | intermediate | glass;lead-chamber | litharge
+lead-iv-oxide | lead(IV) oxide | O=[Pb]=O | mineral | reagent | lead-acid-battery | plattnerite
+manganese-dioxide | manganese dioxide | O=[Mn]=O | mineral | reagent | chlorine-generation;oxidation | pyrolusite
+copper-ii-oxide | copper(II) oxide | [Cu+2].[O-2] | mineral | reagent | combustion-analysis | tenorite
+copper-i-oxide | copper(I) oxide | [Cu+].[Cu+].[O-2] | mineral | reagent | fehling;antifouling | cuprite
+chromium-iii-oxide | chromium(III) oxide | [Cr+3].[Cr+3].[O-2].[O-2].[O-2] | mineral | product | pigment;refractory | chrome green
+vanadium-pentoxide | vanadium(V) oxide | O=[V](=O)O[V](=O)=O | mineral | catalyst | contact-process | V2O5
+sulfur-dioxide-hydrate | sulfurous acid solution | O=S=O.O | mixture | intermediate | bisulfite | SO2 in water
+gypsum | gypsum | [Ca+2].[O-]S([O-])(=O)=O.O.O | mineral | product | plaster;drywall | CaSO4 dihydrate
+plaster-of-paris | plaster of Paris | [Ca+2].[O-]S([O-])(=O)=O.O | mineral | product | casting | hemihydrate
+epsom-salt | magnesium sulfate heptahydrate | [Mg+2].[O-]S([O-])(=O)=O.O.O.O.O.O.O.O | mineral | product | medicine;bath | epsomite
+copper-acetate | copper(II) acetate | [Cu+2].CC([O-])=O.CC([O-])=O | salt | reagent | verdigris;pigment | patina
+lead-acetate | lead(II) acetate | [Pb+2].CC([O-])=O.CC([O-])=O | salt | reagent | sugar-of-lead;sweetener | toxic
+basic-lead-carbonate | white lead | [Pb+2].[Pb+2].[Pb+2].[O-]C([O-])=O.[O-]C([O-])=O.[OH-].[OH-] | mineral | product | pigment | cerussite pigment
+prussian-blue | Prussian blue | [Fe+3].[Fe+3].[Fe+3].[Fe+3].N#C[Fe-4](C#N)(C#N)(C#N)(C#N)C#N.N#C[Fe-4](C#N)(C#N)(C#N)(C#N)C#N.N#C[Fe-4](C#N)(C#N)(C#N)(C#N)C#N | pigment | product | pigment;dye | ferric ferrocyanide
+silver-chloride | silver chloride | [Ag+].[Cl-] | salt | product | photography;gravimetry | photosensitive
+silver-bromide | silver bromide | [Ag+].[Br-] | salt | reagent | photography | film emulsion
+barium-sulfate | barium sulfate | [Ba+2].[O-]S([O-])(=O)=O | mineral | product | radiocontrast;filler | barite
+barium-carbonate | barium carbonate | [Ba+2].[O-]C([O-])=O | mineral | reagent | ceramics;rodenticide | witherite
+strontium-nitrate | strontium nitrate | [Sr+2].[O-][N+]([O-])=O.[O-][N+]([O-])=O | salt | reagent | pyrotechnics | red flame
+sodium-fluoride | sodium fluoride | [Na+].[F-] | salt | product | fluoridation | NaF
+calcium-fluoride | calcium fluoride | [Ca+2].[F-].[F-] | mineral | feedstock | hydrofluoric-acid;optics | fluorspar
+cryolite | cryolite | [Na+].[Na+].[Na+].F[Al-3](F)(F)(F)(F)F | mineral | reagent | hall-heroult | aluminium flux
+sodium-iodide | sodium iodide | [Na+].[I-] | salt | reagent | finkelstein | NaI
+potassium-iodide | potassium iodide | [K+].[I-] | salt | reagent | iodometry;lugol | KI
+sodium-bromide | sodium bromide | [Na+].[Br-] | salt | reagent | sedative;photography | NaBr
+ammonium-molybdate | ammonium molybdate | [NH4+].[NH4+].[O-][Mo]([O-])(=O)=O | salt | reagent | phosphate-assay | analytical
+sodium-tungstate | sodium tungstate | [Na+].[Na+].[O-][W]([O-])(=O)=O | salt | reagent | epoxidation-catalysis | Na2WO4
+ferrous-ammonium-sulfate | Mohr salt | [NH4+].[NH4+].[Fe+2].[O-]S([O-])(=O)=O.[O-]S([O-])(=O)=O | salt | reagent | titration-standard | stable Fe(II)
+potassium-hydrogen-phthalate | potassium hydrogen phthalate | [K+].[O-]C(=O)c1ccccc1C(O)=O | salt | reagent | titration-standard | KHP
+sodium-tartrate | sodium potassium tartrate | [Na+].[K+].[O-]C(=O)C(O)C(O)C([O-])=O | salt | reagent | fehling;piezoelectric | Rochelle salt
+cream-of-tartar | potassium bitartrate | [K+].OC(=O)C(O)C(O)C([O-])=O | salt | feedstock | winemaking;baking | argol
+sodium-citrate | trisodium citrate | [Na+].[Na+].[Na+].[O-]C(=O)CC(O)(CC([O-])=O)C([O-])=O | salt | product | buffer;anticoagulant | E331

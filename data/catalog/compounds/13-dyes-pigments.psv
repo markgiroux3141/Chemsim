@@ -1,0 +1,62 @@
+# M. DYES, PIGMENTS, INDICATORS AND OPTICAL MATERIALS
+indigo | indigo | O=C1Nc2ccccc2/C1=C1\Nc2ccccc2C1=O | dye | product | woad;baeyer-drewson;heumann | the blue of denim
+indigo-white | leucoindigo | Oc1c(-c2[nH]c3ccccc3c2O)[nH]c2ccccc12 | dye | intermediate | vat-dyeing-reduced-form | soluble leuco form
+indirubin | indirubin | O=C1Nc2ccccc2/C1=C1\Nc2ccccc2C1=O | dye | byproduct | indigo-byproduct | red isomer
+tyrian-purple | 6,6-dibromoindigo | O=C1Nc2ccc(Br)cc2/C1=C1\Nc2ccc(Br)cc2C1=O | dye | product | murex;imperial-purple | ancient purple
+mauveine-a | mauveine A | Cc1ccc2nc3ccc(N)cc3[n+](-c3ccccc3)c2c1.[Cl-] | dye | product | perkin;first-synthetic-dye | Perkin mauve
+fuchsine | magenta / rosaniline | Cc1ccc(C(=C2C=CC(=N)C=C2)c2ccc(N)cc2)cc1N.[Cl-] | dye | product | aniline-dye | basic fuchsin
+malachite-green | malachite green | CN(C)c1ccc(C(=C2C=CC(=[N+](C)C)C=C2)c2ccccc2)cc1.[Cl-] | dye | product | triarylmethane-dye | green stain
+crystal-violet | crystal violet | CN(C)c1ccc(C(=C2C=CC(=[N+](C)C)C=C2)c2ccc(N(C)C)cc2)cc1.[Cl-] | dye | product | gram-stain;triarylmethane | gentian violet
+methylene-blue | methylene blue | CN(C)c1ccc2nc3ccc(=[N+](C)C)cc-3sc2c1.[Cl-] | dye | product | stain;redox-indicator | thiazine dye
+thionine | thionine | Nc1ccc2nc3ccc(=N)cc-3sc2c1.[Cl-] | dye | product | stain | thiazine dye
+safranin-o | safranin O | Cc1cc2nc3cc(C)c(N)cc3[n+](-c3ccccc3)c2cc1N.[Cl-] | dye | product | stain;gram-counterstain | azine dye
+fluorescein | fluorescein | O=C1OC2(c3ccc(O)cc3Oc3cc(O)ccc32)c2ccccc21 | dye | product | tracer;fluorescence | xanthene dye
+eosin-y | eosin Y | O=C1OC2(c3cc(Br)c(O)c(Br)c3Oc3c(Br)c(O)c(Br)cc32)c2ccccc21 | dye | product | stain;h-and-e | brominated fluorescein
+rhodamine-b | rhodamine B | CCN(CC)c1ccc2c(-c3ccccc3C(=O)O)c3ccc(=[N+](CC)CC)cc-3oc2c1.[Cl-] | dye | product | tracer;laser-dye | xanthene dye
+alizarin-crimson | alizarin (see quinones) | O=C1c2ccccc2C(=O)c2c1ccc(O)c2O | dye | reference | madder;mordant-dye | cross-reference
+purpurin | purpurin | O=C1c2ccccc2C(=O)c2c(O)cc(O)c(O)c21 | dye | product | madder | anthraquinone dye
+carminic-acid | carminic acid | C[C@H]1O[C@@H](c2c(O)c3c(c(O)c2C(=O)O)C(=O)c2c(O)cc(O)cc2C3=O)[C@H](O)[C@@H](O)[C@@H]1O | dye | product | cochineal;carmine | insect-derived red
+indigo-carmine | indigo carmine | O=C1Nc2ccc(S(=O)(=O)[O-])cc2/C1=C1\Nc2ccc(S(=O)(=O)[O-])cc2C1=O.[Na+].[Na+] | dye | product | food-colour;indicator | sulfonated indigo
+picric-acid-dye | picric acid (see phenols) | O=[N+]([O-])c1cc([N+](=O)[O-])c(O)c([N+](=O)[O-])c1 | dye | reference | yellow-dye;explosive | cross-reference
+martius-yellow | Martius yellow | O=[N+]([O-])c1ccc2ccccc2c1[O-].O=[N+]([O-])c1ccc2ccccc2c1O.[Na+] | dye | product | early-nitro-dye | naphthol yellow
+naphthol-yellow-s | naphthol yellow S | O=[N+]([O-])c1cc([N+](=O)[O-])c2c(O)ccc(S(=O)(=O)O)c2c1 | dye | product | food-dye-historic | nitro dye
+tartrazine | tartrazine | O=C(O)C1=NN(c2ccc(S(=O)(=O)O)cc2)C(=O)C1=NNc1ccc(S(=O)(=O)O)cc1 | dye | product | food-colour;e102 | azo dye
+sunset-yellow | sunset yellow FCF | Oc1ccc2ccc(S(=O)(=O)O)cc2c1/N=N/c1ccc(S(=O)(=O)O)cc1 | dye | product | food-colour;e110 | azo dye
+allura-red | allura red AC | COc1cc(C)c(/N=N/c2c(O)ccc3cc(S(=O)(=O)O)ccc23)cc1S(=O)(=O)O | dye | product | food-colour;e129 | azo dye
+brilliant-blue-fcf | brilliant blue FCF | CCN(CC=C)c1ccc(C(=C2C=CC(=[N+](CC)CC=C)C=C2)c2ccccc2S(=O)(=O)[O-])cc1 | dye | product | food-colour;e133 | triarylmethane
+phenolphthalein | phenolphthalein | O=C1OC(c2ccc(O)cc2)(c2ccc(O)cc2)c2ccccc21 | indicator | product | ph-indicator;laxative | colourless to pink
+thymolphthalein | thymolphthalein | Cc1cc(C2(c3cc(C)c(O)c(C(C)C)c3)OC(=O)c3ccccc32)cc(C(C)C)c1O | indicator | product | ph-indicator | colourless to blue
+bromothymol-blue | bromothymol blue | Cc1cc(C2(c3cc(C)c(O)c(Br)c3C(C)C)OS(=O)(=O)c3ccccc32)cc(C(C)C)c1O | indicator | product | ph-indicator | yellow to blue
+bromophenol-blue | bromophenol blue | Oc1c(Br)cc(C2(c3cc(Br)c(O)c(Br)c3)OS(=O)(=O)c3ccccc32)cc1Br | indicator | product | ph-indicator;electrophoresis | yellow to blue
+methyl-violet | methyl violet 2B | CNc1ccc(C(=C2C=CC(=[N+](C)C)C=C2)c2ccc(N(C)C)cc2)cc1.[Cl-] | dye | product | ink;stain | triarylmethane
+aniline-black | aniline black (oxidised polyaniline unit) | Nc1ccc(Nc2ccc(Nc3ccc(N)cc3)cc2)cc1 | dye | product | textile-black | oxidative dye
+sudan-iii | Sudan III | Oc1ccc2ccccc2c1/N=N/c1ccc(/N=N/c2ccccc2)cc1 | dye | product | lipid-stain | bisazo
+oil-red-o | Oil Red O | Cc1cc(C)c(/N=N/c2ccc(/N=N/c3c(O)ccc4ccccc34)cc2)c(C)c1 | dye | product | lipid-stain | bisazo
+disperse-blue-1 | disperse blue 1 | Nc1cc(N)c2c(c1)C(=O)c1c(N)cc(N)cc1C2=O | dye | product | polyester-dyeing | anthraquinone dye
+reactive-black-5 | reactive black 5 core | Nc1c(/N=N/c2ccc(S(=O)(=O)CCOS(=O)(=O)O)cc2)c(S(=O)(=O)O)cc2cc(S(=O)(=O)O)cc(/N=N/c3ccccc3)c12 | dye | product | reactive-dyeing | vinyl sulfone dye
+para-rosaniline | pararosaniline | Nc1ccc(C(=C2C=CC(=N)C=C2)c2ccc(N)cc2)cc1.[Cl-] | dye | product | schiff-reagent | triarylmethane
+schiff-reagent-marker | fuchsin-sulfite adduct marker | Nc1ccc(C(c2ccc(N)cc2)(c2ccc(N)cc2)S(=O)(=O)O)cc1 | reagent | reagent | aldehyde-test | Schiff reagent
+titanium-white-pigment | titanium dioxide (see minerals) | O=[Ti]=O | pigment | reference | white-pigment | cross-reference
+zinc-white | zinc oxide (see minerals) | [Zn+2].[O-2] | pigment | reference | white-pigment | cross-reference
+ultramarine-marker | ultramarine (sodium aluminosilicate polysulfide marker) | [Na+].[Na+].[S-][S][S-] | pigment | product | lapis-lazuli;blue | schematic composition marker
+chrome-yellow | lead chromate | [Pb+2].[O-][Cr]([O-])(=O)=O | pigment | product | yellow-pigment | Pigment Yellow 34
+cadmium-yellow | cadmium sulfide | [Cd+2].[S-2] | pigment | product | yellow-pigment | Pigment Yellow 37
+cadmium-red | cadmium selenide | [Cd+2].[Se-2] | pigment | product | red-pigment;quantum-dots | Pigment Red 108
+cobalt-blue | cobalt aluminate | [Co+2].[O-][Al]=O.[O-][Al]=O | pigment | product | blue-pigment | Thenard blue
+egyptian-blue-marker | calcium copper silicate marker | [Ca+2].[Cu+2].[O-][Si]([O-])([O-])[O-] | pigment | product | ancient-pigment | schematic composition marker
+verdigris | copper acetate (see salts) | [Cu+2].CC([O-])=O.CC([O-])=O | pigment | reference | green-patina | cross-reference
+orpiment | arsenic trisulfide | [As+3].[As+3].[S-2].[S-2].[S-2] | pigment | product | yellow-pigment;alchemy | king yellow
+realgar | arsenic disulfide | S1[As]S[As]1 | pigment | product | red-pigment;alchemy | ruby sulfur
+minium | red lead | [Pb+2].[Pb+2].O=[Pb]=O.[O-2].[O-2] | pigment | product | red-pigment;primer | Pb3O4
+prussian-blue-pigment | Prussian blue (see salts) | [Fe+3].N#C[Fe-4](C#N)(C#N)(C#N)(C#N)C#N | pigment | reference | blue-pigment | cross-reference
+stilbene-brightener | 4,4-diaminostilbene-2,2-disulfonic acid | Nc1ccc(/C=C/c2ccc(N)cc2S(=O)(=O)O)c(S(=O)(=O)O)c1 | brightener | intermediate | optical-brightener;detergent | DASDA
+coumarin-brightener | 7-diethylamino-4-methylcoumarin | CCN(CC)c1ccc2c(C)cc(=O)oc2c1 | brightener | product | optical-brightener;laser-dye | coumarin 1
+luminol | luminol | Nc1cccc2c1C(=O)NNC2=O | reagent | product | chemiluminescence;forensics | blood test
+lucigenin | lucigenin | C[n+]1c2ccccc2c(-c2c3ccccc3[n+](C)c3ccccc23)c2ccccc21 | reagent | product | chemiluminescence | acridinium
+oxalyl-chloride-glowstick | bis(2,4,5-trichlorophenyl) oxalate | O=C(Oc1cc(Cl)c(Cl)cc1Cl)C(=O)Oc1cc(Cl)c(Cl)cc1Cl | reagent | product | glowstick;peroxyoxalate | TCPO
+rubrene | rubrene | c1ccc(-c2c3ccccc3c(-c3ccccc3)c3c(-c4ccccc4)c4ccccc4c(-c4ccccc4)c23)cc1 | dye | product | glowstick;oled | yellow emitter
+anthracene-blue-emitter | 9,10-diphenylanthracene | c1ccc(-c2c3ccccc3c(-c3ccccc3)c3ccccc23)cc1 | dye | product | glowstick;oled | blue emitter
+tris-8-hydroxyquinoline-aluminium | Alq3 | [Al+3].[O-]c1cccc2cccnc12.[O-]c1cccc2cccnc12.[O-]c1cccc2cccnc12 | material | product | oled | green emitter
+pedot-unit | PEDOT repeat unit | c1csc2c1OCCO2 | polymer | product | conducting-polymer;antistatic | see EDOT
+polyaniline-unit | polyaniline repeat unit | Nc1ccc(N)cc1 | polymer | product | conducting-polymer | emeraldine unit
+polypyrrole-unit | polypyrrole repeat unit | c1cc[nH]c1 | polymer | reference | conducting-polymer | see pyrrole

@@ -1,0 +1,684 @@
+"""Coverage audit of the whole ``data/catalog`` corpus against this simulator.
+
+``validation/coverage.py`` walks 70 hand-picked targets. This walks the full
+catalog -- ~1600 compounds and ~175 named routes -- and it asks three different
+questions, because "coverage" is three different things and conflating them is
+how a project talks itself into thinking it is finished.
+
+## 1. Does a species RESOLVE, and on what?
+
+A ThermoData is a formation half and a physical half, and each resolves off a
+different tier. The tiers are ranked, because "we have a number" and "we have a
+MEASUREMENT" are not the same claim:
+
+    A  measured      curated experimental formation data, or a measured Tb/Tc/Pc
+    B  Benson        group additivity fitted to real molecules (RMG database)
+    C  Joback        group additivity, several kJ/mol, cannot tell homologues apart
+    -  ion           spectator or Born-priced; correct, and not an estimate at all
+    F  refused       nothing prices it
+
+⚠ **Tier C resolving is NOT the same as tier C being usable.** Joback's error is
+a factor of 2-4 in K and it gives homologues identical reaction energies -- the
+reason ``formation_data`` exists at all. A route that runs entirely on tier C
+will integrate happily and report a confident wrong equilibrium. So this audit
+reports the tier MIX, not just the pass count, and the headline number below is
+deliberately the measured-or-Benson fraction rather than the resolve fraction.
+
+## 2. Can the species enter a LIQUID MIXTURE?
+
+Resolving thermochemistry is enough for a gas-phase or ideal-solution
+calculation and is not enough for anything this project does with two phases.
+UNIFAC has to decompose the molecule into groups or the activity coefficient
+silently stays at 1, and an activity coefficient of 1 in an LLE calculation is
+not an approximation -- it is the assumption that the phases do not separate.
+That gap is counted separately here and it is much larger than the thermo gap.
+
+## 3. Is the TRANSFORMATION in the library at all?
+
+The species half of coverage is the half that flatters. A catalog of 1600
+compounds that all resolve is still worth nothing if the reaction that connects
+two of them has no template. So the audit also counts the distinct reaction
+classes in ``route_steps.psv`` against the ten templates in
+``reactions/library.py``, and reports how many named routes could actually be
+integrated end to end. That number is small, and it is the honest one.
+
+Run: ``python validation/catalog_coverage.py`` (writes the Markdown report too).
+"""
+
+from __future__ import annotations
+
+import os
+import sys
+from collections import Counter, defaultdict
+
+_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(_ROOT, "src"))
+sys.path.insert(0, os.path.join(_ROOT, "tools"))
+
+from rdkit import RDLogger  # noqa: E402
+
+RDLogger.DisableLog("rdApp.*")
+
+import catalog as cat  # noqa: E402
+from chemsim.matter import Molecule  # noqa: E402
+from chemsim.properties import (  # noqa: E402
+    ThermochemistryProvider,
+    UnifacProvider,
+    VolatilityProvider,
+)
+from chemsim.properties.electrolyte import electrolyte_provider  # noqa: E402
+
+# ---------------------------------------------------------------------------
+# tiering -- read off the provenance string the provider already carries
+# ---------------------------------------------------------------------------
+# Every ThermoData.source and Volatility.source names where the number came
+# from. Nothing here re-derives provenance; it classifies what the provider says
+# about itself, which is why adding a curated entry upstream moves this report
+# without anyone touching this file.
+
+TIER_ORDER = ["measured", "benson", "joback", "ion", "refused"]
+
+
+def _thermo_tier(source: str) -> str:
+    s = source.lower()
+    if "spectator ion" in s or "born" in s or "ion:" in s:
+        return "ion"
+    if "experimental" in s or "measured" in s or "codata" in s or "nist" in s:
+        return "measured"
+    if "benson" in s:
+        return "benson"
+    if "joback" in s:
+        return "joback"
+    return "measured"
+
+
+def _volatility_tier(source: str, kind: str) -> str:
+    s = source.lower()
+    if kind == "nonvolatile":
+        return "ion"
+    if "experimental antoine" in s or "measured" in s:
+        return "measured"
+    if "joback" in s:
+        return "joback"
+    return "benson"
+
+
+def refusal_bucket(why: str) -> str:
+    """Group a refusal by its CAUSE, because the causes need different fixes.
+
+    Four buckets, and only two of them are curation backlog:
+
+      charged organic   the ion is outside the fitted domain of the Born model,
+                        which is parameterised on small hard ions and not on a
+                        C16 quaternary ammonium. A data-source limit, not a
+                        missing entry, and correctly refused.
+      physical half     the formation half resolved and the boiling point did
+                        not. Closable with one measured Tb per species.
+      formation half    no estimator has a group value. Closable only where a
+                        tabulation exists at all.
+      fragmentation     neither method can decompose the graph.
+    """
+    w = why.lower()
+    if "net charge" in w:
+        return "charged organic (outside the Born domain)"
+    if "formation half resolved" in w:
+        return "physical half missing (needs a boiling point)"
+    if "cannot fragment" in w or "unassigned" in w:
+        return "cannot be fragmented at all"
+    return "formation half missing (no group value)"
+
+
+def _worst(*tiers: str) -> str:
+    """The tier a species is actually usable at is its WEAKEST half, not its best.
+
+    A measured boiling point paired with a Joback formation enthalpy is a Joback
+    record: the equilibrium constant it produces carries Joback's error whatever
+    the physical half cost to obtain. Reporting the best half would let a
+    thoroughly-estimated species look sourced.
+    """
+    return max(tiers, key=TIER_ORDER.index)
+
+
+def audit_compound(comp, thermo, vol, ionic, unifac) -> dict:
+    """One compound through parse -> thermochemistry -> volatility -> UNIFAC."""
+    row = {
+        "id": comp.id,
+        "class": comp.cls,
+        "role": comp.role,
+        "domains": comp.domains,
+        "tier": "refused",
+        "thermo_tier": "refused",
+        "vol_tier": "refused",
+        "unifac": False,
+        "why": "",
+    }
+    parts = comp.smiles.split(".")
+    ionic_species = len(parts) > 1 or any(c in comp.smiles for c in "+-")
+    provider = ionic if ionic_species else thermo
+
+    t_tiers, v_tiers = [], []
+    try:
+        for part in parts:
+            mol = Molecule.from_smiles(part)
+            t = provider.get(mol)
+            v = vol.get(mol)
+            t_tiers.append(_thermo_tier(t.source))
+            v_tiers.append(_volatility_tier(v.source, v.kind))
+    except Exception as exc:  # noqa: BLE001
+        row["why"] = f"{type(exc).__name__}: {str(exc)[:90]}"
+        return row
+
+    row["thermo_tier"] = _worst(*t_tiers)
+    row["vol_tier"] = _worst(*v_tiers)
+    row["tier"] = _worst(row["thermo_tier"], row["vol_tier"])
+
+    # UNIFAC is asked of the WHOLE species, ions included. An ion legitimately
+    # has no groups and the provider says so; that is a pass for "the activity
+    # model handled it", not a decomposition failure, so it is counted apart.
+    try:
+        groups = unifac.get(Molecule.from_smiles(parts[0]))
+        row["unifac"] = bool(groups.counts) or "ion:" in groups.source
+    except Exception:  # noqa: BLE001
+        row["unifac"] = False
+    return row
+
+
+# ---------------------------------------------------------------------------
+# the reaction side -- what the ten templates actually cover
+# ---------------------------------------------------------------------------
+# Mapped by hand because a template is a SMARTS and a route step is a named
+# transformation; nothing in either file can infer the correspondence. Kept
+# deliberately generous: a class is counted covered if the existing template
+# would fire on the right substrate at all, even where the barrier would need
+# re-sourcing for that particular route.
+#
+# ⚠ IT USED TO MISS SIX TEMPLATES ENTIRELY -- it knew only ``reactions/library.py``
+# and not the dissociation set in ``properties/electrolyte.py``, so every proton
+# transfer in the catalog read as uncovered.
+#
+# ⚠⚠ AND CREDITING THEM WAS NOT THE LOOKUP-TABLE EDIT IT LOOKED LIKE. The
+# expected gain was 21 -> 46 steps, which needs ``deprotonation`` (6 steps) to be
+# proton transfer. **It is not**: five of its six rows are malonate and
+# acetoacetate carbanions, a Wittig ylide and two enolates -- i.e. exactly the
+# carbanion-generation capability that has NO template -- and the sixth is an
+# arenium proton loss. Crediting the class would have made this instrument LESS
+# trustworthy, which is the failure mode it exists to prevent.
+#
+# The fix was in the TAXONOMY rather than here: ``acid-base``, ``redox``,
+# ``oxidation`` and ``deprotonation`` were OUTCOME labels spanning several
+# mechanisms each, and a template is SMARTS on a MECHANISM. 32 rows of
+# ``route_steps.psv`` were re-labelled to the mechanism their own reactants and
+# products show, which is why this map needs no notion of "partial" coverage --
+# a class is now specific enough for the question to have a yes/no answer.
+#
+# ⚠ ONE ROW'S NAME STILL MISLEADS AND IS WORTH KNOWING ABOUT: `williamson-ether`
+# step 1 is called "alkoxide formation" but reads ``phenol + NaOH ->
+# sodium-phenoxide``, so ``phenol_dissociation`` does cover it. Read the row, not
+# the name.
+
+TEMPLATE_CLASSES = {
+    "esterification": "fischer_esterification",
+    "ether-condensation": "ether_condensation",
+    "dehydration": "alkene_dehydration",
+    "alcohol-oxidation": "aerobic_oxidation",
+    "aldehyde-oxidation": "peroxide_over_oxidation",
+    "redox-oxygen-transfer": "sulfur_dioxide_oxidation",
+    "gas-phase-oxidation": "nitric_oxide_reoxidation",
+    "combustion": "sulfur_combustion",
+    # the six in properties/electrolyte.py, which this map used not to know about
+    "proton-transfer": "electrolyte.dissociation_templates",
+    "acid-displacement": "electrolyte.dissociation_templates",
+    # ⚠ M3, AND THESE TWO ARE COVERED BY A TERM RATHER THAN BY A TEMPLATE. The
+    # kinetics kernel cannot express precipitation at all -- a template's phase
+    # is liquid or gas and no reaction writes the solid block -- so the covering
+    # mechanism is ``vessel_integrator.PrecipitationArrays``, driven by a Ksp
+    # from ``ion_data`` minus ``mineral_data``. Credited here anyway, because
+    # this map asks whether the MECHANISM exists in the engine and not what
+    # shape it has; ``N_TEMPLATES`` below is deliberately not incremented.
+    #
+    # ⚠ AND THE M1 STANDARD WAS APPLIED BEFORE CREDITING THEM, because that is
+    # the failure this instrument exists to prevent. ``deprotonation`` was
+    # refused credit for the dissociation templates because five of its six rows
+    # are carbanion generation wearing the wrong label -- one CLASS, several
+    # mechanisms. These two are not like that: every row is a double
+    # displacement that drops an insoluble salt, which is exactly one mechanism
+    # and exactly what the term does, for any lattice that prices.
+    #
+    # ⚠ WHAT IS NOT CREDITED BY THIS, STATED SO THE NUMBER IS NOT READ TOO WELL.
+    # A class being covered is a MECHANISM claim; whether a particular route's
+    # lattice is priced is a SPECIES question this audit counts separately (the
+    # catalog README's own rule). Measured against the five
+    # ``precipitation-metathesis`` rows: silver iodide and silver chloride price
+    # today, sodium bicarbonate and Prussian blue have no lattice entry, and
+    # chrome yellow is REFUSED by ``mineral_data`` for want of an S0s in any
+    # database shared with its Hfs. So the mechanism is there and three of the
+    # five still need a lattice.
+    "precipitation-metathesis": "vessel_integrator.PrecipitationArrays (a TERM)",
+    "acid-displacement-precipitating": (
+        "electrolyte.dissociation_templates + PrecipitationArrays (a TERM)"
+    ),
+}
+
+# How many templates that is, counted rather than asserted -- the old text said
+# "10 templates" and ``library.py`` has 8.
+N_LIBRARY_TEMPLATES = 8
+N_ELECTROLYTE_TEMPLATES = 6
+N_TEMPLATES = N_LIBRARY_TEMPLATES + N_ELECTROLYTE_TEMPLATES
+
+
+def marginal_unlock(steps, routes):
+    """Ranked by ROUTES UNLOCKED per class added, plus the greedy set-cover curve.
+
+    ⚠ THIS IS A DIFFERENT RANKING FROM FREQUENCY AND THE TWO BARELY OVERLAP,
+    which is the whole reason it exists. The most-USED missing classes unlock
+    nothing on their own, because the routes needing them each need several other
+    things too -- so a frequency table read as a work queue sends you to build
+    templates that move the route count by zero.
+    """
+    need: dict[str, set[str]] = {}
+    for rid in routes:
+        mine = {s.cls for s in steps if s.route == rid}
+        gap = {c for c in mine if c not in TEMPLATE_CLASSES}
+        if gap:
+            need[rid] = gap
+
+    # (a) one class at a time: which routes go from one gap to zero
+    one_away: dict[str, set[str]] = {}
+    for rid, gap in need.items():
+        if len(gap) == 1:
+            one_away.setdefault(next(iter(gap)), set()).add(rid)
+
+    # (b) greedy set cover over the remaining routes.
+    #
+    # ⚠ THE TIE-BREAK IS LOAD-BEARING. Maximising "routes unlocked outright" goes
+    # to zero after a handful of classes -- every remaining route needs two or
+    # more -- and a loop that stops there reports a curve that flattens because it
+    # gave up, not because the catalog does. So when nothing unlocks a route
+    # alone, pick the class that appears in the MOST remaining routes, i.e. the
+    # one that buys the most PROGRESS. Those rows show +0 and that is honest: a
+    # template can be the right next thing to build and still unlock nothing yet.
+    remaining = {r: set(g) for r, g in need.items()}
+    curve, chosen = [], []
+    while remaining and len(chosen) < 20:
+        pool = {c for g in remaining.values() for c in g}
+        unlocks = {c: sum(1 for g in remaining.values() if g == {c}) for c in pool}
+        best = max(pool, key=lambda c: (unlocks[c], sum(c in g for g in
+                                                        remaining.values()), c))
+        chosen.append((best, unlocks[best]))
+        for g in remaining.values():
+            g.discard(best)
+        remaining = {r: g for r, g in remaining.items() if g}
+        curve.append((len(chosen), len(routes) - len(remaining)))
+    return one_away, chosen, curve, need
+
+
+def main() -> int:
+    compounds = cat.load_compounds()
+    routes = cat.load_routes()
+    steps = cat.load_steps()
+
+    thermo = ThermochemistryProvider()
+    vol = VolatilityProvider(thermo)
+    ionic = electrolyte_provider(base=thermo, volatility=vol)
+    unifac = UnifacProvider()
+
+    rows = [audit_compound(c, thermo, vol, ionic, unifac) for c in compounds.values()]
+    by_id = {r["id"]: r for r in rows}
+
+    n = len(rows)
+    tiers = Counter(r["tier"] for r in rows)
+    th_c = Counter(r["thermo_tier"] for r in rows)
+    vt_c = Counter(r["vol_tier"] for r in rows)
+    resolved = n - tiers["refused"]
+    sourced_form = th_c["measured"] + th_c["benson"] + th_c["ion"]
+    unifac_ok = sum(1 for r in rows if r["unifac"])
+
+    lines: list[str] = []
+    w = lines.append
+    w("# Compound and route coverage of the chemsim catalog")
+    w("")
+    w(
+        "Generated by `validation/catalog_coverage.py` from `data/catalog`. "
+        "Every number below is measured by running the catalog through the real "
+        "providers in `src/chemsim/properties`, not asserted."
+    )
+    w("")
+    w("## Headline")
+    w("")
+    w(
+        "**The formation half and the physical half resolve independently, and are "
+        "reported separately because they fail for different reasons and cost "
+        "different things when they fail.** The formation half (dHf, dGf) sets every "
+        "equilibrium constant in the simulation, so an error there propagates into "
+        "yields and never washes out. The physical half (Tb/Tc/Pc/Vc) sets the "
+        "vapour-pressure correlation, so an error there moves a boiling point and a "
+        "headspace composition. Averaging them into one coverage number would hide "
+        "which of the two you are actually short of."
+    )
+    w("")
+    w(f"| formation half | count | of {n} |")
+    w("|---|---:|---:|")
+    for t in TIER_ORDER:
+        w(f"| {t} | {th_c[t]} | {100*th_c[t]/n:.1f}% |")
+    w("")
+    w(f"| physical half | count | of {n} |")
+    w("|---|---:|---:|")
+    for t in TIER_ORDER:
+        w(f"| {t} | {vt_c[t]} | {100*vt_c[t]/n:.1f}% |")
+    w("")
+    w(f"| overall | count | of {n} |")
+    w("|---|---:|---:|")
+    w(f"| both halves resolve | {resolved} | {100*resolved/n:.1f}% |")
+    w(
+        f"| formation half is measured or Benson, not Joback | {sourced_form} | "
+        f"{100*sourced_form/n:.1f}% |"
+    )
+    w(
+        f"| formation half falls back to Joback | {th_c['joback']} | "
+        f"{100*th_c['joback']/n:.1f}% |"
+    )
+    w(f"| refused outright | {tiers['refused']} | {100*tiers['refused']/n:.1f}% |")
+    w(
+        f"| decompose for UNIFAC (can enter an LLE) | {unifac_ok} | "
+        f"{100*unifac_ok/n:.1f}% |"
+    )
+    w("")
+    w(
+        "> The formation-half table is the one to read first. A Joback-only "
+        "formation half integrates without complaint and reports a confidently "
+        "wrong equilibrium constant: its error is several kJ/mol, a factor of 2-4 "
+        "in K, and it gives homologues *identical* reaction energies -- the exact "
+        "failure `properties/formation_data.py` was written to fix. Joback "
+        "resolving is not the same as Joback being usable."
+    )
+    w("")
+    w(
+        "> The UNIFAC row is a separate and larger gap. A species with no group "
+        "decomposition gets an activity coefficient of 1, and in a two-phase "
+        "calculation that is not an approximation -- it is the assumption that the "
+        "phases do not separate."
+    )
+    w("")
+
+    # ---- by tier -------------------------------------------------------
+    w("## Resolution tier, and which half is weaker")
+    w("")
+    w("| tier | as the limiting half | formation half | physical half |")
+    w("|---|---:|---:|---:|")
+    for t in TIER_ORDER:
+        w(f"| {t} | {tiers[t]} | {th_c[t]} | {vt_c[t]} |")
+    w("")
+
+    # ---- by class ------------------------------------------------------
+    w("## By compound class")
+    w("")
+    w("| class | n | formation measured/Benson | formation Joback | refused | unifac |")
+    w("|---|---:|---:|---:|---:|---:|")
+    by_class: dict[str, list[dict]] = defaultdict(list)
+    for r in rows:
+        by_class[r["class"]].append(r)
+    for cls, sub in sorted(by_class.items(), key=lambda kv: -len(kv[1])):
+        f = Counter(x["thermo_tier"] for x in sub)
+        good = f["measured"] + f["benson"] + f["ion"]
+        u = sum(1 for x in sub if x["unifac"])
+        w(f"| {cls} | {len(sub)} | {good} | {f['joback']} | {f['refused']} | {u} |")
+    w("")
+
+    # ---- by role -------------------------------------------------------
+    w("## By catalog role")
+    w("")
+    w("| role | n | formation measured/Benson | formation Joback | refused |")
+    w("|---|---:|---:|---:|---:|")
+    by_role: dict[str, list[dict]] = defaultdict(list)
+    for r in rows:
+        by_role[r["role"]].append(r)
+    for role, sub in sorted(by_role.items(), key=lambda kv: -len(kv[1])):
+        f = Counter(x["thermo_tier"] for x in sub)
+        good = f["measured"] + f["benson"] + f["ion"]
+        w(f"| {role} | {len(sub)} | {good} | {f['joback']} | {f['refused']} |")
+    w("")
+
+    # ---- refusals ------------------------------------------------------
+    refused = [r for r in rows if r["tier"] == "refused"]
+    w(f"## The {len(refused)} refusals, by cause")
+    w("")
+    buckets = Counter(refusal_bucket(r["why"]) for r in refused)
+    remedy = {
+        "charged organic (outside the Born domain)":
+            "nothing cheap. The Born radius correlation is fitted to small hard "
+            "ions and an organic cation is not one, so the refusal is right.",
+        "physical half missing (needs a boiling point)":
+            "ONE measured Tb per species. The formation half already resolved.",
+        "formation half missing (no group value)":
+            "a group value that may not exist in any published tabulation; "
+            "check before promising it.",
+        "cannot be fragmented at all":
+            "usually an element, a lattice or an exotic heteroatom, and out of "
+            "the domain of both group methods by construction.",
+    }
+    w("| cause | count | what would close it |")
+    w("|---|---:|---|")
+    for cause, count in buckets.most_common():
+        w(f"| {cause} | {count} | {remedy.get(cause, '')} |")
+    w("")
+    cheap = sorted(
+        r["id"] for r in refused
+        if refusal_bucket(r["why"]).startswith("physical half")
+    )
+    w(
+        "> The boiling-point bucket is the cheap one and it is worth separating: "
+        "those species already have a formation half from Benson and are refused "
+        "only because nothing prices their vapour pressure. That is a lookup, not "
+        "a research problem."
+    )
+    w("")
+    w(f"### The {len(cheap)} that need only a boiling point")
+    w("")
+    w(("`" + "`, `".join(cheap) + "`") if cheap else "None.")
+    w("")
+    w(f"### All {len(refused)} refusals, named")
+    w("")
+    if not refused:
+        w("None.")
+    else:
+        w("| compound | class | why |")
+        w("|---|---|---|")
+        for r in sorted(refused, key=lambda x: (x["class"], x["id"])):
+            w(f"| `{r['id']}` | {r['class']} | {r['why'] or 'provider refused'} |")
+    w("")
+
+    # ---- reaction classes ----------------------------------------------
+    step_classes = Counter(s.cls for s in steps)
+    covered = {c for c in step_classes if c in TEMPLATE_CLASSES}
+    w("## Reaction coverage -- the half that does not flatter")
+    w("")
+    w(
+        f"The catalog's {len(steps)} steps use **{len(step_classes)} distinct "
+        f"reaction classes**. This project implements **{N_TEMPLATES} templates** "
+        f"({N_LIBRARY_TEMPLATES} in `reactions/library.py` and "
+        f"{N_ELECTROLYTE_TEMPLATES} dissociation templates in "
+        f"`properties/electrolyte.py`), which between them cover "
+        f"**{len(covered)}** of those classes, i.e. "
+        f"**{sum(step_classes[c] for c in covered)}** of the {len(steps)} steps."
+    )
+    w("")
+    w("| covered class | template | steps using it |")
+    w("|---|---|---:|")
+    for c in sorted(covered, key=lambda x: -step_classes[x]):
+        w(f"| {c} | `{TEMPLATE_CLASSES[c]}` | {step_classes[c]} |")
+    w("")
+    w("### The most-used classes with NO template")
+    w("")
+    w("| class | steps | routes blocked |")
+    w("|---|---:|---:|")
+    blocked_routes: dict[str, set[str]] = defaultdict(set)
+    for s in steps:
+        if s.cls not in TEMPLATE_CLASSES:
+            blocked_routes[s.cls].add(s.route)
+    missing = sorted(
+        (c for c in step_classes if c not in TEMPLATE_CLASSES),
+        key=lambda c: (-step_classes[c], c),
+    )
+    for c in missing[:40]:
+        w(f"| {c} | {step_classes[c]} | {len(blocked_routes[c])} |")
+    w("")
+    w(f"…and {max(0, len(missing) - 40)} further classes used once or twice each.")
+    w("")
+
+    # ---- ranked by MARGINAL UNLOCK, which is the ranking that decides work --
+    one_away, chosen, curve, need = marginal_unlock(steps, routes)
+    w("### ⚠ The same gap ranked by ROUTES UNLOCKED, which is a different order")
+    w("")
+    w(
+        "The table above ranks by how many STEPS use a class. That is the wrong "
+        "ranking for deciding what to build, and the two orders barely overlap: "
+        "the most-used missing classes unlock **zero** routes on their own, "
+        "because the routes needing them each need several other things too. "
+        "**Read this table as the work queue and the one above as context.**"
+    )
+    w("")
+    n_one = sum(len(v) for v in one_away.values())
+    w(
+        f"{len(need)} routes have at least one gap. **{n_one} of them are ONE "
+        f"class away**, and those come from **{len(one_away)} different classes** "
+        f"-- which is why there is no bottleneck to attack and why this milestone "
+        f"argues for a target rather than for completeness."
+    )
+    w("")
+    w("| class | routes it unlocks ALONE | steps | those routes |")
+    w("|---|---:|---:|---|")
+    for cls, rids in sorted(one_away.items(), key=lambda kv: (-len(kv[1]), kv[0]))[:20]:
+        names = ", ".join(f"`{r}`" for r in sorted(rids)[:4])
+        if len(rids) > 4:
+            names += f", +{len(rids) - 4} more"
+        w(f"| {cls} | {len(rids)} | {step_classes[cls]} | {names} |")
+    w("")
+    w("#### The greedy set-cover curve")
+    w("")
+    w(
+        "Templates added in the order that unlocks the most routes at each step. "
+        "⚠ The gain FALLS AWAY fast, and that shape is the finding: there is no "
+        "small set of templates that unlocks the catalog."
+    )
+    w("")
+    w("| templates added | class added | routes unlocked by it | template-ready total |")
+    w("|---:|---|---:|---:|")
+    for (cls, gain), (added, total) in zip(chosen, curve):
+        w(f"| {added} | {cls} | +{gain} | {total} |")
+    w("")
+
+    # ---- route readiness ------------------------------------------------
+    w("## Route readiness")
+    w("")
+    w(
+        "A route is *species-ready* when every non-marker species in its steps "
+        "resolves; *sourced* when none of them falls back to Joback; and "
+        "*template-ready* when every one of its step classes has a template. "
+        "Template-readiness is the binding constraint and it is not close."
+    )
+    w("")
+    species_ready = sourced_routes = template_ready = 0
+    route_rows = []
+    for rid, route in routes.items():
+        mine = [s for s in steps if s.route == rid]
+        species = {x for s in mine for x in s.reactants + s.products}
+        real = [s for s in species if s in compounds]
+        markers = len(species) - len(real)
+        ok = all(by_id[s]["tier"] != "refused" for s in real)
+        src = ok and all(by_id[s]["tier"] != "joback" for s in real)
+        tmpl = all(s.cls in TEMPLATE_CLASSES for s in mine)
+        species_ready += ok
+        sourced_routes += src
+        template_ready += tmpl
+        route_rows.append((rid, route.era, len(mine), markers, ok, src, tmpl))
+    total_r = len(routes)
+    w(f"| | routes | of {total_r} |")
+    w("|---|---:|---:|")
+    w(f"| species-ready | {species_ready} | {100*species_ready/total_r:.1f}% |")
+    w(f"| fully sourced (no Joback anywhere) | {sourced_routes} | "
+      f"{100*sourced_routes/total_r:.1f}% |")
+    w(f"| template-ready | {template_ready} | {100*template_ready/total_r:.1f}% |")
+    w("")
+    ready = [r for r in route_rows if r[6]]
+    w("Template-ready routes: " + (", ".join(f"`{r[0]}`" for r in ready) or "none"))
+    w("")
+    w("### Routes by era")
+    w("")
+    w("| era | routes | species-ready | fully sourced | template-ready |")
+    w("|---|---:|---:|---:|---:|")
+    by_era: dict[str, list] = defaultdict(list)
+    for r in route_rows:
+        by_era[r[1]].append(r)
+    for era in ["ancient", "alchemical", "1700s", "1800s", "1900s", "modern"]:
+        sub = by_era.get(era, [])
+        if not sub:
+            continue
+        w(
+            f"| {era} | {len(sub)} | {sum(1 for x in sub if x[4])} | "
+            f"{sum(1 for x in sub if x[5])} | {sum(1 for x in sub if x[6])} |"
+        )
+    w("")
+
+    out = os.path.join(cat.CATALOG_DIR, "COVERAGE_REPORT.md")
+    with open(out, "w", encoding="utf-8") as fh:
+        fh.write("\n".join(lines) + "\n")
+
+    # ---- derived role tables -------------------------------------------
+    derived = os.path.join(cat.CATALOG_DIR, "derived")
+    os.makedirs(derived, exist_ok=True)
+    with open(os.path.join(derived, "route_roles.psv"), "w", encoding="utf-8") as fh:
+        fh.write("# DERIVED by validation/catalog_coverage.py -- do not hand-edit.\n")
+        fh.write("# route_id | role | species (semicolon separated)\n")
+        fh.write("# role: feedstock (consumed, never made) | intermediate (both) |\n")
+        fh.write("#       product (made, never consumed) | catalyst (both sides of\n")
+        fh.write("#       one step). See tools/catalog.py for why this is derived.\n")
+        for rid in routes:
+            roles = cat.route_roles(steps, rid)
+            for label, members in (
+                ("feedstock", roles.feedstocks),
+                ("intermediate", roles.intermediates),
+                ("product", roles.products),
+                ("catalyst", roles.catalysts),
+            ):
+                if members:
+                    fh.write(f"{rid} | {label} | {';'.join(members)}\n")
+
+    # A species-level rollup: how often is each compound an intermediate anywhere?
+    counts: dict[str, Counter] = defaultdict(Counter)
+    for rid in routes:
+        roles = cat.route_roles(steps, rid)
+        for label, members in (
+            ("feedstock", roles.feedstocks),
+            ("intermediate", roles.intermediates),
+            ("product", roles.products),
+            ("catalyst", roles.catalysts),
+        ):
+            for m in members:
+                counts[m][label] += 1
+    with open(os.path.join(derived, "species_roles.psv"), "w", encoding="utf-8") as fh:
+        fh.write("# DERIVED by validation/catalog_coverage.py -- do not hand-edit.\n")
+        fh.write("# species | routes | as_feedstock | as_intermediate | as_product |")
+        fh.write(" as_catalyst | tier\n")
+        for sp, c in sorted(counts.items(), key=lambda kv: -sum(kv[1].values())):
+            tier = by_id[sp]["tier"] if sp in by_id else "marker"
+            total = sum(c.values())
+            fh.write(
+                f"{sp} | {total} | {c['feedstock']} | {c['intermediate']} | "
+                f"{c['product']} | {c['catalyst']} | {tier}\n"
+            )
+
+    print(f"{n} compounds, {len(routes)} routes, {len(steps)} steps")
+    print(f"  resolve            {resolved}/{n}  ({100*resolved/n:.1f}%)")
+    print(f"  formation measured/Benson {sourced_form}/{n}  ({100*sourced_form/n:.1f}%)")
+    print(f"  formation Joback          {th_c['joback']}/{n}")
+    print(f"  refused                   {tiers['refused']}/{n}")
+    print(f"  UNIFAC groups      {unifac_ok}/{n}  ({100*unifac_ok/n:.1f}%)")
+    print(f"  reaction classes   {len(covered)}/{len(step_classes)} have a template")
+    print(f"  routes template-ready {template_ready}/{total_r}")
+    print(f"\nwrote {out}")
+    print(f"wrote {derived}/route_roles.psv and species_roles.psv")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -1,0 +1,51 @@
+# A. ELEMENTS AND ALLOTROPES -- columns: id | name | smiles | class | role | domains | notes
+hydrogen | hydrogen | [H][H] | element | element | gases;haber;hydrogenation | reference state
+deuterium | deuterium | [2H][2H] | element | element | isotope | heavy-hydrogen isotopologue
+oxygen | dioxygen | O=O | element | element | gases;combustion;oxidation | reference state
+ozone | ozone | [O-][O+]=O | element | reagent | gases;oxidation;atmospheric | ozonolysis oxidant
+nitrogen | dinitrogen | N#N | element | element | gases;haber | reference state
+fluorine | difluorine | FF | element | element | halogens | most oxidising element
+chlorine | dichlorine | ClCl | element | reagent | halogens;chloralkali | chlorination
+bromine | dibromine | BrBr | element | reagent | halogens | liquid halogen
+iodine | diiodine | II | element | reagent | halogens | solid halogen
+sulfur-s8 | sulfur (S8 crown) | S1SSSSSSS1 | element | feedstock | lead-chamber;vulcanisation | native sulfur reference state
+sulfur-s2 | disulfur | S=S | element | transient | high-temperature | S8 dissociation product
+phosphorus-white | white phosphorus (P4) | P12P3P1P23 | element | feedstock | phosphorus;matches | tetrahedral allotrope
+carbon-graphite | graphite | [C] | element | feedstock | carbon;metallurgy | lattice reference state
+sodium | sodium metal | [Na] | element | reagent | alkali-metals;birch | lattice element
+potassium | potassium metal | [K] | element | reagent | alkali-metals | lattice element
+lithium | lithium metal | [Li] | element | reagent | alkali-metals;batteries | lattice element
+magnesium | magnesium metal | [Mg] | element | reagent | grignard | lattice element
+calcium | calcium metal | [Ca] | element | reagent | alkaline-earth | lattice element
+aluminium | aluminium metal | [Al] | element | reagent | metallurgy;thermite | lattice element
+iron | iron metal | [Fe] | element | feedstock | metallurgy;catalysis | lattice element
+copper | copper metal | [Cu] | element | feedstock | metallurgy;catalysis | lattice element
+zinc | zinc metal | [Zn] | element | reagent | metallurgy;clemmensen | lattice element
+tin | tin metal | [Sn] | element | reagent | metallurgy | lattice element
+lead | lead metal | [Pb] | element | feedstock | metallurgy;lead-chamber | lattice element
+mercury | mercury | [Hg] | element | reagent | amalgam;chloralkali | liquid metal
+silver | silver metal | [Ag] | element | reagent | photography;tollens | lattice element
+gold | gold metal | [Au] | element | product | alchemy;metallurgy | lattice element
+platinum | platinum metal | [Pt] | element | catalyst | catalysis;contact-process | heterogeneous catalyst
+palladium | palladium metal | [Pd] | element | catalyst | hydrogenation;cross-coupling | heterogeneous catalyst
+nickel | nickel metal | [Ni] | element | catalyst | hydrogenation | Raney nickel
+chromium | chromium metal | [Cr] | element | element | metallurgy | lattice element
+manganese | manganese metal | [Mn] | element | element | metallurgy | lattice element
+cobalt | cobalt metal | [Co] | element | catalyst | oxo-process | lattice element
+titanium | titanium metal | [Ti] | element | element | metallurgy;ziegler-natta | lattice element
+vanadium | vanadium metal | [V] | element | element | contact-process | lattice element
+tungsten | tungsten metal | [W] | element | element | metallurgy | lattice element
+silicon | silicon | [Si] | element | feedstock | semiconductors;silicones | lattice element
+boron | boron | [B] | element | element | borides | lattice element
+arsenic | arsenic | [As] | element | element | toxicology;semiconductors | lattice element
+antimony | antimony | [Sb] | element | element | alchemy;alloys | lattice element
+bismuth | bismuth | [Bi] | element | element | alloys;pharma | lattice element
+selenium | selenium | [Se] | element | reagent | oxidation;photocopying | lattice element
+tellurium | tellurium | [Te] | element | element | alloys | lattice element
+helium | helium | [He] | element | element | noble-gases | inert
+neon | neon | [Ne] | element | element | noble-gases | inert
+argon | argon | [Ar] | element | reagent | noble-gases;inert-atmosphere | blanket gas
+krypton | krypton | [Kr] | element | element | noble-gases | inert
+xenon | xenon | [Xe] | element | reagent | noble-gases;anaesthesia | forms fluorides
+radon | radon | [Rn] | element | element | noble-gases;radiochemistry | radioactive
+uranium | uranium | [U] | element | element | nuclear | lattice element

@@ -1,0 +1,60 @@
+# O. POLYMER REPEAT UNITS, MONOMERS AND MATERIALS -- repeat units are written as the constitutional unit
+polyethylene-unit | polyethylene repeat unit | CC | polymer | product | ldpe;hdpe | -CH2CH2-
+polypropylene-unit | polypropylene repeat unit | CC(C) | polymer | product | pp;ziegler-natta | -CH2CH(CH3)-
+polystyrene-unit | polystyrene repeat unit | CCc1ccccc1 | polymer | product | ps;eps | -CH2CH(Ph)-
+pvc-unit | poly(vinyl chloride) repeat unit | CCCl | polymer | product | pvc;pipes | -CH2CHCl-
+pvdc-unit | poly(vinylidene chloride) repeat unit | CC(Cl)Cl | polymer | product | saran-wrap | -CH2CCl2-
+ptfe-unit | polytetrafluoroethylene repeat unit | FC(F)C(F)F | polymer | product | teflon | -CF2CF2-
+pvdf-unit | poly(vinylidene fluoride) repeat unit | CC(F)F | polymer | product | pvdf;piezoelectric | -CH2CF2-
+pmma-unit | poly(methyl methacrylate) repeat unit | CC(C)(C(=O)OC) | polymer | product | perspex;acrylic | -CH2C(CH3)(CO2Me)-
+pva-acetate-unit | poly(vinyl acetate) repeat unit | CC(OC(C)=O) | polymer | product | glue;pva-precursor | -CH2CH(OAc)-
+pvoh-unit | poly(vinyl alcohol) repeat unit | CC(O) | polymer | product | water-soluble-film | -CH2CH(OH)-
+pan-unit | polyacrylonitrile repeat unit | CC(C#N) | polymer | product | acrylic-fibre;carbon-fibre-precursor | -CH2CH(CN)-
+polyacrylamide-unit | polyacrylamide repeat unit | CC(C(N)=O) | polymer | product | flocculant;gels | -CH2CH(CONH2)-
+polyacrylic-acid-unit | poly(acrylic acid) repeat unit | CC(C(=O)O) | polymer | product | superabsorbent;thickener | -CH2CH(COOH)-
+polybutadiene-unit | polybutadiene repeat unit | CC=CC | polymer | product | synthetic-rubber;abs | 1,4-butadiene unit
+polyisoprene-unit | polyisoprene repeat unit | CC(C)=CC | polymer | product | natural-rubber;gutta-percha | cis-1,4 unit
+polychloroprene-unit | polychloroprene repeat unit | CC(Cl)=CC | polymer | product | neoprene | -CH2C(Cl)=CHCH2-
+sbr-marker | styrene-butadiene rubber marker | CCc1ccccc1.CC=CC | polymer | product | tyres;synthetic-rubber | copolymer marker
+nbr-marker | nitrile rubber marker | CC(C#N).CC=CC | polymer | product | oil-resistant-rubber | copolymer marker
+butyl-rubber-marker | butyl rubber marker | CC(C)(C).CC(C)=CC | polymer | product | inner-tubes | copolymer marker
+pet-unit | poly(ethylene terephthalate) repeat unit | O=C(OCCOC(=O)c1ccc(cc1)C(=O)O)c1ccccc1 | polymer | product | bottles;fibre | ester repeat
+pbt-unit | poly(butylene terephthalate) repeat unit | O=C(OCCCCO)c1ccc(C(=O)O)cc1 | polymer | product | engineering-plastic | ester repeat
+pla-unit | polylactic acid repeat unit | C[C@@H](O)C(=O)O | polymer | product | bioplastic;compostable | lactate unit
+pga-unit | polyglycolic acid repeat unit | OCC(=O)O | polymer | product | sutures | glycolate unit
+pcl-unit | polycaprolactone repeat unit | OCCCCCC(=O)O | polymer | product | biodegradable-polyester | caprolactone unit
+phb-unit | polyhydroxybutyrate repeat unit | C[C@@H](O)CC(=O)O | polymer | product | bioplastic;bacterial | PHB unit
+nylon-6-unit | nylon 6 repeat unit | NCCCCCC(=O)O | polymer | product | fibre;from-caprolactam | aminocaproic unit
+nylon-66-unit | nylon 66 repeat unit | NCCCCCCNC(=O)CCCCC(=O)O | polymer | product | fibre;carothers | HMDA-adipate unit
+nylon-11-unit | nylon 11 repeat unit | NCCCCCCCCCCC(=O)O | polymer | product | rilsan;castor-derived | aminoundecanoic unit
+nylon-12-unit | nylon 12 repeat unit | NCCCCCCCCCCCC(=O)O | polymer | product | tubing | from laurolactam
+kevlar-unit | poly(para-phenylene terephthalamide) unit | Nc1ccc(NC(=O)c2ccc(C(=O)O)cc2)cc1 | polymer | product | aramid;body-armour | Kevlar unit
+nomex-unit | poly(meta-phenylene isophthalamide) unit | Nc1cccc(NC(=O)c2cccc(C(=O)O)c2)c1 | polymer | product | aramid;flame-resistant | Nomex unit
+polycarbonate-unit | bisphenol A polycarbonate repeat unit | CC(C)(c1ccc(OC(=O)O)cc1)c1ccc(O)cc1 | polymer | product | lexan;optical-discs | carbonate repeat
+polyurethane-unit | polyurethane repeat unit (TDI/diol) | Cc1ccc(NC(=O)OCCO)cc1NC(=O)OCCO | polymer | product | foam;elastomer | urethane repeat
+polyurea-unit | polyurea repeat unit | O=C(Nc1ccccc1)Nc1ccccc1 | polymer | product | coatings | urea repeat
+epoxy-cured-unit | cured epoxy repeat unit (amine adduct) | CC(C)(c1ccc(OCC(O)CNCCN)cc1)c1ccc(OCC(O)CN)cc1 | polymer | product | adhesive;composite | schematic cured unit
+bakelite-unit | phenol-formaldehyde resin unit | Oc1ccc(Cc2ccc(O)cc2)cc1 | polymer | product | bakelite;first-synthetic-plastic | methylene-bridged phenol
+novolac-unit | novolac repeat unit | Cc1cc(O)ccc1Cc1ccc(O)cc1 | polymer | product | photoresist;moulding | acid-catalysed resin
+resole-unit | resole repeat unit | OCc1cc(CO)cc(O)c1 | polymer | intermediate | base-catalysed-resin | methylolphenol
+urea-formaldehyde-unit | urea-formaldehyde resin unit | NC(=O)NCNC(N)=O | polymer | product | particleboard;adhesive | methylene-bridged urea
+melamine-formaldehyde-unit | melamine-formaldehyde resin unit | Nc1nc(N)nc(NCO)n1 | polymer | product | laminates;formica | methylolmelamine
+polyester-alkyd-unit | alkyd resin unit (glycerol-phthalate) | O=C(OCC(O)CO)c1ccccc1C(=O)O | polymer | product | paint;varnish | alkyd unit
+polysulfone-unit | polysulfone repeat unit | CC(C)(c1ccc(Oc2ccc(S(=O)(=O)c3ccc(O)cc3)cc2)cc1)c1ccccc1 | polymer | product | membranes;engineering-plastic | PSU unit
+peek-unit | poly(ether ether ketone) repeat unit | O=C(c1ccc(Oc2ccc(Oc3ccccc3)cc2)cc1)c1ccccc1 | polymer | product | high-performance-plastic | PEEK unit
+pps-unit | poly(phenylene sulfide) repeat unit | Sc1ccc(S)cc1 | polymer | product | engineering-plastic | PPS unit
+polyimide-unit | Kapton repeat unit (schematic) | O=C1N(c2ccc(Oc3ccccc3)cc2)C(=O)c2cc3c(cc21)C(=O)NC3=O | polymer | product | kapton;flexible-circuits | polyimide unit
+poly-p-phenylene-unit | poly(para-phenylene) repeat unit | c1ccccc1 | polymer | reference | conducting-polymer | phenylene unit
+polyethylene-glycol-unit | poly(ethylene glycol) repeat unit | OCCO | polymer | product | peg;pharmaceutical-excipient | oxyethylene unit
+polypropylene-glycol-unit | poly(propylene glycol) repeat unit | CC(O)CO | polymer | product | polyurethane-polyol | oxypropylene unit
+polyoxymethylene-unit | polyoxymethylene repeat unit | OCO | polymer | product | delrin;acetal-resin | -OCH2- unit
+polytetrahydrofuran-unit | polytetrahydrofuran repeat unit | OCCCCO | polymer | product | spandex-soft-segment | PTMEG
+silicone-rubber-unit | polydimethylsiloxane unit (see organosilicon) | C[Si](C)(O)O | polymer | reference | sealant;implants | cross-reference
+viscose-marker | viscose xanthate intermediate marker | OC[C@H]1O[C@@H](O)[C@H](O)[C@@H](OC([S-])=S)[C@@H]1O.[Na+] | polymer | intermediate | rayon;cellophane | cellulose xanthate unit
+carboxymethylcellulose-unit | carboxymethylcellulose repeat unit | OC(=O)COC[C@H]1O[C@@H](O)[C@H](O)[C@@H](O)[C@@H]1O | polymer | product | thickener;detergent | CMC unit
+nitrocellulose-material | nitrocellulose (see energetics) | [O-][N+](=O)OC[C@H]1O[C@@H](O)[C@H](O[N+]([O-])=O)[C@@H](O[N+]([O-])=O)[C@@H]1O | polymer | reference | celluloid;lacquer | cross-reference
+celluloid-marker | celluloid marker (nitrocellulose plus camphor) | CC1(C)[C@@H]2CC[C@]1(C)C(=O)C2 | polymer | product | first-thermoplastic;film | plasticiser component
+vulcanised-rubber-marker | vulcanised rubber crosslink marker | CC(C)=CC.S1SSSSSSS1 | polymer | product | goodyear;vulcanisation | polysulfide crosslink marker
+carbon-fibre-marker | graphitic carbon (see elements) | [C] | material | reference | composites | cross-reference
+graphene-model | coronene (see hydrocarbons) | c1cc2ccc3ccc4ccc5ccc6ccc1c1c2c3c4c5c61 | material | reference | graphene-fragment | cross-reference
+buckminsterfullerene | C60 fullerene | C12=C3C4=C5C6=C1C7=C8C9=C1C%10=C%11C(=C29)C3=C2C3=C4C4=C5C5=C9C6=C7C6=C7C8=C1C1=C8C%10=C%10C%11=C2C2=C3C3=C4C4=C5C5=C%11C%12=C(C6=C95)C7=C1C1=C%12C5=C%11C4=C3C3=C5C(=C81)C%10=C23 | material | product | fullerene;nanocarbon | C60

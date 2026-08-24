@@ -1,0 +1,115 @@
+# P. REACTIVE INTERMEDIATES, RADICALS AND IONS
+# These are the species that make a mechanism a mechanism. Many are transient by
+# definition -- a coverage audit is EXPECTED to fail on some of them, and where it
+# does the honest answer is "this species has no measured formation data anywhere",
+# not "the estimator is missing a group".
+hydronium | hydronium ion | [OH3+] | ion | intermediate | acid-catalysis;dissociation | the projects proton
+hydroxide | hydroxide ion | [OH-] | ion | intermediate | base-catalysis;saponification | OH-
+oxide-ion | oxide ion | [O-2] | ion | intermediate | lattice;melts | O2-
+peroxide-ion | peroxide ion | [O-][O-] | ion | intermediate | peroxide-salts | O2 2-
+superoxide-ion | superoxide radical anion | [O][O-] | radical-ion | transient | biology;autoxidation | O2 -.
+hydroperoxide-ion | hydroperoxide ion | [O-]O | ion | intermediate | perhydrolysis;bleach-activation | HOO-
+hydroperoxyl | hydroperoxyl radical | [O]O | radical | transient | autoxidation;atmospheric | HOO.
+hydroxyl-radical | hydroxyl radical | [OH] | radical | transient | fenton;radiolysis;atmospheric | OH.
+hydrogen-atom | hydrogen atom | [H] | radical | transient | radical-chain | H.
+chlorine-atom | chlorine radical | [Cl] | radical | transient | radical-chlorination;ozone-depletion | Cl.
+bromine-atom | bromine radical | [Br] | radical | transient | radical-bromination | Br.
+methyl-radical | methyl radical | [CH3] | radical | transient | pyrolysis;radical-chain | CH3.
+ethyl-radical | ethyl radical | C[CH2] | radical | transient | cracking;radical-chain | C2H5.
+isopropyl-radical | isopropyl radical | C[CH]C | radical | transient | radical-chain | secondary radical
+tert-butyl-radical | tert-butyl radical | C[C](C)C | radical | transient | radical-chain | tertiary radical
+benzyl-radical | benzyl radical | [CH2]c1ccccc1 | radical | transient | side-chain-halogenation | resonance stabilised
+phenyl-radical | phenyl radical | [c]1ccccc1 | radical | transient | gomberg-bachmann;arylation | aryl radical
+allyl-radical | allyl radical | [CH2]C=C | radical | transient | allylic-halogenation | resonance stabilised
+methoxy-radical | methoxy radical | C[O] | radical | transient | combustion;atmospheric | CH3O.
+acetyl-radical | acetyl radical | C[C]=O | radical | transient | acyl-radical-chemistry | CH3CO.
+cumyloxy-radical | cumyloxy radical | CC(C)([O])c1ccccc1 | radical | transient | cumene-process | beta-scission gives acetone
+cumene-hydroperoxide | cumene hydroperoxide | CC(C)(OO)c1ccccc1 | peroxide | intermediate | cumene-process | the phenol/acetone precursor
+tert-butyl-hydroperoxide | tert-butyl hydroperoxide | CC(C)(C)OO | peroxide | reagent | epoxidation;radical-initiator | TBHP
+di-tert-butyl-peroxide | di-tert-butyl peroxide | CC(C)(C)OOC(C)(C)C | peroxide | reagent | radical-initiator | DTBP
+benzoyl-peroxide | dibenzoyl peroxide | O=C(OOC(=O)c1ccccc1)c1ccccc1 | peroxide | reagent | radical-initiator;acne | BPO
+peracetic-acid | peroxyacetic acid | CC(=O)OO | peroxy-acid | reagent | epoxidation;disinfection | PAA
+performic-acid | peroxyformic acid | OOC=O | peroxy-acid | reagent | epoxidation | in-situ generated
+perbenzoic-acid | peroxybenzoic acid | O=C(OO)c1ccccc1 | peroxy-acid | reagent | epoxidation;prilezhaev | PBA
+mcpba | meta-chloroperoxybenzoic acid | O=C(OO)c1cccc(Cl)c1 | peroxy-acid | reagent | epoxidation;baeyer-villiger | mCPBA
+aibn | azobisisobutyronitrile | CC(C)(C#N)/N=N/C(C)(C)C#N | initiator | reagent | radical-initiator | AIBN
+potassium-persulfate | potassium persulfate | [K+].[K+].[O-]S(=O)(=O)OOS([O-])(=O)=O | initiator | reagent | emulsion-polymerisation | persulfate
+methyl-cation | methyl carbocation | [CH3+] | ion | transient | sn1-model | not isolable
+tert-butyl-cation | tert-butyl carbocation | C[C+](C)C | ion | transient | sn1;friedel-crafts;e1 | tertiary carbocation
+isopropyl-cation | isopropyl carbocation | C[CH+]C | ion | transient | sn1 | secondary carbocation
+benzyl-cation | benzyl carbocation | [CH2+]c1ccccc1 | ion | transient | sn1;benzylic | resonance stabilised
+tropylium | tropylium cation | [cH+]1cccccc1 | ion | intermediate | mass-spectrometry;aromatic-cation | C7H7+
+cyclopentadienide | cyclopentadienyl anion | c1cc[cH-]c1 | ion | intermediate | ferrocene;aromatic-anion | Cp-
+nitronium | nitronium ion | O=[N+]=O | ion | intermediate | nitration | the nitrating electrophile
+nitrosonium | nitrosonium ion | [N]#[O+] | ion | intermediate | diazotisation;nitrosation | NO+
+acylium-acetyl | acetylium ion | C[C+]=O | ion | transient | friedel-crafts-acylation | acylium
+sulfonium-trimethyl | trimethylsulfonium | C[S+](C)C | ion | intermediate | ylide-precursor | sulfonium
+methyl-anion | methyl carbanion | [CH3-] | ion | transient | organolithium-model | not free in solution
+acetylide | acetylide anion | [C-]#C | ion | intermediate | alkyne-alkylation;carbide | HC2-
+cyanide-ion | cyanide ion | [C-]#N | ion | intermediate | cyanohydrin;nucleophile | CN-
+acetate-ion | acetate ion | CC([O-])=O | ion | intermediate | buffer;dissociation | AcO-
+formate-ion | formate ion | [O-]C=O | ion | intermediate | dissociation;reduction | HCOO-
+benzoate-ion | benzoate ion | [O-]C(=O)c1ccccc1 | ion | intermediate | preservative;dissociation | PhCOO-
+phenoxide-ion | phenoxide ion | [O-]c1ccccc1 | ion | intermediate | williamson;kolbe-schmitt | PhO-
+ethoxide-ion | ethoxide ion | CC[O-] | ion | intermediate | claisen;transesterification | EtO-
+methoxide-ion | methoxide ion | C[O-] | ion | intermediate | transesterification | MeO-
+enolate-acetone | acetone enolate | C=C([O-])C | ion | intermediate | aldol;alkylation | the aldol nucleophile
+enolate-acetaldehyde | acetaldehyde enolate | [CH2-]C=O | ion | intermediate | aldol | enolate
+malonate-anion | diethyl malonate anion | CCOC(=O)[CH-]C(=O)OCC | ion | intermediate | malonic-ester-synthesis | stabilised carbanion
+acetoacetate-anion | ethyl acetoacetate anion | CCOC(=O)[CH-]C(C)=O | ion | intermediate | acetoacetic-ester-synthesis | stabilised carbanion
+ammonium-ion | ammonium ion | [NH4+] | ion | intermediate | dissociation;fertiliser | NH4+
+anilinium | anilinium ion | [NH3+]c1ccccc1 | ion | intermediate | aniline-protonation;nitration | protonated aniline
+pyridinium | pyridinium ion | c1cc[nH+]cc1 | ion | intermediate | pyridine-protonation | protonated pyridine
+imidazolium | imidazolium ion | c1c[nH+][nH]c1 | ion | intermediate | ionic-liquids;histidine | protonated imidazole
+bicarbonate-ion | bicarbonate ion | OC([O-])=O | ion | intermediate | carbonate-equilibria;blood-buffer | HCO3-
+carbonate-ion | carbonate ion | [O-]C([O-])=O | ion | intermediate | carbonate-equilibria | CO3 2-
+bisulfate-ion | bisulfate ion | OS([O-])(=O)=O | ion | intermediate | sulfuric-acid-dissociation | HSO4-
+sulfate-ion | sulfate ion | [O-]S([O-])(=O)=O | ion | intermediate | sulfuric-acid-dissociation | SO4 2-
+bisulfite-ion | bisulfite ion | OS([O-])=O | ion | intermediate | bisulfite-adducts | HSO3-
+sulfite-ion | sulfite ion | [O-]S([O-])=O | ion | intermediate | sulfite-chemistry | SO3 2-
+thiosulfate-ion | thiosulfate ion | [O-]S([O-])(=O)=S | ion | intermediate | iodometry;photography | S2O3 2-
+nitrate-ion | nitrate ion | [O-][N+]([O-])=O | ion | intermediate | nitric-acid-dissociation | NO3-
+nitrite-ion | nitrite ion | [O-]N=O | ion | intermediate | diazotisation | NO2-
+phosphate-ion | phosphate ion | [O-]P([O-])([O-])=O | ion | intermediate | phosphate-equilibria | PO4 3-
+hydrogen-phosphate-ion | hydrogen phosphate ion | OP([O-])([O-])=O | ion | intermediate | buffer | HPO4 2-
+dihydrogen-phosphate-ion | dihydrogen phosphate ion | OP(O)([O-])=O | ion | intermediate | buffer | H2PO4-
+chloride-ion | chloride ion | [Cl-] | ion | intermediate | electrolytes | Cl-
+bromide-ion | bromide ion | [Br-] | ion | intermediate | electrolytes | Br-
+iodide-ion | iodide ion | [I-] | ion | intermediate | electrolytes;finkelstein | I-
+fluoride-ion | fluoride ion | [F-] | ion | intermediate | electrolytes;fluoridation | F-
+hypochlorite-ion | hypochlorite ion | [O-]Cl | ion | intermediate | bleach | ClO-
+permanganate-ion | permanganate ion | [O-][Mn](=O)(=O)=O | ion | reagent | oxidation | MnO4-
+dichromate-ion | dichromate ion | [O-][Cr](=O)(=O)O[Cr]([O-])(=O)=O | ion | reagent | oxidation | Cr2O7 2-
+chromate-ion | chromate ion | [O-][Cr]([O-])(=O)=O | ion | reagent | oxidation;pigment | CrO4 2-
+sodium-ion | sodium ion | [Na+] | ion | intermediate | electrolytes | Na+
+potassium-ion | potassium ion | [K+] | ion | intermediate | electrolytes | K+
+calcium-ion | calcium ion | [Ca+2] | ion | intermediate | hardness;electrolytes | Ca2+
+magnesium-ion | magnesium ion | [Mg+2] | ion | intermediate | hardness;chlorophyll | Mg2+
+iron-ii-ion | iron(II) ion | [Fe+2] | ion | intermediate | fenton;redox | Fe2+
+iron-iii-ion | iron(III) ion | [Fe+3] | ion | intermediate | redox;coagulation | Fe3+
+copper-ii-ion | copper(II) ion | [Cu+2] | ion | intermediate | redox;fehling | Cu2+
+zinc-ion | zinc ion | [Zn+2] | ion | intermediate | galvanic;enzymes | Zn2+
+silver-ion | silver ion | [Ag+] | ion | intermediate | photography;tollens | Ag+
+aluminium-ion | aluminium ion | [Al+3] | ion | intermediate | coagulation;alum | Al3+
+lead-ion | lead(II) ion | [Pb+2] | ion | intermediate | toxicology;lead-chamber | Pb2+
+carbene-methylene | methylene carbene | [CH2] | carbene | transient | carbene-chemistry | :CH2
+dichlorocarbene | dichlorocarbene | [C](Cl)Cl | carbene | transient | reimer-tiemann;cyclopropanation | :CCl2
+benzyne | 1,2-didehydrobenzene | C1#Cc2ccccc21 | aryne | transient | benzyne-mechanism;snar-alternative | strained aryne
+nitrene-phenyl | phenylnitrene | [N]c1ccccc1 | nitrene | transient | curtius;azide-decomposition | PhN:
+ylide-methylenetriphenylphosphorane | methylenetriphenylphosphorane | [CH2-][P+](c1ccccc1)(c1ccccc1)c1ccccc1 | ylide | intermediate | wittig | the Wittig ylide
+ylide-dimethylsulfonium-methylide | dimethylsulfonium methylide | [CH2-][S+](C)C | ylide | intermediate | corey-chaykovsky | epoxidation ylide
+oxocarbenium-methoxymethyl | methoxymethyl cation | CO[CH2+] | ion | transient | acetal-hydrolysis | oxocarbenium
+tetrahedral-intermediate-ester | tetrahedral intermediate (ester hydrolysis) | CC(O)(O)OCC | intermediate | transient | ester-hydrolysis-mechanism | the addition intermediate
+meisenheimer-complex | Meisenheimer complex (schematic) | [O-]C1(OC)C=CC([N+](=O)[O-])=CC1 | intermediate | transient | snar-mechanism | anionic sigma complex
+arenium-benzene | benzenium ion (sigma complex) | C1C=CC=C[CH+]1 | ion | transient | electrophilic-aromatic-substitution | the Wheland intermediate
+wheland-nitration | nitration sigma complex | O=[N+]([O-])C1[CH+]C=CC=C1 | ion | transient | nitration-mechanism | Wheland intermediate
+diazonium-methyl | methanediazonium | C[N+]#N | ion | transient | diazomethane-decomposition | loses N2
+carbanion-triphenylmethyl | triphenylmethyl anion | [C-](c1ccccc1)(c1ccccc1)c1ccccc1 | ion | intermediate | gomberg;stabilised-carbanion | trityl anion
+radical-triphenylmethyl | triphenylmethyl radical | [C](c1ccccc1)(c1ccccc1)c1ccccc1 | radical | intermediate | gomberg;first-persistent-radical | trityl radical
+tempo | TEMPO | CC1(C)CCCC(C)(C)N1[O] | radical | reagent | oxidation-catalysis;radical-trap | persistent nitroxide
+dpph | DPPH radical | O=[N+]([O-])c1cc([N+](=O)[O-])c(N([N-]c2ccccc2)c2ccccc2)c([N+](=O)[O-])c1 | radical | reagent | antioxidant-assay | stable radical
+singlet-oxygen-marker | singlet oxygen (marker; same graph as O2) | O=O | transient | transient | photooxidation | electronic state not in the graph
+carbon-atom | atomic carbon | [C] | transient | transient | vapour-phase | graph-identical to graphite entry
+oxygen-atom | atomic oxygen | [O] | radical | transient | ozone-chemistry;plasma | O.
+nitrogen-atom | atomic nitrogen | [N] | radical | transient | plasma;discharge | N.
+sulfur-atom | atomic sulfur | [S] | radical | transient | high-temperature-sulfur | S.

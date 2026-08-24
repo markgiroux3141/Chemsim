@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "chemsim"
+version = "0.0.1"
+description = "An emergent chemistry simulation engine: molecular graphs + reaction templates + kinetics."
+requires-python = ">=3.11"
+dependencies = [
+    "numpy>=1.26",
+    "scipy>=1.11",
+    "rdkit>=2024.0",
+]
+
+# The window is `python -m chemsim.ui`, or this. Tkinter is standard library, so
+# the interface adds no dependency -- which is most of why it is Tkinter.
+[project.scripts]
+chemsim-ui = "chemsim.ui.app:launch"
+
+[project.optional-dependencies]
+viz = ["matplotlib>=3.8"]
+# `thermo` is a test-only oracle: the suite cross-checks our Joback group table
+# and fragmentation against it. Not a runtime dependency.
+dev = ["pytest>=8", "thermo>=0.6"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

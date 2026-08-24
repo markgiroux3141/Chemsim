@@ -1,0 +1,81 @@
+# E. HALOGENATED ORGANICS -- alkyl/aryl halides, freons, chlorinated solvents
+chloromethane | chloromethane | CCl | haloalkane | intermediate | silicones;methylation | methyl chloride
+dichloromethane | dichloromethane | ClCCl | haloalkane | solvent | extraction;paint-stripping | DCM
+chloroform | trichloromethane | ClC(Cl)Cl | haloalkane | solvent | anaesthesia;hcfc-22 | historic anaesthetic
+carbon-tetrachloride | tetrachloromethane | ClC(Cl)(Cl)Cl | haloalkane | solvent | cfc-feedstock;fire-extinguisher | banned solvent
+bromomethane | bromomethane | CBr | haloalkane | reagent | fumigation;methylation | methyl bromide
+dibromomethane | dibromomethane | BrCBr | haloalkane | reagent | cyclopropanation | DBM
+bromoform | tribromomethane | BrC(Br)Br | haloalkane | byproduct | water-chlorination | THM byproduct
+iodomethane | iodomethane | CI | haloalkane | reagent | methylation;monsanto-acetic | methyl iodide
+diiodomethane | diiodomethane | ICI | haloalkane | reagent | simmons-smith | high refractive index
+chloroethane | chloroethane | CCCl | haloalkane | intermediate | tetraethyllead;ethylation | ethyl chloride
+bromoethane | bromoethane | CCBr | haloalkane | reagent | grignard;alkylation | ethyl bromide
+iodoethane | iodoethane | CCI | haloalkane | reagent | alkylation | ethyl iodide
+1,1-dichloroethane | 1,1-dichloroethane | CC(Cl)Cl | haloalkane | intermediate | vinyl-chloride | geminal
+1,2-dichloroethane | 1,2-dichloroethane | ClCCCl | haloalkane | intermediate | vinyl-chloride;solvent | EDC
+1,1,1-trichloroethane | 1,1,1-trichloroethane | CC(Cl)(Cl)Cl | haloalkane | solvent | degreasing | methyl chloroform
+1,1,2-trichloroethane | 1,1,2-trichloroethane | ClCC(Cl)Cl | haloalkane | intermediate | vinylidene-chloride | vicinal
+tetrachloroethane | 1,1,2,2-tetrachloroethane | ClC(Cl)C(Cl)Cl | haloalkane | intermediate | trichloroethylene | solvent precursor
+hexachloroethane | hexachloroethane | ClC(Cl)(Cl)C(Cl)(Cl)Cl | haloalkane | reagent | smoke-screen;degassing | camphor-like solid
+1-chloropropane | 1-chloropropane | CCCCl | haloalkane | reagent | alkylation | n-propyl chloride
+2-chloropropane | 2-chloropropane | CC(C)Cl | haloalkane | reagent | alkylation | isopropyl chloride
+1-bromopropane | 1-bromopropane | CCCBr | haloalkane | solvent | degreasing | nPB
+1,2-dibromoethane | 1,2-dibromoethane | BrCCBr | haloalkane | reagent | lead-scavenger;fumigant | EDB
+1-chlorobutane | 1-chlorobutane | CCCCCl | haloalkane | reagent | grignard | n-butyl chloride
+tert-butyl-chloride | 2-chloro-2-methylpropane | CC(C)(C)Cl | haloalkane | reagent | sn1-model;friedel-crafts | tertiary halide
+1-bromobutane | 1-bromobutane | CCCCBr | haloalkane | reagent | sn2-model | n-butyl bromide
+1-chlorooctane | 1-chlorooctane | CCCCCCCCCl | haloalkane | reagent | surfactant-intermediate | long chain
+allyl-chloride | 3-chloropropene | ClCC=C | haloalkene | intermediate | epichlorohydrin;glycerol | allylic
+allyl-bromide | 3-bromopropene | BrCC=C | haloalkene | reagent | allylation | allylic
+benzyl-chloride | benzyl chloride | ClCc1ccccc1 | halide | intermediate | benzyl-alcohol;quaternary-ammonium | benzylic
+benzyl-bromide | benzyl bromide | BrCc1ccccc1 | halide | reagent | protecting-groups | benzylic
+benzal-chloride | benzal chloride | ClC(Cl)c1ccccc1 | halide | intermediate | benzaldehyde | side-chain chlorination
+benzotrichloride | benzotrichloride | ClC(Cl)(Cl)c1ccccc1 | halide | intermediate | benzoyl-chloride | exhaustive side-chain chlorination
+chlorobenzene | chlorobenzene | Clc1ccccc1 | aryl-halide | intermediate | phenol;ddt;aniline | Dow phenol feed
+1,2-dichlorobenzene | ortho-dichlorobenzene | Clc1ccccc1Cl | aryl-halide | solvent | high-boiling-solvent | ODCB
+1,4-dichlorobenzene | para-dichlorobenzene | Clc1ccc(Cl)cc1 | aryl-halide | product | mothballs;pps | PDCB
+1,2,4-trichlorobenzene | 1,2,4-trichlorobenzene | Clc1ccc(Cl)c(Cl)c1 | aryl-halide | solvent | dye-carrier | TCB
+hexachlorobenzene | hexachlorobenzene | Clc1c(Cl)c(Cl)c(Cl)c(Cl)c1Cl | aryl-halide | byproduct | fungicide;pop | persistent pollutant
+bromobenzene | bromobenzene | Brc1ccccc1 | aryl-halide | reagent | grignard;cross-coupling | phenyl source
+iodobenzene | iodobenzene | Ic1ccccc1 | aryl-halide | reagent | ullmann;cross-coupling | oxidative addition partner
+fluorobenzene | fluorobenzene | Fc1ccccc1 | aryl-halide | reagent | balz-schiemann-product | aryl fluoride
+4-chlorotoluene | para-chlorotoluene | Cc1ccc(Cl)cc1 | aryl-halide | intermediate | cresol;pesticides | PCT
+2-chlorotoluene | ortho-chlorotoluene | Cc1ccccc1Cl | aryl-halide | intermediate | dyes | OCT
+4-chloronitrobenzene | para-chloronitrobenzene | O=[N+]([O-])c1ccc(Cl)cc1 | aryl-halide | intermediate | snar;dyes | activated toward SNAr
+1-chloro-2,4-dinitrobenzene | 1-chloro-2,4-dinitrobenzene | O=[N+]([O-])c1ccc(Cl)c([N+](=O)[O-])c1 | aryl-halide | reagent | sanger-reagent;snar | CDNB
+vinyl-chloride | chloroethene | C=CCl | haloalkene | monomer | pvc | VCM
+vinylidene-chloride | 1,1-dichloroethene | C=C(Cl)Cl | haloalkene | monomer | saran | VDC
+cis-dichloroethylene | cis-1,2-dichloroethene | Cl/C=C\Cl | haloalkene | solvent | degreasing | Z isomer
+trichloroethylene | trichloroethene | ClC=C(Cl)Cl | haloalkene | solvent | degreasing;anaesthesia | TCE
+tetrachloroethylene | tetrachloroethene | ClC(Cl)=C(Cl)Cl | haloalkene | solvent | dry-cleaning | perc
+vinyl-fluoride | fluoroethene | C=CF | haloalkene | monomer | pvf | VF
+vinylidene-fluoride | 1,1-difluoroethene | C=C(F)F | haloalkene | monomer | pvdf | VDF
+tetrafluoroethylene | tetrafluoroethene | FC(F)=C(F)F | haloalkene | monomer | ptfe | TFE
+hexafluoropropylene | hexafluoropropene | FC(F)=C(F)C(F)(F)F | haloalkene | monomer | fep | HFP
+chlorodifluoromethane | chlorodifluoromethane | FC(F)Cl | haloalkane | intermediate | ptfe-feedstock;refrigerant | HCFC-22
+dichlorodifluoromethane | dichlorodifluoromethane | FC(F)(Cl)Cl | haloalkane | product | refrigerant | CFC-12 / Freon-12
+trichlorofluoromethane | trichlorofluoromethane | FC(Cl)(Cl)Cl | haloalkane | product | refrigerant;blowing-agent | CFC-11
+1,1,1,2-tetrafluoroethane | 1,1,1,2-tetrafluoroethane | FCC(F)(F)F | haloalkane | product | refrigerant | HFC-134a
+difluoromethane | difluoromethane | FCF | haloalkane | product | refrigerant | HFC-32
+trifluoromethane | trifluoromethane | FC(F)F | haloalkane | byproduct | ptfe-byproduct | HFC-23
+halothane | halothane | FC(F)(F)C(Cl)Br | haloalkane | product | anaesthesia | inhalational anaesthetic
+epichlorohydrin | epichlorohydrin | ClCC1CO1 | haloether | intermediate | epoxy-resin;glycerol | ECH
+chloroacetyl-chloride | chloroacetyl chloride | O=C(Cl)CCl | acyl-halide | intermediate | agrochemicals | reactive
+chloroacetone | chloroacetone | CC(=O)CCl | halide | intermediate | tear-gas;heterocycles | lachrymator
+phenacyl-bromide | 2-bromoacetophenone | O=C(CBr)c1ccccc1 | halide | reagent | alkylation;lachrymator | activated halide
+2-chloroethanol | 2-chloroethanol | OCCCl | halohydrin | intermediate | ethylene-oxide;glycol | ethylene chlorohydrin
+propylene-chlorohydrin | 1-chloro-2-propanol | CC(O)CCl | halohydrin | intermediate | propylene-oxide | chlorohydrin route
+bis-chloroethyl-ether | bis(2-chloroethyl) ether | ClCCOCCCl | haloether | byproduct | ethylene-oxide | DCEE
+mustard-gas | bis(2-chloroethyl) sulfide | ClCCSCCCl | halide | product | chemical-warfare;chemotherapy-precursor | sulfur mustard
+chloropicrin | trichloronitromethane | O=[N+]([O-])C(Cl)(Cl)Cl | halide | product | fumigant;warfare | nitrochloroform
+ddt | dichlorodiphenyltrichloroethane | ClC(Cl)(Cl)C(c1ccc(Cl)cc1)c1ccc(Cl)cc1 | halide | product | insecticide | banned organochlorine
+lindane | gamma-hexachlorocyclohexane | Cl[C@H]1[C@@H](Cl)[C@H](Cl)[C@@H](Cl)[C@H](Cl)[C@@H]1Cl | halide | product | insecticide | gamma-HCH
+chlordane | chlordane | ClC1C(Cl)C2(Cl)C3(Cl)C1(Cl)C(Cl)(Cl)C3(Cl)CC2Cl | halide | product | insecticide;pop | cyclodiene
+pcb-52 | 2,2,5,5-tetrachlorobiphenyl | Clc1ccc(Cl)c(-c2cc(Cl)ccc2Cl)c1 | halide | byproduct | transformer-oil;pop | PCB congener
+tcdd | 2,3,7,8-tetrachlorodibenzo-p-dioxin | Clc1cc2Oc3cc(Cl)c(Cl)cc3Oc2cc1Cl | halide | byproduct | combustion;herbicide-contaminant | dioxin
+freon-113 | 1,1,2-trichlorotrifluoroethane | FC(F)(Cl)C(F)(Cl)Cl | haloalkane | solvent | precision-cleaning | CFC-113
+perfluorooctanoic-acid | perfluorooctanoic acid | OC(=O)C(F)(F)C(F)(F)C(F)(F)C(F)(F)C(F)(F)C(F)(F)C(F)(F)F | halide | product | fluoropolymer-surfactant;pfas | PFOA
+perfluorooctanesulfonic-acid | perfluorooctanesulfonic acid | OS(=O)(=O)C(F)(F)C(F)(F)C(F)(F)C(F)(F)C(F)(F)C(F)(F)C(F)(F)C(F)(F)F | halide | product | surfactant;pfas | PFOS
+trifluoroacetic-acid | trifluoroacetic acid | OC(=O)C(F)(F)F | acid | reagent | deprotection;hplc | TFA
+trifluoroacetic-anhydride | trifluoroacetic anhydride | O=C(OC(=O)C(F)(F)F)C(F)(F)F | anhydride | reagent | activation | TFAA
+triflic-acid | trifluoromethanesulfonic acid | OS(=O)(=O)C(F)(F)F | acid | reagent | superacid;catalysis | TfOH

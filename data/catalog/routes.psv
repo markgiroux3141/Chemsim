@@ -1,0 +1,181 @@
+# ROUTE HEADERS -- pipe-separated. Columns:
+#   route_id | name | era | domain | target | notes
+# era: ancient | alchemical | 1700s | 1800s | 1900s | modern
+# The FEEDSTOCK / INTERMEDIATE / PRODUCT split is NOT declared here. It is derived
+# from route_steps.psv by tools/build_catalog.py: a species consumed but never
+# produced inside the route is a primary feedstock; one both produced and consumed
+# is an intermediate; one produced and never consumed is a product or byproduct.
+# Declaring it would let the declaration drift from the steps; deriving it cannot.
+lead-chamber | lead chamber sulfuric acid | 1700s | heavy-inorganic | sulfuric-acid | the NOx carrier cycle; already implemented in reactions/library
+contact-process | contact process sulfuric acid | 1800s | heavy-inorganic | sulfuric-acid | V2O5 catalysed SO2 oxidation
+vitriol-distillation | distillation of green vitriol | alchemical | heavy-inorganic | sulfuric-acid | the oldest sulfuric acid route
+pyrite-roasting | pyrite roasting to SO2 | 1800s | heavy-inorganic | sulfur-dioxide | the sulfur source before Frasch
+claus-process | Claus sulfur recovery | 1900s | heavy-inorganic | sulfur-s8 | H2S to elemental sulfur
+leblanc-process | Leblanc soda process | 1700s | heavy-inorganic | sodium-carbonate | salt cake, black ash, galligu waste
+solvay-process | Solvay ammonia-soda process | 1800s | heavy-inorganic | sodium-carbonate | ammonia recycled, calcium chloride wasted
+chloralkali | chloralkali electrolysis | 1800s | heavy-inorganic | sodium-hydroxide | co-produces chlorine and hydrogen
+lime-cycle | limestone calcination and slaking | ancient | heavy-inorganic | calcium-oxide | the mortar cycle
+haber-bosch | Haber-Bosch ammonia | 1900s | heavy-inorganic | ammonia | the nitrogen fixation that fed the century
+ostwald-process | Ostwald nitric acid | 1900s | heavy-inorganic | nitric-acid | ammonia to NO to NO2 to HNO3
+birkeland-eyde | Birkeland-Eyde arc process | 1900s | heavy-inorganic | nitric-acid | superseded by Haber plus Ostwald
+saltpetre-nitric | nitric acid from saltpetre | alchemical | heavy-inorganic | nitric-acid | aqua fortis by distillation with vitriol
+aqua-regia | aqua regia | alchemical | heavy-inorganic | nitrosyl-chloride | the gold solvent
+frank-caro | Frank-Caro cyanamide process | 1900s | heavy-inorganic | calcium-cyanamide | nitrogen fixation via carbide
+andrussow | Andrussow HCN process | 1900s | heavy-inorganic | hydrogen-cyanide | methane, ammonia and air over platinum
+deacon-process | Deacon chlorine process | 1800s | heavy-inorganic | chlorine | HCl reoxidation over copper
+weldon-chlorine | Weldon chlorine from pyrolusite | 1800s | heavy-inorganic | chlorine | MnO2 plus HCl
+bleaching-powder | bleaching powder manufacture | 1800s | heavy-inorganic | calcium-hypochlorite | Tennant chlorinated lime
+hypochlorite-bleach | sodium hypochlorite bleach | 1900s | heavy-inorganic | sodium-hypochlorite | chlorine into caustic
+phosphoric-wet | wet-process phosphoric acid | 1900s | heavy-inorganic | phosphoric-acid | phosphate rock plus sulfuric acid; gypsum byproduct
+superphosphate | superphosphate fertiliser | 1800s | agriculture | monocalcium-phosphate | Lawes patent
+white-phosphorus | white phosphorus from bone ash | 1700s | heavy-inorganic | phosphorus-white | electric furnace / retort reduction
+match-chemistry | strike-anywhere match head | 1800s | consumer | phosphorus-pentoxide | the phosphorus and chlorate mix
+bayer-process | Bayer alumina process | 1800s | metallurgy | aluminium-oxide | bauxite digestion in caustic
+hall-heroult | Hall-Heroult aluminium | 1800s | metallurgy | aluminium | cryolite melt electrolysis
+blast-furnace | blast furnace ironmaking | ancient | metallurgy | iron | carbon monoxide reduction of haematite
+lead-smelting | galena roasting and reduction | ancient | metallurgy | lead | the lead behind the lead chamber
+copper-smelting | copper sulfide smelting | ancient | metallurgy | copper | roast, smelt, convert
+zinc-smelting | zinc retort smelting | 1700s | metallurgy | zinc | sphalerite roast then carbon reduction
+mercury-from-cinnabar | mercury from cinnabar | ancient | metallurgy | mercury | roasting to the metal and SO2
+thermite | thermite reaction | 1800s | metallurgy | iron | aluminothermic reduction
+downs-cell | Downs cell sodium | 1900s | metallurgy | sodium | molten NaCl electrolysis
+castner-kellner | Castner-Kellner mercury cell | 1800s | heavy-inorganic | sodium-hydroxide | amalgam route to caustic
+gunpowder | black powder | ancient | energetics | gunpowder-marker | saltpetre, sulfur, charcoal
+nitroglycerin-route | nitroglycerin and dynamite | 1800s | energetics | nitroglycerin | Sobrero and Nobel
+guncotton | nitrocellulose / guncotton | 1800s | energetics | nitrocellulose-unit | Schoenbein
+tnt-route | TNT manufacture | 1900s | energetics | tnt | three-stage nitration of toluene
+picric-acid-route | picric acid from phenol | 1800s | energetics | picric-acid | dye first, explosive later
+rdx-route | RDX from hexamine | 1900s | energetics | rdx | nitrolysis of hexamine
+petn-route | PETN from pentaerythritol | 1900s | energetics | petn | nitration of the tetraol
+mercury-fulminate-route | mercury fulminate | 1800s | energetics | mercury-fulminate | the percussion cap
+coal-tar-distillation | coal tar fractionation | 1800s | aromatics | benzene | the source of every early aromatic
+coal-gas | coal gas and coke | 1800s | aromatics | coal-tar-marker | destructive distillation of coal
+benzene-nitration | nitration of benzene | 1800s | aromatics | nitrobenzene | mixed acid, nitronium ion
+aniline-route | aniline from nitrobenzene | 1800s | aromatics | aniline | Bechamp then catalytic hydrogenation
+mauveine-route | Perkin mauve | 1800s | dyes | mauveine-a | the accident that started the dye industry
+alizarin-route | synthetic alizarin | 1800s | dyes | alizarin | anthraquinone sulfonation and alkali fusion
+indigo-baeyer-drewson | Baeyer-Drewson indigo | 1800s | dyes | indigo | from 2-nitrobenzaldehyde and acetone
+indigo-heumann | Heumann-Pfleger indigo | 1800s | dyes | indigo | the industrial aniline route
+azo-dye-coupling | diazotisation and azo coupling | 1800s | dyes | methyl-orange | the general azo dye route
+triarylmethane-dyes | malachite green | 1800s | dyes | malachite-green | benzaldehyde plus dimethylaniline
+prussian-blue-route | Prussian blue | 1700s | pigments | prussian-blue | the first modern synthetic pigment
+white-lead-route | white lead by the stack process | ancient | pigments | basic-lead-carbonate | vinegar, lead and dung
+vermilion-route | vermilion from mercury and sulfur | alchemical | pigments | mercury-sulfide | the alchemical red
+chrome-yellow-route | chrome yellow | 1800s | pigments | chrome-yellow | lead nitrate plus chromate
+phenol-cumene | cumene (Hock) process | 1900s | petrochemical | phenol | phenol and acetone from one radical chain
+phenol-dow | Dow chlorobenzene hydrolysis | 1900s | petrochemical | phenol | high-pressure caustic
+phenol-sulfonation | benzenesulfonate alkali fusion | 1800s | petrochemical | phenol | the first industrial phenol
+bakelite-route | Bakelite phenolic resin | 1900s | polymers | bakelite-unit | the first fully synthetic plastic
+salicylic-kolbe | Kolbe-Schmitt salicylic acid | 1800s | pharma | salicylic-acid | carboxylation of sodium phenoxide
+aspirin-route | aspirin | 1800s | pharma | aspirin | acetylation with acetic anhydride
+paracetamol-route | paracetamol | 1900s | pharma | paracetamol | nitrobenzene to 4-aminophenol to the amide
+phenacetin-route | phenacetin | 1800s | pharma | phenacetin | Williamson ether then acetylation
+salicin-hydrolysis | salicin to salicylic acid | 1800s | pharma | salicylic-acid | the willow-bark route
+sulfa-drug-route | sulfanilamide | 1900s | pharma | sulfanilamide | acetanilide, chlorosulfonation, ammonolysis
+prontosil-route | prontosil | 1900s | pharma | prontosil | the azo prodrug
+penicillin-route | penicillin fermentation and semisynthesis | 1900s | pharma | amoxicillin | 6-APA as the branch point
+aspirin-impurity | aspirin hydrolysis and impurities | 1900s | pharma | salicylic-acid | why old aspirin smells of vinegar
+chloroform-route | chloroform by the haloform reaction | 1800s | fine-chemicals | chloroform | bleaching powder plus acetone or ethanol
+chloral-route | chloral and chloral hydrate | 1800s | fine-chemicals | chloral-hydrate | exhaustive chlorination of ethanol
+ddt-route | DDT | 1900s | agrochemical | ddt | chloral plus chlorobenzene
+freon-route | Freon-12 from carbon tetrachloride | 1900s | refrigerants | dichlorodifluoromethane | Swarts halogen exchange
+ptfe-route | PTFE from chlorodifluoromethane | 1900s | polymers | ptfe-unit | pyrolysis to TFE then polymerisation
+steam-reforming | steam methane reforming | 1900s | syngas | hydrogen | the hydrogen and syngas backbone
+water-gas-shift | water gas shift | 1800s | syngas | hydrogen | CO plus steam to CO2 and H2
+methanol-synthesis | methanol from syngas | 1900s | syngas | methanol | copper-zinc catalyst
+wood-distillation | destructive distillation of wood | 1700s | syngas | methanol | pyroligneous acid
+fischer-tropsch | Fischer-Tropsch synthesis | 1900s | syngas | octane | syngas to liquid hydrocarbons
+monsanto-acetic | Monsanto / Cativa acetic acid | 1900s | petrochemical | acetic-acid | methanol carbonylation
+acetic-fermentation | vinegar by acetic fermentation | ancient | fermentation | acetic-acid | ethanol plus air over bacteria
+acetic-anhydride-ketene | acetic anhydride via ketene | 1900s | petrochemical | acetic-anhydride | acetic acid pyrolysis
+wacker-process | Wacker oxidation | 1900s | petrochemical | acetaldehyde | palladium-copper, ethylene to acetaldehyde
+acetylene-acetaldehyde | Kucherov acetylene hydration | 1800s | petrochemical | acetaldehyde | mercury-catalysed, superseded by Wacker
+calcium-carbide | calcium carbide and acetylene | 1800s | petrochemical | acetylene | the carbide era feedstock
+steam-cracking | steam cracking of naphtha | 1900s | petrochemical | ethylene | the modern olefin source
+ethylene-oxide-route | ethylene oxide by direct oxidation | 1900s | petrochemical | ethylene-oxide | silver catalyst
+chlorohydrin-route | chlorohydrin route to ethylene oxide | 1900s | petrochemical | ethylene-oxide | the route silver replaced
+ethylene-glycol-route | ethylene glycol by EO hydration | 1900s | petrochemical | ethylene-glycol | di- and tri-glycol as byproducts
+pet-route | PET polyester | 1900s | polymers | pet-unit | terephthalic acid or DMT plus glycol
+p-xylene-oxidation | Amoco terephthalic acid | 1900s | polymers | terephthalic-acid | cobalt-manganese-bromide air oxidation
+nylon66-route | nylon 66 | 1900s | polymers | nylon-66-unit | Carothers; adipic acid plus HMDA
+nylon6-route | nylon 6 from caprolactam | 1900s | polymers | nylon-6-unit | cyclohexanone oxime and the Beckmann rearrangement
+adipic-acid-route | adipic acid from cyclohexane | 1900s | polymers | adipic-acid | KA oil then nitric acid oxidation
+acrylonitrile-sohio | SOHIO ammoxidation | 1900s | polymers | acrylonitrile | propylene, ammonia and air
+adiponitrile-route | adiponitrile by electrohydrodimerisation | 1900s | polymers | adiponitrile | Monsanto electro-organic process
+vinyl-chloride-route | vinyl chloride and PVC | 1900s | polymers | pvc-unit | EDC cracking
+styrene-route | styrene from ethylbenzene | 1900s | polymers | styrene | alkylation then dehydrogenation
+polyethylene-route | polyethylene | 1900s | polymers | polyethylene-unit | radical high pressure and Ziegler-Natta
+mma-ach | MMA by the acetone cyanohydrin route | 1900s | polymers | methyl-methacrylate | ammonium bisulfate byproduct
+bisphenol-a-route | bisphenol A and polycarbonate | 1900s | polymers | polycarbonate-unit | acetone plus phenol, then phosgene
+epoxy-route | epoxy resin from epichlorohydrin | 1900s | polymers | diglycidyl-ether-bpa | glycerol or propylene route to ECH
+polyurethane-route | polyurethane from TDI | 1900s | polymers | polyurethane-unit | dinitrotoluene to diamine to diisocyanate
+mdi-route | MDI from aniline and formaldehyde | 1900s | polymers | mdi | condensation then phosgenation
+urea-formaldehyde-route | urea-formaldehyde resin | 1900s | polymers | urea-formaldehyde-unit | particleboard adhesive
+melamine-route | melamine from urea | 1900s | polymers | melamine | urea pyrolysis via cyanic acid
+silicone-route | silicones by the direct process | 1900s | polymers | polydimethylsiloxane-unit | Rochow-Muller
+neoprene-route | neoprene from acetylene | 1900s | polymers | polychloroprene-unit | vinylacetylene then HCl
+buna-rubber | Buna synthetic rubber from butadiene | 1900s | polymers | sbr-marker | butadiene from ethanol or from cracking
+vulcanisation | vulcanisation of rubber | 1800s | polymers | vulcanised-rubber-marker | Goodyear; sulfur crosslinks
+viscose-route | viscose rayon | 1800s | polymers | viscose-marker | cellulose xanthate then regeneration
+celluloid-route | celluloid | 1800s | polymers | celluloid-marker | nitrocellulose plasticised with camphor
+oxo-process | hydroformylation (oxo process) | 1900s | petrochemical | butyraldehyde | Roelen; alkene plus syngas
+2-ethylhexanol-route | 2-ethylhexanol by aldol-oxo | 1900s | petrochemical | 2-ethylhexanol | the plasticiser alcohol
+dop-route | DOP plasticiser | 1900s | petrochemical | dioctyl-phthalate | phthalic anhydride plus 2-ethylhexanol
+phthalic-anhydride-route | phthalic anhydride from o-xylene | 1900s | petrochemical | phthalic-anhydride | vanadium catalysed air oxidation
+maleic-anhydride-route | maleic anhydride from n-butane | 1900s | petrochemical | maleic-anhydride | VPO catalyst
+soap-saponification | soap from fat and lye | ancient | consumer | sodium-stearate | the oldest deliberate synthesis
+biodiesel-route | biodiesel by transesterification | modern | fuels | methyl-oleate | glycerol co-product
+hydrogenation-margarine | fat hardening | 1900s | food | tristearin | Normann; trans byproducts
+glycerol-epichlorohydrin | glycerol to epichlorohydrin | modern | polymers | epichlorohydrin | biodiesel glycerol valorisation
+ethanol-fermentation | ethanol by fermentation | ancient | fermentation | ethanol | sugar to ethanol and CO2
+ethanol-hydration | ethanol by ethylene hydration | 1900s | petrochemical | ethanol | phosphoric acid on silica
+abe-fermentation | acetone-butanol-ethanol fermentation | 1900s | fermentation | acetone | Weizmann; cordite acetone
+citric-acid-fermentation | citric acid by fermentation | 1900s | fermentation | citric-acid | Aspergillus niger
+lactic-acid-pla | lactic acid to polylactide | modern | polymers | pla-unit | fermentation, lactide, ring-opening
+msg-route | monosodium glutamate | 1900s | food | glutamic-acid | fermentation of sugar
+starch-hydrolysis | starch to glucose syrup | 1800s | food | glucose | acid then enzyme
+invert-sugar | sucrose inversion | ancient | food | fructose | acid or invertase
+furfural-route | furfural from pentosans | 1900s | biomass | furfural | bran and cobs with acid
+hmf-route | HMF from fructose | modern | biomass | 5-hydroxymethylfurfural | the biomass platform molecule
+vanillin-eugenol | vanillin from eugenol | 1800s | flavours | vanillin | clove oil isomerisation and oxidation
+vanillin-lignin | vanillin from lignin | 1900s | flavours | vanillin | sulfite liquor oxidation
+vanillin-guaiacol | vanillin from guaiacol | 1900s | flavours | vanillin | the Reimer-Tiemann and glyoxylic routes
+camphor-route | synthetic camphor from pinene | 1900s | fine-chemicals | camphor | turpentine to camphene to camphor
+menthol-route | menthol from citronellal | modern | flavours | menthol | asymmetric isomerisation then cyclisation
+indigo-natural | indigo from woad and indican | ancient | dyes | indigo | hydrolysis then air oxidation
+tyrian-purple-route | Tyrian purple from murex | ancient | dyes | tyrian-purple | the most expensive dye in history
+tanning-route | vegetable tanning | ancient | leather | gallic-acid | tannin hydrolysis
+iron-gall-ink | iron gall ink | ancient | consumer | iron-gallate-marker | gallic acid plus green vitriol
+photography-silver | silver halide photography | 1800s | imaging | silver | expose, develop, fix
+vitamin-c-reichstein | Reichstein vitamin C synthesis | 1900s | pharma | ascorbic-acid | glucose, sorbitol, fermentation, lactonisation
+strecker-amino-acid | Strecker amino acid synthesis | 1800s | fine-chemicals | alanine | aldehyde, ammonia, cyanide
+gabriel-synthesis | Gabriel primary amine synthesis | 1800s | fine-chemicals | benzylamine | phthalimide alkylation and cleavage
+malonic-ester-synthesis | malonic ester synthesis | 1800s | fine-chemicals | valeric-acid | alkylate, hydrolyse, decarboxylate
+acetoacetic-ester-synthesis | acetoacetic ester synthesis | 1800s | fine-chemicals | 2-pentanone | the methyl ketone route
+grignard-route | Grignard addition to a carbonyl | 1900s | fine-chemicals | 1-phenylethanol | the organometallic workhorse
+wittig-route | Wittig olefination | 1900s | fine-chemicals | styrene | phosphonium ylide plus aldehyde
+diels-alder-route | Diels-Alder cycloaddition | 1900s | fine-chemicals | norbornane | butadiene or cyclopentadiene plus dienophile
+aldol-route | aldol condensation | 1800s | fine-chemicals | crotonaldehyde | the C-C bond that built industry
+claisen-route | Claisen ester condensation | 1800s | fine-chemicals | ethyl-acetoacetate | ester enolate acylation
+friedel-crafts-route | Friedel-Crafts alkylation and acylation | 1800s | aromatics | acetophenone | aluminium chloride catalysis
+cannizzaro-route | Cannizzaro disproportionation | 1800s | fine-chemicals | benzyl-alcohol | no alpha hydrogen, so it disproportionates
+perkin-route | Perkin cinnamic acid synthesis | 1800s | flavours | cinnamic-acid | benzaldehyde plus acetic anhydride
+knoevenagel-route | Knoevenagel condensation | 1800s | fine-chemicals | cinnamic-acid | active methylene plus aldehyde
+beckmann-route | Beckmann rearrangement | 1800s | polymers | caprolactam | oxime to amide
+hofmann-route | Hofmann rearrangement | 1800s | fine-chemicals | aniline | amide to amine, one carbon shorter
+curtius-route | Curtius rearrangement | 1800s | fine-chemicals | aniline | acyl azide to isocyanate to amine
+sandmeyer-route | Sandmeyer reaction | 1800s | aromatics | chlorobenzene | diazonium to aryl halide
+reimer-tiemann | Reimer-Tiemann formylation | 1800s | fine-chemicals | salicylaldehyde | dichlorocarbene on phenoxide
+williamson-ether | Williamson ether synthesis | 1800s | fine-chemicals | anisole | alkoxide plus alkyl halide
+fischer-indole | Fischer indole synthesis | 1800s | heterocycles | 3-methylindole | phenylhydrazine plus ketone
+skraup-route | Skraup quinoline synthesis | 1800s | heterocycles | quinoline | aniline, glycerol and nitrobenzene
+hantzsch-pyridine | Hantzsch dihydropyridine synthesis | 1800s | heterocycles | pyridine | two beta-ketoesters, an aldehyde and ammonia
+mannich-route | Mannich reaction | 1900s | fine-chemicals | 4-dimethylamino-2-butanone | amine, formaldehyde and an enolisable ketone
+michael-robinson | Michael addition and Robinson annulation | 1900s | fine-chemicals | isophorone | conjugate addition then intramolecular aldol
+wohler-urea | Wohler urea synthesis | 1800s | landmark | urea | the synthesis that ended vitalism
+kolbe-electrolysis | Kolbe electrolysis | 1800s | landmark | ethane | carboxylate to dimer
+haloform-iodoform | iodoform test | 1800s | analysis | iodoform | methyl ketone plus hypohalite
+fehling-test | Fehling reducing sugar test | 1800s | analysis | copper-i-oxide | the brick-red precipitate
+tollens-test | Tollens silver mirror | 1800s | analysis | silver | aldehyde reduces the diamminesilver ion
+marsh-test | Marsh arsenic test | 1800s | analysis | arsine | the forensic classic
+kjeldahl | Kjeldahl nitrogen determination | 1800s | analysis | ammonium-sulfate | digest, distil, titrate

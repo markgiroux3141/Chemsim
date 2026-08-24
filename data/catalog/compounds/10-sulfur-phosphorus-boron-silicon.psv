@@ -1,0 +1,90 @@
+# J. ORGANOSULFUR, ORGANOPHOSPHORUS, ORGANOBORON, ORGANOSILICON
+methanethiol | methanethiol | CS | thiol | intermediate | methionine;odorant | mercaptan
+ethanethiol | ethanethiol | CCS | thiol | reagent | odorant;demethylation | ethyl mercaptan
+1-propanethiol | 1-propanethiol | CCCS | thiol | reagent | odorant | propyl mercaptan
+1-butanethiol | 1-butanethiol | CCCCS | thiol | product | skunk-odorant | butyl mercaptan
+tert-butylthiol | 2-methyl-2-propanethiol | CC(C)(C)S | thiol | reagent | gas-odorant | TBM
+1-dodecanethiol | 1-dodecanethiol | CCCCCCCCCCCCS | thiol | reagent | chain-transfer-agent;saMs | lauryl mercaptan
+thiophenol | benzenethiol | Sc1ccccc1 | thiol | reagent | thioethers | aryl thiol
+2-mercaptoethanol | 2-mercaptoethanol | OCCS | thiol | reagent | disulfide-reduction | BME
+thioglycolic-acid | mercaptoacetic acid | OC(=O)CS | thiol | reagent | permanent-wave;depilatory | TGA
+dithiothreitol | dithiothreitol | OC(CS)C(O)CS | thiol | reagent | disulfide-reduction | DTT / Cleland reagent
+dimethyl-sulfide | dimethyl sulfide | CSC | thioether | product | marine-odour;oxidation | DMS
+diethyl-sulfide | diethyl sulfide | CCSCC | thioether | reagent | ligand | DES
+thioanisole | methyl phenyl sulfide | CSc1ccccc1 | thioether | reagent | sulfoxide-chemistry | aryl thioether
+dimethyl-disulfide | dimethyl disulfide | CSSC | disulfide | reagent | sulfiding-agent | DMDS
+diphenyl-disulfide | diphenyl disulfide | c1ccc(SSc2ccccc2)cc1 | disulfide | reagent | thiolation | PhSSPh
+dimethyl-sulfoxide | dimethyl sulfoxide | CS(C)=O | sulfoxide | solvent | polar-aprotic;swern | DMSO
+diphenyl-sulfoxide | diphenyl sulfoxide | O=S(c1ccccc1)c1ccccc1 | sulfoxide | reagent | oxidation-model | aryl sulfoxide
+dimethyl-sulfone | dimethyl sulfone | CS(C)(=O)=O | sulfone | product | msm-supplement;solvent | MSM
+sulfolane | tetrahydrothiophene-1,1-dioxide | O=S1(=O)CCCC1 | sulfone | solvent | aromatics-extraction;gas-treating | sulfolane
+diphenyl-sulfone | diphenyl sulfone | O=S(=O)(c1ccccc1)c1ccccc1 | sulfone | intermediate | pes-polymer | aryl sulfone
+methanesulfonic-acid | methanesulfonic acid | CS(=O)(=O)O | sulfonic-acid | reagent | catalysis;electroplating | MSA
+ethanesulfonic-acid | ethanesulfonic acid | CCS(=O)(=O)O | sulfonic-acid | reagent | catalysis | ESA
+benzenesulfonic-acid | benzenesulfonic acid | OS(=O)(=O)c1ccccc1 | sulfonic-acid | intermediate | phenol-fusion;detergents | BSA
+p-toluenesulfonic-acid | para-toluenesulfonic acid | Cc1ccc(S(=O)(=O)O)cc1 | sulfonic-acid | catalyst | esterification;acetal-formation | pTSA
+dodecylbenzenesulfonic-acid | dodecylbenzenesulfonic acid | CCCCCCCCCCCCc1ccc(S(=O)(=O)O)cc1 | sulfonic-acid | intermediate | detergent | DBSA
+naphthalene-2-sulfonic-acid | naphthalene-2-sulfonic acid | OS(=O)(=O)c1ccc2ccccc2c1 | sulfonic-acid | intermediate | beta-naphthol;dyes | beta sulfonic acid
+methanesulfonyl-chloride | methanesulfonyl chloride | CS(=O)(=O)Cl | sulfonyl-halide | reagent | mesylation | MsCl
+p-toluenesulfonyl-chloride | tosyl chloride | Cc1ccc(S(=O)(=O)Cl)cc1 | sulfonyl-halide | reagent | tosylation | TsCl
+benzenesulfonyl-chloride | benzenesulfonyl chloride | O=S(=O)(Cl)c1ccccc1 | sulfonyl-halide | reagent | hinsberg-test | PhSO2Cl
+methyl-tosylate | methyl para-toluenesulfonate | COS(=O)(=O)c1ccc(C)cc1 | ester | reagent | methylation | good leaving group
+dimethyl-sulfate | dimethyl sulfate | COS(=O)(=O)OC | ester | reagent | methylation | DMS toxic methylator
+diethyl-sulfate | diethyl sulfate | CCOS(=O)(=O)OCC | ester | reagent | ethylation | DES
+saccharin | saccharin | O=C1NS(=O)(=O)c2ccccc21 | sulfonamide | product | sweetener | from toluene
+sulfadiazine | sulfadiazine | Nc1ccc(S(=O)(=O)Nc2ncccn2)cc1 | sulfonamide | product | sulfa-drug | antibacterial
+sulfamethoxazole | sulfamethoxazole | Cc1cc(NS(=O)(=O)c2ccc(N)cc2)no1 | sulfonamide | product | antibiotic | with trimethoprim
+acetazolamide | acetazolamide | CC(=O)Nc1nnc(S(N)(=O)=O)s1 | sulfonamide | product | diuretic;glaucoma | carbonic anhydrase inhibitor
+xanthate-ethyl | potassium ethyl xanthate | [K+].CCOC([S-])=S | thioester | intermediate | viscose;flotation | xanthate
+thioacetamide | thioacetamide | CC(N)=S | thioamide | reagent | h2s-source | sulfide precipitation
+thioacetic-acid | thioacetic acid | CC(S)=O | thioacid | reagent | thiol-synthesis | AcSH
+lawesson-reagent | Lawesson reagent | COc1ccc(P2(=S)SP(=S)(c3ccc(OC)cc3)S2)cc1 | thionation | reagent | thionation | O to S exchange
+trimethyl-phosphite | trimethyl phosphite | COP(OC)OC | phosphite | reagent | arbuzov;antioxidant | P(OMe)3
+triethyl-phosphite | triethyl phosphite | CCOP(OCC)OCC | phosphite | reagent | arbuzov;perkow | P(OEt)3
+triphenyl-phosphite | triphenyl phosphite | c1ccc(OP(Oc2ccccc2)Oc2ccccc2)cc1 | phosphite | reagent | stabiliser | P(OPh)3
+triphenylphosphine | triphenylphosphine | c1ccc(P(c2ccccc2)c2ccccc2)cc1 | phosphine | reagent | wittig;mitsunobu;ligand | PPh3
+triphenylphosphine-oxide | triphenylphosphine oxide | O=P(c1ccccc1)(c1ccccc1)c1ccccc1 | phosphine-oxide | byproduct | wittig-byproduct | TPPO
+tributylphosphine | tributylphosphine | CCCCP(CCCC)CCCC | phosphine | reagent | ligand;reduction | PBu3
+trimethyl-phosphate | trimethyl phosphate | COP(=O)(OC)OC | phosphate-ester | reagent | methylation;flame-retardant | TMP
+triphenyl-phosphate | triphenyl phosphate | O=P(Oc1ccccc1)(Oc1ccccc1)Oc1ccccc1 | phosphate-ester | product | flame-retardant;plasticiser | TPP
+methylphosphonic-acid | methylphosphonic acid | CP(=O)(O)O | phosphonic-acid | intermediate | nerve-agent-hydrolysis-marker | MPA
+glyphosate | N-(phosphonomethyl)glycine | OC(=O)CNCP(=O)(O)O | phosphonic-acid | product | herbicide | Roundup
+aminomethylphosphonic-acid | AMPA | NCP(=O)(O)O | phosphonic-acid | byproduct | glyphosate-degradation | AMPA
+hedp | 1-hydroxyethylidene-1,1-diphosphonic acid | CC(O)(P(=O)(O)O)P(=O)(O)O | phosphonic-acid | reagent | scale-inhibitor;chelation | HEDP
+parathion | parathion | CCOP(=S)(OCC)Oc1ccc([N+](=O)[O-])cc1 | phosphate-ester | product | insecticide | organophosphate
+malathion | malathion | CCOC(=O)CC(SP(=S)(OC)OC)C(=O)OCC | phosphate-ester | product | insecticide | organophosphate
+diazinon | diazinon | CCOP(=S)(OCC)Oc1cc(C)nc(C(C)C)n1 | phosphate-ester | product | insecticide | organophosphate
+dichlorvos | dichlorvos | COP(=O)(OC)OC=C(Cl)Cl | phosphate-ester | product | insecticide | DDVP
+atp | adenosine triphosphate | Nc1ncnc2c1ncn2[C@@H]1O[C@H](COP(=O)(O)OP(=O)(O)OP(=O)(O)O)[C@@H](O)[C@H]1O | nucleotide | product | bioenergetics | the energy currency
+adp | adenosine diphosphate | Nc1ncnc2c1ncn2[C@@H]1O[C@H](COP(=O)(O)OP(=O)(O)O)[C@@H](O)[C@H]1O | nucleotide | product | bioenergetics | ATP hydrolysis product
+amp | adenosine monophosphate | Nc1ncnc2c1ncn2[C@@H]1O[C@H](COP(=O)(O)O)[C@@H](O)[C@H]1O | nucleotide | product | biochemistry | AMP
+phenylboronic-acid | phenylboronic acid | OB(O)c1ccccc1 | boronic-acid | reagent | suzuki-coupling;sensors | PhB(OH)2
+4-methylphenylboronic-acid | 4-tolylboronic acid | Cc1ccc(B(O)O)cc1 | boronic-acid | reagent | suzuki-coupling | aryl boronic acid
+pinacolborane | pinacolborane | CC1(C)OBOC1(C)C | boronic-ester | reagent | hydroboration;borylation | HBpin
+bis-pinacolato-diboron | bis(pinacolato)diboron | CC1(C)OB(B2OC(C)(C)C(C)(C)O2)OC1(C)C | boronic-ester | reagent | miyaura-borylation | B2pin2
+9-bbn | 9-borabicyclo[3.3.1]nonane | C1CC2CCCC(C1)B2 | borane | reagent | hydroboration | 9-BBN
+sodium-tetraphenylborate | sodium tetraphenylborate | [Na+].c1ccc([B-](c2ccccc2)(c2ccccc2)c2ccccc2)cc1 | borate | reagent | potassium-precipitation | NaBPh4
+tetramethylsilane | tetramethylsilane | C[Si](C)(C)C | organosilicon | reagent | nmr-reference | TMS
+trimethylchlorosilane | trimethylchlorosilane | C[Si](C)(C)Cl | organosilicon | reagent | silylation | TMSCl
+hexamethyldisiloxane | hexamethyldisiloxane | C[Si](C)(C)O[Si](C)(C)C | organosilicon | product | silicone-endcap | HMDSO
+octamethylcyclotetrasiloxane | octamethylcyclotetrasiloxane | C[Si]1(C)O[Si](C)(C)O[Si](C)(C)O[Si](C)(C)O1 | organosilicon | monomer | silicone-polymerisation | D4
+polydimethylsiloxane-unit | PDMS repeat unit | C[Si](C)(O)O | organosilicon | product | silicone-oil;sealant | silicone repeat
+vinyltrimethoxysilane | vinyltrimethoxysilane | C=C[Si](OC)(OC)OC | organosilicon | reagent | coupling-agent | silane coupler
+aminopropyltriethoxysilane | 3-aminopropyltriethoxysilane | CCO[Si](OCC)(OCC)CCCN | organosilicon | reagent | surface-functionalisation | APTES
+tetraethyl-orthosilicate | tetraethyl orthosilicate | CCO[Si](OCC)(OCC)OCC | organosilicon | reagent | sol-gel;silica | TEOS
+tetraethyllead | tetraethyllead | CC[Pb](CC)(CC)CC | organometallic | product | antiknock-additive | TEL
+tetramethyllead | tetramethyllead | C[Pb](C)(C)C | organometallic | product | antiknock-additive | TML
+dimethylmercury | dimethylmercury | C[Hg]C | organometallic | product | toxicology;methylation | extremely toxic
+methylmercury-chloride | methylmercury chloride | C[Hg]Cl | organometallic | byproduct | biomethylation;minamata | environmental toxin
+ferrocene | ferrocene | [Fe].c1cc[cH-]c1.c1cc[cH-]c1 | organometallic | product | sandwich-compound;antiknock | Cp2Fe
+grignard-phenylmagnesium-bromide | phenylmagnesium bromide | Br[Mg]c1ccccc1 | organometallic | reagent | grignard | PhMgBr
+grignard-methylmagnesium-iodide | methylmagnesium iodide | C[Mg]I | organometallic | reagent | grignard | MeMgI
+grignard-ethylmagnesium-bromide | ethylmagnesium bromide | CC[Mg]Br | organometallic | reagent | grignard | EtMgBr
+n-butyllithium | n-butyllithium | CCCC[Li] | organometallic | reagent | metalation;anionic-polymerisation | nBuLi
+methyllithium | methyllithium | C[Li] | organometallic | reagent | metalation | MeLi
+phenyllithium | phenyllithium | [Li]c1ccccc1 | organometallic | reagent | metalation | PhLi
+triethylaluminium | triethylaluminium | CC[Al](CC)CC | organometallic | catalyst | ziegler-natta | TEAL
+diethylzinc | diethylzinc | CC[Zn]CC | organometallic | reagent | simmons-smith;pyrophoric | Et2Zn
+tetrakis-triphenylphosphine-palladium | Pd(PPh3)4 | [Pd].c1ccc(P(c2ccccc2)c2ccccc2)cc1.c1ccc(P(c2ccccc2)c2ccccc2)cc1.c1ccc(P(c2ccccc2)c2ccccc2)cc1.c1ccc(P(c2ccccc2)c2ccccc2)cc1 | organometallic | catalyst | cross-coupling | Pd(0) catalyst
+wilkinson-catalyst | chlorotris(triphenylphosphine)rhodium | Cl[Rh].c1ccc(P(c2ccccc2)c2ccccc2)cc1.c1ccc(P(c2ccccc2)c2ccccc2)cc1.c1ccc(P(c2ccccc2)c2ccccc2)cc1 | organometallic | catalyst | homogeneous-hydrogenation | Wilkinson
+grubbs-i-core | Grubbs first-generation core | Cl[Ru](Cl)(=Cc1ccccc1)(P(C2CCCCC2)(C2CCCCC2)C2CCCCC2)P(C2CCCCC2)(C2CCCCC2)C2CCCCC2 | organometallic | catalyst | olefin-metathesis | Grubbs I

@@ -1,0 +1,111 @@
+# I. NITROGEN COMPOUNDS -- amines, nitro, nitroso, azo, diazo, nitriles, isocyanates, oximes, hydrazones
+methylamine | methylamine | CN | amine | intermediate | pharma;surfactants | primary amine
+dimethylamine | dimethylamine | CNC | amine | intermediate | dmf;dimethylhydrazine | secondary amine
+trimethylamine | trimethylamine | CN(C)C | amine | intermediate | choline;fish-odour | tertiary amine
+ethylamine | ethylamine | CCN | amine | intermediate | herbicides | primary amine
+diethylamine | diethylamine | CCNCC | amine | intermediate | deet;rubber-chemicals | secondary amine
+triethylamine | triethylamine | CCN(CC)CC | amine | reagent | base;hcl-scavenger | TEA
+propylamine | n-propylamine | CCCN | amine | reagent | intermediates | primary amine
+isopropylamine | isopropylamine | CC(C)N | amine | intermediate | glyphosate;herbicides | branched amine
+butylamine | n-butylamine | CCCCN | amine | reagent | rubber-chemicals | primary amine
+tert-butylamine | tert-butylamine | CC(C)(C)N | amine | reagent | rubber-accelerators | hindered amine
+diisopropylamine | diisopropylamine | CC(C)NC(C)C | amine | reagent | lda-precursor | hindered secondary
+hexylamine | n-hexylamine | CCCCCCN | amine | reagent | surfactants | primary amine
+dodecylamine | n-dodecylamine | CCCCCCCCCCCCN | amine | intermediate | surfactants;flotation | fatty amine
+ethanolamine | 2-aminoethanol | NCCO | amine | product | gas-scrubbing;detergents | MEA
+diethanolamine | diethanolamine | OCCNCCO | amine | product | surfactants;gas-treating | DEA
+triethanolamine | triethanolamine | OCCN(CCO)CCO | amine | product | emulsifiers;cement | TEA
+ethylenediamine | 1,2-diaminoethane | NCCN | amine | intermediate | edta;chelation;polyamides | EDA
+1,3-diaminopropane | 1,3-diaminopropane | NCCCN | amine | intermediate | polyamides | DAP
+putrescine | 1,4-diaminobutane | NCCCCN | amine | product | polyamines;decay | biogenic amine
+cadaverine | 1,5-diaminopentane | NCCCCCN | amine | product | polyamines;decay | biogenic amine
+hexamethylenediamine | 1,6-diaminohexane | NCCCCCCN | amine | monomer | nylon-66 | HMDA
+diethylenetriamine | diethylenetriamine | NCCNCCN | amine | reagent | epoxy-curing | DETA
+triethylenetetramine | triethylenetetramine | NCCNCCNCCN | amine | reagent | epoxy-curing;wilson-disease | TETA
+piperazine | piperazine | C1CNCCN1 | amine | intermediate | pharma;anthelmintic | cyclic diamine
+morpholine | morpholine | C1COCCN1 | amine | solvent | corrosion-inhibitor;rubber | cyclic amino ether
+pyrrolidine | pyrrolidine | C1CCNC1 | amine | reagent | enamines;organocatalysis | cyclic secondary
+piperidine | piperidine | C1CCNCC1 | amine | reagent | knoevenagel;pharma | cyclic secondary
+cyclohexylamine | cyclohexylamine | NC1CCCCC1 | amine | intermediate | corrosion-inhibitor;cyclamate | alicyclic amine
+benzylamine | benzylamine | NCc1ccccc1 | amine | reagent | reductive-amination | benzylic amine
+phenethylamine | 2-phenylethylamine | NCCc1ccccc1 | amine | intermediate | alkaloid-scaffold | PEA
+aniline | phenylamine | Nc1ccccc1 | amine | feedstock | dyes;mdi;rubber-chemicals | the dye-industry keystone
+o-toluidine | 2-methylaniline | Cc1ccccc1N | amine | intermediate | dyes;pesticides | ortho toluidine
+m-toluidine | 3-methylaniline | Cc1cccc(N)c1 | amine | intermediate | dyes | meta toluidine
+p-toluidine | 4-methylaniline | Cc1ccc(N)cc1 | amine | intermediate | dyes | para toluidine
+n-methylaniline | N-methylaniline | CNc1ccccc1 | amine | intermediate | dyes | secondary aryl amine
+n,n-dimethylaniline | N,N-dimethylaniline | CN(C)c1ccccc1 | amine | reagent | dyes;malachite-green | tertiary aryl amine
+diphenylamine | diphenylamine | c1ccc(Nc2ccccc2)cc1 | amine | reagent | stabiliser;antioxidant | DPA
+triphenylamine | triphenylamine | c1ccc(N(c2ccccc2)c2ccccc2)cc1 | amine | product | oled-materials | hole transport
+p-phenylenediamine | 1,4-diaminobenzene | Nc1ccc(N)cc1 | amine | intermediate | kevlar;hair-dye | PPD
+m-phenylenediamine | 1,3-diaminobenzene | Nc1cccc(N)c1 | amine | intermediate | nomex;dyes | MPD
+benzidine | 4,4-diaminobiphenyl | Nc1ccc(-c2ccc(N)cc2)cc1 | amine | intermediate | azo-dyes;carcinogen | benzidine rearrangement product
+4-aminophenol | 4-aminophenol | Nc1ccc(O)cc1 | amine | intermediate | paracetamol;developer | PAP
+2-aminophenol | 2-aminophenol | Nc1ccccc1O | amine | intermediate | benzoxazoles;dyes | ortho amino phenol
+sulfanilic-acid | 4-aminobenzenesulfonic acid | Nc1ccc(S(=O)(=O)O)cc1 | amine | intermediate | azo-dyes;methyl-orange | zwitterionic
+sulfanilamide | sulfanilamide | Nc1ccc(S(N)(=O)=O)cc1 | amine | product | sulfa-drug | the first sulfa drug
+4-nitroaniline | 4-nitroaniline | Nc1ccc([N+](=O)[O-])cc1 | amine | intermediate | dyes | PNA
+1-naphthylamine | 1-naphthylamine | Nc1cccc2ccccc12 | amine | intermediate | dyes | alpha naphthylamine
+2-naphthylamine | 2-naphthylamine | Nc1ccc2ccccc2c1 | amine | intermediate | dyes;bladder-carcinogen | beta naphthylamine
+hexamethylenetetramine | hexamine | C1N2CN3CN1CN(C2)C3 | amine | product | urotropine;rdx;curing | from formaldehyde and ammonia
+choline | choline | C[N+](C)(C)CCO | amine | product | nutrient;acetylcholine | quaternary ammonium
+tetramethylammonium-chloride | tetramethylammonium chloride | C[N+](C)(C)C.[Cl-] | amine | reagent | phase-transfer | quaternary salt
+benzalkonium-chloride | benzyldimethyldodecylammonium chloride | CCCCCCCCCCCC[N+](C)(C)Cc1ccccc1.[Cl-] | amine | product | disinfectant;surfactant | quat
+cetyltrimethylammonium-bromide | CTAB | CCCCCCCCCCCCCCCC[N+](C)(C)C.[Br-] | amine | reagent | surfactant;dna-extraction | CTAB
+nitromethane | nitromethane | C[N+](=O)[O-] | nitro | solvent | fuel;henry-reaction | polar solvent
+nitroethane | nitroethane | CC[N+](=O)[O-] | nitro | reagent | henry-reaction | nitroalkane
+2-nitropropane | 2-nitropropane | CC(C)[N+](=O)[O-] | nitro | solvent | coatings | secondary nitroalkane
+nitrobenzene | nitrobenzene | O=[N+]([O-])c1ccccc1 | nitro | intermediate | aniline;oil-of-mirbane | the aniline precursor
+1,3-dinitrobenzene | 1,3-dinitrobenzene | O=[N+]([O-])c1cccc([N+](=O)[O-])c1 | nitro | intermediate | explosives;dyes | meta directed
+2-nitrotoluene | 2-nitrotoluene | Cc1ccccc1[N+](=O)[O-] | nitro | intermediate | tnt;dyes | ortho nitrotoluene
+4-nitrotoluene | 4-nitrotoluene | Cc1ccc([N+](=O)[O-])cc1 | nitro | intermediate | dyes | para nitrotoluene
+2,4-dinitrotoluene | 2,4-dinitrotoluene | Cc1ccc([N+](=O)[O-])cc1[N+](=O)[O-] | nitro | intermediate | tnt;tdi | DNT
+tnt | 2,4,6-trinitrotoluene | Cc1c([N+](=O)[O-])cc([N+](=O)[O-])cc1[N+](=O)[O-] | nitro | product | explosive | TNT
+nitroguanidine | nitroguanidine | NC(=N)N[N+](=O)[O-] | nitro | product | propellant | triple-base propellant
+nitrosobenzene | nitrosobenzene | O=Nc1ccccc1 | nitroso | intermediate | aniline-oxidation | nitroso arene
+n-nitrosodimethylamine | N-nitrosodimethylamine | CN(C)N=O | nitroso | byproduct | contaminant;carcinogen | NDMA
+azobenzene | azobenzene | c1ccc(/N=N/c2ccccc2)cc1 | azo | product | photoswitch;dye-model | trans azo
+methyl-orange | methyl orange | CN(C)c1ccc(/N=N/c2ccc(S(=O)(=O)[O-])cc2)cc1.[Na+] | azo | product | indicator;dye | pH indicator
+methyl-red | methyl red | CN(C)c1ccc(/N=N/c2ccccc2C(=O)O)cc1 | azo | product | indicator | pH indicator
+congo-red | Congo red | Nc1ccc2cc(S(=O)(=O)[O-])cc(/N=N/c3ccc(-c4ccc(/N=N/c5cc(S(=O)(=O)[O-])cc6ccc(N)c(N)c56)cc4)cc3)c2c1.[Na+].[Na+] | azo | product | dye;indicator | direct dye
+sudan-i | Sudan I | Oc1ccc2ccccc2c1/N=N/c1ccccc1 | azo | product | dye;food-adulterant | solvent dye
+para-red | para red | O=[N+]([O-])c1ccc(/N=N/c2c(O)ccc3ccccc23)cc1 | azo | product | pigment | azo pigment
+benzenediazonium-chloride | benzenediazonium chloride | [Cl-].N#[N+]c1ccccc1 | diazonium | intermediate | azo-coupling;sandmeyer | the diazo intermediate
+diazomethane | diazomethane | [CH2-][N+]#N | diazo | reagent | methylation;arndt-eistert | explosive gas
+ethyl-diazoacetate | ethyl diazoacetate | CCOC(=O)[CH-][N+]#N | diazo | reagent | cyclopropanation | carbene precursor
+phenylhydrazine | phenylhydrazine | NNc1ccccc1 | hydrazine | reagent | fischer-indole;osazones | Fischer reagent
+hydrazobenzene | 1,2-diphenylhydrazine | c1ccc(NNc2ccccc2)cc1 | hydrazine | intermediate | benzidine-rearrangement | reduced azobenzene
+1,1-dimethylhydrazine | unsymmetrical dimethylhydrazine | CN(C)N | hydrazine | product | rocket-fuel | UDMH
+semicarbazide | semicarbazide | NC(=O)NN | hydrazine | reagent | carbonyl-derivatisation | semicarbazone former
+2,4-dinitrophenylhydrazine | 2,4-DNPH | NNc1ccc([N+](=O)[O-])cc1[N+](=O)[O-] | hydrazine | reagent | brady-reagent;carbonyl-test | orange precipitate
+acetoxime | acetone oxime | CC(C)=NO | oxime | intermediate | oxime-chemistry | from acetone
+cyclohexanone-oxime | cyclohexanone oxime | ON=C1CCCCC1 | oxime | intermediate | caprolactam;beckmann | the Beckmann substrate
+benzaldoxime | benzaldehyde oxime | O/N=C/c1ccccc1 | oxime | intermediate | nitrile-synthesis | aldoxime
+acetonitrile | ethanenitrile | CC#N | nitrile | solvent | acrylonitrile-byproduct;hplc | MeCN
+propionitrile | propanenitrile | CCC#N | nitrile | solvent | intermediates | EtCN
+acrylonitrile | 2-propenenitrile | C=CC#N | nitrile | monomer | ammoxidation;abs;acrylic-fibre | AN
+methacrylonitrile | methacrylonitrile | CC(=C)C#N | nitrile | monomer | copolymers | MAN
+adiponitrile | hexanedinitrile | N#CCCCCC#N | nitrile | intermediate | nylon-66;electrohydrodimerisation | ADN
+succinonitrile | succinonitrile | N#CCCC#N | nitrile | solvent | electrolytes | dinitrile
+benzonitrile | benzonitrile | N#Cc1ccccc1 | nitrile | solvent | intermediates | aryl nitrile
+mandelonitrile | mandelonitrile | N#CC(O)c1ccccc1 | nitrile | intermediate | cyanohydrin;amygdalin | benzaldehyde cyanohydrin
+acetone-cyanohydrin | acetone cyanohydrin | CC(C)(O)C#N | nitrile | intermediate | mma-acetone-cyanohydrin-route | ACH
+lactonitrile | lactonitrile | CC(O)C#N | nitrile | intermediate | lactic-acid | acetaldehyde cyanohydrin
+methyl-isocyanate | methyl isocyanate | CN=C=O | isocyanate | intermediate | carbaryl;bhopal | MIC
+phenyl-isocyanate | phenyl isocyanate | O=C=Nc1ccccc1 | isocyanate | reagent | derivatisation;urethanes | aryl isocyanate
+toluene-diisocyanate | 2,4-toluene diisocyanate | Cc1ccc(N=C=O)cc1N=C=O | isocyanate | monomer | polyurethane-foam | TDI
+mdi | 4,4-methylenediphenyl diisocyanate | O=C=Nc1ccc(Cc2ccc(N=C=O)cc2)cc1 | isocyanate | monomer | rigid-polyurethane | MDI
+hexamethylene-diisocyanate | hexamethylene diisocyanate | O=C=NCCCCCCN=C=O | isocyanate | monomer | coatings | HDI
+allyl-isothiocyanate | allyl isothiocyanate | C=CCN=C=S | isothiocyanate | product | mustard-oil | pungent
+phenyl-isothiocyanate | phenyl isothiocyanate | S=C=Nc1ccccc1 | isothiocyanate | reagent | edman-degradation | PITC
+methyl-carbamate | methyl carbamate | COC(N)=O | carbamate | intermediate | pesticides | simplest carbamate
+urethane | ethyl carbamate | CCOC(N)=O | carbamate | product | fermentation-contaminant | historic hypnotic
+carbaryl | carbaryl | CNC(=O)Oc1cccc2ccccc12 | carbamate | product | insecticide | Sevin
+azodicarbonamide | azodicarbonamide | NC(=O)/N=N/C(N)=O | azo | product | blowing-agent;flour-treatment | ADCA
+aminoacetonitrile | aminoacetonitrile | NCC#N | nitrile | intermediate | strecker;glycine | glycine precursor
+iminodiacetic-acid | iminodiacetic acid | OC(=O)CNCC(=O)O | amine | intermediate | glyphosate;chelation | IDA
+edta | ethylenediaminetetraacetic acid | OC(=O)CN(CC(=O)O)CCN(CC(=O)O)CC(=O)O | amine | reagent | chelation;water-treatment | EDTA
+nitrilotriacetic-acid | nitrilotriacetic acid | OC(=O)CN(CC(=O)O)CC(=O)O | amine | reagent | chelation;detergents | NTA
+melamine | 1,3,5-triazine-2,4,6-triamine | Nc1nc(N)nc(N)n1 | amine | monomer | resins;laminates | from urea
+cyanuric-acid | 1,3,5-triazine-2,4,6-triol | O=c1[nH]c(=O)[nH]c(=O)[nH]1 | heterocycle | product | pool-stabiliser;isocyanurates | urea pyrolysis product
+cyanuric-chloride | 2,4,6-trichloro-1,3,5-triazine | Clc1nc(Cl)nc(Cl)n1 | heterocycle | intermediate | reactive-dyes;triazine-herbicides | from cyanogen chloride

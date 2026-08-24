@@ -1,0 +1,85 @@
+# N. PHARMACEUTICALS, AGROCHEMICALS AND ENERGETIC MATERIALS
+aspirin | acetylsalicylic acid | CC(=O)Oc1ccccc1C(=O)O | drug | product | acetylation-of-salicylic-acid | the reference synthesis
+paracetamol | acetaminophen | CC(=O)Nc1ccc(O)cc1 | drug | product | 4-aminophenol-acetylation | analgesic
+phenacetin | phenacetin | CCOc1ccc(NC(C)=O)cc1 | drug | product | historic-analgesic | withdrawn
+ibuprofen | ibuprofen | CC(C)Cc1ccc(C(C)C(=O)O)cc1 | drug | product | boots;hoechst-celanese | NSAID
+naproxen | naproxen | COc1ccc2cc([C@@H](C)C(=O)O)ccc2c1 | drug | product | nsaid | single enantiomer
+diclofenac | diclofenac | OC(=O)Cc1ccccc1Nc1c(Cl)cccc1Cl | drug | product | nsaid | phenylacetic acid
+salicylamide | salicylamide | NC(=O)c1ccccc1O | drug | product | analgesic | amide of salicylic acid
+antipyrine | phenazone | Cc1cc(=O)n(-c2ccccc2)n1C | drug | product | historic-analgesic | pyrazolone
+aminopyrine | aminophenazone | CN(C)c1c(C)n(C)n(-c2ccccc2)c1=O | drug | product | historic-analgesic | pyrazolone
+barbital | barbital | CCC1(CC)C(=O)NC(=O)NC1=O | drug | product | first-barbiturate | Veronal
+phenobarbital | phenobarbital | CCC1(c2ccccc2)C(=O)NC(=O)NC1=O | drug | product | anticonvulsant | Luminal
+chloral-hydrate | chloral hydrate | OC(O)C(Cl)(Cl)Cl | drug | product | sedative;historic | knockout drops
+chloral | chloral | O=CC(Cl)(Cl)Cl | intermediate | intermediate | ddt;chloral-hydrate | trichloroacetaldehyde
+procaine | procaine | CCN(CC)CCOC(=O)c1ccc(N)cc1 | drug | product | local-anaesthetic | Novocaine
+lidocaine | lidocaine | CCN(CC)CC(=O)Nc1c(C)cccc1C | drug | product | local-anaesthetic | Xylocaine
+benzocaine | benzocaine | CCOC(=O)c1ccc(N)cc1 | drug | product | local-anaesthetic | topical
+salvarsan-marker | arsphenamine (monomer marker) | Nc1ccc([As]=[As]c2ccc(N)c(O)c2)cc1O | drug | product | ehrlich;first-chemotherapeutic | schematic monomer
+prontosil | prontosil | Nc1ccc(/N=N/c2ccc(S(N)(=O)=O)cc2)c(N)c1 | drug | product | first-sulfa-drug | azo prodrug
+isoniazid | isoniazid | NNC(=O)c1ccncc1 | drug | product | tuberculosis | INH
+dapsone | dapsone | Nc1ccc(S(=O)(=O)c2ccc(N)cc2)cc1 | drug | product | leprosy | sulfone
+chloroquine | chloroquine | CCN(CC)CCC[C@H](C)Nc1ccnc2cc(Cl)ccc12 | drug | product | antimalarial | 4-aminoquinoline
+primaquine | primaquine | COc1cc2nccc(N[C@@H](C)CCCN)c2cc1 | drug | product | antimalarial | 8-aminoquinoline
+artemisinin | artemisinin | C[C@@H]1CC[C@H]2[C@@H](C)[C@@H]3O[C@]4(C)CC[C@H]1[C@]2(OO3)O4 | drug | product | antimalarial;sweet-wormwood | endoperoxide
+metformin | metformin | CN(C)C(=N)N=C(N)N | drug | product | diabetes;from-dicyandiamide | biguanide
+warfarin | warfarin | CC(=O)CC(c1ccccc1)c1c(O)c2ccccc2oc1=O | drug | product | anticoagulant;rodenticide | coumarin derivative
+dicoumarol | dicoumarol | O=c1oc2ccccc2c(O)c1Cc1c(O)c2ccccc2oc1=O | drug | product | spoiled-sweet-clover | anticoagulant
+diazepam | diazepam | CN1c2ccc(Cl)cc2C(c2ccccc2)=NCC1=O | drug | product | benzodiazepine | Valium
+paracetamol-impurity | 4-aminophenol (see amines) | Nc1ccc(O)cc1 | intermediate | reference | paracetamol-impurity | cross-reference
+omeprazole | omeprazole | COc1ccc2[nH]c(S(=O)Cc3ncc(C)c(OC)c3C)nc2c1 | drug | product | proton-pump-inhibitor | prazole
+cimetidine | cimetidine | CNC(=N/C#N)NCCSCc1nc[nH]c1C | drug | product | h2-antagonist | Tagamet
+ranitidine | ranitidine | CNC(=C[N+](=O)[O-])NCCSCc1ccc(CN(C)C)o1 | drug | product | h2-antagonist | Zantac
+salbutamol | salbutamol | CC(C)(C)NC[C@H](O)c1ccc(O)c(CO)c1 | drug | product | bronchodilator | albuterol
+propranolol | propranolol | CC(C)NC[C@H](O)COc1cccc2ccccc12 | drug | product | beta-blocker | first beta blocker
+atenolol | atenolol | CC(C)NC[C@H](O)COc1ccc(CC(N)=O)cc1 | drug | product | beta-blocker | cardioselective
+captopril | captopril | C[C@H](CS)C(=O)N1CCC[C@H]1C(=O)O | drug | product | ace-inhibitor | from snake venom
+simvastatin | simvastatin | CC[C@](C)(C)C(=O)O[C@H]1C[C@H](C)C=C2C=C[C@H](C)[C@H](CC[C@@H]3C[C@@H](O)CC(=O)O3)[C@H]12 | drug | product | statin | cholesterol
+ciprofloxacin | ciprofloxacin | OC(=O)c1cn(C2CC2)c2cc(N3CCNCC3)c(F)cc2c1=O | drug | product | fluoroquinolone | antibiotic
+trimethoprim | trimethoprim | COc1cc(Cc2cnc(N)nc2N)cc(OC)c1OC | drug | product | antibacterial | with sulfamethoxazole
+paclitaxel-core | baccatin III core (simplified) | CC1=C2[C@@H](OC(C)=O)C(=O)[C@]3(C)[C@@H](O)C[C@H]4OC[C@@]4(OC(C)=O)[C@H]3[C@H](OC(=O)c3ccccc3)[C@]2(C)CC1 | drug | intermediate | taxol-semisynthesis | simplified core
+oseltamivir | oseltamivir | CCC(CC)O[C@@H]1C=C(C(=O)OCC)C[C@H](N)[C@H]1NC(C)=O | drug | product | antiviral;from-shikimic-acid | Tamiflu
+acyclovir | acyclovir | Nc1nc2c(ncn2COCCO)c(=O)[nH]1 | drug | product | antiviral | nucleoside analogue
+azt | zidovudine | Cc1cn([C@H]2C[C@H](N=[N+]=[N-])[C@@H](CO)O2)c(=O)[nH]c1=O | drug | product | antiretroviral | AZT
+5-fluorouracil | 5-fluorouracil | O=c1[nH]cc(F)c(=O)[nH]1 | drug | product | chemotherapy | antimetabolite
+methotrexate | methotrexate | CN(Cc1cnc2nc(N)nc(N)c2n1)c1ccc(C(=O)N[C@@H](CCC(=O)O)C(=O)O)cc1 | drug | product | chemotherapy;antifolate | MTX
+cisplatin | cisplatin | N[Pt](N)(Cl)Cl | drug | product | chemotherapy | platinum drug
+mechlorethamine | mechlorethamine | CN(CCCl)CCCl | drug | product | first-chemotherapy;mustard | nitrogen mustard
+cyclophosphamide | cyclophosphamide | ClCCN(CCCl)P1(=O)NCCCO1 | drug | product | chemotherapy | oxazaphosphorine
+ascorbic-acid-drug | vitamin C (see biomolecules) | OC[C@H](O)[C@H]1OC(=O)C(O)=C1O | drug | reference | scurvy | cross-reference
+2,4-d | 2,4-dichlorophenoxyacetic acid | OC(=O)COc1ccc(Cl)cc1Cl | agrochemical | product | herbicide;auxin | phenoxy herbicide
+2,4,5-t | 2,4,5-trichlorophenoxyacetic acid | OC(=O)COc1cc(Cl)c(Cl)cc1Cl | agrochemical | product | herbicide;agent-orange | phenoxy herbicide
+mcpa | MCPA | Cc1cc(Cl)ccc1OCC(=O)O | agrochemical | product | herbicide | phenoxy herbicide
+atrazine | atrazine | CCNc1nc(Cl)nc(NC(C)C)n1 | agrochemical | product | herbicide;triazine | from cyanuric chloride
+simazine | simazine | CCNc1nc(Cl)nc(NCC)n1 | agrochemical | product | herbicide;triazine | triazine
+paraquat | paraquat | C[n+]1ccc(-c2cc[n+](C)cc2)cc1.[Cl-].[Cl-] | agrochemical | product | herbicide | bipyridinium
+diquat | diquat | [Br-].[Br-].C1C[n+]2ccccc2-c2cccc[n+]21 | agrochemical | product | herbicide;desiccant | bipyridinium
+glufosinate | glufosinate | CP(=O)(O)CC[C@H](N)C(=O)O | agrochemical | product | herbicide | phosphinothricin
+permethrin | permethrin | CC1(C)C(/C=C(\Cl)Cl)C1C(=O)OCc1cccc(Oc2ccccc2)c1 | agrochemical | product | insecticide;pyrethroid | synthetic pyrethroid
+pyrethrin-i | pyrethrin I | CC1(C)C(/C=C(C)\C)C1C(=O)O[C@@H]1C(C)=C(C/C=C\C=C)C(=O)C1 | agrochemical | product | insecticide;natural | from chrysanthemum
+imidacloprid | imidacloprid | O=[N+]([O-])/N=C1\NCCN1Cc1ccc(Cl)nc1 | agrochemical | product | insecticide;neonicotinoid | neonic
+rotenone | rotenone | COc1cc2c(cc1OC)C(=O)[C@@H]1[C@H](O2)c2cc3c(cc2OC1)OC(C)(C=C)C3 | agrochemical | product | insecticide;piscicide | natural
+nicotine-insecticide | nicotine (see alkaloids) | CN1CCC[C@H]1c1cccnc1 | agrochemical | reference | insecticide | cross-reference
+captan | captan | O=C1N(SC(Cl)(Cl)Cl)C(=O)[C@@H]2C=C[C@H]12 | agrochemical | product | fungicide | phthalimide fungicide
+thiram | thiram | CN(C)C(=S)SSC(=S)N(C)C | agrochemical | product | fungicide;vulcanisation | thiuram
+maneb-unit | maneb repeat unit | [Mn+2].[S-]C(=S)NCCNC([S-])=S | agrochemical | product | fungicide | dithiocarbamate
+bordeaux-mixture | Bordeaux mixture marker | [Cu+2].[O-]S([O-])(=O)=O.[Ca+2].[OH-].[OH-] | agrochemical | product | fungicide;vineyard | composition marker
+warfarin-rodenticide | warfarin (see drugs) | CC(=O)CC(c1ccccc1)c1c(O)c2ccccc2oc1=O | agrochemical | reference | rodenticide | cross-reference
+gunpowder-marker | black powder marker | [K+].[O-][N+]([O-])=O.S1SSSSSSS1.[C] | energetic | product | gunpowder;fireworks | composition marker
+nitrocellulose-unit | nitrocellulose repeat unit | [O-][N+](=O)OC[C@H]1O[C@@H](O)[C@H](O[N+]([O-])=O)[C@@H](O[N+]([O-])=O)[C@@H]1O | energetic | product | guncotton;smokeless-powder | trinitrated glucose unit
+nitroglycerin-energetic | nitroglycerin (see esters) | [O-][N+](=O)OCC(O[N+]([O-])=O)CO[N+]([O-])=O | energetic | reference | dynamite | cross-reference
+petn | pentaerythritol tetranitrate | [O-][N+](=O)OCC(CO[N+]([O-])=O)(CO[N+]([O-])=O)CO[N+]([O-])=O | energetic | product | detonator;explosive | PETN
+rdx | cyclotrimethylenetrinitramine | [O-][N+](=O)N1CN([N+]([O-])=O)CN([N+]([O-])=O)C1 | energetic | product | explosive;from-hexamine | Research Department Explosive
+hmx | octogen | [O-][N+](=O)N1CN([N+]([O-])=O)CN([N+]([O-])=O)CN([N+]([O-])=O)C1 | energetic | product | explosive | HMX
+tetryl | tetryl | CN([N+](=O)[O-])c1c([N+](=O)[O-])cc([N+](=O)[O-])cc1[N+](=O)[O-] | energetic | product | booster-explosive | tetryl
+tatb | triaminotrinitrobenzene | Nc1c([N+](=O)[O-])c(N)c([N+](=O)[O-])c(N)c1[N+](=O)[O-] | energetic | product | insensitive-explosive | TATB
+mercury-fulminate | mercury fulminate | [Hg+2].[O-][N+]#[C-].[O-][N+]#[C-] | energetic | product | primary-explosive;percussion-cap | fulminate
+lead-azide | lead azide | [Pb+2].[N-]=[N+]=[N-].[N-]=[N+]=[N-] | energetic | product | primary-explosive;detonator | azide
+lead-styphnate | lead styphnate | [Pb+2].[O-]c1c([N+](=O)[O-])cc([N+](=O)[O-])cc1[N+](=O)[O-].O | energetic | product | primary-explosive | styphnate
+nitroguanidine-energetic | nitroguanidine (see nitrogen) | NC(=N)N[N+](=O)[O-] | energetic | reference | triple-base-propellant | cross-reference
+ammonium-picrate | ammonium picrate | [NH4+].[O-]c1c([N+](=O)[O-])cc([N+](=O)[O-])cc1[N+](=O)[O-] | energetic | product | explosive-d;naval-shells | Dunnite
+picramic-acid | picramic acid | Nc1cc([N+](=O)[O-])c(O)c([N+](=O)[O-])c1 | intermediate | intermediate | dyes;reduction-of-picric | picramic
+hexanitrostilbene | hexanitrostilbene | O=[N+]([O-])c1cc([N+](=O)[O-])c(/C=C/c2c([N+](=O)[O-])cc([N+](=O)[O-])cc2[N+](=O)[O-])c([N+](=O)[O-])c1 | energetic | product | heat-resistant-explosive | HNS
+nitromethane-energetic | nitromethane (see nitro) | C[N+](=O)[O-] | energetic | reference | monopropellant;drag-racing | cross-reference
+hydrazine-nitrate | hydrazine nitrate | NN.O[N+](=O)[O-] | energetic | product | propellant | oxidiser salt
+ammonium-dinitramide | ammonium dinitramide | [NH4+].[O-][N+](=O)[N-][N+](=O)[O-] | energetic | product | green-oxidiser | ADN

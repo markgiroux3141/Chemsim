@@ -1,0 +1,108 @@
+# F. ALCOHOLS, POLYOLS, PHENOLS, ETHERS AND EPOXIDES
+methanol | methanol | CO | alcohol | feedstock | syngas;wood-distillation;mtbe | wood spirit
+ethanol | ethanol | CCO | alcohol | feedstock | fermentation;hydration;solvent | spirit of wine
+1-propanol | 1-propanol | CCCO | alcohol | solvent | oxo-process;fusel | n-propanol
+2-propanol | 2-propanol | CC(C)O | alcohol | solvent | propylene-hydration;acetone | isopropanol / IPA
+1-butanol | 1-butanol | CCCCO | alcohol | solvent | abe-fermentation;oxo | n-butanol
+2-butanol | 2-butanol | CCC(C)O | alcohol | solvent | mek-precursor | sec-butanol
+isobutanol | 2-methyl-1-propanol | CC(C)CO | alcohol | solvent | oxo-process;fusel | isobutyl alcohol
+tert-butanol | 2-methyl-2-propanol | CC(C)(C)O | alcohol | solvent | mtbe;tertiary-model | refuses oxidation
+1-pentanol | 1-pentanol | CCCCCO | alcohol | solvent | esters;fusel | amyl alcohol
+isoamyl-alcohol | 3-methyl-1-butanol | CC(C)CCO | alcohol | feedstock | fusel-oil;banana-ester | isopentanol
+1-hexanol | 1-hexanol | CCCCCCO | alcohol | intermediate | plasticisers | C6 alcohol
+2-ethylhexanol | 2-ethyl-1-hexanol | CCCCC(CC)CO | alcohol | intermediate | dop-plasticiser;oxo | aldol-oxo product
+1-octanol | 1-octanol | CCCCCCCCO | alcohol | reference | logp-standard;surfactants | partition reference
+1-decanol | 1-decanol | CCCCCCCCCCO | alcohol | intermediate | surfactants | fatty alcohol
+1-dodecanol | 1-dodecanol | CCCCCCCCCCCCO | alcohol | intermediate | sls;surfactants | lauryl alcohol
+cetyl-alcohol | 1-hexadecanol | CCCCCCCCCCCCCCCCO | alcohol | product | emollient;spermaceti | cetyl alcohol
+stearyl-alcohol | 1-octadecanol | CCCCCCCCCCCCCCCCCCO | alcohol | product | emollient | stearyl alcohol
+allyl-alcohol | 2-propen-1-ol | OCC=C | alcohol | intermediate | glycerol;epichlorohydrin | allylic alcohol
+propargyl-alcohol | 2-propyn-1-ol | OCC#C | alcohol | reagent | corrosion-inhibitor | alkynol
+cyclohexanol | cyclohexanol | OC1CCCCC1 | alcohol | intermediate | adipic-acid;nylon | KA oil component
+cyclopentanol | cyclopentanol | OC1CCCC1 | alcohol | intermediate | fine-chemicals | C5 cyclic alcohol
+benzyl-alcohol | benzyl alcohol | OCc1ccccc1 | alcohol | solvent | fragrance;preservative | benzylic alcohol
+1-phenylethanol | 1-phenylethanol | CC(O)c1ccccc1 | alcohol | intermediate | styrene-co-product | secondary benzylic
+2-phenylethanol | 2-phenylethanol | OCCc1ccccc1 | alcohol | product | rose-fragrance | phenethyl alcohol
+cinnamyl-alcohol | cinnamyl alcohol | OC/C=C/c1ccccc1 | alcohol | product | fragrance | allylic aromatic
+furfuryl-alcohol | furfuryl alcohol | OCc1ccco1 | alcohol | intermediate | furan-resins | from furfural
+menthol | L-menthol | CC(C)[C@@H]1CC[C@@H](C)C[C@H]1O | alcohol | product | flavour;terpene | monoterpene alcohol
+borneol | borneol | C[C@]12CC[C@@H](C1(C)C)C[C@@H]2O | alcohol | intermediate | camphor-synthesis | bicyclic terpene alcohol
+geraniol | geraniol | CC(C)=CCC/C(C)=C/CO | alcohol | product | fragrance;terpene | rose alcohol
+linalool | linalool | C=C[C@](C)(O)CCC=C(C)C | alcohol | product | fragrance;terpene | tertiary terpene alcohol
+citronellol | citronellol | CC(CCC=C(C)C)CCO | alcohol | product | fragrance | rose-scented
+farnesol | farnesol | CC(C)=CCC/C(C)=C/CC/C(C)=C/CO | alcohol | product | fragrance;sesquiterpene | C15 alcohol
+ethylene-glycol | 1,2-ethanediol | OCCO | polyol | product | antifreeze;pet | MEG
+diethylene-glycol | diethylene glycol | OCCOCCO | polyol | byproduct | glycol-plant;solvent | DEG
+triethylene-glycol | triethylene glycol | OCCOCCOCCO | polyol | product | gas-dehydration | TEG
+propylene-glycol | 1,2-propanediol | CC(O)CO | polyol | product | food;antifreeze | MPG
+1,3-propanediol | 1,3-propanediol | OCCCO | polyol | product | ptt-polyester;fermentation | PDO
+1,4-butanediol | 1,4-butanediol | OCCCCO | polyol | intermediate | thf;pbt;reppe | BDO
+1,3-butanediol | 1,3-butanediol | CC(O)CCO | polyol | product | cosmetics | BDO isomer
+2,3-butanediol | 2,3-butanediol | CC(O)C(C)O | polyol | product | fermentation;butadiene | biobased
+1,5-pentanediol | 1,5-pentanediol | OCCCCCO | polyol | intermediate | polyester | C5 diol
+1,6-hexanediol | 1,6-hexanediol | OCCCCCCO | polyol | intermediate | polyurethane | C6 diol
+neopentyl-glycol | neopentyl glycol | OCC(C)(C)CO | polyol | intermediate | polyester-resins | NPG
+glycerol | 1,2,3-propanetriol | OCC(O)CO | polyol | feedstock | saponification;biodiesel;nitroglycerin | glycerine
+trimethylolpropane | trimethylolpropane | CCC(CO)(CO)CO | polyol | intermediate | alkyd-resins | TMP
+pentaerythritol | pentaerythritol | OCC(CO)(CO)CO | polyol | intermediate | petn;alkyds | tetraol
+sorbitol | D-sorbitol | OC[C@H](O)[C@@H](O)[C@H](O)[C@H](O)CO | polyol | product | sweetener;vitamin-c | glucitol
+mannitol | D-mannitol | OC[C@@H](O)[C@@H](O)[C@H](O)[C@H](O)CO | polyol | product | sweetener;diuretic | hexitol
+xylitol | xylitol | OC[C@H](O)[C@@H](O)[C@H](O)CO | polyol | product | sweetener | pentitol
+erythritol | meso-erythritol | OC[C@H](O)[C@H](O)CO | polyol | product | sweetener | tetritol
+inositol | myo-inositol | O[C@H]1[C@@H](O)[C@H](O)[C@@H](O)[C@H](O)[C@H]1O | polyol | product | biochemistry | cyclitol
+phenol | phenol | Oc1ccccc1 | phenol | feedstock | cumene;bakelite;aspirin | carbolic acid
+o-cresol | ortho-cresol | Cc1ccccc1O | phenol | feedstock | coal-tar;resins | 2-methylphenol
+m-cresol | meta-cresol | Cc1cccc(O)c1 | phenol | feedstock | coal-tar;pesticides | 3-methylphenol
+p-cresol | para-cresol | Cc1ccc(O)cc1 | phenol | feedstock | coal-tar;antioxidants | 4-methylphenol
+catechol | 1,2-dihydroxybenzene | Oc1ccccc1O | phenol | intermediate | vanillin;adrenaline | pyrocatechol
+resorcinol | 1,3-dihydroxybenzene | Oc1cccc(O)c1 | phenol | intermediate | resins;dyes;sunscreen | meta-diol
+hydroquinone | 1,4-dihydroxybenzene | Oc1ccc(O)cc1 | phenol | intermediate | photography;antioxidant | para-diol
+pyrogallol | 1,2,3-trihydroxybenzene | Oc1cccc(O)c1O | phenol | reagent | oxygen-absorbent;dyes | triol
+phloroglucinol | 1,3,5-trihydroxybenzene | Oc1cc(O)cc(O)c1 | phenol | reagent | explosives;analysis | symmetric triol
+guaiacol | 2-methoxyphenol | COc1ccccc1O | phenol | intermediate | vanillin;wood-smoke | from lignin
+eugenol | eugenol | C=CCc1ccc(O)c(OC)c1 | phenol | feedstock | clove-oil;vanillin | allylguaiacol
+isoeugenol | isoeugenol | C/C=C/c1ccc(O)c(OC)c1 | phenol | intermediate | vanillin-synthesis | isomerised eugenol
+thymol | thymol | Cc1ccc(C(C)C)c(O)c1 | phenol | product | antiseptic;thyme | menthol precursor
+carvacrol | carvacrol | Cc1ccc(C(C)C)cc1O | phenol | product | oregano;antimicrobial | thymol isomer
+bisphenol-a | bisphenol A | CC(C)(c1ccc(O)cc1)c1ccc(O)cc1 | phenol | intermediate | polycarbonate;epoxy | BPA
+4-nitrophenol | para-nitrophenol | O=[N+]([O-])c1ccc(O)cc1 | phenol | intermediate | paracetamol;indicator | PNP
+2-nitrophenol | ortho-nitrophenol | O=[N+]([O-])c1ccccc1O | phenol | intermediate | dyes | ONP
+2,4-dinitrophenol | 2,4-dinitrophenol | O=[N+]([O-])c1ccc(O)c([N+](=O)[O-])c1 | phenol | product | uncoupler;explosive | DNP
+picric-acid | 2,4,6-trinitrophenol | O=[N+]([O-])c1cc([N+](=O)[O-])c(O)c([N+](=O)[O-])c1 | phenol | product | explosive;dye;stain | melinite
+2-naphthol | 2-naphthol | Oc1ccc2ccccc2c1 | phenol | intermediate | azo-dyes;bucherer | beta-naphthol
+1-naphthol | 1-naphthol | Oc1cccc2ccccc12 | phenol | intermediate | carbaryl;dyes | alpha-naphthol
+salicyl-alcohol | 2-hydroxybenzyl alcohol | OCc1ccccc1O | phenol | intermediate | salicin-hydrolysis | saligenin
+4-hydroxybenzaldehyde | 4-hydroxybenzaldehyde | O=Cc1ccc(O)cc1 | phenol | intermediate | vanillin;flavour | PHBA
+vanillin | 4-hydroxy-3-methoxybenzaldehyde | COc1cc(C=O)ccc1O | phenol | product | flavour;lignin | vanilla
+tert-butylhydroquinone | TBHQ | CC(C)(C)c1cc(O)ccc1O | phenol | product | antioxidant | food antioxidant
+bht | butylated hydroxytoluene | Cc1cc(C(C)(C)C)c(O)c(C(C)(C)C)c1 | phenol | product | antioxidant | BHT
+bha | butylated hydroxyanisole | COc1ccc(O)c(C(C)(C)C)c1 | phenol | product | antioxidant | BHA
+dimethyl-ether | dimethyl ether | COC | ether | product | propellant;fuel | DME
+diethyl-ether | diethyl ether | CCOCC | ether | solvent | anaesthesia;grignard | sweet oil of vitriol
+methyl-tert-butyl-ether | MTBE | COC(C)(C)C | ether | product | fuel-oxygenate | MTBE
+ethyl-tert-butyl-ether | ETBE | CCOC(C)(C)C | ether | product | fuel-oxygenate | ETBE
+diisopropyl-ether | diisopropyl ether | CC(C)OC(C)C | ether | solvent | extraction | DIPE
+dibutyl-ether | dibutyl ether | CCCCOCCCC | ether | solvent | high-boiling-ether | DBE
+anisole | methoxybenzene | COc1ccccc1 | ether | solvent | fragrance;methylation | phenyl methyl ether
+phenetole | ethoxybenzene | CCOc1ccccc1 | ether | intermediate | fine-chemicals | phenyl ethyl ether
+diphenyl-ether | diphenyl ether | c1ccc(Oc2ccccc2)cc1 | ether | product | heat-transfer;fragrance | dowtherm component
+veratrole | 1,2-dimethoxybenzene | COc1ccccc1OC | ether | intermediate | pharmaceuticals | catechol dimethyl ether
+tetrahydrofuran | tetrahydrofuran | C1CCOC1 | ether | solvent | grignard;polymer | THF
+2-methyltetrahydrofuran | 2-methyltetrahydrofuran | CC1CCCO1 | ether | solvent | green-solvent | 2-MeTHF
+1,4-dioxane | 1,4-dioxane | C1COCCO1 | ether | solvent | glycol-byproduct | cyclic diether
+tetrahydropyran | tetrahydropyran | C1CCOCC1 | ether | solvent | protecting-group | THP
+1,2-dimethoxyethane | 1,2-dimethoxyethane | COCCOC | ether | solvent | chelating-solvent | glyme
+diglyme | diethylene glycol dimethyl ether | COCCOCCOC | ether | solvent | high-boiling-glyme | diglyme
+2-methoxyethanol | 2-methoxyethanol | COCCO | ether | solvent | cellosolve | glycol ether
+2-butoxyethanol | 2-butoxyethanol | CCCCOCCO | ether | solvent | cleaners | butyl cellosolve
+crown-ether-18-6 | 18-crown-6 | C1COCCOCCOCCOCCOCCO1 | ether | reagent | phase-transfer | K+ chelator
+methylal | dimethoxymethane | COCOC | acetal | solvent | formaldehyde-derived | methylal
+1,3-dioxolane | 1,3-dioxolane | C1COCO1 | acetal | solvent | protecting-group | cyclic acetal
+diethyl-acetal | 1,1-diethoxyethane | CCOC(C)OCC | acetal | product | flavour;aldehyde-protection | acetaldehyde diethyl acetal
+ethylene-oxide | oxirane | C1CO1 | epoxide | intermediate | glycol;surfactants;sterilant | EO
+propylene-oxide | methyloxirane | CC1CO1 | epoxide | intermediate | polyols;propylene-glycol | PO
+butylene-oxide | 1,2-epoxybutane | CCC1CO1 | epoxide | intermediate | surfactants | BO
+styrene-oxide | styrene oxide | C1OC1c1ccccc1 | epoxide | intermediate | fine-chemicals | phenyloxirane
+cyclohexene-oxide | cyclohexene oxide | C1CCC2OC2C1 | epoxide | intermediate | cationic-cure | alicyclic epoxide
+glycidol | glycidol | OCC1CO1 | epoxide | intermediate | glycerol;surfactants | 2,3-epoxy-1-propanol
+diglycidyl-ether-bpa | bisphenol A diglycidyl ether | CC(C)(c1ccc(OCC2CO2)cc1)c1ccc(OCC2CO2)cc1 | epoxide | intermediate | epoxy-resin | DGEBA

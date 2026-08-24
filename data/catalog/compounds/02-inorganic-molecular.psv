@@ -1,0 +1,98 @@
+# B. SIMPLE INORGANIC MOLECULES -- hydrides, oxides, oxoacids, halides
+water | water | O | inorganic | solvent | universal | the reference solvent
+hydrogen-peroxide | hydrogen peroxide | OO | inorganic | reagent | oxidation;bleaching | over-oxidation partner
+ammonia | ammonia | N | inorganic | feedstock | haber;fertiliser;solvay | base and nucleophile
+hydrazine | hydrazine | NN | inorganic | reagent | rocketry;wolff-kishner | reductant
+hydroxylamine | hydroxylamine | NO | inorganic | reagent | oximes;caprolactam | oxime former
+hydrogen-fluoride | hydrogen fluoride | F | inorganic | reagent | fluorination;etching | HF
+hydrogen-chloride | hydrogen chloride | Cl | inorganic | reagent | chloralkali;acids | HCl gas
+hydrogen-bromide | hydrogen bromide | Br | inorganic | reagent | halogenation | HBr
+hydrogen-iodide | hydrogen iodide | I | inorganic | reagent | halogenation;reduction | HI
+hydrogen-sulfide | hydrogen sulfide | S | inorganic | byproduct | sour-gas;claus | rotten-egg gas
+hydrogen-cyanide | hydrogen cyanide | C#N | inorganic | reagent | andrussow;cyanohydrin | HCN
+hydrogen-selenide | hydrogen selenide | [SeH2] | inorganic | byproduct | chalcogenides | toxic gas
+phosphine | phosphine | P | inorganic | reagent | phosphorus;fumigation | PH3
+arsine | arsine | [AsH3] | inorganic | byproduct | marsh-test | toxic gas
+silane | silane | [SiH4] | inorganic | reagent | semiconductors | SiH4
+borane | borane | B | inorganic | reagent | hydroboration | monomeric BH3
+carbon-monoxide | carbon monoxide | [C-]#[O+] | inorganic | feedstock | syngas;oxo;water-gas | C1 building block
+carbon-dioxide | carbon dioxide | O=C=O | inorganic | byproduct | combustion;solvay;kolbe | greenhouse gas
+carbon-disulfide | carbon disulfide | S=C=S | inorganic | solvent | viscose;xanthate | flammable solvent
+carbonyl-sulfide | carbonyl sulfide | O=C=S | inorganic | byproduct | claus;atmospheric | COS
+carbon-suboxide | carbon suboxide | O=C=C=C=O | inorganic | transient | malonic-anhydride | C3O2
+cyanogen | cyanogen | N#CC#N | inorganic | reagent | cyanide-chemistry | dicyanogen
+cyanogen-chloride | cyanogen chloride | ClC#N | inorganic | intermediate | cyanuric-chloride | trimerises
+cyanamide | cyanamide | NC#N | inorganic | intermediate | fertiliser;guanidine | from calcium cyanamide
+nitric-oxide | nitric oxide | [N]=O | inorganic | intermediate | lead-chamber;ostwald | NOx carrier
+nitrogen-dioxide | nitrogen dioxide | [O-][N+]=O | inorganic | intermediate | lead-chamber;ostwald | NOx carrier
+dinitrogen-tetroxide | dinitrogen tetroxide | O=[N+]([O-])[N+](=O)[O-] | inorganic | reagent | rocketry;nitration | N2O4
+nitrous-oxide | nitrous oxide | [N-]=[N+]=O | inorganic | product | anaesthesia;propellant | laughing gas
+dinitrogen-trioxide | dinitrogen trioxide | O=N[N+](=O)[O-] | inorganic | transient | nitrosation | N2O3
+dinitrogen-pentoxide | dinitrogen pentoxide | [O-][N+](=O)O[N+](=O)[O-] | inorganic | reagent | nitration | N2O5
+nitric-acid | nitric acid | O[N+](=O)[O-] | inorganic | reagent | nitration;ostwald | aqua fortis
+nitrous-acid | nitrous acid | ON=O | inorganic | intermediate | diazotisation | unstable in isolation
+sulfur-dioxide | sulfur dioxide | O=S=O | inorganic | intermediate | lead-chamber;contact | roaster gas
+sulfur-trioxide | sulfur trioxide | O=S(=O)=O | inorganic | intermediate | contact;sulfonation | oleum precursor
+sulfuric-acid | sulfuric acid | OS(=O)(=O)O | inorganic | reagent | lead-chamber;contact;nitration | oil of vitriol
+sulfurous-acid | sulfurous acid | OS(=O)O | inorganic | intermediate | bisulfite-chemistry | SO2 in water
+disulfuric-acid | disulfuric acid (oleum) | OS(=O)(=O)OS(=O)(=O)O | inorganic | reagent | sulfonation;contact | fuming sulfuric acid
+peroxymonosulfuric-acid | peroxymonosulfuric acid | OOS(=O)(=O)O | inorganic | reagent | oxidation;baeyer-villiger | Caro acid
+peroxydisulfuric-acid | peroxydisulfuric acid | OS(=O)(=O)OOS(=O)(=O)O | inorganic | reagent | persulfate-oxidation | Marshall acid
+thionyl-chloride | thionyl chloride | O=S(Cl)Cl | inorganic | reagent | acyl-chloride;chlorination | SOCl2
+sulfuryl-chloride | sulfuryl chloride | O=S(=O)(Cl)Cl | inorganic | reagent | chlorination | SO2Cl2
+chlorosulfonic-acid | chlorosulfonic acid | OS(=O)(=O)Cl | inorganic | reagent | sulfonation | HSO3Cl
+disulfur-dichloride | disulfur dichloride | ClSSCl | inorganic | reagent | vulcanisation | S2Cl2
+thiosulfuric-acid | thiosulfuric acid | OS(=O)(=O)S | inorganic | intermediate | photography | unstable free acid
+sulfamic-acid | sulfamic acid | NS(=O)(=O)O | inorganic | reagent | descaling;sweeteners | solid strong acid
+phosphoric-acid | phosphoric acid | OP(=O)(O)O | inorganic | reagent | fertiliser;food | triprotic
+phosphorous-acid | phosphorous acid | OP(O)O | inorganic | reagent | phosphonates | diprotic
+hypophosphorous-acid | hypophosphorous acid | OP=O | inorganic | reagent | reduction;deamination | monoprotic
+pyrophosphoric-acid | pyrophosphoric acid | OP(=O)(O)OP(=O)(O)O | inorganic | intermediate | phosphates | condensed phosphate
+metaphosphoric-acid | metaphosphoric acid | OP(=O)=O | inorganic | intermediate | dehydration | HPO3
+phosphorus-trichloride | phosphorus trichloride | ClP(Cl)Cl | inorganic | reagent | phosphorus;pesticides | PCl3
+phosphorus-pentachloride | phosphorus pentachloride | ClP(Cl)(Cl)(Cl)Cl | inorganic | reagent | chlorination | PCl5
+phosphoryl-chloride | phosphoryl chloride | O=P(Cl)(Cl)Cl | inorganic | reagent | vilsmeier;dehydration | POCl3
+phosphorus-pentoxide | phosphorus pentoxide | O=P12OP3(=O)OP(=O)(O1)OP(=O)(O2)O3 | inorganic | reagent | dehydration | P4O10
+phosphorus-pentasulfide | phosphorus pentasulfide | S=P12SP3(=S)SP(=S)(S1)SP(=S)(S2)S3 | inorganic | reagent | lawesson;thionation | P4S10
+boric-acid | boric acid | OB(O)O | inorganic | reagent | glass;antiseptic | H3BO3
+boron-trifluoride | boron trifluoride | FB(F)F | inorganic | catalyst | lewis-acid;friedel-crafts | BF3
+boron-trichloride | boron trichloride | ClB(Cl)Cl | inorganic | reagent | lewis-acid;demethylation | BCl3
+aluminium-chloride | aluminium chloride | Cl[Al](Cl)Cl | inorganic | catalyst | friedel-crafts | AlCl3
+iron-iii-chloride | iron(III) chloride | Cl[Fe](Cl)Cl | inorganic | catalyst | halogenation;lewis-acid | FeCl3
+zinc-chloride | zinc chloride | Cl[Zn]Cl | inorganic | catalyst | lucas-reagent;fischer-indole | ZnCl2
+tin-iv-chloride | tin(IV) chloride | Cl[Sn](Cl)(Cl)Cl | inorganic | catalyst | lewis-acid | SnCl4
+titanium-tetrachloride | titanium tetrachloride | Cl[Ti](Cl)(Cl)Cl | inorganic | catalyst | ziegler-natta;mukaiyama | TiCl4
+silicon-tetrachloride | silicon tetrachloride | Cl[Si](Cl)(Cl)Cl | inorganic | intermediate | silicones;fumed-silica | SiCl4
+trichlorosilane | trichlorosilane | Cl[SiH](Cl)Cl | inorganic | intermediate | polysilicon | siemens process
+antimony-trichloride | antimony trichloride | Cl[Sb](Cl)Cl | inorganic | reagent | lewis-acid;alchemy | butter of antimony
+antimony-pentachloride | antimony pentachloride | Cl[Sb](Cl)(Cl)(Cl)Cl | inorganic | reagent | lewis-acid;fluorination | SbCl5
+mercury-ii-chloride | mercury(II) chloride | Cl[Hg]Cl | inorganic | reagent | alchemy;catalysis | corrosive sublimate
+mercury-i-chloride | mercury(I) chloride | Cl[Hg][Hg]Cl | inorganic | product | alchemy;pharma | calomel
+carbonic-acid | carbonic acid | OC(=O)O | inorganic | intermediate | carbonate-equilibria | dissolved CO2
+hypochlorous-acid | hypochlorous acid | OCl | inorganic | reagent | bleaching;chlorohydrin | HOCl
+chlorous-acid | chlorous acid | OCl=O | inorganic | intermediate | chlorite-chemistry | HClO2
+chloric-acid | chloric acid | OCl(=O)=O | inorganic | reagent | chlorates | HClO3
+perchloric-acid | perchloric acid | OCl(=O)(=O)=O | inorganic | reagent | perchlorates;oxidation | HClO4
+hypobromous-acid | hypobromous acid | OBr | inorganic | reagent | bromohydrin | HOBr
+hypoiodous-acid | hypoiodous acid | OI | inorganic | transient | iodination | HOI
+periodic-acid | periodic acid | OI(=O)(=O)=O | inorganic | reagent | glycol-cleavage | HIO4
+iodic-acid | iodic acid | OI(=O)=O | inorganic | reagent | oxidation | HIO3
+chlorine-dioxide | chlorine dioxide | [O][Cl]=O | inorganic | reagent | pulp-bleaching | ClO2
+phosgene | phosgene | O=C(Cl)Cl | inorganic | intermediate | isocyanates;polycarbonate | COCl2
+diphosgene | diphosgene | O=C(Cl)OC(Cl)(Cl)Cl | inorganic | reagent | phosgene-surrogate | liquid phosgene source
+triphosgene | triphosgene | O=C(OC(Cl)(Cl)Cl)OC(Cl)(Cl)Cl | inorganic | reagent | phosgene-surrogate | solid phosgene source
+thiophosgene | thiophosgene | S=C(Cl)Cl | inorganic | reagent | isothiocyanates | CSCl2
+nitrosyl-chloride | nitrosyl chloride | ClN=O | inorganic | intermediate | aqua-regia;lead-chamber | NOCl
+nitrosylsulfuric-acid | nitrosylsulfuric acid | O=NOS(=O)(=O)O | inorganic | intermediate | lead-chamber;diazotisation | chamber crystals
+carbonyl-fluoride | carbonyl fluoride | O=C(F)F | inorganic | byproduct | fluorocarbon-decomposition | COF2
+sulfur-hexafluoride | sulfur hexafluoride | FS(F)(F)(F)(F)F | inorganic | product | insulating-gas | SF6
+sulfur-tetrafluoride | sulfur tetrafluoride | FS(F)(F)F | inorganic | reagent | deoxofluorination | SF4
+uranium-hexafluoride | uranium hexafluoride | F[U](F)(F)(F)(F)F | inorganic | intermediate | enrichment | UF6
+xenon-difluoride | xenon difluoride | F[Xe]F | inorganic | reagent | fluorination | XeF2
+nitrogen-trichloride | nitrogen trichloride | ClN(Cl)Cl | inorganic | byproduct | chloramine-chemistry | explosive
+chloramine | chloramine | NCl | inorganic | intermediate | hydrazine-synthesis | raschig process
+dichloramine | dichloramine | ClNCl | inorganic | transient | water-treatment | breakpoint chlorination
+hydrazoic-acid | hydrazoic acid | [N-]=[N+]=N | inorganic | reagent | azides;schmidt | HN3
+water-gas | water gas | [C-]#[O+].[H][H] | mixture | intermediate | syngas | CO plus H2 marker
+silicon-dioxide | silicon dioxide | O=[Si]=O | inorganic | mineral | glass;silicates | quartz unit
+carbon-tetrafluoride | carbon tetrafluoride | FC(F)(F)F | inorganic | product | etching;refrigerants | CF4
