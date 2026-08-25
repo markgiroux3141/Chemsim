@@ -4240,6 +4240,68 @@ the measurements that justify them.
     the rate, for ever. Right at low coverage, wrong at high, stated rather than
     approximated. That is still M10.
 
+86. ✔✔ **THE TOLERANCE AUDIT: EVERY EXAMPLE SWEPT, AND THE INSTRUMENT HAD TO
+    BE AUDITED BEFORE ITS FINDINGS COULD BE TRUSTED.**
+
+    `validation/tolerance_audit.py` re-runs every example at rtol 1e-8 / atol
+    1e-11 and diffs, token by token. It patches the two `run` DEFAULTS rather
+    than editing examples, so anything already passing its own tolerance is
+    untouched -- which is the self-check: `lime_cycle` and
+    `roasting_and_the_catalyst_gate` come out byte-identical at speedup 1.00.
+
+    **11 examples swept; after one fix ZERO print a quotable digit that moves.**
+    5 move below 0.1%, 6 are identical.
+
+    ## ⚠ THE ONE REAL MOVE WAS IN THE PANEL THAT EXISTS TO SHOW IT
+
+    `workshop` Part 2, melting a dry solid. At t = 800 s the default reads
+    **T 389.50 K / solid 2.0000** and converged reads **388.38 K / 1.9656** --
+    so the default says melting has not begun when 1.7% of the charge is gone
+    and the flask is 1.1 K cooler from latent heat. The loose run overshoots the
+    temperature by delaying the onset of the plateau the panel is about.
+
+    ⚠ Fixing it cost **one second**: Part 2 alone tightened takes the example
+    from 8.1 s to 9.1 s, not to 58.9 s. The 7.2x belonged to the other panels,
+    which move by 4e-4 and are left alone.
+
+    ## ⚠⚠ `oil_of_vitriol` CANNOT BE SWEPT, AND ITS NUMBERS ARE STILL RIGHT
+
+    It RAISES at rtol 1e-8 in `burn(690 K, s8=0.002, o2=0.10)` -- `lu_factor`
+    gets `array must not contain infs or NaNs` on `I - c J`, a NaN Jacobian,
+    after 50.7 s of thrashing. But the panel's answer is confirmed: SO2 =
+    **0.016000** at the default, **0.016000** at rtol 1e-8 with a 1e-9 mol trace
+    of SO2 charged, 0.016001 with 1e-6 mol, **0.016000** at rtol 1e-7. A trace of
+    the absent species removes the failure and the answer does not move -- the
+    same diagnostic that identified this trap originally.
+
+    ⚠⚠ **SO THE ZERO-JACOBIAN-COLUMN TRAP HAS A SECOND TRIGGER.** Not only "a
+    species in the network but absent from a sealed flask" but "a TIGHT TOLERANCE
+    on a flask holding a trace". Same NaN, same fix. That widens the case for the
+    `LAYER_REABSORB`-style honest diagonal on the gas block.
+
+    ⚠ And "it moved" and "it refused" are different findings. The audit keeps
+    them in different rows and names the un-swept example in its summary whether
+    or not it ran, because a coverage limit here is never silent.
+
+    ## ⚠⚠ IT REFUTED A CLAIM THIS PROJECT HAD STARTED TO GENERALISE
+
+    M6 measured its kiln FASTER tight (1.4-3.3 s against 5-13 s); S1 measured the
+    same on a roast (3.67 against 19.94 s). Swept: **faster in 2 of 11, slower in
+    9, worst 7.2x.** Each local measurement was right and the pattern is not
+    there. The speedup belongs to a stiff vent fed by slow chemistry.
+
+    ## ⚠⚠ AND THE FIRST VERSION OF THE AUDIT INVENTED A FINDING
+
+    It reported `wait_until` moving **12.5%**, and that was `0.07 s of wall`
+    against `0.08 s of wall`; the real worst move is **1.04e-4**. Wall clocks are
+    now excised as TOKENS rather than by dropping the line, because this project
+    prints physics and timing together (`t = 1353.13 s ... (0.89 s of wall)`) --
+    dropping the line hides the move in `t`. And keying on the word "wall" would
+    have been actively wrong: `lime_cycle` prints `±14.374 W wall`, a heat flux.
+    **An instrument that cannot tell a clock from a result manufactures
+    findings** -- the same shape as a coverage number counting a route that
+    cannot run.
+
 IMMEDIATE NEXT TASK: see **`MILESTONES.md`**, which is the plan of record as of
 2026-08-22 and supersedes the ordering below. It is derived from `data/catalog`
 (1,583 compounds, 173 routes) plus four measured capability probes, and it

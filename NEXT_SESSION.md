@@ -452,6 +452,15 @@ fails on unrelated changes and says nothing when it passes.**
 | ⚠ ... `ammonia_synthesis_rev` ceiling crossing | **1335.1 K**, UNMOVED, but only because `rate_ceiling.apparent_A` undoes the catalyst's units. Raw it reads 1178.1 K, which is a units error |
 | `tests/test_surface.py` | **38 tests in 12 s** |
 | `examples/roasting_and_the_catalyst_gate.py` | **5 panels in 11.6 s** |
+| **THE TOLERANCE AUDIT -- 11 examples swept, default vs rtol 1e-8** | **ZERO** now print a quotable digit that moves. 5 move below 0.1%, 6 are byte-identical |
+| ⚠ ... `lime_cycle` and `roasting_and_the_catalyst_gate` | **identical, speedup 1.00** -- they pass their own rtol 1e-8, so the harness patches DEFAULTS and cannot touch them. That is the audit's self-check |
+| ⚠⚠ ... the ONE real move it found | `workshop` Part 2, the latent-heat plateau: at t = 800 s the default reads **T 389.50 K / solid 2.0000** and converged reads **388.38 K / 1.9656**. The default says melting has not started; it has, and the flask is 1.1 K cooler because the melt absorbs latent heat |
+| ... and fixing it cost 1 second | Part 2 alone tightened: the example goes **8.1 s -> 9.1 s**, not 8.1 -> 58.9. The 7.2x was the OTHER panels, which move by 4e-4 and are left alone |
+| ⚠⚠ ... `oil_of_vitriol` CANNOT BE SWEPT | **RAISES** at rtol 1e-8 in `burn(690 K, s8=0.002, o2=0.10)` -- `lu_factor` gets a NaN Jacobian after **50.7 s** of thrashing |
+| ... and its numbers are CONFIRMED, not suspect | SO2 = **0.016000** at the default, **0.016000** at rtol 1e-8 with a 1e-9 mol trace of SO2 charged, **0.016001** with 1e-6 mol, **0.016000** at rtol 1e-7 |
+| ⚠⚠ ... so the zero-column trap has a SECOND trigger | not only "a species absent from a sealed flask" but "a TIGHT TOLERANCE on a flask holding a trace". Same NaN, same fix, same diagnostic |
+| ⚠⚠ ... and "THE TIGHT RUN IS ALSO FASTER" DOES NOT GENERALISE | faster in **2 of 11**, SLOWER in **9**, worst **7.2x**. It held for M6's vented kiln and S1's roast -- a stiff vent fed by slow chemistry -- and nowhere else. Tightening usually COSTS time |
+| ⚠ ... and the audit's own first version manufactured a finding | it reported `wait_until` moving **12.5%**, and that was `0.07 s of wall` against `0.08 s of wall`. Real worst move **1.04e-4**. A wall clock is now excised as a TOKEN, not by dropping the line -- which also stops it hiding `lime_cycle`'s `±14.374 W wall` heat flux |
 | the whole suite | **797 tests in 11:50** -- ran **796 passed / 1 failed**, and the failure was real |
 | ⚠ ... the one thing the suite caught | `test_every_mineral_records_the_ions_it_dissolves_into` asserted `rec.ions` for EVERY row, and a METAL has none. Narrowed to exempt a one-element row priced at `Hf = Gf = 0`, so it still catches a salt that lost its ions -- verified against three simulated mistakes, all three CAUGHT |
 | ⚠ ... and the full suite has NOT been re-run since that fix | the fixed file passes in a targeted run (79 tests with `test_surface.py`, 13 s). Re-run the suite before quoting a green number |

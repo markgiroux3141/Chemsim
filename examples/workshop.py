@@ -45,11 +45,27 @@ print("  Solubility is exp(-Hfus/R (1/T - 1/Tm)) -- one equation, no table.")
 
 
 print("\n=== Part 2: melting a dry solid ===")
+# THE DEFAULT SOLVER TOLERANCE PUTS THE ONSET OF THIS PLATEAU IN THE WRONG PLACE,
+# and this panel is ABOUT the plateau, so it runs converged. Measured by
+# `validation/tolerance_audit.py`:
+#
+#     t = 800 s      rtol 1e-6 (default)     T = 389.50 K   solid 2.0000
+#                    rtol 1e-8               T = 388.38 K   solid 1.9656
+#
+# The default says nothing has melted yet; converged, 1.7% has, and the flask is
+# 1.1 K COOLER because the melt is absorbing latent heat. The tight answer is the
+# right one and the loose one overshoots the temperature by delaying the onset --
+# which is exactly the number the line below points at.
+#
+# It costs time rather than saving it. The whole example runs 8.1 s at the default
+# and 58.9 s tight, so only THIS panel is tightened; the audit measures the rest
+# of the file moving by less than 5e-4, which is not a digit anyone reads.
+CONVERGED = dict(rtol=1.0e-8, atol=1.0e-11)
 v = Vessel(solid_net, volume=1.0, T=300.0, T_env=300.0, UA=0.0,
            Q_input=60.0, kla=0.0, k_diss=0.05)
 v.charge({BENZOIC: 2.0}, phase="solid")
 for _ in range(9):
-    v.step(200.0)
+    v.step(200.0, **CONVERGED)
     st = v.state()
     bar = "#" * int(20 * st.n_solid[BENZOIC] / 2.0)
     print(f"  t={v.t:5.0f}s  T={v.T:7.2f} K  solid {st.n_solid[BENZOIC]:6.4f} {bar}")
