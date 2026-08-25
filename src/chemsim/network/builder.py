@@ -61,14 +61,32 @@ from chemsim.reactions.thermo import COLLISION_LIMIT, T_REF
 # sealed flask equilibrates at 7.95% conversion at 1100 K where forward-only
 # reads 100%.
 #
-# ⚠ WHAT WOULD STILL WANT AN ENTRY HERE is a gas-CONSUMING surface reaction --
-# ``roasting`` (metal sulfide + O2 -> metal oxide + SO2), and the five
-# heterogeneous templates in ``reactions/library`` that fold a catalyst into an
-# apparent barrier so that a flask with no iron in it makes ammonia. Those ARE
-# mass action; they are first order in a gas pressure and gated on a solid being
-# present. The affinity form the term uses is measurably not a rate law for them
-# (an atmosphere depleted of O2 drives its reverse to 2.6e15 formula units per
-# second), which is why the two mechanisms are kept apart rather than merged.
+# ⚠⚠ AND THE CASE M6 PREDICTED WOULD WANT AN ENTRY HERE WAS BUILT, AND DOES NOT.
+# M6 left this comment saying that a gas-CONSUMING surface reaction -- ``roasting``
+# and the five heterogeneous templates that fold a catalyst into an apparent
+# barrier -- IS mass action and so belongs here. The first half of that is right
+# and the conclusion is wrong, measured before the code:
+#
+#   * a solid CATALYST has stoichiometry ZERO on both sides, so its ``delta``
+#     never leaves the gas block. Only its EXPONENT reaches the solid one, and
+#     that is ``KineticArrays.order_solid`` -- an extra matrix, not a phase.
+#     ⚠ And the label is not free: ``reaction_deltas`` applies the pure-liquid
+#     standard-state shift to any phase that is not ``"gas"``, so calling
+#     ``N2 + 3 H2 -> 2 NH3`` a "solid"-phase reaction moves dG by -99.7 kJ/mol
+#     and K at 500 K by 2.6e10. THAT IS THE FAILURE THIS COMMENT ALREADY
+#     DESCRIBES, one paragraph up, arriving on the line it is written on. A
+#     solid-catalysed gas reaction is a GAS-phase reaction: every participant
+#     that has an activity is a gas, and a pure solid's activity is 1.
+#   * ROASTING cannot be priced on the ideal-gas basis at all. Its reactant is a
+#     lattice and ``thermochemistry`` refuses a lattice SMILES by name, so its
+#     enthalpy has to come from ``mineral_data`` against a curated gas. That
+#     makes it a curated table with its own pricing --
+#     ``numerics.vessel_integrator.SurfaceArrays`` and
+#     ``properties/surface.py`` -- for the same reason M6's term is one.
+#
+# So this table has two entries after TWO milestones each expected to add a
+# third, and the reasons are different: M6's was *the kernel cannot express this
+# rate law*, and this one is *the label would change the thermodynamics*.
 PHASE_INDEX = {"liquid": 0, "gas": 1}
 
 
@@ -91,6 +109,18 @@ class KineticArrays:
     # Arrhenius, and n is where that factor now lives instead of being folded
     # into A at one reference temperature and left to drift.
     n_exp: np.ndarray = None
+    # (n_reactions, n_species) rate-law exponents on a species' AMOUNT IN MOL
+    # rather than its concentration -- the solid block's basis.
+    #
+    # ⚠ A SECOND EXPONENT MATRIX RATHER THAN AN ENTRY IN ``order``, BECAUSE THE
+    # TWO ARE ON DIFFERENT BASES AND ONE MATRIX COULD NOT SAY WHICH. ``order``
+    # multiplies mol/L; this multiplies mol. It is non-zero only where a template
+    # declares a heterogeneous catalyst, and then in exactly one column: the
+    # lattice's, at 1.0, on the forward reaction and its derived reverse alike.
+    #
+    # All-zero is EXACTLY the old kernel -- ``prod(c ** 0) == 1`` -- so every
+    # network without a solid catalyst is bit-identical.
+    order_solid: np.ndarray = None
     _idx: dict[str, int] = field(default=None, repr=False, compare=False)
 
     def __post_init__(self) -> None:
@@ -103,6 +133,8 @@ class KineticArrays:
             self.phase = np.zeros(self.A.shape[0], dtype=int)
         if self.n_exp is None:
             self.n_exp = np.zeros(self.A.shape[0])
+        if self.order_solid is None:
+            self.order_solid = np.zeros((self.A.shape[0], len(self.species)))
 
     @property
     def n_species(self) -> int:
@@ -156,6 +188,7 @@ class ReactionNetwork:
         A = np.zeros(r)
         Ea = np.zeros(r)
         n_exp = np.zeros(r)
+        order_solid = np.zeros((r, n))
         dH = np.full(r, np.nan)
         phase = np.zeros(r, dtype=int)
         for j, rxn in enumerate(self.reactions):
@@ -181,6 +214,15 @@ class ReactionNetwork:
                 delta[j, idx[s]] -= 1.0
             for s in rxn.products:
                 delta[j, idx[s]] += 1.0
+            if rxn.solid_catalyst is not None:
+                # Order 1 on the catalyst's AMOUNT, and NOTHING in ``delta``: a
+                # catalyst is neither consumed nor produced, so its row of the
+                # state derivative stays identically zero and its amount is a
+                # constant of the motion. That is what makes it unable to seed
+                # itself -- the exposure ``chemsim-solid-gate-fix`` records at
+                # 89% yield on 1.2e-4 mol of phantom NOx needed a CYCLE with gain
+                # on its own catalyst, and a zero stoichiometry has no gain.
+                order_solid[j, idx[rxn.solid_catalyst]] += 1.0
             A[j] = rxn.A
             Ea[j] = rxn.Ea
             n_exp[j] = rxn.n_exp
@@ -189,7 +231,8 @@ class ReactionNetwork:
                     reaction_deltas(rxn, provider, self.volatility)[0] * 1000.0
                 )  # kJ -> J/mol
         return KineticArrays(
-            order, delta, A, Ea, list(self.species), dH, phase, n_exp
+            order, delta, A, Ea, list(self.species), dH, phase, n_exp,
+            order_solid,
         )
 
     def describe(self) -> str:
@@ -276,6 +319,34 @@ def build_network(
     for smi in initial_smiles:
         m = Molecule.from_smiles(smi)
         molecules[m.smiles] = m
+
+    # ⚠ A DECLARED SOLID CATALYST IS ADDED TO THE SPECIES LIST WHETHER OR NOT
+    # ANYONE CHARGES IT, AND THAT IS THE WHOLE MECHANIC. Its amount is what gates
+    # the reaction, so it has to have a state-vector index for the amount to be
+    # zero at -- and then "put iron in the flask" is a runtime action a player
+    # takes, not a decision taken when the network was built. A player can add
+    # the catalyst half way through a run.
+    #
+    # The alternative -- generating the reaction only when the catalyst is
+    # already a species -- would make an uncatalysed flask a flask with a
+    # DIFFERENT NETWORK, so nothing could report that the reaction was available
+    # and idle. This is the reverse of the licence ``library.esterification``
+    # takes for its dissolved acid, and it can be: an acid catalyst has to be
+    # priced by the ordinary providers and may genuinely be unavailable, while a
+    # lattice is priced from ``mineral_data``, which is the same table the
+    # declaration was validated against.
+    #
+    # ⚠ It also walks into a documented fragility and does not trip it: a species
+    # in the network but absent from the flask has an identically zero Jacobian
+    # COLUMN, which ``num_jac`` inflates to inf. A catalyst's column is not zero
+    # -- the gas block's rates depend on its amount with slope ``k C^g`` even at
+    # zero -- so what is zero is its ROW, which is a constant of the motion and
+    # exactly what a catalyst should be. Measured in ``tests/test_surface.py``.
+    for tmpl in templates:
+        lattice = _catalyst_lattice(tmpl)
+        if lattice is not None and lattice not in molecules:
+            m = Molecule.from_smiles(lattice)
+            molecules[m.smiles] = m
 
     reactions: dict[tuple, ConcreteReaction] = {}
     notices: dict[tuple, str] = {}
@@ -443,8 +514,9 @@ def _concrete_in_phase(
     """One template, one phase -> the forward reaction and its derived reverse."""
     r_smiles = tuple(m.smiles for m in reactants)
     p_smiles = tuple(m.smiles for m in products)
+    cat = _catalyst_lattice(tmpl)
     fwd = ConcreteReaction(tmpl.name, r_smiles, p_smiles, tmpl.A, tmpl.Ea, phase,
-                           orders=tmpl.orders)
+                           orders=tmpl.orders, solid_catalyst=cat)
 
     # ⚠ A LIQUID-PHASE REACTION WHOSE SPECIES ARE NOT ALL ON THE SAME BASIS.
     # ``standard_state.mixed_basis`` explains the failure and what measured it;
@@ -472,7 +544,7 @@ def _concrete_in_phase(
         dH = reaction_deltas(fwd, thermo, volatility)[0] * 1000.0   # kJ -> J/mol
         Ea = tmpl.barrier(dH)
         fwd = ConcreteReaction(tmpl.name, r_smiles, p_smiles, tmpl.A, Ea, phase,
-                               orders=tmpl.orders)
+                               orders=tmpl.orders, solid_catalyst=cat)
 
     if not tmpl.reversible:
         return [fwd]
@@ -509,12 +581,34 @@ def _concrete_in_phase(
             f"the equilibrium is reached."
         )
 
+    # ⚠ THE CATALYST IS ON BOTH ARROWS, AND IT HAS TO BE. Detailed balance
+    # derives ``A_rev`` from ``A_fwd`` through ``k_f/k_r = K(T)``, and that
+    # identity survives an extra order-1 factor only because the factor is
+    # IDENTICAL in both rate laws -- so it cancels out of the ratio and the
+    # equilibrium is untouched at every catalyst loading. Catalyse one direction
+    # only and adding iron would MOVE the equilibrium, which is the failure
+    # ``library.esterification`` records for the dissolved acid.
     return [
         ConcreteReaction(
-            tmpl.name, r_smiles, p_smiles, db.A_fwd, db.Ea_fwd, phase, db.n_fwd
+            tmpl.name, r_smiles, p_smiles, db.A_fwd, db.Ea_fwd, phase, db.n_fwd,
+            solid_catalyst=cat,
         ),
         ConcreteReaction(
             f"{tmpl.name}_rev", p_smiles, r_smiles, db.A_rev, db.Ea_rev,
-            phase, db.n_rev,
+            phase, db.n_rev, solid_catalyst=cat,
         ),
     ]
+
+
+def _catalyst_lattice(tmpl: ReactionTemplate) -> str | None:
+    """The lattice SMILES of a template's declared solid catalyst, or None.
+
+    Resolved here rather than on the template so that Layer 2 keeps declaring a
+    NAME -- which is what a recipe or a docstring can be read against -- while
+    Layer 3 deals only in the canonical SMILES its species list is keyed on.
+    """
+    if tmpl.solid_catalyst is None:
+        return None
+    from chemsim.properties import mineral_data
+
+    return mineral_data.MINERALS[tmpl.solid_catalyst].lattice

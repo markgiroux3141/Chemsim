@@ -25,6 +25,7 @@ from chemsim.properties import (
     dissociation_templates,
     electrolyte_provider,
 )
+from chemsim.properties.mineral_data import MINERALS
 from chemsim.properties.standard_state import mixed_basis
 from chemsim.properties.volatility import VolatilityError
 from chemsim.reactions import (
@@ -50,6 +51,7 @@ from chemsim.reactions import (
     transesterification,
     williamson_ether_synthesis,
 )
+from chemsim.reactions.library import SOLID_CATALYST_REFERENCE
 from chemsim.reactions.thermo import COLLISION_LIMIT
 from chemsim.vessel import Vessel
 
@@ -89,12 +91,24 @@ def net_of(seed, templates, thermo, volatility, **kw):
     return build_network(seed, templates, thermo=thermo, volatility=volatility, **kw)
 
 
-def flask(net, T, charge, seconds, gas=False):
+def flask(net, T, charge, seconds, gas=False, solid=None):
     v = Vessel(net, volume=1.0, T=T, T_env=T, UA=1.0e4, kla=1.0, k_vent=0.0,
                k_diss=0.0)
     v.charge(charge, phase="gas" if gas else "liquid")
+    if solid:
+        v.charge(solid, phase="solid")
     v.run(seconds)
     return v
+
+
+# The heterogeneous catalysts the templates in this module now DECLARE, at the
+# loading their pre-exponentials are rescaled against. A flask without them makes
+# nothing at all -- which is a separate test, and the reason this constant is
+# spelled out here rather than hidden in a helper.
+CATALYST = {
+    m: {MINERALS[m].lattice: SOLID_CATALYST_REFERENCE}
+    for m in ("iron", "nickel", "copper")
+}
 
 
 # ---------------------------------------------------------------------------
@@ -207,11 +221,19 @@ def test_ddt_is_one_of_six_isomers(thermo, volatility):
 def test_haber_stops_at_its_own_equilibrium(thermo, volatility):
     """No maximum temperature is declared anywhere. The ceiling is detailed
     balance working on the formation data: exothermic, loses moles, self-limiting
-    hot -- so a hotter reactor must make LESS ammonia from the same charge."""
+    hot -- so a hotter reactor must make LESS ammonia from the same charge.
+
+    ⚠ AND THE IRON IS NOW CHARGED, which is what this test used to be silent
+    about. It ran without a catalyst because the catalysis was folded into the
+    barrier; at ``SOLID_CATALYST_REFERENCE`` the rate is the same one it always
+    measured, so the ceiling below is the same number as before.
+    """
     net = net_of([NITROGEN, HYDROGEN], [ammonia_synthesis()], thermo, volatility)
     charge = {NITROGEN: 5.0, HYDROGEN: 15.0}
-    hot = flask(net, 800.0, dict(charge), 3600.0, gas=True).state().total(AMMONIA)
-    warm = flask(net, 700.0, dict(charge), 3600.0, gas=True).state().total(AMMONIA)
+    hot = flask(net, 800.0, dict(charge), 3600.0, gas=True,
+                solid=CATALYST["iron"]).state().total(AMMONIA)
+    warm = flask(net, 700.0, dict(charge), 3600.0, gas=True,
+                 solid=CATALYST["iron"]).state().total(AMMONIA)
     assert 0.0 < hot < warm < 10.0
     assert warm / 10.0 == pytest.approx(0.76, abs=0.05)
 

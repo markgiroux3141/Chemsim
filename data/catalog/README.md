@@ -223,6 +223,62 @@ and roasting CONSUMES a gas, which M6's affinity form is measurably not a rate
 law for (mechanism -- see `properties/solid_state.py`). The second reason is the
 useful one, because it says which engine feature the class is waiting on.
 
+### ⚠ AND THE NEXT MILESTONE CLOSED IT -- AND SPLIT THE CLASS ON M1's STANDARD
+
+Both of M6's reasons are gone: `mineral_data` carries all four roasting oxides and
+all four sulfides, and `properties/surface.py` is the mass-action term the class
+was waiting on. But crediting `roasting` as M6 labelled it made
+`mercury-from-cinnabar` read template-ready, and **the engine cannot run that
+row** -- so the class was read again and split.
+
+| was | rows | became | has a mechanism |
+|---|---:|---|---|
+| `roasting` | 4 of 5 | `roasting` | ✔ `SurfaceArrays`, three of the four rows runnable |
+| `roasting` | 1 of 5 | `roasting-to-metal` | ✘ -- the row's product is a METAL, and this term makes the oxide |
+
+⚠⚠ **THE SPLIT WAS FORCED BY A FALSE CREDIT, WHICH IS WHY IT IS RECORDED HERE.**
+M6 read `roasting` as ONE mechanism in five rows and flagged that
+`mercury-from-cinnabar` "gives the METAL, because HgO decomposes at roasting
+temperature, so one template will not cover that row honestly". That flag was
+right and it was not a label. Crediting the unsplit class moved
+`mercury-from-cinnabar` into the template-ready list on the strength of a
+mechanism that does not make its product -- the `deprotonation` mistake M1 named,
+arriving from the other direction. `cinnabar-roasting` IS built and runs; what it
+makes is montroydite, and the metal step needs mercury metal as a species and a
+second reaction. So the mechanism is credited and the row is not.
+
+The four rows that remain in `roasting`:
+
+| row | runnable? | why |
+|---|---|---|
+| `zinc-smelting` 1 | ✔ | `sphalerite-roasting` |
+| `lead-smelting` 1 | ✔ | `galena-roasting` |
+| `copper-smelting` 1 | ✔ | `covellite-roasting` |
+| `pyrite-roasting` 1 | ✘ **but it reads template-ready** | **DATA.** Pyrite has `Hfs` in WEBBOOK and `S0s` in nothing, so `mineral_data` refuses the entry under the same-database rule. |
+
+⚠ **AND THE ONE ROUTE THIS MILESTONE ADDS TO THE TEMPLATE-READY LIST IS
+`pyrite-roasting`, WHICH DOES NOT RUN.** That is not a bug in the number, it is
+what the number MEANS: template-readiness asks whether every step class has a
+mechanism, and species-readiness asks separately whether the species price. Pyrite
+is a species gap and the audit counts it as one. Read together: the three smelting
+routes are the ones whose roasting step actually runs, and all three are still
+blocked further down the chain (`carbothermic-reduction`, `gas-solid-reduction`).
+So the honest summary is **+1 class and +1 template-ready route, and zero new
+routes that run end to end** -- which is the second time this corpus has had to
+say that a headline moved further than the engine did.
+
+⚠ **WHAT DID NOT SURVIVE BEING BUILT: THE IMPLIED SHARED CLOCK.** One barrier and
+one pre-exponential cover all four declarations, which is M6's "one mechanism"
+reading holding. What it does not license is that they run at the same
+temperature: the catalog's own equipment column puts cinnabar in a 900 K retort
+and sphalerite in an 1100 K roaster, and a shared clock makes cinnabar **31x
+slower** at its own temperature. This project's one mechanism for fixing that --
+Evans-Polanyi on the reaction enthalpy -- is measured getting the ordering
+BACKWARDS, because sphalerite is the most exothermic row and needs the hottest
+furnace. So M6's "a constant shared between rows is a claim that they are the same
+event" arrives here as a claim that is partly refuted and stated, rather than
+hidden. See `properties/surface.py`.
+
 ### ⚠ M6 DID re-label five rows, in two classes it had not been asked about
 
 Reading `calcination`'s rows led straight into the two classes that finish the

@@ -59,6 +59,54 @@ class ReactionTemplate:
         orders: rate-law exponents, ONE PER REACTANT SLOT of the SMARTS, or None
             (the default) for ordinary mass action. See below -- this is the one
             field that lets a template's rate law differ from its stoichiometry.
+        solid_catalyst: the ``mineral_data`` name of a CRYSTAL that must be
+            present for this reaction to go, or None. See below.
+
+    THE GATE A SOLID CATALYST IS, AND WHY IT IS NOT A PHASE
+
+    ``library._maybe_catalyse`` makes a HOMOGENEOUS catalyst explicit by writing
+    it into both sides of the SMARTS: the extra reactant slot raises its
+    mass-action exponent to 1 and the identical product slot cancels it out of
+    the stoichiometry. That is the whole mechanism and the kernel needs to know
+    nothing about it. A HETEROGENEOUS catalyst cannot be written that way, for
+    two reasons that are both about representation rather than difficulty:
+
+      * **a lattice is not a graph.** ``[Fe]`` has no bonds for a rewrite to
+        match, so there is no SMARTS slot to put it in;
+      * **and it is on a different basis.** A crystal lives in the solid block,
+        which is an inventory in MOL; every other exponent in this project is on
+        a concentration in mol/L. A solid's "concentration" would be an amount
+        divided by a nominal molar volume.
+
+    So it is DECLARED, and it becomes a second exponent matrix -- see
+    ``KineticArrays.order_solid``. What it is NOT is a new phase. Labelling
+    ``N2 + 3 H2 -> 2 NH3`` a "solid"-phase reaction because iron is involved
+    moves it off the ideal-gas standard state, because ``reaction_deltas``
+    applies the pure-liquid shift to anything that is not ``"gas"``: **measured
+    at -99.7 kJ/mol in dG and a factor of 2.6e10 in K at 500 K.** The reaction is
+    a gas-phase reaction; every participant that HAS an activity is a gas, and a
+    pure solid's activity is 1. The catalyst multiplies the RATE and touches
+    nothing else.
+
+    A CATALYST GATES BOTH DIRECTIONS, AND IT MUST
+
+    Its exponent is applied to the forward reaction and to the derived reverse
+    alike, which is what keeps ``reversible=True`` legal here. Detailed balance
+    holds because the catalyst's exponent is IDENTICAL on both sides, so it
+    cancels out of the ratio of the two rate laws exactly as the homogeneous acid
+    does -- the equilibrium is untouched at every catalyst loading, and a flask
+    with no catalyst reaches it infinitely slowly rather than reaching a
+    different one. That is the same argument ``esterification`` makes for putting
+    the acid on both arrows, and the same failure it avoids: catalyse one
+    direction only and adding acid would shift the equilibrium.
+
+    ⚠ **AND THE PRE-EXPONENTIAL IS RESCALED BY A DECLARED CHARGE.** An extra
+    order-1 factor in mol would silently slow every reaction that gained one, so
+    ``A`` is divided by ``SOLID_CATALYST_REFERENCE`` -- exactly the bargain
+    ``library.CATALYST_REFERENCE`` strikes for the dissolved acid, in mol rather
+    than mol/L. At that charge the catalysed and uncatalysed forms of a template
+    give the SAME rate, which is what makes the two comparable rather than two
+    unrelated calibrations.
 
     ⚠ DECLARED ORDERS, AND WHY THE STOICHIOMETRY IS NOT ALWAYS THE RATE LAW.
     Everywhere else in this project the exponents come from the reactant multiset,
@@ -123,6 +171,7 @@ class ReactionTemplate:
     phase: str = "liquid"
     alpha: float = 0.0
     orders: tuple[float, ...] | None = None
+    solid_catalyst: str | None = None
     _rxn: AllChem.ChemicalReaction = field(default=None, repr=False, compare=False)
 
     # The phases a CONCRETE reaction may run in. "any" is not one of them: it is
@@ -149,6 +198,31 @@ class ReactionTemplate:
             )
         if self.orders is not None:
             self._check_orders()
+        if self.solid_catalyst is not None:
+            self._check_solid_catalyst()
+
+    def _check_solid_catalyst(self) -> None:
+        """Validate a declared solid catalyst. See the class docstring."""
+        from chemsim.properties import mineral_data
+
+        rec = mineral_data.MINERALS.get(self.solid_catalyst)
+        if rec is None:
+            raise ValueError(
+                f"template {self.name!r}: solid_catalyst="
+                f"{self.solid_catalyst!r} is not a name in mineral_data. A "
+                f"solid catalyst is a CRYSTAL and has to be priced on the solid "
+                f"basis -- add it with tools/build_mineral_data.py. Known: "
+                f"{sorted(mineral_data.MINERALS)[:6]}..."
+            )
+        if rec.Cp_solid is None or rec.Vm_solid is None:
+            raise ValueError(
+                f"template {self.name!r}: {self.solid_catalyst!r} has no "
+                f"crystal Cp or molar volume. A catalyst never enters an "
+                f"equilibrium, so its formation pair is not what it is needed "
+                f"for -- what Layer 4 asks of every species in the solid block "
+                f"is how much room it takes and how much heat it holds, and a "
+                f"catalyst sitting in a hot flask does both."
+            )
 
     def _check_orders(self) -> None:
         """Validate a declared rate law. See the class docstring for the argument."""

@@ -641,6 +641,17 @@ class PhaseArrays:
     # bool: this species carries a charge. Used by the liquid-liquid phase
     # decision, which REFUSES to split an electrolyte -- see ``split_phases``.
     ionic: np.ndarray = None
+    # bool: this species is a CRYSTAL LATTICE and exists in no other block.
+    #
+    # ⚠ WHAT MAKES THIS A SPECIES PROPERTY RATHER THAN A PER-REACTION ONE, which
+    # is the whole reason a surface reaction needs only one extra mask. A
+    # lattice may REACT and may never DISSOLVE, never boil and never melt --
+    # ``solidifies`` is held False for it and ``vol_A`` is 1e-30 bar -- so
+    # "which block does this species live in" has a single answer for a lattice
+    # and only for a lattice. Water is a liquid here and a gas there; calcite is
+    # a crystal wherever it appears. That is what lets ``SurfaceArrays`` read a
+    # mixed basis off one boolean instead of an (m, n) matrix per reaction.
+    lattice: np.ndarray = None
 
     # Activity-coefficient parameters. Unlike everything above, these are not
     # evaluated properties -- they are the inputs to a model that must run in the
@@ -693,6 +704,8 @@ class PhaseArrays:
             self.solidifies = np.zeros(n, dtype=bool)
         if self.ionic is None:
             self.ionic = np.zeros(n, dtype=bool)
+        if self.lattice is None:
+            self.lattice = np.zeros(n, dtype=bool)
         if self.nu is None:
             self.nu = np.zeros((n, 0))
         g = self.nu.shape[1]
@@ -974,8 +987,15 @@ class SolidStateArrays:
     clipped: it says the affinity form is only a rate law when the gas is on one
     side, and a gas-consuming surface reaction (roasting, and the five
     heterogeneous templates that fold a catalyst into an apparent barrier) is a
-    DIFFERENT mechanism that wants the mass-action kernel and a third
-    ``PHASE_INDEX`` entry. Refusing here is what keeps the two apart.
+    DIFFERENT mechanism that wants the mass-action kernel.
+
+    ⚠ **IT WAS BUILT -- ``SurfaceArrays``, below -- AND IT TURNED OUT TO WANT A
+    TERM OF ITS OWN RATHER THAN THE THIRD ``PHASE_INDEX`` ENTRY THIS DOCSTRING
+    PREDICTED.** A roasting row's reactant is a lattice, which
+    ``thermochemistry`` refuses by name, so it cannot be priced on the ideal-gas
+    basis the kernel's reverse derivation lives on; and a solid CATALYST is a
+    factor in a gas reaction's rate law, whose phase label carries a standard
+    state worth 2.6e10 in K. Refusing here is still what keeps the two apart.
     """
 
     # (m, n) signed stoichiometry over the species vector. Solids live in the
@@ -1056,6 +1076,142 @@ class SolidStateArrays:
             a = np.where(below, mid, a)
             b = np.where(below, b, mid)
         return 0.5 * (a + b)
+
+
+@dataclass
+class SurfaceArrays:
+    """A crystal reacting with a gas that ARRIVES at it, as arrays. Layer 5 -> 4.
+
+    ``2 ZnS(s) + 3 O2(g) -> 2 ZnO(s) + 2 SO2(g)`` is a roaster. This is the other
+    half of M6's dichotomy and it is a different mechanism from
+    ``SolidStateArrays``, not a variant of it -- see ``properties/surface.py``
+    for the argument, which is measured in both directions.
+
+    ## THE FORM, AND THE ONE THING IT MUST NOT GET WRONG
+
+        rate = k(T) * prod(nS ** order_solid) * prod(C_gas ** order_gas)   mol/s
+        k(T) = A exp(-Ea / R T)
+
+    ⚠ **THE BASIS IS MIXED, SO THIS RATE IS NOT MULTIPLIED BY A VOLUME.** Every
+    other rate law in this project comes out in mol/(L s) and is scaled by the
+    phase's volume; this one is already in mol/s. Both halves are forced:
+
+      * a solid's CONCENTRATION has no referent -- the solid block is an
+        inventory in mol and ``V_S`` is nominal, because solids are given the
+        liquid molar volume. ``nS/V`` divides a number by a convention;
+      * a gas's AMOUNT is not what a surface sees -- the arrival rate at a
+        crystal face goes with the collision rate, i.e. with concentration.
+        Written on ``nG`` the reaction would not speed up under compression, and
+        a roaster is a machine for blowing air through a bed.
+
+    So the rate is EXTENSIVE in the solid and INTENSIVE in the gas, and one
+    consequence is a mechanic: with order 1 in the solid, ``tau = 1/(k C_gas)``
+    does not depend on the charge. A bigger bed is more throughput, not a longer
+    roast.
+
+    ## ⚠ ONE BOOLEAN SPLITS THE BASIS AND THE DESTINATION BOTH
+
+    ``PhaseArrays.lattice`` says which species are crystals, and a lattice is
+    the only species in this engine whose block is unambiguous -- it may react
+    and may never dissolve, boil or melt. So the same mask that chooses each
+    species' basis also chooses which block its stoichiometry lands in, and no
+    per-reaction matrix is needed. Water is liquid here and vapour there; calcite
+    is a crystal wherever it appears.
+
+    ## ⚠⚠ FORWARD ONLY, AND THAT IS TWO MEASUREMENTS RATHER THAN A SIMPLIFICATION
+
+      * **Mass action on a solid AMOUNT reaches the wrong equilibrium** -- M6's
+        measurement, not re-derived here: a reversible pair written this way
+        settles at ``p/K = n_A/n_B``, observed at 3.0863 against 3.0863 at
+        1100 K. Any reversible row with a non-zero solid stoichiometry inherits
+        that exactly, which is why ``properties/surface.price`` refuses one.
+      * **And for the rows that exist the reverse is unobservable anyway.**
+        ``ln K`` is +67.6 to +78.8 at each row's own run temperature;
+        ``LN_K_IRREVERSIBLE`` requires +20 and the tightest row clears it by
+        20.7 decades.
+
+    ## ⚠ NOTHING IS GATED HERE, AND THAT IS THE SAME ARGUMENT M6 MADE
+
+    ``_avail`` exists because dissolution's driving force is non-zero at an EMPTY
+    block, so a phantom crop would dissolve. This term's driving force IS the
+    amount present: at ``nS = 0`` the rate is exactly zero and its slope is
+    ``k C_gas``, bounded by ``A`` (3.21e6 L/(mol s) in the limit, 0.24 at a
+    roaster's 1100 K). The same holds for the arriving gas -- order 1, no
+    denominator, so ``C_gas = 0`` is a zero with a bounded slope. Nothing to
+    regularise.
+
+    ⚠ **AND A CATALYST CANNOT SEED ITSELF, WHICH IS WHY THAT EXPOSURE IS ABSENT
+    RATHER THAN GUARDED.** ``chemsim-solid-gate-fix`` records a round-off-seeded
+    lead chamber reaching 89% yield on 1.2e-4 mol of phantom NOx, and the shape of
+    that failure is a CYCLE with unbounded gain on its own catalyst. Here a
+    catalyst's stoichiometry is identically zero -- it is in ``order_solid`` and
+    absent from both ``nu`` arrays -- so its amount is a constant of the motion
+    and a phantom mole stays a phantom mole. A consumed solid is bounded by matter
+    the ordinary way: a spurious 1e-20 mol of sphalerite makes 1e-20 mol of
+    zincite and stops.
+
+    ⚠ **THE ``units`` BOUND THAT ``SolidStateArrays`` AND ``PrecipitationArrays``
+    BOTH CARRY IS NOT HERE, AND IT IS NOT NEEDED.** Those two write a flux that
+    can be large at a nearly-empty block, so they cap it by the formula units the
+    block can supply. This rate is PROPORTIONAL to the amount present, so it
+    self-limits: the solid decays exponentially and cannot cross zero, which the
+    non-negative projection then never has to repair. The limit that remains is
+    the shared one -- the solid block is an inventory, so two surface reactions
+    consuming the same mineral cannot attribute it between them.
+    """
+
+    # (m, n) signed stoichiometry, split by ``PhaseArrays.lattice`` at use.
+    # Kept as ONE array rather than the two ``SolidStateArrays`` needs, because
+    # there the split is per-reaction and here it is per-species.
+    nu: np.ndarray
+    # (m, n) rate-law exponents. Two arrays and not one, because they are on
+    # different bases -- ``order_solid`` on mol, ``order_gas`` on mol/L -- and a
+    # single matrix could not say which. Both are DECLARED: the written
+    # stoichiometry is a global one (three O2 do not meet one crystal), so taking
+    # the coefficients for the rate law would make the conversion a reading of
+    # ``A``. Same declaration ``library.sulfur_combustion`` makes.
+    order_solid: np.ndarray
+    order_gas: np.ndarray
+    dH: np.ndarray            # (m,) J/mol at 298.15 K, + = endothermic
+    A: np.ndarray             # (m,) L^g mol^(1-g-s) / s -- the mixed basis
+    Ea: np.ndarray            # (m,) J/mol -- DECLARED, not derived; see below
+    names: tuple = ()
+
+    def __post_init__(self) -> None:
+        # ⚠ THE TWO EXPONENT MATRICES COLLAPSE TO ONE, AND THAT IS THE ANSWER TO
+        # "what uniform array form does this model reduce to?" -- the question
+        # this project asks before adding any physical model. Since the BASIS is
+        # chosen per species by ``PhaseArrays.lattice``, and a species appears in
+        # exactly one of the two matrices, their sum indexes the mixed vector
+        # correctly and the hot loop takes one product instead of two.
+        #
+        # They are kept as separate fields anyway, because the split is the
+        # DECLARATION: it is what lets ``build_surface_arrays`` refuse a row that
+        # puts a solid's exponent on a concentration, which is an error no
+        # measurement downstream could distinguish from a wrong rate constant.
+        self.order = self.order_solid + self.order_gas
+        # How many moles of gas the rate law is order-``g`` in, and how many of
+        # solid. Reported so that ``A``'s units can be written down beside its
+        # value -- L^g mol^(1-g-s)/s -- rather than inferred.
+        self.n_gas_order = self.order_gas.sum(axis=1)
+        self.n_solid_order = self.order_solid.sum(axis=1)
+
+    @property
+    def m(self) -> int:
+        return int(self.nu.shape[0])
+
+    def rate_constants(self, T: float) -> np.ndarray:
+        """(m,) ``k(T)``. Reported and used; no exponential here can overflow.
+
+        ``Ea`` is positive and declared, so the exponent is negative and bounded
+        by 1 -- unlike ``SolidStateArrays``, where the barrier is DERIVED as
+        ``max(dH, 0)`` and the closed-form reverse exists to stop two enormous
+        exponentials being divided. There is no reverse here to cancel against,
+        which is also why the barrier could not be derived: ``max(dH, 0)`` is
+        ZERO for a reaction this exothermic, i.e. a roast that goes as fast as
+        oxygen can arrive, and that is not what a roaster is.
+        """
+        return self.A * np.exp(-self.Ea / (R * T))
 
 
 @dataclass
@@ -1251,6 +1407,7 @@ class VesselIntegrator:
         conditions: VesselConditions,
         precipitation: "PrecipitationArrays | None" = None,
         solid_state: "SolidStateArrays | None" = None,
+        surface: "SurfaceArrays | None" = None,
     ):
         if np.isnan(kinetics.dH).any():
             raise ValueError(
@@ -1267,6 +1424,11 @@ class VesselIntegrator:
         # M6. Same contract again: ``None`` is EXACTLY the old behaviour -- no
         # crystal can react, and the RHS adds an identically zero term.
         self.solid = solid_state
+        # And again, for a crystal reacting with a gas that arrives at it:
+        # ``None`` is EXACTLY no roasting. Kept separate from ``solid_state``
+        # rather than folded into it because the two are different mechanisms
+        # with different rate laws -- see ``SurfaceArrays``.
+        self.surf = surface
         self.n = kinetics.n_species
         self._ingress = (
             np.zeros(self.n)
@@ -1517,6 +1679,12 @@ class VesselIntegrator:
         # T**0 is a wasted array op on every RHS call, and delta_n is zero for
         # most networks, so the exponent is only evaluated where one is present.
         has_n_exp = bool(np.any(n_exp))
+        # The heterogeneous-catalyst factor, and it is skipped entirely for a
+        # network that declares none -- ``prod(nS ** 0)`` is a column of ones and
+        # an array op nobody needs. So an uncatalysed network is bit-identical to
+        # what it was before this existed.
+        order_solid = kin.order_solid
+        has_solid_catalyst = bool(np.any(order_solid))
         ingress = self._ingress
         liq_rxn, gas_rxn = self._liq, self._gas
 
@@ -1566,12 +1734,19 @@ class VesselIntegrator:
             if self.just_seeded:
                 frozen1 = frozen2 = None
 
-        def _phase_rates(idx, C, V, T, ln_gamma_ion=None, sink=None):
+        def _phase_rates(idx, C, V, T, ln_gamma_ion=None, sink=None, nS=None):
             """Reaction source term (mol/s) and heat release (J/s) for one phase.
 
             ``ln_gamma_ion`` is the layer's BORN transfer term (see
             ``activity.born_ln_gamma``), and what it does here is the one place
             this project's rate laws are not purely on a concentration basis.
+
+            ``nS`` is the solid block, and it is the SECOND such place: a
+            template may declare a heterogeneous catalyst, whose exponent is on
+            an AMOUNT in mol rather than on a concentration. See
+            ``KineticArrays.order_solid``. The reaction itself is still a
+            reaction of this phase -- the catalyst multiplies its rate and enters
+            neither its stoichiometry nor its standard state.
             """
             if idx.size == 0 or V <= 0.0:
                 return np.zeros(n), 0.0
@@ -1615,6 +1790,15 @@ class VesselIntegrator:
                     np.clip(-(ion_products[idx] @ ln_gamma_ion), -50.0, 50.0)
                 )
             rates = k * np.prod(C**order[idx], axis=1)      # mol/(L s)
+            if has_solid_catalyst and nS is not None:
+                # ⚠ THE ONE FACTOR THAT MAKES "YOU NEED A CATALYST" A GATE. An
+                # absent catalyst is ``0 ** 1 = 0`` exactly, so the reaction does
+                # not go at all -- and the slope in the catalyst's amount is
+                # ``k prod(C**order)``, bounded, so an empty solid block
+                # contributes a finite Jacobian column rather than a knee. This
+                # is the same shape ``SurfaceArrays`` relies on and the reason
+                # neither of them needs an ``_avail`` gate.
+                rates = rates * np.prod(nS ** order_solid[idx], axis=1)
             if sink is not None:
                 # Per-reaction watts, for the cancellation audit only. The NET is
                 # what the temperature sees; the GROSS is what M12 turned out to
@@ -1625,6 +1809,17 @@ class VesselIntegrator:
 
         prec = self.prec
         solid = self.solid
+        surf = self.surf
+        # Precomputed at SETUP, so the hot loop indexes rather than branches --
+        # the same split ``self._liq``/``self._gas`` gets. ``is_lattice`` is what
+        # makes one boolean serve as both the basis selector and the destination
+        # selector; see ``SurfaceArrays``.
+        is_lattice = ph.lattice
+        if surf is not None and surf.m:
+            surf_nu_solid = np.where(is_lattice[None, :], surf.nu, 0.0)
+            surf_nu_gas = np.where(is_lattice[None, :], 0.0, surf.nu)
+        else:
+            surf_nu_solid = surf_nu_gas = None
 
         def rhs(t: float, y: np.ndarray) -> np.ndarray:
             nL1 = np.maximum(y[:n], 0.0)
@@ -1663,16 +1858,19 @@ class VesselIntegrator:
             q_rxn2 = 0.0
             sink = [] if probe is not None else None
             if V_L1 > V_LIQUID_MIN:
-                d, q = _phase_rates(liq_rxn, nL1 / V_L1, V_L1, T, ln_ion1, sink)
+                d, q = _phase_rates(liq_rxn, nL1 / V_L1, V_L1, T, ln_ion1, sink,
+                                    nS=nS)
                 dn_rxn1 += d
                 q_rxn += q
             if V_L2 > V_LIQUID_MIN:
                 # Gated below, once ``gate2`` exists -- a perturbation of an
                 # empty layer must not switch a whole reaction term on.
-                dn_rxn2, q_rxn2 = _phase_rates(liq_rxn, nL2 / V_L2, V_L2, T, ln_ion2)
+                dn_rxn2, q_rxn2 = _phase_rates(
+                    liq_rxn, nL2 / V_L2, V_L2, T, ln_ion2, nS=nS
+                )
             else:
                 q_rxn2 = 0.0
-            dn_gas_rxn, q_gas = _phase_rates(gas_rxn, nG / V_G, V_G, T)
+            dn_gas_rxn, q_gas = _phase_rates(gas_rxn, nG / V_G, V_G, T, nS=nS)
             q_rxn += q_gas
 
             # --- activity coefficients ----------------------------------
@@ -1912,6 +2110,40 @@ class VesselIntegrator:
                 q_solid = 0.0
                 s_flux = None
 
+            # --- a gas ARRIVING at a crystal ----------------------------
+            # Roasting. Mass action, first order in the arriving gas and gated on
+            # the solid being present -- which is the mechanism the term above
+            # measurably is NOT a rate law for, because a gas REACTANT puts its
+            # pressure in the denominator of an affinity quotient. See
+            # ``SurfaceArrays`` and ``properties/surface.py``.
+            #
+            # ⚠ THE MIXED BASIS IS THIS ONE LINE. A lattice enters on its AMOUNT
+            # and everything else on its headspace CONCENTRATION, so the rate
+            # comes out in mol/s and is NOT scaled by a volume the way every
+            # other rate law here is. A solid's concentration would be an
+            # inventory divided by a nominal molar volume; a gas's amount would
+            # make the reaction indifferent to compression.
+            if surf is not None and surf.m:
+                C_mix = np.where(is_lattice, nS, nG / V_G)
+                k_surf = surf.A * np.exp(-surf.Ea / (R * T))
+                # ONE exponent matrix, because the basis is chosen per species
+                # and each species sits in exactly one of the two declared
+                # halves -- see ``SurfaceArrays.__post_init__``, where the sum is
+                # taken and the reason the halves still exist is recorded.
+                surf_rate = k_surf * np.prod(
+                    C_mix[None, :] ** surf.order, axis=1
+                )                                          # (m,) mol/s
+                dn_solid_surf = surf_rate @ surf_nu_solid
+                dn_gas_surf = surf_rate @ surf_nu_gas
+                # Exothermic forward by hundreds of kJ, so a running roast heats
+                # its own bed -- which is why a real roaster is autothermal.
+                q_surf = -float(surf_rate @ surf.dH)
+            else:
+                dn_solid_surf = 0.0
+                dn_gas_surf = 0.0
+                q_surf = 0.0
+                surf_rate = None
+
             # --- liquid <-> liquid --------------------------------------
             # Equality of ACTIVITY is the equilibrium, exactly as it is for the
             # vapour, so the driving force is the same subtraction. Two
@@ -2008,7 +2240,8 @@ class VesselIntegrator:
             # to this one transfer would be the only place it existed, and would
             # disagree with the enthalpy every other transfer carries.
             dT = (
-                q_rxn + q_vap + q_fus + q_solid + q_loss + q_vent + cond.Q_input
+                q_rxn + q_vap + q_fus + q_solid + q_surf + q_loss + q_vent
+                + cond.Q_input
             ) / max(Cp_total, CP_MIN)
 
             if probe is not None:
@@ -2017,8 +2250,9 @@ class VesselIntegrator:
                     T=T, Cp_total=Cp_total, dT=dT,
                     q_rxn=q_rxn, q_vap=q_vap, q_fus=q_fus, q_loss=q_loss,
                     q_vent=q_vent, Q_input=cond.Q_input, q_solid=q_solid,
-                    q_sum=q_rxn + q_vap + q_fus + q_solid + q_loss + q_vent
-                    + cond.Q_input,
+                    q_surface=q_surf,
+                    q_sum=q_rxn + q_vap + q_fus + q_solid + q_surf + q_loss
+                    + q_vent + cond.Q_input,
                     evap=evap, solute=solute, vent=vent,
                     precipitate=precipitate if np.ndim(precipitate) else
                     np.zeros(n),
@@ -2030,14 +2264,24 @@ class VesselIntegrator:
                     dn_solid_rxn=(
                         np.zeros(n) if s_flux is None else dn_solid_rxn
                     ),
+                    surface_rate=(
+                        np.zeros(0) if surf_rate is None else surf_rate
+                    ),
+                    dn_solid_surf=(
+                        np.zeros(n) if surf_rate is None else dn_solid_surf
+                    ),
+                    dn_gas_surf=(
+                        np.zeros(n) if surf_rate is None else dn_gas_surf
+                    ),
                     q_rxn_terms=np.concatenate(sink) if sink else np.zeros(0),
                 )
 
             return np.concatenate([
                 dn_rxn1 - evap1 - evap_dry + solute1 - lle - precipitate,
                 dn_rxn2 - evap2 + solute2 + lle,              # liquid layer 2
-                dn_gas_rxn + dn_gas_srxn + evap - vent + ingress,   # vapour
-                -solute + precipitate + dn_solid_rxn,         # solid
+                dn_gas_rxn + dn_gas_srxn + dn_gas_surf + evap - vent
+                + ingress,                                    # vapour
+                -solute + precipitate + dn_solid_rxn + dn_solid_surf,  # solid
                 [dT],
             ])
 

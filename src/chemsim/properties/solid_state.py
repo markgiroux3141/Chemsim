@@ -14,6 +14,12 @@ written to refuse loudly rather than swallow. So the choice was to add
 next to precipitation. **It was decided by arithmetic, and the arithmetic says
 mass action cannot express this reaction at all.**
 
+⚠ THE OTHER HALF OF THE QUESTION WAS ANSWERED LATER AND ALSO CAME BACK "A TERM".
+M6 predicted that the gas-CONSUMING case -- roasting, and a solid catalyst --
+would be the third ``PHASE_INDEX`` entry, because it genuinely IS mass action.
+It is a term too, for a reason M6 did not have: the phase label carries a
+STANDARD STATE, worth 2.6e10 in K at 500 K. See ``properties/surface.py``.
+
 A pure solid has **unit activity**. Its equilibrium is therefore a statement
 about the GAS ALONE -- calcite and quicklime sitting together fix ``p_CO2`` at
 ``K(T)`` no matter how much of each is present. Write the pair as mass action on

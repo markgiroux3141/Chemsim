@@ -89,7 +89,9 @@ phase behaviour and the example for it says so.
 
 from __future__ import annotations
 
-from chemsim.reactions.library import _kinetics, _maybe_catalyse
+from chemsim.reactions.library import (
+    _kinetics, _maybe_catalyse, _surface_kinetics,
+)
 from chemsim.reactions.template import ReactionTemplate
 
 # ---------------------------------------------------------------------------
@@ -635,17 +637,22 @@ def alkyne_hydration(
 
 def alkene_hydrogenation(
     A: float = 1.0e7, Ea: float = 50_000.0, alpha: float = 0.0,
+    catalyst: str | None = "nickel",
 ) -> ReactionTemplate:
     """Alkene + H2 -> alkane. Hardening a fat, and the first template that eats H2.
 
-    ⚠ **HETEROGENEOUS, AND WRITTEN AS THOUGH IT WERE NOT.** ``library.py`` states
-    that a surface needs a Langmuir-Hinshelwood site balance this kernel cannot
-    express; that has not changed. What is here is a homogeneous gas-or-liquid step
-    with an APPARENT barrier standing in for the catalytic cycle, which is exactly
-    the licence ``sulfur_dioxide_oxidation`` takes for a reaction that really runs
-    in an aqueous film. **The cost is that the catalyst is not a species**, so a
-    flask with no nickel in it hydrogenates anyway and "you need a catalyst" cannot
-    be a gate. Making it one needs a solid-phase reactant, i.e. M6.
+    ⚠ **HETEROGENEOUS, AND THE NICKEL IS NOW A SPECIES.** ``catalyst="nickel"``
+    is the default: the metal has to be in the flask's solid block or the rate is
+    exactly zero, which is what makes "you need a catalyst" a gate rather than a
+    remark. Pass ``catalyst=None`` for the old behaviour -- an apparent barrier
+    with the cycle folded into it, the licence ``sulfur_dioxide_oxidation`` still
+    takes -- and the two give the SAME rate at
+    ``library.SOLID_CATALYST_REFERENCE`` (0.1 mol, 5.9 g of nickel).
+
+    ⚠ What is still NOT modelled is the SITE BALANCE: this is first order in the
+    nickel for ever, so ten times the metal is ten times the rate. See
+    ``library.py``'s docstring, where that is the remaining gap rather than a
+    detail.
 
     ⚠ Irreversible, which is a claim about temperature rather than about
     thermodynamics. Dehydrogenation is real and industrial above ~800 K; margarine
@@ -660,7 +667,8 @@ def alkene_hydrogenation(
     return ReactionTemplate(
         name="alkene_hydrogenation",
         smarts="[CX3:1]=[CX3:2].[H:3][H:4]>>[C:1]([H:3])[C:2][H:4]",
-        A=A, Ea=Ea, alpha=alpha,
+        A=_surface_kinetics(A, catalyst), Ea=Ea, alpha=alpha,
+        solid_catalyst=catalyst,
     )
 
 
@@ -686,7 +694,7 @@ def alkene_hydrogenation(
 
 
 def nitro_hydrogenation(
-    A: float = 1.0e5, Ea: float = 50_000.0,
+    A: float = 1.0e5, Ea: float = 50_000.0, catalyst: str | None = "nickel",
 ) -> ReactionTemplate:
     """Ar-NO2 + 3 H2 -> Ar-NH2 + 2 water. Nitrobenzene to aniline.
 
@@ -701,15 +709,15 @@ def nitro_hydrogenation(
     this one and claiming the partial case would be a stoichiometry that does not
     balance pretending to be selectivity.
 
-    ⚠ Heterogeneous, catalyst folded into the barrier -- see
-    ``alkene_hydrogenation`` above for the cost. Irreversible: the reverse is
-    oxidising an amine back to a nitro group with water, which is not a reaction.
+    ⚠ Heterogeneous, and the nickel is a species -- see ``alkene_hydrogenation``
+    above. Irreversible: the reverse is oxidising an amine back to a nitro group
+    with water, which is not a reaction.
     """
     return ReactionTemplate(
         name="nitro_hydrogenation",
         smarts="[c:1][N+:2](=[O:3])[O-:4].[H:5][H:6].[H:7][H:8].[H:9][H:10]"
                ">>[c:1][N+0:2]([H:5])[H:6].[O+0:3]([H:7])[H:8].[O+0:4]([H:9])[H:10]",
-        A=A, Ea=Ea,
+        A=_surface_kinetics(A, catalyst), Ea=Ea, solid_catalyst=catalyst,
     )
 
 
@@ -752,13 +760,23 @@ def halogen_disproportionation(
 # ---------------------------------------------------------------------------
 # SYNTHESIS GAS -- three reversible gas-phase equilibria, and no catalyst species
 # ---------------------------------------------------------------------------
-# ⚠ **ALL THREE ARE HETEROGENEOUS AND ALL THREE ARE WRITTEN HOMOGENEOUS.** Read
-# ``alkene_hydrogenation`` above for the argument and its cost; it applies here
-# unchanged, and here it costs more, because "promoted iron" and "Cu/ZnO" are the
-# entire reason these processes exist. What survives is the STOICHIOMETRY and the
-# EQUILIBRIUM, and for these three that is most of the chemistry a player meets:
-# both are pressure-driven and temperature-limited, and neither of those facts is
-# declared anywhere.
+# ⚠⚠ **ALL THREE ARE HETEROGENEOUS AND ALL THREE NOW SAY SO.** "Promoted iron"
+# and "Cu/ZnO" are the entire reason these processes exist, and for several
+# sessions they were folded into an apparent barrier -- so a flask with no iron in
+# it made ammonia, and this project reported that rather than hiding it. The metal
+# is now a declared ``solid_catalyst`` and has to be in the flask.
+#
+# ⚠ WHICH SOLID, AND WHY THE TWO METHANOL ROWS DIFFER FROM EACH OTHER IN NOTHING
+# ELSE. Haber-Bosch is iron. Cu/ZnO is a two-component catalyst and this kernel
+# expresses one solid per reaction, so the COPPER is declared and the zinc oxide
+# is not: the metal is where the hydrogen dissociates, and ``zincite`` is already
+# a species in ``mineral_data`` for anyone who wants to charge it as well (it will
+# sit there and do nothing, which is honest -- a promoter is not modelled).
+#
+# What survives unchanged is the STOICHIOMETRY and the EQUILIBRIUM, and the
+# catalyst cannot touch either: its exponent is identical on both arrows, so it
+# divides out of ``k_f/k_r``. Both processes are pressure-driven and
+# temperature-limited and neither of those facts is declared anywhere.
 #
 #   ammonia    Ea 100 kJ/mol -- apparent barrier over promoted iron, band 100-170;
 #              the low end, because the low end is what a promoted catalyst buys.
@@ -778,15 +796,26 @@ def halogen_disproportionation(
 
 
 def ammonia_synthesis(
-    A: float = 1.0e6, Ea: float = 100_000.0,
+    A: float = 1.0e6, Ea: float = 100_000.0, catalyst: str | None = "iron",
 ) -> ReactionTemplate:
-    """N2 + 3 H2 <=> 2 NH3. Haber-Bosch, with the iron folded into the barrier.
+    """N2 + 3 H2 <=> 2 NH3. Haber-Bosch, and the iron is a SPECIES.
 
     Reversible, and everything a player would want from it follows from that plus
     the thermochemistry: the reaction is exothermic and loses moles, so it is
     favoured cold and compressed and it has an emergent temperature ceiling. None
     of that is declared. It is the lead chamber's derived ceiling again, on a
     reaction where the ceiling is the famous part.
+
+    ⚠ **A FLASK WITH NO IRON IN IT MAKES NO AMMONIA**, which is the whole point
+    of ``catalyst="iron"`` being the default. The iron is in the network whether
+    or not anyone charges it, so "put iron in the flask" is a runtime action and a
+    player can add it half way through a run. ``catalyst=None`` reproduces the old
+    behaviour exactly, and the two agree to the last digit at 0.1 mol of iron --
+    ``library.SOLID_CATALYST_REFERENCE``.
+
+    ⚠ The catalyst does NOT move the equilibrium and could not. Detailed balance
+    puts its order-1 factor on both arrows, so it cancels out of ``k_f/k_r``: what
+    an uncatalysed flask reaches is the same equilibrium, infinitely slowly.
 
     ⚠ Hydrogen is written as an ATOM pair, which is what forced
     ``ReactionTemplate.run`` to collapse explicit hydrogens. See the module
@@ -796,24 +825,26 @@ def ammonia_synthesis(
         name="ammonia_synthesis",
         smarts="[N:1]#[N:2].[H:3][H:4].[H:5][H:6].[H:7][H:8]"
                ">>[N:1]([H:3])([H:5])[H:7].[N:2]([H:4])([H:6])[H:8]",
-        A=A, Ea=Ea, phase="gas", reversible=True,
+        A=_surface_kinetics(A, catalyst), Ea=Ea, phase="gas", reversible=True,
+        solid_catalyst=catalyst,
     )
 
 
 def methanol_from_carbon_monoxide(
-    A: float = 1.0e6, Ea: float = 70_000.0,
+    A: float = 1.0e6, Ea: float = 70_000.0, catalyst: str | None = "copper",
 ) -> ReactionTemplate:
     """CO + 2 H2 <=> methanol. The main arrow of the Cu/ZnO synthesis."""
     return ReactionTemplate(
         name="methanol_from_carbon_monoxide",
         smarts="[C-:1]#[O+:2].[H:3][H:4].[H:5][H:6]"
                ">>[C+0:1]([H:3])([H:4])([H:5])[O+0:2][H:6]",
-        A=A, Ea=Ea, phase="gas", reversible=True,
+        A=_surface_kinetics(A, catalyst), Ea=Ea, phase="gas", reversible=True,
+        solid_catalyst=catalyst,
     )
 
 
 def methanol_from_carbon_dioxide(
-    A: float = 1.0e5, Ea: float = 80_000.0,
+    A: float = 1.0e5, Ea: float = 80_000.0, catalyst: str | None = "copper",
 ) -> ReactionTemplate:
     """CO2 + 3 H2 <=> methanol + water. The same reactor's second arrow.
 
@@ -827,7 +858,8 @@ def methanol_from_carbon_dioxide(
         name="methanol_from_carbon_dioxide",
         smarts="[O:1]=[C:2]=[O:3].[H:4][H:5].[H:6][H:7].[H:8][H:9]"
                ">>[C:2]([H:4])([H:5])([H:6])[O:1][H:7].[O:3]([H:8])[H:9]",
-        A=A, Ea=Ea, phase="gas", reversible=True,
+        A=_surface_kinetics(A, catalyst), Ea=Ea, phase="gas", reversible=True,
+        solid_catalyst=catalyst,
     )
 
 

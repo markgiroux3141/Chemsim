@@ -27,6 +27,20 @@ class ConcreteReaction:
     # ``ReactionTemplate.orders``, which is where the argument lives; a
     # ConcreteReaction only carries what the template declared.
     orders: tuple[float, ...] | None = None
+    # The SOLID CATALYST this reaction needs present, as a ``mineral_data``
+    # lattice SMILES, or None. Order 1 on its AMOUNT in mol; stoichiometry
+    # identically zero on both sides.
+    #
+    # ⚠ WHY THIS IS A FIELD AND NOT AN EXTRA ENTRY IN ``reactants``/``products``.
+    # ``library._maybe_catalyse`` makes a HOMOGENEOUS catalyst explicit by
+    # putting it on both sides of the SMARTS, which works because a dissolved
+    # acid is an ordinary species on an ordinary basis -- its exponent lands in
+    # ``order`` and its stoichiometry cancels out of ``delta``, and the kernel
+    # needs to know nothing. A solid catalyst cannot go there: it is a LATTICE,
+    # which has no molecular graph to match and lives in a different block on a
+    # different basis (an amount, not a concentration). So it is declared, and
+    # the one thing the kernel gains is a second exponent matrix.
+    solid_catalyst: str | None = None
 
     def key(self) -> tuple:
         """Identity for de-duplication: same template + same multisets."""

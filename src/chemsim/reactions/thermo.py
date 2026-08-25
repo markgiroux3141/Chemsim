@@ -277,6 +277,27 @@ def detailed_balance(
        orders of A. What changes is only how fast the equilibrium is REACHED,
        and water's still arrives in ~0.3 ms, which is instant against any
        chemistry in this project.
+
+       ⚠ **REPORTED, NOT FIXED: THIS CAP COMPARES A HETEROGENEOUSLY CATALYSED
+       PRE-EXPONENTIAL AGAINST A LIMIT THAT IS NOT IN ITS UNITS.** A reaction
+       with a declared ``solid_catalyst`` carries an order-1 factor in MOL, so
+       its ``A`` has an extra ``mol**-1`` and its rate constant is not in
+       L/(mol s) at all -- ``validation/rate_ceiling.apparent_A`` multiplies by
+       ``library.SOLID_CATALYST_REFERENCE`` to undo exactly that before auditing,
+       and this function does not. So the cap here sees a number
+       ``1/SOLID_CATALYST_REFERENCE`` = 10x too large and would fire 10x too
+       eagerly.
+
+       Bounded, and bounded in the class of error this project forgives: the cap
+       scales BOTH pre-exponentials, so K is invariant under it and the whole cost
+       is a clock at most 10x slow. And measured: it does NOT fire on any of the
+       five catalysed templates -- the coldest ceiling crossing among them is
+       1248 K against a cap applied at 298 K -- which is asserted in
+       ``tests/test_surface.py`` so that it cannot start firing silently. Fixing
+       it properly means this module knowing about a loading declared in
+       ``reactions/library``, which is a Layer-2 import cycle; the honest place
+       for the reference charge is an argument, and that is the change to make
+       when a declaration actually needs it.
     """
     dH_kJ, _ = reaction_deltas(reaction, provider, volatility)
     dH = dH_kJ * 1000.0                              # J/mol

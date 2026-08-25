@@ -426,6 +426,35 @@ fails on unrelated changes and says nothing when it passes.**
 | ... templates in the project | **34, UNCHANGED** -- M6 covered three classes with a TERM and no new template |
 | ⚠ classes split by M6's row reading | `hydration` -> `lime-slaking` + `carbonyl-hydration`; `carbonation` -> `solid-carbonation` + `basic-carbonate-precipitation`. 5 rows re-labelled |
 | the whole suite | **750 tests in 11:19** (was 727 in 11:34) |
+| **S1 -- THE GATE: a flask with NO iron** | `N2 + 3 H2` at 700 K, 600 s -> **0.00000000 mol NH3. EXACTLY zero, not small** |
+| ... the same flask with 0.1 mol of iron | **0.15853790 mol = 31.71%** of theoretical; 1e-6 mol gives 0.00004368, 1e-3 gives 0.03715817 |
+| ... `A_cat * SOLID_CATALYST_REFERENCE` | **1e7 x 0.1 == 1e6**, exactly equal to the folded template's `A`. Arithmetic, not a run |
+| ⚠ ... and the reference charge is NOT bit-exact | a VENTED flask differs by **+0.086%**, and a vented comparison is not a comparison. SEALED with the flask enlarged by the iron's own 0.0007096 L: **-4.6e-11 mol**. The residual is a crystal DISPLACING GAS |
+| ... `examples/named_routes.py` haber-bosch | **7.6310 mol = 76.3%**, UNMOVED, now with iron in the flask |
+| ⚠⚠ ... the catalyst is a CONSTANT OF THE MOTION | charged 1e-12 / 0.1 / 1.0 mol -> drift **+0.000e+00** at all three. Not "conserved to 1e-12" -- unchanged, bit for bit. `delta` column is identically zero |
+| ⚠⚠ ... what a "solid" phase LABEL would cost | dH **-22.889**, dG **-99.722** kJ/mol, K(500 K) **x 2.616e10**. `reaction_deltas` shifts anything that is not "gas" onto the pure-liquid basis -- so PHASE_INDEX keeps two entries |
+| ... no site balance, as an INITIAL RATE | 0.01 / 0.1 / 1.0 mol of iron -> **exactly 10.0x** each step (1e-9). ⚠ As a YIELD after 1 s it reads **9.75** -- that 2.5% is depletion, not saturation |
+| S1 -- roasting, sealed 1 L, 0.1 mol ZnS | **1.53%** in 20 ks; O2 available **2.296 mmol** against 150 needed. The stall is the mechanic |
+| ... blown (0.25 mmol O2/s), walled | **78.26%** in 1800 s at 1100 K; zinc closure **0.100000000000** |
+| ⚠ ... blown and INSULATED -- autothermal | **100.00%** and the bed heats itself **1100 -> 1908.6 K**. Nothing declares this; -882.7 kJ/mol does it |
+| ... two ores, one blast | 0.05 ZnS + 0.05 PbS -> **0.039131 mol each**; both closures exact to 1e-12 |
+| ... the four rows' dH / ln K at `T_run` | **-882.7 / +78.8**, **-830.9 / +70.6**, **-802.1 / +67.6** at 1100 K; **-658.9 / +70.8** at 900 K. Bar is +20, tightest clears by **20.7 decades** |
+| ... `ROASTING_A`, and what pins it | **3.21e6 L/(mol s)** = **3.2e-5** of the collision limit; it is the constant a 1800 s roast at 1100 K in 1 bar of air implies (`k` = 0.242) |
+| ⚠⚠ ... the shared clock is PARTLY REFUTED | cinnabar's own 900 K retort gives **tau 56,358 s** against a zinc roaster's **1,800 s** -- 31x slower at its own temperature |
+| ⚠⚠ ... and Evans-Polanyi gets it BACKWARDS | sphalerite is the MOST exothermic (-882.7) and needs the HOTTEST furnace (1100 K vs cinnabar's 900). So `alpha` is 0 and the ordering is not claimed |
+| ⚠ ... the default tolerance again | sealed roast at rtol 1e-6: S closure **1.3e-6** off and **19.94 s** wall; at 1e-8: **9.4e-11** and **3.67 s**. The tight run is 5.4x FASTER |
+| S1 -- `mineral_data` | **40 entries** (was 37); iron / nickel / copper all price at `Hf = Gf = 0.0` **EXACTLY**, and a non-zero result is REFUSED as an allotrope mismatch |
+| **S1 -- routes template-ready** | **27 / 173** (was 26). ⚠ The one added is `pyrite-roasting`, which DOES NOT RUN -- pyrite has `Hfs` in WEBBOOK and `S0s` in nothing |
+| ... reaction classes covered | **33 / 215** (was 32 / 214); `roasting` |
+| ⚠⚠ ... and the class had to be SPLIT | crediting `roasting` unsplit made `mercury-from-cinnabar` template-ready on a mechanism that makes the OXIDE, not the metal. Re-labelled `roasting-to-metal` |
+| ... honest summary of the coverage gain | **+1 class, +1 template-ready route, ZERO new routes that run end to end** |
+| ... templates in the project | **34, UNCHANGED** -- five gained a declared catalyst; no new template |
+| ⚠ ... `ammonia_synthesis_rev` ceiling crossing | **1335.1 K**, UNMOVED, but only because `rate_ceiling.apparent_A` undoes the catalyst's units. Raw it reads 1178.1 K, which is a units error |
+| `tests/test_surface.py` | **38 tests in 12 s** |
+| `examples/roasting_and_the_catalyst_gate.py` | **5 panels in 11.6 s** |
+| the whole suite | **797 tests in 11:50** -- ran **796 passed / 1 failed**, and the failure was real |
+| ⚠ ... the one thing the suite caught | `test_every_mineral_records_the_ions_it_dissolves_into` asserted `rec.ions` for EVERY row, and a METAL has none. Narrowed to exempt a one-element row priced at `Hf = Gf = 0`, so it still catches a salt that lost its ions -- verified against three simulated mistakes, all three CAUGHT |
+| ⚠ ... and the full suite has NOT been re-run since that fix | the fixed file passes in a targeted run (79 tests with `test_surface.py`, 13 s). Re-run the suite before quoting a green number |
 
 ⚠ **The prep's numbers have NOT been re-measured for three sessions.** The suite
 pins them and `tests/test_prep_side_products.py` passes. Re-run

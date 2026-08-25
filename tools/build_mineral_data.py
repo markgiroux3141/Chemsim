@@ -221,6 +221,44 @@ CANDIDATES: list[tuple[str, str, str, dict, str]] = [
      {"Mg": 1, "O": 1}, "MgO -- brucite's dehydration partner"),
 ]
 
+# ---------------------------------------------------------------------------
+# METALS -- the same table, and NOT the same kind of entry
+# ---------------------------------------------------------------------------
+# A METAL IS A LATTICE WITH NO DISSOLVED FORM, AND THAT IS WHY IT NEEDS ITS OWN
+# LIST RATHER THAN A ROW ABOVE. Every candidate above is written as its IONS and
+# gets its ``lattice`` by joining them; a metal has none. Iron does not dissolve
+# to Fe atoms, and writing ``ions=('[Fe]',)`` to make the machinery run would
+# claim that it does -- and would then offer iron filings to
+# ``build_precipitation_arrays`` as a lattice whose only ion is itself. So
+# ``ions`` is EMPTY here, and that emptiness is the statement.
+#
+# AND THE ENTRY IS CHECKED AGAINST A FREE, EXACT NUMBER. A metal in its
+# reference state has ``Hf = Gf = 0`` BY DEFINITION on the solid basis, exactly
+# as ``element_data``'s gases do on the ideal-gas basis. Both halves are derived
+# here by the same arithmetic every other row uses -- ``Hfs`` from CRC and ``Gf``
+# from ``Hfs - T dS`` against the CRC element reference entropies -- so a
+# non-zero result would prove the CAS names a different allotrope from the
+# reference state. That is the tin/Br2/I2 lesson (see ``reference_entropies``)
+# arriving on the solid basis, and it is enforced as a REFUSAL below rather than
+# left to a test.
+#
+# WHY THESE THREE. They are the heterogeneous catalysts the five templates in
+# ``reactions/library`` and ``reactions/synthesis`` fold into an apparent
+# barrier: promoted IRON for Haber-Bosch, and NICKEL or COPPER for the two
+# hydrogenations. Cu/ZnO's oxide half is already here as ``zincite``. A catalyst
+# never enters an equilibrium -- its stoichiometry is zero on both sides -- so
+# what these rows are actually FOR is ``Cp_solid`` and ``Vm_solid``: a species in
+# the solid block occupies volume and holds heat, and Layer 4 asks every species
+# for both.
+METALS: list[tuple[str, str, str, dict, str]] = [
+    ("iron", "7439-89-6", "[Fe]", {"Fe": 1},
+     "Fe -- promoted iron, the Haber-Bosch catalyst, and the gate on it"),
+    ("nickel", "7440-02-0", "[Ni]", {"Ni": 1},
+     "Ni -- the hydrogenation catalyst: hardening a fat, and nitro -> amine"),
+    ("copper", "7440-50-8", "[Cu]", {"Cu": 1},
+     "Cu -- the other hydrogenation metal, and Cu/ZnO's metal half"),
+]
+
 # Measured aqueous solubility at 298 K, mol/L, for the FUSION-LAW BOUND. Hand
 # entered from the CRC solubility tables and marked as such: this is not used to
 # build any record, it exists only so the verdict on the fusion law above is a
@@ -296,14 +334,26 @@ def collect():
     notes: list[str] = []
     report: list[str] = []
 
-    for name, cas, smiles, comp, purpose in CANDIDATES:
+    # A metal's row is the same arithmetic on an EMPTY ion tuple -- see METALS.
+    # ``metal`` is carried through so the zero check below can fire only where
+    # the definitional zero exists.
+    rows = [(c, False) for c in CANDIDATES] + [(m, True) for m in METALS]
+
+    for (name, cas, smiles, comp, purpose), metal in rows:
         # The ion-by-ion SMILES is the identity the game uses; check every
-        # fragment parses so a typo cannot become a silent miss later.
+        # fragment parses so a typo cannot become a silent miss later. For a
+        # metal there is no dissolved form, so the SMILES is the LATTICE and
+        # ``ions`` stays empty -- the emptiness is the claim that it does not
+        # dissolve, and ``build_precipitation_arrays`` reads it as one.
         try:
-            ions = tuple(Molecule.from_smiles(p).smiles for p in smiles.split("."))
+            parsed = tuple(
+                Molecule.from_smiles(p).smiles for p in smiles.split(".")
+            )
         except Exception as exc:                            # noqa: BLE001
             notes.append(f"{name}: ion SMILES {smiles!r} does not parse ({exc})")
             continue
+        ions = () if metal else parsed
+        lattice = Molecule.from_smiles(".".join(parsed)).smiles
 
         got = solid_formation_pair(cas)
         if got is None:
@@ -333,6 +383,25 @@ def collect():
         Hf = H / 1000.0
         Gf = (H - T_REF * dS) / 1000.0
 
+        # THE FREE, EXACT CHECK ON A METAL, and it is a refusal rather than a
+        # test. An element in its reference state is zero BY DEFINITION on the
+        # basis that reference state lives on -- the solid basis, here -- so a
+        # non-zero Hf or Gf proves this CAS names a different allotrope from the
+        # one ``reference_entropies`` priced. Nothing was fitted to make it zero:
+        # ``Hf`` is CRC's own ``Hfs`` and ``Gf`` is derived through the same
+        # entropy subtraction every other row uses, which for a metal subtracts
+        # the row's own entropy from itself.
+        if metal and (abs(Hf) > 1e-9 or abs(Gf) > 1e-9):
+            notes.append(
+                f"{name}: REFUSED -- a metal in its reference state is "
+                f"Hf = Gf = 0 on the solid basis BY DEFINITION, and {method} "
+                f"gives Hf = {Hf:g} and a derived Gf = {Gf:g} kJ/mol. That is "
+                f"an allotrope mismatch between this CAS and the one "
+                f"reference_entropies priced, not a small error -- the same "
+                f"failure CRC's grey-tin row is refused for."
+            )
+            continue
+
         tm = preferred(Tm, Tm_methods, cas, TEMPERATURE_PREFERENCE)
         hf = preferred(Hfus, Hfus_methods, cas, ("CRC", "JANAF"), kw=True)
 
@@ -352,8 +421,7 @@ def collect():
 
         Cps, Vm = solid_condensed_pair(cas)
         table[name] = dict(
-            name=name, cas=cas, ions=ions, lattice=Molecule.from_smiles(
-                ".".join(ions)).smiles,
+            name=name, cas=cas, ions=ions, lattice=lattice,
             formula=comp, purpose=purpose,
             Hf_solid=round(Hf, 2), Gf_solid=round(Gf, 2), S0_solid=round(S, 2),
             Tm=round(tm[0], 2) if tm else None,

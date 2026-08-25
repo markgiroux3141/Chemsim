@@ -49,6 +49,7 @@ from chemsim.numerics.vessel_integrator import (
     PhaseArrays,
     PrecipitationArrays,
     SolidStateArrays,
+    SurfaceArrays,
     VesselConditions,
     VesselIntegrator,
     _poly,
@@ -606,6 +607,15 @@ def build_phase_arrays(
         [Molecule.from_smiles(s).charge != 0 for s in species], dtype=bool
     )
 
+    # Which species are CRYSTALS. Read off the same ``by_lattice`` index the
+    # loop above resolved each mineral's properties from, so the mask cannot
+    # disagree with the numbers: a species has this flag exactly when its
+    # ``v_liq`` and ``Cp_liq`` came out of ``mineral_data`` rather than out of a
+    # provider. Layer 4 uses it to pick each species' basis in a surface rate
+    # law -- amount for a crystal, concentration for a gas -- and a lattice is
+    # the only species here for which one boolean can answer that.
+    is_lattice = np.array([smi in lattices for smi in species], dtype=bool)
+
     # The BORN block: what it costs an ion to leave the water. An ion has no
     # UNIFAC decomposition, so everything above skipped it -- which used to mean
     # gamma = 1, and equality of activity with gamma = 1 on both sides of an
@@ -620,6 +630,7 @@ def build_phase_arrays(
     arrays = PhaseArrays(
         vol_A, vol_B, vol_C, condensable, Hvap_Tb, Tb, Tc, v_liq, Cp_liq, Cp_gas,
         Hfus=Hfus, Tm=Tm, solidifies=solidifies, ionic=ionic,
+        lattice=is_lattice,
         nu=act.nu, R_k=act.R_k, Q_k=act.Q_k, a_mn=act.a_mn,
         gamma_active=act.active, gamma_ref=gamma_ref,
         gamma_ref_range=np.array([T_REF_LO, T_REF_HI]),
@@ -665,6 +676,17 @@ def build_precipitation_arrays(
     report: list[str] = []
 
     for name, record in MINERALS.items():
+        if not record.ions:
+            # A SOLID WITH NO DISSOLVED FORM IS NOT A PRECIPITATION CANDIDATE,
+            # and this guard is what stops that being decided by accident. A
+            # metal's ``ions`` is empty on purpose (see ``mineral_data``'s
+            # METALS), and "every ion is present" is VACUOUSLY TRUE of an empty
+            # tuple -- so without this line iron filings would be offered to
+            # ``solubility_product``, and a row of ``nu`` that is identically
+            # zero would ride on whether that refusal happened to fire. Not a
+            # report line either: nothing was refused, there is nothing here to
+            # dissolve.
+            continue
         missing = [ion for ion in record.ions if ion not in index]
         if missing:
             continue                      # not a candidate here; not a failure
@@ -766,7 +788,10 @@ def build_solid_state_arrays(
                 "pressure in the denominator of Q, so an atmosphere depleted "
                 "of it gives an unbounded reverse rate. A gas-consuming "
                 "surface reaction (roasting; a solid catalyst) is a different "
-                "mechanism and wants a third PHASE_INDEX entry, not this term."
+                "mechanism and is built as one: properties/surface.py and "
+                "SurfaceArrays. NOT a third PHASE_INDEX entry -- that label "
+                "would move a catalysed gas reaction onto the pure-liquid "
+                "standard state, which is 2.6e10 in K at 500 K."
             )
             continue
         try:
@@ -801,6 +826,128 @@ def build_solid_state_arrays(
             dS=np.array(dS),
             A_fwd=np.array(A),
             Ea_fwd=np.array(Ea),
+            names=tuple(names),
+        ),
+        report,
+    )
+
+
+def build_surface_arrays(
+    species: list[str],
+) -> tuple[SurfaceArrays, list[str]]:
+    """Every gas-consuming surface reaction this species set can run, plus what
+    it cannot.
+
+    Layer 5's half of the roasting term, and the third builder of this shape --
+    ``build_precipitation_arrays``, ``build_solid_state_arrays``, this. Same
+    contract as both: a row qualifies when every participant is a species here
+    and the declaration prices, and a refusal passes through into the report
+    rather than being dropped, because "the roaster did nothing" is otherwise
+    indistinguishable from a bug.
+
+    ⚠ **THE SPECIES CHECK RUNS THE SAME WAY M6's DOES AND THE OPPOSITE WAY M3's
+    DOES.** This needs the LATTICE present, not the ions: a crystal that reacts
+    while staying a crystal has no ion-by-ion form, and both representations of
+    the same salt can be in one vessel without being the same species.
+
+    ⚠⚠ **AND IT REFUSES A NON-LATTICE SOLID BY NAME.** ``PhaseArrays.lattice`` is
+    what chooses each species' basis in the rate law, and it is true only for a
+    ``mineral_data`` entry -- because a lattice is the only species here that
+    cannot also be a liquid or a vapour. A molecular solid like sulfur has a
+    solid block AND a liquid block AND a headspace, so "how much solid is there"
+    is not a question one boolean can answer for it, and a rate law gated on it
+    would be reading whichever block the mask happened to point at. That is a
+    refusal rather than a silent choice.
+    """
+    from chemsim.properties import surface as surface_mod
+
+    thermo = ThermochemistryProvider()
+    lattices = mineral_data.by_lattice()
+    index = {s: i for i, s in enumerate(species)}
+    n = len(species)
+    rows_nu: list[np.ndarray] = []
+    rows_os: list[np.ndarray] = []
+    rows_og: list[np.ndarray] = []
+    names: list[str] = []
+    dH: list[float] = []
+    A: list[float] = []
+    Ea: list[float] = []
+    report: list[str] = []
+
+    for decl in surface_mod.SURFACE_REACTIONS:
+        smiles = {
+            name: mineral_data.MINERALS[name].lattice
+            for name, _nu, _order in decl.solids
+            if name in mineral_data.MINERALS
+        }
+        missing = [
+            name for name, _nu, _order in decl.solids
+            if smiles.get(name) not in index
+        ] + [smi for smi, _nu, _order in decl.gases if smi not in index]
+        if missing:
+            continue                      # not a candidate here; not a failure
+        # THE SPLIT IS CHECKED BEFORE ANYTHING IS PRICED, and the order is the
+        # point rather than an optimisation. A lattice declared as a gas is a
+        # DECLARATION bug, and pricing it first would refuse it for the wrong
+        # reason -- ``thermochemistry`` would raise on the lattice SMILES and the
+        # report would say "estimated formation data" about a species that is
+        # simply on the wrong side. Checked first, the message names what is
+        # actually wrong.
+        bad = [
+            smi for smi, _nu, _order in decl.gases
+            if lattices.get(smi) is not None
+        ] + [
+            smiles[name] for name, _nu, _order in decl.solids
+            if lattices.get(smiles[name]) is None
+        ]
+        if bad:
+            report.append(
+                f"{decl.name}: REFUSED -- {sorted(set(bad))} is declared on the "
+                "wrong side of the solid/gas split. A SOLID participant must be "
+                "a mineral_data lattice, because that is the only species here "
+                "whose block is unambiguous -- a lattice may react and may never "
+                "dissolve, boil or melt, so PhaseArrays.lattice can choose its "
+                "basis in the rate law with one boolean. A molecular solid has a "
+                "solid block AND a liquid block AND a headspace, so it cannot. "
+                "And a GAS participant must not be a lattice."
+            )
+            continue
+        try:
+            priced = surface_mod.price(decl, thermo)
+        except surface_mod.UnpricedSurfaceReaction as exc:
+            report.append(
+                f"{decl.name}: every species is present but the reaction is "
+                f"refused -- {str(exc).splitlines()[0]}"
+            )
+            continue
+        row_nu = np.zeros(n)
+        row_os = np.zeros(n)
+        row_og = np.zeros(n)
+        for name, nu, order in decl.solids:
+            i = index[smiles[name]]
+            row_nu[i] += float(nu)
+            row_os[i] += float(order)
+        for smi, nu, order in decl.gases:
+            i = index[smi]
+            row_nu[i] += float(nu)
+            row_og[i] += float(order)
+        rows_nu.append(row_nu)
+        rows_os.append(row_os)
+        rows_og.append(row_og)
+        names.append(decl.name)
+        dH.append(priced.dH)
+        A.append(priced.A)
+        Ea.append(priced.Ea)
+
+    empty = np.zeros((0, n))
+    return (
+        SurfaceArrays(
+            nu=np.array(rows_nu) if rows_nu else empty,
+            order_solid=np.array(rows_os) if rows_os else empty,
+            order_gas=np.array(rows_og) if rows_og else empty,
+            dH=np.array(dH),
+            A=np.array(A),
+            Ea=np.array(Ea),
             names=tuple(names),
         ),
         report,
@@ -842,6 +989,11 @@ class Vessel:
     # Whether a crystal may REACT while staying a crystal -- M6's term.
     # ⚠ On by default for the same reason ``precipitation`` is: a kiln in which
     # limestone does not calcine is not an idealised kiln, it is a wrong one.
+    # Whether a crystal may react with a gas ARRIVING at it -- roasting, and the
+    # gate a solid catalyst is. Same contract as the three above: False is
+    # EXACTLY the old behaviour and ``surface_report`` still says what the term
+    # would have run.
+    surface: bool = True
     # Set False to measure what the term is worth; ``solid_state_report`` still
     # says which reactions this vessel could have run.
     solid_state: bool = True
@@ -950,6 +1102,10 @@ class Vessel:
         self.solid_state_arrays, self.solid_state_refusals = (
             build_solid_state_arrays(self.species)
         )
+        # And which surface reactions it can run. Same contract again.
+        self.surface_arrays, self.surface_refusals = (
+            build_surface_arrays(self.species)
+        )
         self.integrator = VesselIntegrator(
             self.kinetics, self.phases, self.conditions,
             precipitation=(
@@ -958,6 +1114,7 @@ class Vessel:
             solid_state=(
                 self.solid_state_arrays if self.solid_state else None
             ),
+            surface=(self.surface_arrays if self.surface else None),
         )
 
         self._nL = np.zeros(len(self.species))
@@ -1715,6 +1872,68 @@ class Vessel:
                 "and no crystal will react."
             )
         lines.extend(self.solid_state_refusals)
+        return "\n".join(lines)
+
+    def surface_report(self) -> str:
+        """Which crystals in this vessel a gas can attack, and how fast.
+
+        The same shape as ``solid_state_report`` and for the same reason: the
+        question is answered whether the term is on or off, because "the ore just
+        sat there" is otherwise indistinguishable from a bug.
+
+        WHAT THIS REPORTS AND WHAT IT DOES NOT. There is no threshold
+        temperature here and that absence is the physics. M6's kiln has one --
+        the reaction is under thermodynamic control and stops at ``Q = K``, so
+        there is a temperature below which nothing happens. A roast is under
+        KINETIC control: ``ln K`` is 67.6 to 78.8 at a roaster's temperature and
+        the reaction runs at any temperature you are willing to wait at. So what is
+        printed is a CLOCK, and the clock is what a route is checked against.
+
+        AND THE CLOCK IS SHARED. One barrier and one pre-exponential cover
+        every row, which is a claim that the rate-determining event is the same
+        one -- see ``properties/surface.py``, where the claim is stated and the
+        available alternative is measured getting the ordering backwards.
+        """
+        arr = self.surface_arrays
+        lines: list[str] = []
+        if not arr.m:
+            lines.append(
+                "no surface reaction is available in this vessel: none of the "
+                "declared rows has all of its minerals AND gases as species "
+                "here. Charge the lattice (properties/surface.lattice_"
+                "species()), not its ions, and give it a gas to react with "
+                "(properties/surface.gas_species())."
+            )
+        k = arr.rate_constants(self.T)
+        # The gas the row is order-1 in, at the pressure THIS flask has it at
+        # right now -- so the clock printed is this vessel's and not a reference
+        # one. A row whose gas is absent gets no clock, which is the honest
+        # answer rather than infinity dressed up as one.
+        p = self.partial_pressures()
+        for j, name in enumerate(arr.names):
+            gases = [
+                self.species[i] for i in np.flatnonzero(arr.order_gas[j] > 0.0)
+            ]
+            C = min(
+                (p.get(g, 0.0) / (R_L_BAR * max(self.T, 1.0)) for g in gases),
+                default=0.0,
+            )
+            clock = (
+                f"tau {1.0 / (k[j] * C):.4g} s at this flask's "
+                f"{', '.join(gases)}"
+                if k[j] > 0.0 and C > 0.0
+                else f"no clock -- {', '.join(gases) or 'its gas'} is absent"
+            )
+            lines.append(
+                f"{name}: dH {arr.dH[j] / 1000:+.1f} kJ/mol (EXOTHERMIC, so the "
+                f"bed heats itself); k({self.T:.0f} K) = {k[j]:.4g}, {clock}"
+            )
+        if not self.surface:
+            lines.append(
+                "-- but surface=False on this vessel, so the term is OFF and no "
+                "gas will attack a crystal."
+            )
+        lines.extend(self.surface_refusals)
         return "\n".join(lines)
 
     def energy_report(self) -> str:

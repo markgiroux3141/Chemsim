@@ -45,6 +45,7 @@ from chemsim.properties import (                                # noqa: E402
     electrolyte_provider,
 )
 from chemsim.reactions import synthesis as S                    # noqa: E402
+from chemsim.reactions.library import SOLID_CATALYST_REFERENCE  # noqa: E402
 from chemsim.reactions.thermo import COLLISION_LIMIT            # noqa: E402
 from chemsim.recipes import BENZOIC_ACID_PREP as PREP           # noqa: E402
 
@@ -57,8 +58,35 @@ UNIMOLECULAR_LIMIT = 1.0e14      # 1/s
 THERMO = electrolyte_provider()
 
 
+def apparent_A(r) -> float:
+    """``r.A`` in units a collision limit can be compared against.
+
+    A HETEROGENEOUSLY CATALYSED REACTION'S PRE-EXPONENTIAL IS NOT IN THE SAME
+    UNITS AS AN UNCATALYSED ONE, AND COMPARING IT RAW IS A UNITS ERROR. A
+    declared ``solid_catalyst`` puts an order-1 factor in MOL into the rate law
+    (see ``KineticArrays.order_solid``), so ``A`` carries an extra ``mol**-1``:
+    the ammonia row's declared 1e7 is not 1e7 L^3/(mol^3 s), it is
+    1e7 L^3/(mol^3 mol_cat s), and 1e11 L/(mol s) is not a bound on it.
+
+    Multiplying by ``SOLID_CATALYST_REFERENCE`` recovers the APPARENT constant --
+    the one at the loading the value was rescaled against -- which is in ordinary
+    units and is the number that used to be declared. That is the whole point of
+    naming a reference charge rather than dividing by 1: the audit keeps working,
+    on the same number it was auditing before.
+
+    ⚠ It is therefore a statement about a 0.1 mol charge, not about all charges.
+    Ten times the catalyst is ten times the rate -- this kernel has no site
+    balance (``library.py`` says so) -- so a flask holding 100 mol of iron would
+    genuinely exceed the collision limit, and what that means is that the
+    first-order-for-ever idealisation has run out, not that the chemistry has.
+    """
+    if getattr(r, "solid_catalyst", None) is None:
+        return float(r.A)
+    return float(r.A) * SOLID_CATALYST_REFERENCE
+
+
 def k_at(r, T: float) -> float:
-    return float(r.A * np.exp(-r.Ea / (R * T)) * T**r.n_exp)
+    return float(apparent_A(r) * np.exp(-r.Ea / (R * T)) * T**r.n_exp)
 
 
 def crossing_T(r) -> float:
@@ -69,11 +97,12 @@ def crossing_T(r) -> float:
     answer is an order-of-magnitude statement anyway.
     """
     ceiling = COLLISION_LIMIT if len(r.reactants) >= 2 else UNIMOLECULAR_LIMIT
-    if r.A <= ceiling:
+    A = apparent_A(r)
+    if A <= ceiling:
         return math.inf                      # cannot reach it at any T
     if r.Ea <= 0.0:
         return 0.0                           # already over, everywhere
-    return r.Ea / (R * math.log(r.A / ceiling))
+    return r.Ea / (R * math.log(A / ceiling))
 
 
 def networks() -> dict:

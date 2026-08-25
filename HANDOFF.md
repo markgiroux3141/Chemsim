@@ -4101,6 +4101,145 @@ the measurements that justify them.
     in the project and would move invariants. It wants the full suite behind it
     and a session of its own.
 
+85. ✔✔ **A GAS NOW ATTACKS A CRYSTAL, AND `PHASE_INDEX` STILL HAS TWO
+    ENTRIES -- FOR THE SECOND MILESTONE RUNNING AND FOR A DIFFERENT REASON.**
+
+    The wrong answer this fixes is one a player could see: **a flask with no iron
+    in it made ammonia.** Five templates folded a heterogeneous catalyst into an
+    apparent barrier, so "you need a catalyst" could not be a gate. It is one now:
+    a bare flask of N2 and H2 at 700 K makes **exactly 0.0** mol of ammonia, and
+    the same flask with 0.1 mol of iron makes 31.7% of theoretical in 600 s.
+    `sphalerite-roasting` runs to **78.26%** in 1800 s of blown air, conserving
+    zinc to 1e-12.
+
+    New: `properties/surface.py`, `numerics.vessel_integrator.SurfaceArrays`,
+    `vessel.build_surface_arrays`, `Vessel.surface` / `Vessel.surface_report`,
+    `PhaseArrays.lattice`, `KineticArrays.order_solid`,
+    `ReactionTemplate.solid_catalyst`, `library.SOLID_CATALYST_REFERENCE`,
+    `examples/roasting_and_the_catalyst_gate.py` (5 panels, 12 s),
+    `tests/test_surface.py` (38 tests, 12 s). `mineral_data` regenerated with
+    three METALS (40 entries).
+
+    ## ⚠⚠ THE BRIEF ASKED FOR ONE MECHANISM AND THE ARITHMETIC SAYS TWO
+
+    The brief said to add `PHASE_INDEX["solid"] = 2` and let one mechanism cover
+    both a solid catalyst and a roasting sulfide ("both are `nu` on the solid
+    block, so this may be one mechanism"). Both halves are refuted:
+
+      * a **catalyst's stoichiometry is zero on both sides**, so its `delta`
+        never leaves the gas block -- only `order` reaches the solid one;
+      * and **roasting cannot be priced on the ideal-gas basis at all**, because
+        `thermochemistry` refuses a lattice SMILES by name. It needs `mineral_data`
+        against a curated gas, which makes it a curated table like M6's.
+
+    ⚠ **AND THE PHASE LABEL IS NOT A NAME, IT IS A CHOICE OF THERMODYNAMICS.**
+    `reaction_deltas` applies the pure-liquid shift to anything that is not
+    `"gas"`, so labelling `N2 + 3 H2 -> 2 NH3` a "solid"-phase reaction moves dG by
+    **-99.7 kJ/mol** and K at 500 K by **2.6e10**. That is verbatim the failure the
+    `PHASE_INDEX` comment was written to prevent -- `phase="any"` validated,
+    documented and silently meaning liquid -- arriving at the line that comment is
+    written on. A solid-catalysed gas reaction IS a gas-phase reaction: every
+    participant that has an activity is a gas, and a pure solid's is 1.
+
+    ## THE MIXED BASIS, WHICH IS THE ONE THING THE TERM HAD TO GET RIGHT
+
+        rate = k(T) * prod(nS ** order_solid) * prod(C_gas ** order_gas)    mol/s
+
+    NOT scaled by a volume, unlike every other rate law here. A solid's
+    *concentration* has no referent -- the block is an inventory in mol and `V_S`
+    is nominal -- and a gas's *amount* is not what a surface sees, because arrival
+    goes with the collision rate and compressing the flask must speed the reaction
+    up. So the rate is EXTENSIVE in the solid and INTENSIVE in the gas.
+
+    One boolean does both jobs: `PhaseArrays.lattice` chooses each species' basis
+    AND which block its stoichiometry lands in, because a lattice is the only
+    species here whose block is unambiguous (it may react and may never dissolve,
+    boil or melt). A non-lattice solid participant is REFUSED by name.
+
+    ## FIVE MECHANICS NOBODY WROTE
+
+    | | measured |
+    |---|---|
+    | a sealed roast STALLS | **1.53%** in 20 ks -- a litre of air holds 2.296 mmol of O2 and 0.1 mol of ore needs 150. Same shape as M6's kiln needing its CO2 swept: an open end, not a temperature |
+    | a blown roast GOES | **78.26%** in 1800 s at 1100 K |
+    | **autothermal roasting** | insulated, the same flask reaches **100%** while heating itself 1100 -> **1908.6 K**. A real zinc roaster burns no fuel. The VENT is what stops the runaway |
+    | two ores share one blast | ZnS + PbS -> **0.039131 mol each**, both closures exact to 1e-12 |
+    | the clock ignores the charge | first order in the solid, so `tau = 1/(k C_gas)` |
+
+    ## ⚠ THREE THINGS THE FIRST GUESS GOT WRONG, MEASURED
+
+      * **the reference-charge invariant is not bit-exact, and the reason is not a
+        modelling difference.** `A_cat * SOLID_CATALYST_REFERENCE == A_folded`
+        exactly, but a VENTED flask shows +0.086% ammonia -- and a vented
+        comparison is not a comparison, because the two runs vent differently.
+        Sealed, with the flask enlarged by the 0.0007096 L that 0.1 mol of iron
+        occupies, they agree to **-4.6e-11 mol**. The residual is a crystal
+        displacing gas, which a fourth-order rate law notices. Real, and bounded.
+      * **the "no site balance" claim reads 9.75 as a yield ratio**, not 10. That
+        2.5% is DEPLETION -- a run long enough to integrate is long enough to move
+        down its own curve. Measured as an initial rate off the RHS it is 10.0 to
+        1e-9.
+      * **crediting `roasting` as M6 labelled it produced a FALSE CREDIT.**
+        `mercury-from-cinnabar` reads `mercury-sulfide + oxygen -> mercury +
+        sulfur-dioxide` and this term makes the OXIDE, so the route moved into the
+        template-ready list on a mechanism that does not make its product -- the
+        `deprotonation` mistake M1 named, from the other direction. Re-labelled
+        `roasting-to-metal`. M6 had recorded the reading and not acted on it.
+
+    ## COVERAGE: 33/215 classes, 27/173 routes, and be careful with that number
+
+    Was 32/214 and 26/173. ⚠ **The one route added is `pyrite-roasting`, which
+    does not run** -- pyrite has `Hfs` in WEBBOOK and `S0s` in nothing, so
+    `mineral_data` refuses it. That is not a broken number, it is what
+    template-readiness MEANS. **Honest summary: +1 class, +1 template-ready route,
+    ZERO new routes that run end to end**, because all three smelting routes are
+    still blocked at `carbothermic-reduction` / `gas-solid-reduction`.
+
+    ## ⚠ THE SHARED CLOCK IS A PARTLY-REFUTED CLAIM, STATED
+
+    `ROASTING_A` = 3.21e6 L/(mol s) (3.2e-5 of the collision limit) and
+    `ROASTING_EA` = 150 kJ/mol are shared across all four rows -- M6's lesson says
+    that claims they are the same event. Structurally they are; on temperature they
+    are not. The catalog's own equipment column puts cinnabar in a **900 K** retort
+    and sphalerite in an **1100 K** roaster, and one clock makes cinnabar **31x
+    slower** at its own temperature. ⚠⚠ And the one available fix is measured
+    getting the ordering BACKWARDS: Evans-Polanyi would rank by enthalpy
+    (sphalerite -882.7 the most exothermic, cinnabar -658.9 the least), so it puts
+    sphalerite first where the furnaces put it last. The overall enthalpy is not the
+    barrier of the rate-determining step. `alpha` is zero and the ordering is not
+    claimed.
+
+    ## THE DATA: three metals, and a free exact check on each
+
+    Iron, nickel and copper. A metal is a lattice with NO DISSOLVED FORM, so
+    `ions` is empty and that emptiness is the claim --
+    `build_precipitation_arrays` now skips an ion-less record, because "every ion
+    is present" is VACUOUSLY TRUE of an empty tuple and iron filings would
+    otherwise be offered to `solubility_product` as a lattice whose only ion is
+    itself. ⚠ **All three price at `Hf = Gf = 0.0` EXACTLY**, which is a CHECK
+    rather than a datum: the same free, exact check `element_data` is built on,
+    arriving on the solid basis, and the generator REFUSES a non-zero result as an
+    allotrope mismatch (CRC's grey tin).
+
+    ## ⚠ ONE LATENT UNITS ISSUE, REPORTED NOT FIXED
+
+    `detailed_balance`'s rate cap compares a CATALYSED pre-exponential against a
+    limit that is not in its units -- an order-1 factor in mol gives `A` an extra
+    `mol^-1`, so 1e11 L/(mol s) is not a bound on it.
+    `validation/rate_ceiling.apparent_A` multiplies by `SOLID_CATALYST_REFERENCE`
+    to undo exactly that and the audit is restored to its baseline
+    (`ammonia_synthesis_rev` crosses at **1335.1 K**, unmoved); `detailed_balance`
+    does not, so it would fire **10x too eagerly**. Bounded in the class this
+    project forgives -- the cap scales BOTH pre-exponentials so K is invariant, and
+    the cost is a clock at most 10x slow -- and **it does not fire on any of the
+    five catalysed templates today**, which a test pins so it cannot start
+    silently. The proper fix wants the reference charge as an argument rather than
+    a Layer-2 import cycle.
+
+    **Also not modelled:** the SITE BALANCE. Ten times the catalyst is ten times
+    the rate, for ever. Right at low coverage, wrong at high, stated rather than
+    approximated. That is still M10.
+
 IMMEDIATE NEXT TASK: see **`MILESTONES.md`**, which is the plan of record as of
 2026-08-22 and supersedes the ordering below. It is derived from `data/catalog`
 (1,583 compounds, 173 routes) plus four measured capability probes, and it
@@ -4124,7 +4263,8 @@ down; the one below is what closing them found. In order:
 3. **A curated overlay for aspirin and salicylic acid**, whose formation halves
    are both Joback -- named by `validation/game_gates.py` panel 3, and the
    acetylation K is chain 1's weakest number.
-4. ~~SOLID-PHASE REACTIONS~~ -- **DONE, item 84.** ⚠ But NOT for the
+4. ~~SOLID-PHASE REACTIONS~~ -- **DONE, item 84**, and the gas-CONSUMING half is
+   **DONE, item 85.** ⚠ But NOT for the
    green-vitriol seed: `FeSO4 -> Fe2O3 + SO3` needs an Fe2O3 mineral entry that
    does not exist, and the claim that the seed's data "is curated and waiting"
    was checked and is half wrong -- true of the reactant, false of the product.

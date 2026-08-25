@@ -283,11 +283,40 @@ def test_the_fusion_law_is_wrong_for_a_lattice_in_BOTH_directions():
     assert max(ratios) / min(ratios) > 1000.0
 
 
-def test_every_mineral_records_the_ions_it_dissolves_into():
+def test_every_mineral_records_the_ions_it_dissolves_into_unless_it_is_a_METAL():
+    """⚠ THE EXEMPTION IS EARNED BY ARITHMETIC, NOT BY A NAME LIST.
+
+    This used to assert that every row has ions, full stop, and metals broke it
+    deliberately: iron does not dissolve to Fe atoms, so ``ions=('[Fe]',)`` would
+    be a false claim -- and it would offer iron filings to
+    ``build_precipitation_arrays`` as a lattice whose only ion is itself.
+
+    But an empty tuple is also what a TYPO looks like, so the exemption cannot
+    simply be permission. What earns it is the property that MAKES a row a metal:
+    a single-element formula priced at ``Hf = Gf = 0`` exactly, i.e. the element's
+    own reference state on the solid basis. A salt that lost its ions to an
+    editing mistake would not price at zero, so this still catches that -- which a
+    hardcoded list of metal names would not, and would go stale besides.
+    """
+    ion_less = []
     for name, rec in MINERALS.items():
-        assert rec.ions, name
+        if not rec.ions:
+            ion_less.append(name)
+            assert len(rec.formula) == 1, (
+                f"{name}: no ions AND more than one element. Only an element in "
+                f"its own reference state may have no dissolved form."
+            )
+            assert rec.Hf_solid == 0.0 and rec.Gf_solid == 0.0, (
+                f"{name}: no ions but Hf/Gf are {rec.Hf_solid}/{rec.Gf_solid}, "
+                f"not zero. An ion-less row has to be an element's reference "
+                f"state; anything else has lost its ions."
+            )
+            continue
         for ion in rec.ions:
             assert Molecule.from_smiles(ion).smiles == ion, f"{name}: {ion}"
+    # And the exemption is not empty -- the metals that carry it are the
+    # heterogeneous catalysts the templates declare.
+    assert set(ion_less) == {"iron", "nickel", "copper"}, ion_less
 
 
 def test_a_mineral_resolves_ION_BY_ION_under_the_electrolyte_provider():

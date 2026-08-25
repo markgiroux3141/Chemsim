@@ -68,7 +68,7 @@ copper-smelting | 1 | roasting | copper-sulfide + oxygen | copper-ii-oxide + sul
 copper-smelting | 2 | reduction to blister copper | copper-ii-oxide + carbon-monoxide | copper + carbon-dioxide | converter | gas-solid-reduction
 zinc-smelting | 1 | sphalerite roasting | zinc-sulfide + oxygen | zinc-oxide + sulfur-dioxide | roaster | roasting
 zinc-smelting | 2 | retort reduction | zinc-oxide + carbon-graphite | zinc + carbon-monoxide | retort, 1400 K | carbothermic-reduction
-mercury-from-cinnabar | 1 | cinnabar roasting | mercury-sulfide + oxygen | mercury + sulfur-dioxide | retort, 900 K | roasting
+mercury-from-cinnabar | 1 | cinnabar roasting | mercury-sulfide + oxygen | mercury + sulfur-dioxide | retort, 900 K | roasting-to-metal
 thermite | 1 | aluminothermic reduction | iron-iii-oxide + aluminium | iron + aluminium-oxide | ignition, 3000 K | metallothermic-reduction
 downs-cell | 1 | molten salt electrolysis | sodium-chloride | sodium + chlorine | 900 K melt, CaCl2 flux | electrolysis
 castner-kellner | 1 | amalgam formation | sodium-chloride + mercury | sodium-amalgam-marker + chlorine | mercury cathode | electrolysis

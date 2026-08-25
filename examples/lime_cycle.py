@@ -31,7 +31,9 @@ solid amounts, and a sealed tube settled at
     p / K  =  n(calcite) / n(quicklime)
 
 exactly -- 3.0863 against 3.0863 at 1100 K. That is what a PURE SOLID HAVING
-UNIT ACTIVITY forbids, and it is why ``PHASE_INDEX`` still has two entries.
+UNIT ACTIVITY forbids, and it is why ``PHASE_INDEX`` still has two entries. (It
+still has two after the gas-CONSUMING case was built as well, and for a second,
+independent reason -- see the closing panel.)
 ``properties/solid_state.py`` carries the whole argument.
 """
 
@@ -339,13 +341,18 @@ def main() -> None:
    -- decarbonation and dehydration -- so crediting the class on one of them
    would have been M1's `deprotonation` mistake again.
 
-   AND ONE CLASS STILL REFUSED. `roasting` is one mechanism across all five of
-   its rows, and none of the five is complete: only ZnS prices among the
-   sulfides and NONE of the oxides does. That is a data refusal, not an engine
-   one -- but roasting also CONSUMES a gas, and the affinity form above is not
-   a rate law for that. It is the case that still wants a third PHASE_INDEX
-   entry, and so are the five heterogeneous templates that fold a catalyst into
-   an apparent barrier.""")
+   AND ONE CLASS THIS EXAMPLE REFUSED HAS SINCE BEEN BUILT ELSEWHERE.
+   `roasting` CONSUMES a gas, and the affinity form above is measurably not a
+   rate law for that -- a gas reactant's pressure lands in the denominator of Q.
+   So it is MASS ACTION, and it is a separate term:
+   `properties/surface.py` and `examples/roasting_and_the_catalyst_gate.py`.
+
+   What it turned out NOT to be is the third PHASE_INDEX entry both this file
+   and that refusal predicted. Labelling a solid-catalysed gas reaction "solid"
+   moves it onto the pure-liquid standard state, which is worth 2.6e10 in K at
+   500 K -- so a solid CATALYST is a factor in a gas reaction's rate law and
+   roasting is a term of its own. PHASE_INDEX has two entries for the second
+   milestone running, for a different reason each time.""")
 
 
 if __name__ == "__main__":

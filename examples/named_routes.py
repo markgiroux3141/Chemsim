@@ -72,6 +72,8 @@ from chemsim.reactions import (
     perkin_condensation,
     williamson_ether_synthesis,
 )
+from chemsim.properties.mineral_data import MINERALS
+from chemsim.reactions.library import SOLID_CATALYST_REFERENCE
 from chemsim.vessel import Vessel
 
 THERMO = electrolyte_provider()
@@ -170,9 +172,10 @@ ROUTES = [
         T=350.0, seconds=7200.0, of=1.0, watch=("COc1ccccc1", "anisole"),
     ),
     dict(
-        route="haber-bosch", label="ammonia synthesis, 700 K",
+        route="haber-bosch", label="ammonia synthesis, 700 K, over IRON",
         templates=lambda: [ammonia_synthesis()],
         seed=["N#N", "[H][H]"], charge={"N#N": 5.0, "[H][H]": 15.0}, gas=True,
+        catalyst=("iron",),
         T=700.0, seconds=3600.0, of=10.0, watch=("N", "ammonia"),
     ),
     dict(
@@ -181,6 +184,7 @@ ROUTES = [
                            methanol_from_carbon_dioxide()],
         seed=["[C-]#[O+]", "O=C=O", "[H][H]"],
         charge={"[C-]#[O+]": 3.0, "O=C=O": 1.0, "[H][H]": 12.0}, gas=True,
+        catalyst=("copper",),
         T=520.0, seconds=3600.0, of=4.0, watch=("CO", "methanol"),
     ),
     dict(
@@ -197,6 +201,7 @@ ROUTES = [
         templates=lambda: [nitro_hydrogenation()],
         seed=["O=[N+]([O-])c1ccccc1", "[H][H]"],
         charge={"O=[N+]([O-])c1ccccc1": 1.0, "[H][H]": 5.0},
+        catalyst=("nickel",),
         T=470.0, seconds=3600.0, of=1.0, watch=("Nc1ccccc1", "aniline"),
     ),
     dict(
@@ -218,6 +223,7 @@ ROUTES = [
         route="hydrogenation-margarine *", label="oleic -> stearic acid",
         templates=lambda: [alkene_hydrogenation()],
         seed=[OLEIC, "[H][H]"], charge={OLEIC: 1.0, "[H][H]": 5.0},
+        catalyst=("nickel",),
         T=450.0, seconds=3600.0, of=1.0,
         watch=("CCCCCCCCCCCCCCCCCC(=O)O", "stearic acid"),
     ),
@@ -234,6 +240,16 @@ def run_one(spec: dict) -> tuple[int, int, float, list[tuple[str, float, float]]
         kla=1.0, k_vent=0.0, k_diss=0.0,
     )
     vessel.charge(spec["charge"], phase="gas" if spec.get("gas") else "liquid")
+    # THE CATALYST GOES IN THE SOLID BLOCK, and a route that needs one and does
+    # not get it makes NOTHING. Five of these templates declare a heterogeneous
+    # catalyst, so the charge is part of the recipe now rather than folded into a
+    # barrier -- see ``ReactionTemplate.solid_catalyst``.
+    if spec.get("catalyst"):
+        vessel.charge(
+            {MINERALS[m].lattice: SOLID_CATALYST_REFERENCE
+             for m in spec["catalyst"]},
+            phase="solid",
+        )
     vessel.run(spec["seconds"])
     state = vessel.state()
     got = []

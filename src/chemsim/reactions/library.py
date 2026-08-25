@@ -99,13 +99,25 @@ why ``alcohol_chemistry()`` is unchanged: a network built without dissociation
 templates has no ``[OH3+]`` to price, and silently losing the esterification would
 be far worse than folding the catalysis in.
 
-## What is still deliberately NOT modelled
+## Heterogeneous catalysis: what is modelled now, and what still is not
 
-**Heterogeneous catalysis** -- a surface has a site balance, so it needs a
-Langmuir-Hinshelwood rate form the kernel cannot express (it evaluates
-``A T**n exp(-Ea/RT)`` times a product of powers, and nothing else). Homogeneous
-catalysis fits the mass-action form exactly; that is the whole reason this was
-cheap and that is not.
+**A solid catalyst is now a SPECIES and a GATE**, declared as
+``ReactionTemplate.solid_catalyst`` -- see that class for the mechanism and
+``SOLID_CATALYST_REFERENCE`` below for the loading its pre-exponentials are
+rescaled against. A flask with no iron in it makes no ammonia, which is the whole
+of what this buys and is a wrong answer this project reported for several
+sessions rather than hid.
+
+⚠ **WHAT IS STILL NOT MODELLED IS THE SITE BALANCE, AND THE CHANGE ABOVE DOES
+NOT TOUCH IT.** A real surface saturates: doubling the catalyst stops doubling
+the rate once the sites are full, which is a Langmuir-Hinshelwood form the kernel
+cannot express (it evaluates ``A T**n exp(-Ea/RT)`` times a product of powers,
+and nothing else). So the rate here is strictly first order in the catalyst
+amount, for ever, and **ten times the iron is ten times the rate at any
+loading**. That is right at low coverage and wrong at high, it is stated rather
+than approximated, and the honest reading is that the catalyst charge is a knob
+with no diminishing return on it. Homogeneous catalysis has no site balance and
+so needs none of this, which is why it was cheap and this is not finished.
 """
 
 from __future__ import annotations
@@ -123,6 +135,38 @@ CATALYST_REFERENCE = 0.1
 # everywhere else (see ``properties/electrolyte``), so the catalyst a network
 # actually contains is hydronium rather than a bare H+.
 ACID_CATALYST = "[OH3+]"
+
+# MOL of a SOLID catalyst that the apparent pre-exponentials of the
+# heterogeneous templates were standing in for. The twin of
+# ``CATALYST_REFERENCE`` above and the same bargain, in a different unit -- a
+# crystal is an AMOUNT in the solid block, not a concentration, so this cannot
+# share that constant and must not pretend to.
+#
+# ⚠ 0.1 mol is a few grams of metal: 5.6 g of iron, 5.9 g of nickel, 6.4 g of
+# copper. That is an ordinary bench charge of a heterogeneous catalyst, and
+# declaring it is what makes ``ammonia_synthesis()`` and
+# ``ammonia_synthesis(catalyst=None)`` the SAME REACTION at that charge instead
+# of two unrelated calibrations. Every ammonia number this project has measured
+# is reproduced exactly with 0.1 mol of iron in the flask, which is asserted in
+# ``tests/test_surface.py`` rather than hoped for.
+#
+# ⚠ AND IT IS WHAT KEEPS ``A``'s UNITS AUDITABLE. An order-1 factor in mol
+# changes a pre-exponential's dimensions, so a raw catalysed ``A`` cannot be
+# compared against a collision limit at all. Dividing by a reference CHARGE
+# rather than by 1.0 means the declared number stays the apparent constant in
+# its own proper units, and ``validation/rate_ceiling.py`` can keep auditing it.
+SOLID_CATALYST_REFERENCE = 0.1
+
+
+def _surface_kinetics(A: float, catalyst: str | None) -> float:
+    """The pre-exponential to declare, given whether a SOLID catalyst is explicit.
+
+    The twin of ``_kinetics`` above, on the solid basis. Without the division,
+    making a heterogeneous catalysis explicit would silently slow every reaction
+    that gained one by a factor of ten -- and it would do it while looking like
+    physics, which is worse than looking like a bug.
+    """
+    return A if catalyst is None else A / SOLID_CATALYST_REFERENCE
 
 
 def _maybe_catalyse(smarts: str, catalyst: str | None) -> str:

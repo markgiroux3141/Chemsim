@@ -335,16 +335,44 @@ TEMPLATE_CLASSES = {
     # does not have. So the mechanism is there and one of the three rows still
     # needs two lattices.
     #
-    # ⚠ ``roasting`` IS NOT CREDITED, and its refusal has two independent halves.
-    # DATA: all five rows are one mechanism, but only ZnS prices among the
-    # sulfides and NONE of the five oxides does. MECHANISM: roasting CONSUMES a
-    # gas, and the affinity form ``SolidStateArrays`` uses is measurably not a
-    # rate law for that -- ``p_O2 -> 0`` puts the pressure in the denominator of
-    # Q and drives the reverse to 2.6e15 formula units per second, so a gas
-    # reactant is REFUSED where the arrays are built. That second half is the
-    # useful one: it says roasting is waiting on a third ``PHASE_INDEX`` entry
-    # (a gas-consuming surface reaction IS mass action), not on this term.
     "calcination": "vessel_integrator.SolidStateArrays (a TERM)",
+    # ⚠⚠ ``roasting`` IS NOW CREDITED, AND BOTH HALVES OF M6's REFUSAL HAD TO GO.
+    # DATA: ``mineral_data`` carries all four oxides and all four sulfides, where
+    # M6 had only ZnS and no oxide at all. MECHANISM: roasting CONSUMES a gas, so
+    # the affinity form ``SolidStateArrays`` uses is measurably not a rate law for
+    # it -- ``p_O2 -> 0`` puts the pressure in the DENOMINATOR of Q and drives the
+    # reverse to 2.6e15 formula units per second, which is why a gas reactant is
+    # refused where those arrays are built. ``SurfaceArrays`` is the mass-action
+    # term it was waiting on.
+    #
+    # ⚠ AND IT IS NOT A THIRD ``PHASE_INDEX`` ENTRY, which is what M6 predicted it
+    # would be and what the brief asked for. Measured: labelling a solid-catalysed
+    # gas reaction "solid" moves it onto the pure-liquid standard state, because
+    # ``reaction_deltas`` shifts anything that is not "gas" -- dG by -99.7 kJ/mol
+    # and K at 500 K by 2.6e10. So a solid CATALYST is a factor in a gas
+    # reaction's rate law and roasting is a TERM, and ``PHASE_INDEX`` keeps its
+    # two entries for the second milestone running.
+    #
+    # ⚠⚠ AND CREDITING THE CLASS AS M6 LABELLED IT PRODUCED A FALSE CREDIT,
+    # WHICH IS WHY THE CLASS IS NOW SPLIT. ``mercury-from-cinnabar`` reads
+    # ``mercury-sulfide + oxygen -> mercury + sulfur-dioxide``, and this term
+    # makes the OXIDE -- HgO decomposes at roasting heat, which is the whole
+    # reason the row is written that way. On the unsplit label the route moved
+    # into the template-ready list on the strength of a mechanism that does not
+    # make its product, so the row is re-labelled ``roasting-to-metal`` (M1's
+    # standard, and M6 had already recorded the reading without acting on it).
+    #
+    # ⚠ OF THE FOUR ROWS LEFT, THREE RUN AND ``pyrite-roasting`` DOES NOT --
+    # pyrite has ``Hfs`` in WEBBOOK and ``S0s`` in nothing, so ``mineral_data``
+    # refuses it under the same-database rule. It still counts as template-ready,
+    # because that is what template-readiness MEANS (species-readiness is the
+    # other column). The honest summary is +1 class, +1 template-ready route, and
+    # ZERO new routes that run end to end: all three smelting routes are still
+    # blocked at ``carbothermic-reduction`` / ``gas-solid-reduction``.
+    "roasting": (
+        "vessel_integrator.SurfaceArrays (a TERM; mass action, first order in "
+        "the arriving gas and gated on the solid being present)"
+    ),
     # ⚠ AND TWO MORE CLASSES WERE SPLIT RATHER THAN REFUSED, on the
     # ``catalytic-hydrogenation`` precedent from M5 -- because like that class
     # and unlike ``fermentation``, every row here IS a clean mechanism.
