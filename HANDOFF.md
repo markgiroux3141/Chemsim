@@ -4587,6 +4587,102 @@ the measurements that justify them.
     AND fully sourced** (48 → 49, 4 → 5). Curating one element paid somewhere
     nobody was looking.
 
+89. ✔✔ **THE OLDEST LIVE FRAGILITY IS BOUNDED — AND THE FIX WAS SCHEDULED FOR
+    THE WRONG LAYER, WHICH ONE MEASUREMENT SAID.**
+
+    The brief was a `LAYER_REABSORB`-style honest diagonal on the GAS block. What
+    shipped is `src/chemsim/numerics/jacobian.py`: a bound on BDF's differencing
+    STEP, at all three `solve_ivp` sites. **No chemistry moved and the gas block
+    was not touched.**
+
+    ⚠⚠ **FOUR OF THE FIVE RECORDED TRIGGERS DO NOT REPRODUCE.** Every one was
+    re-run first. M6's sealed lime kiln at 0.05 mol with N2/O2 absent — the row
+    that read "RAISED: CO2 reached −2.572 mol" — now runs clean at
+    `p/K − 1 = −1.56e−04`, because S4 changed `SolidStateArrays.units`, not
+    because anything was fixed. `fragilities`' `kla=0` case has never been made
+    to fire at all. **A fragility that no longer fires is not one that was
+    closed, and the difference is only visible if you re-run it.**
+
+    ⚠⚠ **THE FIFTH FIRES, AND IT IS NOT IN THE GAS BLOCK.** `oil_of_vitriol` at
+    rtol 1e-8 still raises after 52.7 s. Instrumented: of 4322 `num_jac` calls,
+    exactly ONE column reaches `inf`, and it is **liquid layer 2's SO2 holding
+    8.21e-29 mol**. Every other column tops out at 1.49e+3. It is not absent and
+    not flat — it is FROZEN: `LAYER_REABSORB` drains an empty layer 2 at
+    `−1.0·drain2·nL2`, strictly negative, so `num_jac` takes `f_sign = −1` and
+    steps DOWNWARD into the RHS's own `np.maximum(y, 0.0)`.
+
+        h            -2.2e-24   -2.2e-19   -2.2e-14   -2.2e-09   -2.2e-04   -2.2e+06
+        max |diff|    8.84e-29   8.84e-29   8.84e-29   8.84e-29   8.84e-29   8.84e-29
+
+    Constant over **thirty decades of step size**, against a `scale` of 8.37e-14
+    from a different species' row. Twenty-eight consecutive calls at one unchanged
+    state climb a decade each; two hundred later the factor reads **2.220e+307**.
+    ⚠⚠ **The term the brief named as the precedent to copy is what points the
+    probe at the clamp**, and a diagonal on the gas block could not have reached
+    that column.
+
+    ## ⚠⚠ THE FIRST BOUND WAS WRONG AND THE EXAMPLE SET IS WHAT SAID SO
+
+    `h = factor · max(atol, |y_j|)`, so the obvious bound is "`factor = 1` moves
+    the variable by all of itself". Implemented, swept on four runs, all four
+    bit-identical — **and wrong**, because where `|y_j| ≤ atol` the fraction is of
+    ATOL: `factor = 149` on an absent species is a 1.5e-7 mol probe of a 0.1 mol
+    flask. Run across all sixteen examples, **8 of 16 moved**, six of them in a
+    real digit: `roasting` SO2 0.000201 → 0.000197 mol, `fractional_distillation`
+    tail 0.0702 → 0.0711 mol and +59% wall clock, `multistep_prep` closure
+    100.0127% → 100.0017%.
+
+    ⚠ **A FOUR-RUN SWEEP IS NOT THE EXAMPLE SET.** That is what
+    `validation/jacobian_bound.py` exists to catch, and panel 3 is the check that
+    would have rejected the 1.0 ceiling before it shipped.
+
+    ## THE BOUND THAT SURVIVED
+
+        |h_j| <= max_i |y_i|    i.e.   factor_j <= max_i |y_i| / max(atol, |y_j|)
+
+    *A difference quotient is a derivative of THIS system only while the probe
+    stays inside it.* Per column, per call, from the state, **no constant in it.**
+    On a single vessel it never binds — the busiest asks for 1.490e+09
+    (`extraction`) against a bound of order 1e11–1e12. On the failing column it
+    lands at 6.9e13, finite, which is all the crash needed: swept, **every finite
+    ceiling from 1e2 to 1e14 turns the raise into 0.0160000000**.
+
+    ⚠⚠ **IT DOES BIND ON A RIG.** `fractional_distillation` wants 3.252e+12 and is
+    clamped in 232 of its 1833 Jacobians, moving its three cuts in the SEVENTH
+    significant figure. Measured against a converged rtol 1e-8 run: at the tight
+    tolerance the heart and tail are **bit-identical** bounded and unbounded, so
+    the two converge to the same answer; at the default neither is systematically
+    nearer, and every difference is **≤ 1e-6 relative, three decades under the
+    1e-3 band `tolerance_audit.py` itself calls a quotable digit.** ⚠ And what the
+    rig wanted is worth looking at before mourning it: 3.25e+12 against
+    `atol = 1e-9` is a probe of **3250 units** on a species holding nothing. The
+    seventh-figure move is the difference between two fictions.
+
+    ⚠ The rig runs ~122 Jacobians per solve against the ~316 an overflow needs.
+    **It is one longer run away from the same crash.**
+
+    ## WHAT IT DOES NOT FIX, STATED
+
+    The burner still takes ~53 s at rtol 1e-8 against 0.8 s at the default. BDF is
+    genuinely struggling with a layer holding 1e-29 mol; the bound stops that
+    ending in a NaN and does not stop the struggle. **The 1.0 ceiling ran it in
+    2.6 s — a faster wrong number is not a better one.** Nor does it make a flat
+    column non-flat: an absent species still has an identically zero column, and
+    **zero is the correct derivative for it**. What changes is that `num_jac`
+    stops treating "I measured zero" as "I failed to measure".
+
+    ## S2's ONE COVERAGE GAP IS CLOSED
+
+    `KNOWN_REFUSAL` is empty; `oil_of_vitriol` is in `EXPENSIVE` and completes.
+    ⚠ S2's diagnosis was **right about the answer and wrong about the column** —
+    it read "a species absent from a sealed flask", and it is layer 2's SO2,
+    frozen rather than flat.
+
+    ⚠ `jac_sparsity` is **consumed** by `BoundedJacobian`, not passed alongside:
+    BDF ignores `jac_sparsity` the moment `jac` is callable, so a rig handing over
+    both would silently lose the column groups `useful_sparsity` computes — the
+    10x it exists to avoid paying. Pinned by a test.
+
 IMMEDIATE NEXT TASK: see **`MILESTONES.md`**, which is the plan of record as of
 2026-08-22 and supersedes the ordering below. It is derived from `data/catalog`
 (1,583 compounds, 173 routes) plus four measured capability probes, and it

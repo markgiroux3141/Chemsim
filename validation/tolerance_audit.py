@@ -116,9 +116,12 @@ NUMBER = re.compile(r"[-+]?(?:\d+\.\d*|\.\d+|\d+)(?:[eE][-+]?\d+)?")
 # table and cannot be tolerance-limited, so it is not here and that is not an
 # omission.
 #
-# ⚠ THE LAST TWO ARE EXPENSIVE AND ARE OPT-IN. ``plate_column`` runs a
+# ⚠ THE LAST THREE ARE EXPENSIVE AND ARE OPT-IN. ``plate_column`` runs a
 # 403 s column twice and ``fractional_distillation`` a long rig; sweeping both
-# means four such runs. ``--all`` includes them.
+# means four such runs. ``oil_of_vitriol`` joined them in S5, when the bound in
+# ``numerics/jacobian.py`` turned its refusal into a run -- one of its calls
+# still takes ~50 s at rtol 1e-8 against 0.8 s at the default. ``--all``
+# includes them.
 CHEAP = [
     "activity",
     "esterification",
@@ -137,10 +140,26 @@ CHEAP = [
     # every other row in the report is suspect.
     "mercury_retort",
 ]
-EXPENSIVE = ["plate_column", "fractional_distillation"]
+EXPENSIVE = ["plate_column", "fractional_distillation", "oil_of_vitriol"]
 
-# ⚠⚠ AN EXAMPLE THAT CANNOT BE SWEPT, WITH ITS DIAGNOSIS -- BECAUSE "IT MOVED" AND
-# "IT REFUSED" ARE DIFFERENT FINDINGS AND MUST NOT SHARE A ROW.
+# ⚠⚠ THIS DICT IS EMPTY NOW, AND THE MACHINERY BELOW IS KEPT FOR THE NEXT ONE.
+# "IT MOVED" AND "IT REFUSED" ARE DIFFERENT FINDINGS AND MUST NOT SHARE A ROW,
+# which is why a refusal has its own dict, its own verdict code (-1) and its own
+# summary line rather than a large "worst rel".
+#
+# ⚠ S5 CLOSED THE ONE ENTRY THIS EVER HELD. ``oil_of_vitriol`` used to RAISE at
+# rtol 1e-8 in ``burn(690.0, o2=0.10, s8=0.002)``; the cause was BDF's
+# perturbation factor overflowing to ``inf`` on a column it could never
+# difference, and the bound in ``numerics/jacobian.py`` stops that at the state's
+# own extent. The run now COMPLETES and gives 0.0160000000 mol of SO2 -- the same
+# number the diagnosis below already said was correct -- so the example has moved
+# to EXPENSIVE rather than being excluded. It is expensive because that one call
+# still takes ~50 s at rtol 1e-8 against 0.8 s at the default: BDF is genuinely
+# struggling with a liquid layer holding 1e-29 mol, and the bound stops the
+# struggle ending in a NaN without stopping the struggle.
+#
+# The diagnosis it carried, kept because it is what a future refusal should look
+# like:
 #
 # ``oil_of_vitriol`` RAISES at rtol 1e-8, in one specific call --
 # ``burn(690.0, o2=0.10, s8=0.002)``, the panel that demonstrates the dryout-band
@@ -164,19 +183,19 @@ EXPENSIVE = ["plate_column", "fractional_distillation"]
 # pre-existing engine fragility with a SECOND trigger: not only "a species absent
 # from a sealed flask" but "a tight tolerance on a flask holding a trace".
 #
-# It is excluded by default because sweeping it costs 1049 s to reach a refusal
-# already understood -- and it is named here, and printed in the summary, rather
+# It was excluded by default because sweeping it cost 1049 s to reach a refusal
+# already understood -- and it was named here, and printed in the summary, rather
 # than dropped, because a coverage limit in this project is never silent.
-# ``--all`` runs it anyway.
-KNOWN_REFUSAL = {
-    "oil_of_vitriol": (
-        "RAISES at rtol 1e-8 in burn(690 K, s8=0.002, o2=0.10) -- a NaN "
-        "Jacobian from the documented zero-column trap. Its numbers are "
-        "CONFIRMED correct (0.016000 mol SO2 at the default AND at rtol 1e-8 "
-        "with a 1e-9 mol trace of SO2 charged); rtol 1e-7 is also clean. What "
-        "is exposed is the engine fragility, not the example."
-    ),
-}
+#
+# ⚠ THE DIAGNOSIS WAS RIGHT ABOUT THE ANSWER AND WRONG ABOUT THE COLUMN, which is
+# worth keeping too. It read "the documented zero-column trap -- a species absent
+# from a sealed flask". Measured in S5, the column that actually overflows is
+# LIQUID LAYER 2's SO2 holding 8.21e-29 mol: not absent, not flat, and FROZEN by
+# the RHS's own ``np.maximum(y, 0.0)`` because ``LAYER_REABSORB`` makes its ``f``
+# negative and ``num_jac`` therefore steps downward. Same overflow, a different
+# route in -- and the fix the trap was scheduled for (a diagonal on the GAS
+# block) could not have reached it.
+KNOWN_REFUSAL: dict[str, str] = {}
 
 
 def set_tolerance(rtol: float | None, atol: float | None) -> None:

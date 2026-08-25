@@ -69,6 +69,7 @@ from chemsim.numerics.activity import (
     born_ln_gamma,
     oster_permittivity,
 )
+from chemsim.numerics.jacobian import BoundedJacobian
 from chemsim.numerics.lle import (
     TRIVIAL_DISTANCE,
     StabilityResult,
@@ -2432,9 +2433,8 @@ class VesselIntegrator:
         identically flat, and a flat column is as bad as an enormous one:
         ``num_jac`` finds every difference in it below its "too small" threshold
         and multiplies that column's perturbation factor by ten on EVERY Jacobian
-        -- there is a lower clamp in scipy and no upper one -- until it overflows to
-        inf and BDF gets a NaN Jacobian. Same pathology as a vessel at rest and as
-        an empty second liquid layer, by a third route.
+        until it overflows to inf and BDF gets a NaN Jacobian. Same pathology as a
+        vessel at rest and as an empty second liquid layer, by a third route.
 
         But it is PER-SOLVE: each ``run`` builds a fresh BDF and the factor resets,
         so it takes a few hundred Jacobians in ONE call to overflow. A separatory
@@ -2443,6 +2443,17 @@ class VesselIntegrator:
         under a long single run, and here is the fix", not a refusal -- and the
         fix, if a run does fail, is a nitrogen blanket rather than an absent
         atmosphere, which is also the more honest experiment.
+
+        ⚠ THE OVERFLOW ITSELF IS NOW BOUNDED -- ``numerics/jacobian.py`` supplies
+        the ceiling scipy does not have, so the factor stops at the state's own
+        extent instead of at ``inf``. This entry is KEPT rather than deleted,
+        deliberately and against the DRYOUT precedent below, because the
+        CONFIGURATION is still the one that produces flat columns, and the bound
+        was measured on the trigger that FIRED (liquid layer 2, at a tight
+        tolerance) rather than on this one, which has never been made to fire at
+        all. Reporting a configuration whose failure mode is bounded is a smaller
+        error than dropping the report on the strength of a case nobody could
+        reproduce.
 
         ⚠ AND EVERY ENTRY HERE IS ONCE AGAIN GENUINELY LATENT, which was not true
         for as long as the DRYOUT BAND was on this list. That one was a measured
@@ -2574,6 +2585,13 @@ class VesselIntegrator:
                 t=np.array([t0, t1]), y=np.column_stack([y0, y0])
             )
 
+        # ⚠ THE JACOBIAN IS DIFFERENCED WITH A CEILING ON THE PERTURBATION
+        # FACTOR, which BDF's own path does not have. The short-circuit above is
+        # one instance of that missing bound; ``BoundedJacobian`` is the bound
+        # itself, and it is what lets the sulfur burner be run at rtol 1e-8 at
+        # all. It is bit-for-bit the default path until the clamp binds.
+        if "jac" not in kw:
+            kw["jac"] = BoundedJacobian(rhs, atol, kw.pop("jac_sparsity", None))
         return solve_ivp(
             rhs, t_span, y0, method="BDF", rtol=rtol, atol=atol, **kw,
         )

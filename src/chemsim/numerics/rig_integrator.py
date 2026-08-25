@@ -90,6 +90,7 @@ from scipy.integrate import solve_ivp
 
 from chemsim.constants import R_L_BAR
 from chemsim.numerics import vessel_integrator as vessel_core
+from chemsim.numerics.jacobian import BoundedJacobian
 from chemsim.numerics.vessel_integrator import (
     CP_MIN,
     V_GAS_MIN,
@@ -479,6 +480,13 @@ class RigIntegrator:
             pattern = self.useful_sparsity()
             if pattern is not None:
                 kw["jac_sparsity"] = pattern
+        # ⚠ THE SPARSITY PATTERN HAS TO GO THROUGH ``BoundedJacobian`` RATHER THAN
+        # ALONGSIDE IT. BDF ignores ``jac_sparsity`` the moment ``jac`` is
+        # callable, so passing both would silently drop the column groups this
+        # rig computed -- which is the whole of what the pattern buys, and the
+        # 10x it exists to avoid paying. See ``useful_sparsity``.
+        if "jac" not in kw:
+            kw["jac"] = BoundedJacobian(rhs, atol, kw.pop("jac_sparsity", None))
         return solve_ivp(rhs, t_span, y0, method="BDF", rtol=rtol, atol=atol, **kw)
 
     def step_until(self, y, dt: float, roots: list, **kw):

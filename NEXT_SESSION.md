@@ -361,6 +361,15 @@ fails on unrelated changes and says nothing when it passes.**
 | ⚠ `examples/wait_until.py`: 340 K / boils / steadies | **t = 576.31 / 1353.13 / 1353.13 s** -- and this row was ALREADY STALE, not moved 2026-08-23. Proved by monkeypatching the old ramp+floor back under the same script: it gives 576.31 / 1353.14 / 1353.14, i.e. this session moved it by 0.00 s and 0.01 s (the root-solve tolerance) |
 | save version | **5** (was 4; +Scenario.edges, SWAP_RECEIVER, SET_EDGE) |
 | a distillation replayed from its script | **0.000e+00** mol disagreement across three receivers |
+| **S5 -- the Jacobian step bound** | `factor_j <= max_i abs(y_i) / max(atol, abs(y_j))`. No constant in it |
+| ... a flat column, 400 Jacobians | **inf** unbounded (it needs ~316 in ONE solve); **max abs(y)/atol** bounded, and its J column reads exactly 0 |
+| ... the burner at rtol 1e-8 | **SO2 0.0160000000 in ~53 s** -- it RAISED after 52.7 s before. Slow and correct; the bound stops the NaN, not the struggle |
+| ... the burner at the default | **0.0160000005** (O2-limited) and **0.1600000374** (O2-rich), bit-identical to unbounded |
+| ⚠ ... what a single vessel WANTS | at most **1.490e+09** (`extraction`) against a bound of order 1e11-1e12: it never binds on a vessel |
+| ⚠⚠ ... what a RIG wants | `fractional_distillation` **3.252e+12**, clamped in **232 of 1833** Jacobians -- so it DOES bind, and the row below is how that was judged |
+| ⚠ ... and how the rig was judged | against a CONVERGED rtol 1e-8 run, where heart and tail are **bit-identical** bounded and unbounded. At the default neither is nearer; every difference **<= 1e-6 relative**, three decades under the audit's own 1e-3 quotable-digit band |
+| ⚠ three cuts, VENTED, after the bound | **0.43671561 / 0.55620765 / 0.07016229 mol** (was 0.43671550 / 0.55620760 / 0.07016210). To the four figures the row above quotes, UNMOVED |
+| ⚠ ... four of the five recorded triggers | **DO NOT REPRODUCE.** M6's kiln at 0.05 mol reads `p/K - 1 = -1.56e-04` where it raised; S4 changed `SolidStateArrays.units`, nothing was fixed |
 | ⚠ three cuts by head temperature, VENTED | **0.4367 / 0.5562 / 0.0702 mol**, heart 0.459 mole fraction. Was 0.060/0.287/0.580 and heart 0.523 -- taken at **3.09 bar** on a SEALED rig, see below. Bands moved 300-366/366-374/374-500 -> 300-342/342-356/356-500 K |
 | ⚠⚠ **a still with no open end** | **SEALED.** `fractional_distillation` t=100 s: **3.09 bar, pot 370.75 K** (was reported as a distillation); pot **548.15 K** once dry |
 | ... the column, sealed, t=300 s | **2 plates 3.343 bar / 385.86 K; 8 plates 3.770 bar / 389.61 K** -- taller is HOTTER, which is why adding plates made the first attempt worse |

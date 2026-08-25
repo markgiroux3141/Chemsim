@@ -24,6 +24,7 @@ from scipy.integrate import solve_ivp
 
 from chemsim.constants import R
 from chemsim.network import KineticArrays
+from chemsim.numerics.jacobian import BoundedJacobian
 
 Source = Callable[[float, np.ndarray], np.ndarray]
 
@@ -68,14 +69,20 @@ class Integrator:
         dense_output: bool = False,
     ):
         """Integrate over t_span with a stiff BDF solver. Returns the scipy solution."""
+        rhs = self.make_rhs(T, source)
         return solve_ivp(
-            self.make_rhs(T, source),
+            rhs,
             t_span,
             np.asarray(C0, dtype=float),
             method="BDF",
             rtol=rtol,
             atol=atol,
             dense_output=dense_output,
+            # The same ceiling every other solver in this project runs under.
+            # See ``numerics/jacobian.py``: BDF's own differencing has a floor on
+            # the perturbation factor and no roof, so a column it cannot
+            # difference is probed harder until the factor overflows.
+            jac=BoundedJacobian(rhs, atol),
         )
 
     def step(
