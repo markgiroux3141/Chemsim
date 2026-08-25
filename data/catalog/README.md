@@ -244,6 +244,34 @@ it is the `calcination-dehydration` row forwards and the
 block. `lime-slaking` is the dehydration row's own reverse. **Two declarations,
 three credited classes**, and `lime-cycle` becomes the 26th template-ready route.
 
+### ⚠ ONE CLASS M6 READ AND DID NOT SPLIT, RECORDED SO THE READING IS NOT LOST
+
+`thermal-decomposition` has four rows and they are **four mechanisms**, so it is
+an outcome label by M1's rule. It is left alone only because splitting it is a
+separate, self-contained job and M6 ran out of session, not because the reading is
+in doubt:
+
+| route | step | what it is | covered? |
+|---|---|---|---|
+| `vitriol-distillation` | `FeSO4 -> FeO + SO3` | a solid sulfate decomposing to a solid oxide plus gas | ✔ the mechanism is built (as hematite -- see below) |
+| `solvay-process` 3 | `NaHCO3 -> Na2CO3 + CO2 + H2O` | a solid bicarbonate, two gases | ✔ built |
+| `melamine-route` | `urea -> cyanic acid + ammonia` | a MOLECULAR decomposition; urea melts first | ✘ a graph rewrite, not a lattice |
+| `marsh-test` | `arsine -> arsenic + hydrogen` | a gas-phase decomposition depositing a METAL | ✘ |
+
+So the split is `sulfate-thermal-decomposition` + `bicarbonate-thermal-decomposition`
+(both covered) against two named gaps. **That is +2 classes covered for four rows
+re-labelled**, and it is the cheapest coverage left in the corpus.
+
+⚠ **AND THE FIRST ROW NAMES A PRODUCT THAT IS NOT THE REACTION.**
+`iron-ii-OXIDE` balances and is not what happens: FeO does not survive red heat,
+and anhydrous green vitriol gives HEMATITE with half its sulfur reduced to SO2.
+`properties/solid_state.py` declares the chemistry rather than the row, and
+`tools/build_mineral_data.py` records that FeO was tried and refused -- on the
+half nobody would guess, its crystal heat capacity, which CRC does not tabulate
+for it at all. Recorded here rather than corrected in the corpus, on the same rule
+the `diels-alder-route` imbalance above follows: inventing chemistry inside an
+audit corpus is not allowed, and neither is quietly reproducing its mistakes.
+
 Three further findings the report makes explicit:
 
 * **10 refusals need only a boiling point.** Their formation half already

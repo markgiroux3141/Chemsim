@@ -1694,21 +1694,20 @@ class Vessel:
                 "species()), not its ions -- the two are different species and "
                 "only the lattice can react as a solid."
             )
+        thresholds = arr.threshold_temperature(self.P_ambient)
         for j, name in enumerate(arr.names):
             K = float(arr.equilibrium_pressure(self.T)[j])
-            lo, hi = 200.0, 3000.0
-            for _ in range(80):                       # bisect K(T) = P_ambient
-                mid = 0.5 * (lo + hi)
-                if float(arr.equilibrium_pressure(mid)[j]) < self.P_ambient:
-                    lo = mid
-                else:
-                    hi = mid
+            n = int(arr.total_nu_gas[j])
+            unit = "bar" if n == 1 else f"bar^{n}"
             lines.append(
                 f"{name}: dH {arr.dH[j] / 1000:+.1f} kJ/mol, "
                 f"dS {arr.dS[j]:+.1f} J/(mol K); "
-                f"K({self.T:.0f} K) = {K:.4g} bar, and it needs "
-                f"{0.5 * (lo + hi):.0f} K to beat the room's "
+                f"K({self.T:.0f} K) = {K:.4g} {unit}, and it needs "
+                f"{thresholds[j]:.0f} K to beat the room's "
                 f"{self.P_ambient:.3f} bar"
+                + ("" if n == 1 else
+                   f" (shared between {n} evolved gases -- see "
+                   f"SolidStateArrays.threshold_temperature)")
             )
         if not self.solid_state:
             lines.append(

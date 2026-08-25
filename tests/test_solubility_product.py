@@ -192,12 +192,39 @@ def test_a_metathesis_target_is_sparingly_soluble_by_many_decades():
 def test_quicklime_refuses_on_the_OXIDE_ION_and_that_is_chemistry():
     """CaO does not dissolve to Ca2+ + O2-. It hydrates to Ca(OH)2 and THAT
     dissolves, which is why no aqueous compilation carries an oxide ion and why
-    refusing is the right answer rather than a missing row."""
+    refusing is the right answer rather than a missing row.
+
+    ⚠ M6 TURNED THIS FROM ONE MINERAL INTO A CLASS, WHICH IS A STRONGER CLAIM.
+    Curating the roasting oxides put eight oxide lattices in the table, and
+    EVERY refusal in the whole table is now the same ion for the same reason:
+    hematite, corundum, periclase, zincite, litharge, tenorite, montroydite and
+    quicklime. Nothing refuses for any other reason at all.
+
+    ⚠ And it is exactly why M6 could not hold a reacting crystal ion-by-ion --
+    the representation that works for precipitation has no form for an oxide.
+    See ``properties/solid_state.py``.
+    """
     verdicts = lattice_verdicts()
-    assert verdicts["quicklime"], "quicklime must not be priced"
-    assert all(not v for k, v in verdicts.items() if k != "quicklime"), verdicts
+    refused = {k for k, v in verdicts.items() if v}
+    assert refused == {
+        "quicklime", "hematite", "corundum", "periclase", "zincite",
+        "litharge", "tenorite", "montroydite",
+    }, refused
+    # one ion, one reason, eight lattices
+    assert all("[O-2]" in v[0] for v in verdicts.values() if v)
+    assert all(len(v) == 1 for v in verdicts.values() if v)
     with pytest.raises(UnpricedLattice, match=r"\[O-2\]"):
         solubility_product("quicklime")
+
+
+def test_the_new_sulfides_widened_what_can_PRECIPITATE():
+    """M6 curated four sulfides for roasting, and a sulfide lattice that prices
+    is also a lattice that can drop out of solution. Not what they were added
+    for, which is the point of keeping one table."""
+    verdicts = lattice_verdicts()
+    for name in ("galena", "covellite", "chalcocite", "cinnabar"):
+        assert not verdicts[name], (name, verdicts[name])
+        assert solubility_product(name).ln_Ksp < 0.0    # all sparingly soluble
 
 
 def test_the_refusal_still_names_the_ion_and_reports_the_lattice_as_sound():

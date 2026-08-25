@@ -164,6 +164,61 @@ CANDIDATES: list[tuple[str, str, str, dict, str]] = [
      {"Zn": 1, "S": 1}, "ZnS -- the zinc ore, and a sulfide precipitate"),
     ("brucite", "1309-42-8", "[Mg+2].[OH-].[OH-]",
      {"Mg": 1, "O": 2, "H": 2}, "Mg(OH)2 -- milk of magnesia"),
+    # --- added for M6: what a SOLID-STATE REACTION consumes and produces ----
+    # M6 built `CaCO3(s) -> CaO(s) + CO2(g)` against the two lime minerals that
+    # already priced, deliberately, so that a failure would be the engine's. The
+    # twelve below are what that term needs to reach the rest of its chemistry,
+    # and every one of them prices on the SAME rule as the entries above: Hfs and
+    # S0s from one shared database, plus the crystal Cps and Vm the solid block
+    # asks of every species.
+    #
+    # ⚠ ONE CANDIDATE WAS TRIED AND REFUSED, AND IT IS THE INTERESTING ONE.
+    # `data/catalog`'s own `vitriol-distillation` step 1 reads `iron-ii-sulfate ->
+    # iron-ii-OXIDE + sulfur-trioxide`, so the product it names is FeO. FeO shares
+    # WEBBOOK between its Hfs and S0s and would price on the formation half -- and
+    # it has **no Cps in the CRC table at all**, so it is refused on the
+    # bookkeeping half instead. That refusal is convenient rather than annoying:
+    # `FeSO4 -> FeO + SO3` is a textbook balance and not the reaction. Anhydrous
+    # green vitriol at red heat gives HEMATITE, with half its sulfur reduced --
+    # `2 FeSO4 -> Fe2O3 + SO2 + SO3` -- because FeO is not what survives those
+    # conditions. So hematite is what is curated here, and the catalog row is
+    # recorded as a simplification rather than being reproduced.
+    ("hematite", "1309-37-1", "[Fe+3].[Fe+3].[O-2].[O-2].[O-2]",
+     {"Fe": 2, "O": 3},
+     "what green vitriol really leaves behind -- chain 2's SEED residue"),
+    ("nahcolite", "144-55-8", "[Na+].OC(=O)[O-]",
+     {"Na": 1, "H": 1, "C": 1, "O": 3},
+     "baking soda -- calcines to soda ash, `solvay-process` step 3"),
+    # The five ROASTING oxides and the four sulfides that are not sphalerite.
+    # ⚠ These close the DATA half of `roasting`'s refusal and NOT the mechanism
+    # half: roasting CONSUMES a gas, and the affinity form in
+    # `properties/solid_state.py` is measurably not a rate law for that. They are
+    # here so that the class is waiting on one clearly-named engine feature (a
+    # third `PHASE_INDEX` entry) rather than on a mixture of engine and curation.
+    ("zincite", "1314-13-2", "[Zn+2].[O-2]",
+     {"Zn": 1, "O": 1}, "ZnO -- what roasting sphalerite gives"),
+    ("litharge", "1317-36-8", "[Pb+2].[O-2]",
+     {"Pb": 1, "O": 1}, "PbO -- what roasting galena gives"),
+    ("tenorite", "1317-38-0", "[Cu+2].[O-2]",
+     {"Cu": 1, "O": 1}, "CuO -- what roasting a copper sulfide gives"),
+    ("montroydite", "21908-53-2", "[Hg+2].[O-2]",
+     {"Hg": 1, "O": 1},
+     "HgO -- and it DECOMPOSES at roasting heat, which is why "
+     "`mercury-from-cinnabar` gives the metal instead"),
+    ("galena", "1314-87-0", "[Pb+2].[S-2]",
+     {"Pb": 1, "S": 1}, "PbS -- the lead ore"),
+    ("covellite", "1317-40-4", "[Cu+2].[S-2]",
+     {"Cu": 1, "S": 1}, "CuS -- a copper ore"),
+    ("chalcocite", "22205-45-4", "[Cu+].[Cu+].[S-2]",
+     {"Cu": 2, "S": 1}, "Cu2S -- the other copper ore, and matte"),
+    ("cinnabar", "1344-48-5", "[Hg+2].[S-2]",
+     {"Hg": 1, "S": 1}, "HgS -- vermilion, and the mercury ore"),
+    # Two more oxides, each of which makes a REFUSAL land in the right place.
+    ("corundum", "1344-28-1", "[Al+3].[Al+3].[O-2].[O-2].[O-2]",
+     {"Al": 2, "O": 3},
+     "Al2O3 -- so that `bayer-process` step 3 is refused on GIBBSITE alone"),
+    ("periclase", "1309-48-4", "[Mg+2].[O-2]",
+     {"Mg": 1, "O": 1}, "MgO -- brucite's dehydration partner"),
 ]
 
 # Measured aqueous solubility at 298 K, mol/L, for the FUSION-LAW BOUND. Hand

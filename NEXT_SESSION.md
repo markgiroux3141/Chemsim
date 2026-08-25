@@ -403,15 +403,24 @@ fails on unrelated changes and says nothing when it passes.**
 | ... `K(T)` = P_ambient, i.e. the kiln | **1119 K** (literature ~1170) and **756 K** (~785); `dCp = 0` costs 30-50 K |
 | ⚠⚠ **mass action on the solid amounts** | settled at `p/K` = **3.0863 vs n_A/n_B 3.0863** (1100 K) and **1.2139 vs 1.2139** (1200 K). BUILT, measured, REPLACED |
 | ... sealed 1 L, 0.1 mol calcite | conversion **0.12 / 1.23 / 7.95 / 37.3%** at 900 / 1000 / 1100 / 1200 K; forward-only reads 100% at all four |
-| ... swept, 1 bar of air, 20 ks | **1.29 / 6.53 / 14.29 / 99.75 / 100.00%** at 1000 / 1073 / 1100 / 1150 / 1200 K |
+| ⚠ ... swept, 1 bar of air, 20 ks, CONVERGED | **1.30 / 6.54 / 13.97 / 43.53 / 99.75 / 100.00%** at 1000 / 1073 / 1100 / **1119** / 1150 / 1200 K, and p(CO2) lands on **K(T) exactly** below the threshold |
+| ⚠⚠ ... the same run at the DEFAULT tolerance | **39.04%** at 1100 K, p(CO2) = 0. rtol 1e-6/atol 1e-9 is NOT converged for a vented kiln -- 2.6x in the answer, and the tight run is FASTER (1.4-3.3 s vs 5-13 s) |
+| ... what an open flask does NOT do | below the threshold its CO2 sits at K(T) and is not swept: a vent only flows when the TOTAL beats ambient. Sweeping needs `Vessel.ingress` |
 | ... the equilibrium is amount-INDEPENDENT | 0.05 / 0.2 / 0.8 mol charged -> `n_A/n_B` **5.30 / 24.33 / 102.62**, p(CO2) **0.727497 / 0.727507 / 0.727507 bar** |
-| ... `DECOMPOSITION_A` is a CLOCK | 1e4 / 1e5 / 1e6 1/s -> sealed p(CO2) **3.723133 bar** at all three (7 figures) |
+| ... `RECOMBINATION_A` is a CLOCK | 0.1x / 1x / 10x -> sealed p(CO2) **3.7231 bar** at all three (6 figures) |
+| ⚠⚠ **the constant is the REVERSE one** | declared FORWARD, green vitriol runs at **1.7e-13 1/s** and converts **0.00% in 20 ks at every temperature its thermodynamics allow** -- 13 decades. `A_fwd = A0 exp(dS/R)` |
+| ... and calcination is unmoved by the correction | `A_fwd` comes back as **100000.34** against the 1e5 it was declared at -- 3 ppm |
+| ... the four rows' time constants | **631 s** at 1200 K, **146 s** at 900, **25 s** at 1000, **44 s** at 450 -- three of the four calibrated against nothing |
+| M6 -- `mineral_data` after the second push | **37 minerals**; FeO REFUSED on its crystal Cps, which CRC does not tabulate at all |
+| ... chain 2's seed, 1000 K swept | `2 FeSO4 -> Fe2O3 + SO2 + SO3` complete in **~300 s**, ending at p(SO2) = p(SO3) = **0.5066 bar** (they share ambient exactly) |
+| ... solvay step 3, 450 K swept | `2 NaHCO3 -> Na2CO3 + CO2 + H2O` complete in under **2000 s**; derived threshold **392 K** against the catalog's own `calciner, 450 K` |
+| ... a two-gas threshold is NOT `K = P` | green vitriol **874 K** against the **918 K** where K reaches 1 bar^2 |
 | ... the sign-switch kink, parked at equilibrium | 2,000,000 s in **0.2 s** wall, `p/K - 1` = **+3.8e-10**, at `units_f/units_r` up to **129.5** |
 | ... a kiln's fuel bill | **-14.374 W** solid-state against **+14.374 W** wall at 1200 K, 0.1 mol |
 | ... carbonation, EMERGENT (nothing declares it) | 0.02 mol slaked lime + CO2, 700 K, 50 ks -> **4.391e-3 mol limestone**; calcium exact to 1e-9 |
 | ... `mineral_data` | **25 minerals, 23 with `Cp_solid` and `Vm_solid`**; calcite 83.5 J/(mol K) and 0.036932 L/mol |
 | ⚠ a zero Jacobian column in a sealed flask | N2/O2 in the network but absent: 0.05 mol **RAISES** (CO2 to -2.572 mol); 0.1 / 0.4 / 1.0 mol fine. Pre-existing, refuses loudly |
-| `tests/test_solid_state.py` | **23 tests in 28 s** |
+| `tests/test_solid_state.py` | **31 tests in 23 s** |
 | **M6 -- routes template-ready** | **26 / 173** (was 25); `lime-cycle` is COMPLETE end to end from limestone |
 | ... reaction classes covered | **32 / 214** (was 29 / 212); `calcination`, `lime-slaking`, `solid-carbonation` |
 | ... templates in the project | **34, UNCHANGED** -- M6 covered three classes with a TERM and no new template |

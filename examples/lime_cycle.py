@@ -45,6 +45,11 @@ QUICKLIME = MINERALS["quicklime"].lattice      # burnt lime
 PORTLANDITE = MINERALS["slaked lime"].lattice  # slaked lime, i.e. mortar
 CO2 = "O=C=O"
 WATER = "O"
+GREEN_VITRIOL = MINERALS["green vitriol"].lattice
+HEMATITE = MINERALS["hematite"].lattice
+NAHCOLITE = MINERALS["nahcolite"].lattice
+SODA_ASH = MINERALS["soda ash"].lattice
+SO2, SO3 = "O=S=O", "O=S(=O)=O"
 
 # ⚠ THE LATTICE IS THE SPECIES YOU CHARGE, NOT ITS IONS, and that is the one
 # thing to know before using this. Every other solid in this project sits in the
@@ -64,6 +69,24 @@ LATTICES = (CALCITE, QUICKLIME, PORTLANDITE)
 # sealed tube as sealed avoids it entirely.
 SEALED = [*LATTICES, CO2, WATER]
 OPEN = [*SEALED, "N#N", "O=O"]
+
+
+# !! THE DEFAULT SOLVER TOLERANCE IS NOT CONVERGED FOR A VENTED KILN, and the
+# error is a factor of 2.6 in the answer. Measured on the 1100 K swept kiln,
+# where the converged answer is a flask sitting at exactly p(CO2) = K(T):
+#
+#     rtol / atol                converted   p(CO2) / bar
+#     1e-6 / 1e-9  (the default)   39.04%       0.0000    <- lets CO2 escape
+#     1e-8 / 1e-11                 13.97%       0.7275    = K(1100 K) exactly
+#     1e-10 / 1e-13                13.97%       0.7275
+#
+# It CONVERGES, which is what says the loose reading is an artefact rather than a
+# different physical answer, and the tight runs are also FASTER (1.4-3.3 s
+# against 5-13 s) because the loose solver was thrashing. The cause is the vent:
+# k_vent is 1e3 mol/(bar s), so the gas balance is far stiffer than the chemistry
+# feeding it. Not this milestone's term -- the same 36% appears with the
+# solid-state term as the only reaction in the network.
+CONVERGED = dict(rtol=1.0e-8, atol=1.0e-11)
 
 
 def kiln(net, T, *, sealed, charge, volume=1.0):
@@ -108,18 +131,28 @@ def main() -> None:
     print("=" * 74)
     print(f"   {'T / K':>7} {'K(T) / bar':>11} {'vs room':>9} "
           f"{'converted':>10}   what a kiln operator sees")
-    for T in (1000.0, 1073.0, 1100.0, 1150.0, 1200.0):
+    for T in (1000.0, 1073.0, 1100.0, 1119.0, 1150.0, 1200.0):
         v = kiln(open_net, T, sealed=False, charge={CALCITE: 0.1})
         K = float(v.solid_state_arrays.equilibrium_pressure(T)[0])
-        v.run(20_000.0)
+        v.run(20_000.0, **CONVERGED)
         conv = (0.1 - held(v, CALCITE)) / 0.1
-        verdict = "nothing happens" if conv < 0.5 else "BURNS to quicklime"
+        verdict = ("nothing happens" if conv < 0.25
+                   else "AT THE THRESHOLD" if conv < 0.9
+                   else "BURNS to quicklime")
         print(f"   {T:7.0f} {K:11.4f} {'below' if K < v.P_ambient else 'ABOVE':>9} "
               f"{conv * 100:9.2f}%   {verdict}")
     print()
-    print("   The threshold sits between 1100 and 1150 K and nothing declares")
-    print("   it. It is exactly where K(T) crosses 1.013 bar. A forward-only")
-    print("   reaction would have calcined every row in this table.")
+    print("   The threshold sits at 1119 K and nothing declares it: it is")
+    print("   exactly where K(T) crosses 1.013 bar. A forward-only reaction")
+    print("   would have calcined every row in this table.")
+    print()
+    print("   !! AND NOTE WHAT AN OPEN FLASK DOES NOT DO. Below the threshold")
+    print("   its CO2 sits at exactly K(T) -- it is not swept anywhere, because")
+    print("   a vent only pushes gas out when the TOTAL exceeds ambient and the")
+    print("   air makes up the rest. \"Sweep the kiln\" needs a carrier FLOW")
+    print("   (Vessel.ingress), not an open door. Above the threshold CO2 alone")
+    print("   would exceed ambient, so it pushes the air out and runs to")
+    print("   completion. That is the whole gate, in one comparison.")
 
     print()
     print("=" * 74)
@@ -130,7 +163,7 @@ def main() -> None:
           f"{'K(T) / bar':>11}   {'p/K':>7}")
     for T in (900.0, 1000.0, 1100.0, 1200.0):
         v = kiln(sealed_net, T, sealed=True, charge={CALCITE: 0.1})
-        v.run(60_000.0)
+        v.run(60_000.0, **CONVERGED)
         K = float(v.solid_state_arrays.equilibrium_pressure(T)[0])
         p = v.partial_pressures()[CO2]
         print(f"   {T:7.0f} {(0.1 - held(v, CALCITE)) / 0.1 * 100:9.2f}% "
@@ -143,7 +176,7 @@ def main() -> None:
     print("   The same charge test, which is what caught the first attempt:")
     for charge in (0.05, 0.2, 0.8):
         v = kiln(sealed_net, 1100.0, sealed=True, charge={CALCITE: charge})
-        v.run(60_000.0)
+        v.run(60_000.0, **CONVERGED)
         ratio = held(v, CALCITE) / max(held(v, QUICKLIME), 1e-30)
         print(f"      charged {charge:4.2f} mol -> n(calcite)/n(quicklime) = "
               f"{ratio:6.2f}, p(CO2) = {v.partial_pressures()[CO2]:.6f} bar")
@@ -158,9 +191,9 @@ def main() -> None:
                k_vent=0.0, atmosphere={})
     v.charge({QUICKLIME: 0.05}, phase="solid")
     v.charge({WATER: 0.05}, phase="gas")
-    for t in (0.0, 10.0, 100.0, 1000.0):
+    for t in (0.0, 100.0, 1000.0, 20_000.0):
         if t > v.t:
-            v.run(t - v.t)
+            v.run(t - v.t, **CONVERGED)
         print(f"   t = {v.t:6.0f} s   quicklime {held(v, QUICKLIME):.6f}   "
               f"slaked lime {held(v, PORTLANDITE):.6f}   "
               f"p(H2O) {v.partial_pressures()[WATER]:.5f} bar")
@@ -180,7 +213,7 @@ def main() -> None:
     v.charge({CO2: 0.02}, phase="gas")
     for t in (0.0, 100.0, 1000.0, 50_000.0):
         if t > v.t:
-            v.run(t - v.t)
+            v.run(t - v.t, **CONVERGED)
         print(f"   t = {v.t:7.0f} s   slaked {held(v, PORTLANDITE):.6f}   "
               f"quick {held(v, QUICKLIME):.6f}   "
               f"LIMESTONE {held(v, CALCITE):.6f}   "
@@ -195,11 +228,56 @@ def main() -> None:
 
     print()
     print("=" * 74)
+    print("PANEL 5b -- TWO MORE ROWS, AND BOTH EVOLVE TWO GASES")
+    print("=" * 74)
+    vit_net = build_network([GREEN_VITRIOL, HEMATITE, SO2, SO3], [],
+                            thermo=thermo)
+    soda_net = build_network([NAHCOLITE, SODA_ASH, CO2, WATER], [],
+                             thermo=thermo)
+    print("   CHAIN 2's SEED: 2 FeSO4(s) -> Fe2O3(s) + SO2(g) + SO3(g)")
+    print("   -- where oil of vitriol came from before the lead chamber, and the")
+    print("   row this project recorded for four sessions as blocked on the")
+    print("   ENGINE. It was blocked on ONE MINERAL.")
+    v = Vessel(vit_net, volume=1.0, T=1000.0, T_env=1000.0, UA=1.0e4,
+               k_vent=1.0e3, atmosphere={})
+    v.charge({GREEN_VITRIOL: 0.1}, phase="solid")
+    for t in (0.0, 30.0, 300.0, 2000.0):
+        if t > v.t:
+            v.run(t - v.t, **CONVERGED)
+        pp = v.partial_pressures()
+        print(f"     t = {v.t:6.0f} s  green vitriol {held(v, GREEN_VITRIOL):.6f}"
+              f"  hematite {held(v, HEMATITE):.6f}"
+              f"  p(SO2) {pp[SO2]:.4f}  p(SO3) {pp[SO3]:.4f} bar")
+    print("   !! The catalog's own row reads `iron-ii-sulfate -> iron-ii-OXIDE +")
+    print("   sulfur-trioxide`, which balances and is not the reaction: FeO does")
+    print("   not survive red heat. And FeO is refused by the curation rule")
+    print("   anyway, on the half nobody would guess -- CRC tabulates no crystal")
+    print("   heat capacity for it at all.")
+    print()
+    print("   SOLVAY STEP 3: 2 NaHCO3(s) -> Na2CO3(s) + CO2(g) + H2O(g)")
+    v = Vessel(soda_net, volume=1.0, T=450.0, T_env=450.0, UA=1.0e4,
+               k_vent=1.0e3, atmosphere={})
+    v.charge({NAHCOLITE: 0.1}, phase="solid")
+    v.run(2000.0, **CONVERGED)
+    print(f"     450 K for 2000 s: nahcolite {held(v, NAHCOLITE):.6f} -> "
+          f"soda ash {held(v, SODA_ASH):.6f}")
+    print("   The catalog's own condition for that step is `calciner, 450 K`,")
+    print("   and this table's derived threshold is 392 K -- the closest")
+    print("   agreement of any row here. It is also why a cake rises.")
+    print()
+    print("   !! A TWO-GAS ROW CHANGES WHAT \"HOT ENOUGH\" MEANS. K is in bar^2,")
+    print("   so comparing it against a pressure is a units error. The reference")
+    print("   state that means something is the evolved gases being the whole")
+    print("   atmosphere and sharing the ambient total, K(T) = (P/n)^n -- which")
+    print("   for one gas is exactly K = P, so no lime number above moves.")
+
+    print()
+    print("=" * 74)
     print("PANEL 6 -- what the kiln COSTS, which is the energy balance M12")
     print("           built the instrument for.")
     print("=" * 74)
     v = kiln(open_net, 1200.0, sealed=False, charge={CALCITE: 0.1})
-    v.run(300.0)
+    v.run(300.0, **CONVERGED)
     print(v.energy_report())
     print()
     print("   The `solid-state` line is the charge absorbing its own reaction")
@@ -215,7 +293,7 @@ def main() -> None:
     v = Vessel(sealed_net, volume=1.0, T=298.15, k_vent=0.0, atmosphere={})
     v.charge({CALCITE: 0.01}, phase="solid")
     v.charge({WATER: 5.0})
-    v.run(1000.0)
+    v.run(1000.0, **CONVERGED)
     print("   0.01 mol of limestone under 90 mL of water for 1000 s:")
     print(f"     still solid      {held(v, CALCITE):.9f} mol")
     print(f"     in solution      {v.state().n_liquid[CALCITE]:.9e} mol")
@@ -244,6 +322,17 @@ def main() -> None:
 
    FOUR MECHANICS THAT NOBODY WROTE: a kiln temperature, a sealed tube that
    stalls, slaking, and carbonation.
+
+   AND THE PRE-EXPONENTIAL IS DECLARED AT THE REVERSE END, which is the
+   opposite of this project's usual direction and is a correction the SECOND row
+   forced. Declared forward, one constant makes a lime kiln work and leaves
+   green vitriol thirteen decades too slow -- 0.00% conversion in 20,000 s at
+   every temperature its thermodynamics allow. The missing physics is the
+   ENTROPY OF MAKING GAS: the forward constant is A0*exp(dS/R), and A0 is the
+   pre-exponential of ONE elementary event -- a gas molecule reacting at a
+   crystal surface, with no barrier to climb -- which is the same event for
+   every row. Three of the four rows' timescales were then not calibrated
+   against anything and came out right anyway.
 
    TWO DECLARATIONS FOR THREE CATALOG STEPS, and M5's standard is why there are
    two: the catalog calls both `calcination` and they are DIFFERENT MECHANISMS

@@ -583,7 +583,7 @@ precedent and two of the five built. The other three are named gaps. See
 ## M6 — Solid-phase reactions  ✅ **DONE 2026-08-25 — as a TERM, not a third phase, and the choice was measured**
 
 `CaCO3(s) -> CaO(s) + CO2(g)` runs, conserves matter, carries its own energy, and
-has an example (`examples/lime_cycle.py`). 23 tests in `tests/test_solid_state.py`.
+has an example (`examples/lime_cycle.py`). 31 tests in `tests/test_solid_state.py`.
 **Two declarations cover three catalog steps**, because the second and third are
 the first two run backwards.
 
@@ -660,6 +660,125 @@ runs at).
   quicklime in the solid block. Measured: 0.02 mol of slaked lime under CO2 at
   700 K yields limestone through a quicklime intermediate neither declaration
   names in that role, with calcium exact to 1e-9.
+
+### ⚠⚠ SECOND PUSH, SAME SESSION: THE CONSTANT WAS DECLARED AT THE WRONG END, AND
+### A SECOND ROW IS WHAT PROVED IT
+
+M6 shipped with `DECOMPOSITION_A = 1e5 1/s` as a declared FORWARD pre-exponential,
+calibrated on the lime kiln. Adding chain 2's seed broke it immediately and
+completely:
+
+| row | dH / kJ | forward, A declared | measured |
+|---|---:|---|---|
+| calcite -> quicklime + CO2 | 179.2 | 630 s at 1200 K | a real kiln |
+| **2 FeSO4 -> Fe2O3 + SO2 + SO3** | **340.0** | **1.7e-13 1/s at 1000 K** | **0.00% in 20,000 s at every temperature its thermodynamics allow** |
+
+**Thirteen decades of clock error on a row whose thermodynamics were exactly
+right.** With `Ea = dH`, a barrier nearly double calcite's is unreachable.
+
+⚠ **THE MISSING PHYSICS IS THE ENTROPY OF MAKING GAS, AND FOLDING IT INTO A
+CONSTANT IS THE MISTAKE.** With the transition state taken to resemble the
+products — the same late-TS assumption that makes the reverse barrierless and
+fixes `Ea = dH` — the forward pre-exponential is `A0 exp(dS/R)`, and what is left
+over is
+
+    k_rev = A_fwd exp(-(Ea - dH)/RT) exp(-dS/R) = A0      exactly, at every T
+
+**so `A0` is the REVERSE constant** — the pre-exponential of ONE elementary event,
+a gas molecule arriving at a crystal surface with no barrier to climb. That event
+is the same event for calcite, green vitriol and baking soda, which is why one
+number can cover rows that make different amounts of gas. The forward direction
+is not one event: it is that one run backwards against a different amount of
+gas-making entropy each time.
+
+`RECOMBINATION_A = 4.259e-4 1/(bar s)`, unchanged in value from the first
+version's calibration, so **calcination's forward constant comes back as
+100000.34 against the 1e5 it was declared at — 3 ppm, and every lime number is
+provably unmoved.** The four rows then land at:
+
+| row | dH | dS | tau | at |
+|---|---:|---:|---:|---:|
+| calcination-decarbonation | 179.2 | 160.3 | 631 s | 1200 K |
+| calcination-dehydration | 108.5 | 143.6 | 146 s | 900 K |
+| sulfate-thermal-decomposition | 340.0 | 377.6 | 25 s | 1000 K |
+| bicarbonate-thermal-decomposition | 135.6 | 334.4 | 44 s | 450 K |
+
+**Three of those four are timescales nothing was calibrated against** — a red-hot
+retort of green vitriol in half a minute, and baking soda in the catalog's own
+`calciner, 450 K` in under a minute. They came out right because the entropy
+stopped hiding in the constant. ⚠ The one number that DID move is the
+dehydration row's clock, 7.4x slower; its equilibrium is untouched.
+
+### ⚠ TWELVE MINERALS, AND CHAIN 2's SEED WAS NEVER AN ENGINE PROBLEM
+
+`mineral_data` is now **37 entries**. Every candidate tried priced on the existing
+rule except one, and the two new rows are:
+
+* **`2 FeSO4(s) -> Fe2O3(s) + SO2(g) + SO3(g)`** — chain 2's seed, recorded as
+  blocked on the engine since M6 was written. **It was blocked on ONE MINERAL.**
+  Goes to completion at 1000 K in ~300 s, ending at `p(SO2) = p(SO3) = 0.5066 bar`
+  — the two gases sharing the ambient total exactly.
+* **`2 NaHCO3(s) -> Na2CO3(s) + CO2(g) + H2O(g)`** — `solvay-process` step 3, and
+  why a cake rises.
+
+⚠ **AND THE CATALOG'S OWN ROW NAMES A PRODUCT THAT IS NOT THE REACTION.**
+`vitriol-distillation` step 1 reads `iron-ii-sulfate -> iron-ii-OXIDE +
+sulfur-trioxide`, which balances and is not what happens: FeO does not survive red
+heat. The declaration is the chemistry (hematite, with half the sulfur reduced) and
+the row is recorded as a simplification. ⚠ **FeO is refused by the curation rule
+anyway, on the half nobody would guess** — its formation pair shares WEBBOOK, and
+**CRC tabulates no crystal heat capacity for it at all**, so the refusal that stops
+the wrong reaction being built is the BOOKKEEPING one. The five roasting oxides and
+four more sulfides are curated too, which closes the DATA half of `roasting`'s
+refusal and leaves it waiting on one clearly-named engine feature.
+
+### ⚠ A TWO-GAS ROW CHANGES WHAT "HOT ENOUGH" MEANS
+
+A row evolving `n` moles of gas has `K` in `bar^n`, so comparing it against a
+pressure is a units error the moment `n > 1`.
+`SolidStateArrays.threshold_temperature` solves `K(T) = (P_ambient / n)^n` instead
+— the reference state where the evolved gases are the whole atmosphere and share
+the ambient total. **For `n = 1` that is exactly `K = P_ambient`, so no lime number
+moves**; for green vitriol it is 874 K against the 918 K where `K` reaches
+1 bar^2, because two gases sharing one bar is 0.25 bar^2 and not 1.
+
+### ⚠⚠ AND THE DEFAULT SOLVER TOLERANCE IS NOT CONVERGED FOR A VENTED KILN
+
+Found while re-measuring the gate, and it corrects a row this session had already
+written down. On the 1100 K swept kiln:
+
+| rtol / atol | converted | p(CO2) / bar |
+|---|---:|---:|
+| 1e-6 / 1e-9 (**the default**) | 39.04% | 0.0000 |
+| 1e-8 / 1e-11 | **13.97%** | **0.7275** = K(1100 K) exactly |
+| 1e-10 / 1e-13 | 13.97% | 0.7275 |
+
+It CONVERGES, which is what says the loose reading is an artefact and not a
+different physical answer, and **the tight runs are also FASTER** (1.4–3.3 s
+against 5–13 s) because the loose solver was thrashing. The cause is the vent:
+`k_vent` is 1e3 mol/(bar s), so the gas balance is far stiffer than the chemistry
+feeding it. ⚠ **It is not this milestone's term** — the same 36% appears with the
+solid-state term as the network's only reaction, and converges to the same 13.97%.
+Any slow source feeding this vent is exposed to it.
+
+The corrected gate, converged:
+
+| T / K | K(T) / bar | vs 1.013 | converted | p(CO2) |
+|---:|---:|---|---:|---:|
+| 1000 | 0.1026 | below | 1.30% | 0.1026 |
+| 1073 | 0.4444 | below | 6.54% | 0.4443 |
+| 1100 | 0.7275 | below | 13.97% | 0.7275 |
+| **1119** | **1.0146** | **the threshold** | 43.53% | 0.9949 |
+| 1150 | 1.7052 | ABOVE | 99.75% | 1.0132 |
+| 1200 | 3.7231 | ABOVE | 100.00% | 1.0132 |
+
+⚠ **AND IT SHARPENS WHAT THE GATE IS.** Below the threshold an open flask's CO2
+sits at **exactly K(T)** — it is not swept anywhere, because a vent only pushes
+gas out when the TOTAL exceeds ambient and the air makes up the rest. **"Sweep the
+kiln" needs a carrier FLOW (`Vessel.ingress`), not an open door.** Above it, CO2
+alone would exceed ambient, so it pushes the air out and the reaction runs to
+completion. One comparison, `K(T)` against `P_ambient`, and both branches fall out
+of it.
 
 ### ⚠ AND THE COVERAGE ACCOUNTING COST TWO MORE CLASS SPLITS — 26 ROUTES NOW
 

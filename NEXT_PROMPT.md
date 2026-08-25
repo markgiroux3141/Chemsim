@@ -2,24 +2,20 @@ We're building chemsim, an emergent chemistry simulator (game inspired by Nile
 Red) in d:\Claude Code Projects\Chemistry Simulator.
 
 **The plan is `MILESTONES.md`. Read it first — it is the authority on what to
-build and in what order.** **M0–M5 and M12 are DONE.**
+build and in what order.** **M0–M6 and M12 are DONE.**
 
-**START WITH M6 — solid-phase reactions, and aim it at the LIME CYCLE
-(`CaCO3 -> CaO + CO2`) rather than at the green-vitriol seed MILESTONES names.**
-Both of the lime cycle's solids are already curated with measured CRC data,
-whereas Fe2O3 has no entry and zero of the five `roasting` rows are fully priced
-— so the lime cycle is the one where a failure is unambiguously the ENGINE's and
-not the data's. That was measured at the end of M5; the table is in the M6
-section below and MILESTONES §M6 has been corrected.
+**START WITH THE THIRD `PHASE_INDEX` ENTRY: a gas-CONSUMING surface reaction.**
+It is not a numbered milestone; it is what M6 measured its way to, and it is the
+highest-value engine work available because it fixes a *gameplay-visible wrong
+answer* rather than adding coverage. **A flask with no iron in it makes ammonia.**
+Five of M5's twenty templates (`alkene_hydrogenation`, `nitro_hydrogenation`,
+`ammonia_synthesis`, both methanol rows) fold their catalyst into an apparent
+barrier, so "you need a catalyst" cannot be a gate. `roasting`'s five rows want
+the same feature. M6 established exactly what it is and exactly what it is NOT —
+read the section below before touching anything.
 
-M5 also gave M6 a second reason to exist: five of M5's twenty templates are
-HETEROGENEOUS and are written homogeneous with the catalyst folded into the
-barrier, so **a flask with no iron in it makes ammonia** and "you need a
-catalyst" cannot be a gate until a reaction can consume a solid.
-
-There is **no measured wrong answer** ahead of it. M5 left three things
-REPORTED rather than fixed and none of them is a defect in a running number —
-read the M5 section below before deciding they are.
+There is **one measured wrong answer** ahead of it, and it is small and
+pre-existing: see THE TWO FRAGILITIES.
 
 The project is under **git**. There is no remote. ⚠ The committer identity is the
 machine's global `innovationlabOBS <innovationlab@obsglobal.com>`; set a
@@ -27,212 +23,261 @@ repo-local `user.name`/`user.email` if that should be yours.
 
 Start by reading, in order:
 
-MILESTONES.md — the plan. M0–M5 and M12 done. ⚠ **M5's section records which six
-  classes were REFUSED and why**, and **§M6 has been corrected**: its claim that
-  the solid formation data is "curated and waiting" holds for the green-vitriol
-  reactant and not for its product. M6's own two classes have already been read
-  against M5's standard — `roasting` is one mechanism, `calcination` is two — so
-  that work is done rather than pending.
-HANDOFF.md — what exists, and the ethos to preserve. **Item 83 is M5 and is the
-  one to read**; 82 is M12.
+MILESTONES.md — the plan. M0–M6 and M12 done. ⚠ **§M6 is the one to read**: it
+  records that its own brief posed a true dichotomy, that the answer was measured
+  rather than argued, and — in its SECOND PUSH section — that the pre-exponential
+  had to be declared at the opposite end of the reaction from everywhere else in
+  this project.
+HANDOFF.md — what exists, and the ethos to preserve. **Item 84 is M6.**
 NEXT_SESSION.md — the invariants table at the bottom is the contract. ⚠ Read the
-  two warnings above it before trusting any row. M5's rows are at the end.
+  two warnings above it before trusting any row. ⚠⚠ **AND M6 CORRECTED ONE OF ITS
+  OWN ROWS SIX HOURS AFTER WRITING IT** — the swept-kiln conversions were measured
+  at the default solver tolerance and were 2.6x wrong. The row now says so.
 GAME_DESIGN.md — the settled design.
-data/catalog/README.md — the reaction-class taxonomy, **including M5's 11
-  re-labelled rows**, and `data/catalog/COVERAGE_REPORT.md` for where coverage
-  now stands.
-the memory files (auto-loaded), especially chemsim-m5-named-routes,
-  chemsim-coverage-catalog, chemsim-template-library and chemsim-rate-ceiling.
+data/catalog/README.md — the reaction-class taxonomy, including **M6's five
+  re-labelled rows**, and `data/catalog/COVERAGE_REPORT.md`.
+the memory files (auto-loaded), especially chemsim-solid-state-reactions,
+  chemsim-zero-jacobian-column, chemsim-catalysis-and-bounds and
+  chemsim-template-library.
 
 ```bash
+python examples/lime_cycle.py                # M6, seven panels, ~60 s
 python examples/named_routes.py              # M5's 17 routes, ~24 s
 python validation/rate_ceiling.py            # M12's standing audit, seconds
-python validation/catalog_coverage.py        # where coverage stands, ~3 min
-python -m pytest -q tests/test_named_routes.py   # M5's 38 tests, ~5 s
-python -m pytest -q                          # the whole suite, 727 tests, ~11:34
+python validation/catalog_coverage.py         # 26/173, 32/214, ~3 min
+python -m pytest -q tests/test_solid_state.py    # M6's 31 tests, ~23 s
+python -m pytest -q                          # the whole suite, 759 tests, ~11:21
 python -m ruff check src tests examples validation tools
 ```
 
 ⚠ **THE SUITE IS MINUTES OF SATURATED CPU ON THE USER'S OWN MACHINE.** Run it to
 establish a baseline and to verify at the end, not after each change. Say what a
-long run will cost before starting one, and **ask first.**
+long run will cost before starting one.
 
 STATE: Layers 0–7 complete. The engine is open-ended (no recipes), conserves
-matter, has an element/mineral/ion floor, a still that is a saveable protocol, a
-plate column that reaches its purity target, an ionic lattice that can leave
-solution, a solvent mixture that says when it was never modelled, an energy
-balance it can report the way it reports a mass one, and **34 templates covering
-29 of the catalog's 212 reaction classes.** `SAVE_VERSION` is **5**.
-Coverage: **25/173 template-ready routes** (was 7), **29/212 classes** (was 12).
-**727 tests green in 11:34, lint clean, 2026-08-24.**
+matter, has an element/mineral floor, a still that is a saveable protocol, a plate
+column that reaches its purity target, an ionic lattice that can leave solution, a
+solvent mixture that says when it was never modelled, an energy balance it can
+report the way it reports a mass one, **34 templates, and — new — a reaction that
+happens INSIDE A CRYSTAL.** `SAVE_VERSION` is **5**.
+Coverage: **26/173 template-ready routes** (was 25), **32/214 classes** (was 29),
+**34 templates UNCHANGED** — M6 covered three classes with a TERM.
+**759 tests green in 11:21, lint clean, 2026-08-25.**
 
 ---
 
-# ⚠⚠ WHAT M5 TURNED OUT TO BE, BECAUSE THE LESSON IS NOT ABOUT TEMPLATES
+# ⚠⚠ WHAT M6 TURNED OUT TO BE, BECAUSE THE LESSON IS THE SHAPE OF THE ANSWER
 
-M5's brief was "twenty playable routes, in the greedy set-cover order M1
-established". **The greedy order did not survive M1's own standard.** Six of its
-top ten classes have no template, and only ONE of the six is a difficulty
-problem:
+M6's brief asked one question: **is a solid-phase reaction a third `PHASE_INDEX`
+entry, or a second term next to precipitation?** That was a real dichotomy and the
+answer was decided by building the wrong one first.
 
-| refused | routes it would have paid | why |
+**A pure solid has UNIT ACTIVITY.** So a pair of crystals fixes the gas pressure
+above them at `K(T)` no matter how much of each is present. Mass action on the
+solid amounts cannot say that — it says `p/K = n_A/n_B` — and **that form was
+built and measured settling at exactly that: 3.0863 against 3.0863 at 1100 K,
+1.2139 against 1.2139 at 1200 K. Five figures on both.**
+
+⚠ **And dropping the reverse is not a way out.** Sealed 1 L, 0.1 mol of calcite:
+equilibrium conversion is 0.12 / 1.23 / 7.95 / 37.3% at 900 / 1000 / 1100 / 1200 K,
+where forward-only reads 100% at all four. **The kiln's whole mechanic is the part
+forward-only deletes.**
+
+⚠⚠ **THE ONE-SENTENCE LESSON: THE ARGUMENT WAS ALREADY WRITTEN DOWN BEFORE THE
+CODE, AND WRITING THE CODE ANYWAY IS WHAT TURNED IT FROM AN ARGUMENT INTO A
+MEASUREMENT.** The prediction and the observation agreed to five figures. That is
+worth more than either alone, and it is why the wrong version's failure is
+preserved in `SolidStateArrays`, in `builder.PHASE_INDEX`'s comment, and in a test.
+
+**Four mechanics nobody wrote:** a kiln temperature (the threshold is where `K(T)`
+crosses ambient, 1119 K, out of the CRC formation pair), a sealed tube that stalls,
+**slaking** (the dehydration row run backwards), and **carbonation** (not any
+single row's reverse — the dehydration row forwards and the decarbonation row
+backwards, sharing the quicklime in the solid block). `solid-carbonation` is the
+first class in the corpus credited to a mechanism that EMERGED.
+
+---
+
+# ⚠⚠ AND M6 GOT ONE THING WRONG AND FIXED IT IN THE SAME SESSION. READ THIS.
+
+**The pre-exponential was declared at the wrong end of the reaction, and a second
+row is what proved it.** M6 shipped `DECOMPOSITION_A = 1e5 1/s` as a FORWARD
+constant, calibrated on the lime kiln. Adding chain 2's seed broke it completely:
+
+| row | dH / kJ | with A declared forward |
 |---|---:|---|
-| `catalytic-air-oxidation` | 3 | its four rows are three mechanisms |
-| `fermentation` | 2 | a metabolic NETWORK, not a transformation |
-| `pyrolysis` | 2 | two of three rows read `coal-marker -> coal-tar-marker` |
-| `isomerisation` | 2 | three mechanisms under one label |
-| `thermal-cracking` | 1 | a lumped product slate from a radical chain |
-| `separation` | 1 | ⚠ the ENGINE fractionates — but a distillation is not a reaction class, and that route's feedstock is a marker |
+| `calcite -> quicklime + CO2` | 179.2 | 630 s at 1200 K — a real kiln |
+| **`2 FeSO4 -> Fe2O3 + SO2 + SO3`** | **340.0** | **1.7e-13 1/s; 0.00% in 20 ks at EVERY temperature its thermodynamics allow** |
 
-⚠⚠ **THE ONE-SENTENCE LESSON: M1 BUILT A STANDARD AND M5 IS THE FIRST MILESTONE
-THAT HAD TO SPEND IT — AND SPENDING IT COST SIX ROUTES OFF THE TOP OF THE QUEUE.
-A PLAN WRITTEN BEFORE A STANDARD DOES NOT AUTOMATICALLY SATISFY IT.** M6 inherits
-exactly this: `roasting` and `calcination` are in the plan as classes, and
-whether either is one mechanism is an open question until someone reads the rows.
+**Thirteen decades of clock error on a row whose thermodynamics were exactly
+right.** The missing physics is the **ENTROPY OF MAKING GAS**. With the transition
+state taken to resemble the products — the same late-TS assumption that makes the
+reverse barrierless and fixes `Ea = dH` — the forward pre-exponential is
+`A0 exp(dS/R)`, and what is left over is
 
-⚠ **AND ONE CLASS WAS SPLIT RATHER THAN REFUSED, WHICH IS THE HARDER CALL.**
-`catalytic-hydrogenation` is the most-used uncovered class in the corpus (10
-steps) and its rows are FIVE mechanisms — but unlike `fermentation`, every one of
-them *is* a clean mechanism. Refusing it would have been wrong in the other
-direction. 11 rows were re-labelled; two of the five are built.
+    k_rev = A_fwd exp(-(Ea - dH)/RT) exp(-dS/R) = A0     exactly, at every T
 
----
+**so `A0` is the REVERSE constant** — the pre-exponential of ONE elementary event,
+a gas molecule arriving at a crystal surface with no barrier to climb. *That* event
+is the same for calcite, green vitriol and baking soda, which is why one number can
+cover rows that make different amounts of gas.
 
-# ⚠ THREE THINGS M5 LEFT OPEN, EACH REPORTED RATHER THAN FIXED
+`RECOMBINATION_A = 4.259e-4 1/(bar s)`, unchanged in value from the original
+calibration, so calcination's forward constant comes back as **100000.34 against
+the 1e5 it was declared at — 3 ppm, and every lime number is provably unmoved.**
+Then, with nothing else calibrated:
 
-**1. A REVERSIBLE TEMPLATE IS DISCOVERED IN THE FORWARD DIRECTION ONLY.**
-Measured, and invisible from reading either layer:
+| row | tau | at | against |
+|---|---:|---:|---|
+| calcination-decarbonation | 631 s | 1200 K | a lime kiln, tens of minutes |
+| calcination-dehydration | 146 s | 900 K | — |
+| sulfate-thermal-decomposition | 25 s | 1000 K | a red-hot retort |
+| bicarbonate-thermal-decomposition | 44 s | 450 K | the catalog's own `calciner, 450 K` |
 
-    build_network(["CCOC(C)=O", "O"], [esterification()])  ->  0 reactions
-    build_network(["CC(=O)O", "CCO"], [esterification()])  ->  2 reactions
-
-`_expand_once` matches REACTANT patterns, so **an ester and water in a flask are
-inert** however reversible the template is. This is general to every reversible
-template in the project. The fix expands on reverse patterns too and roughly
-doubles every build's match cost; M5 wrote `ester_hydrolysis` from the ester side
-instead. ⚠ It is a gameplay problem as much as an engine one — a player who puts
-two products together and expects the reverse gets nothing.
-
-**2. `halogen_disproportionation` IS CORRECT AND CANNOT RUN.** HOCl has no
-measured boiling point in any source — the same standing refusal `electrolyte.py`
-records for carbonic acid — so `[O-]Cl` has no ion entry and `build_network`
-refuses it by name. ⚠ **Curating it is a trap:** ATCT gives HOCl
-`Hf = -76.8 kJ/mol` where **Joback gives -211.3, a 134.5 kJ/mol silent error**.
-Adding the formation half alone pairs a measured equilibrium with an invented
-standard-state shift, in a LIQUID-phase reaction where the shift decides the
-answer. A test pins the refusal so whoever adds the pair is told the route opened.
-
-**3. FIVE TEMPLATES ARE HETEROGENEOUS AND WRITTEN HOMOGENEOUS.**
-`alkene_hydrogenation`, `nitro_hydrogenation`, `ammonia_synthesis` and both
-methanol templates fold the catalyst into an apparent barrier — the licence
-`sulfur_dioxide_oxidation` already takes. **The catalyst is therefore not a
-species.** This is M6's second reason to exist.
+⚠⚠ **THE LESSON TO CARRY: A CONSTANT SHARED BETWEEN ROWS IS A CLAIM THAT THEY ARE
+THE SAME EVENT. IF THEY ARE NOT, THE CONSTANT IS HIDING THE DIFFERENCE.** Here the
+difference was an entropy, it was already in the data, and finding it needed a
+second row rather than more thought about the first.
 
 ---
 
-# ⚠ TWO LATENT FRAGILITIES, ONE NEW AND ONE UNCHANGED
+# ⚠ TWO FRAGILITIES, ONE NEW-BUT-PRE-EXISTING AND ONE UNCHANGED
 
-**NEW: `alkene_hydration` and `library.alkene_dehydration` are the same
-interconversion with different barriers**, one reversible and one not (80 vs 160
-kJ/mol). Both readings are defensible at their own end of the temperature range,
-so a network holding BOTH has two channels between one pair of species and its
-steady state is not its equilibrium. Bounded — the barriers differ by 80 kJ/mol,
-so one channel is ~1e7x the other at any temperature — and the bundles keep them
-apart, but nothing enforces it.
+**1. A SPECIES IN THE NETWORK BUT ABSENT FROM A SEALED FLASK HAS AN IDENTICALLY
+ZERO JACOBIAN COLUMN.** Verbatim the `num_jac` trap `LAYER_REABSORB` documents:
+the perturbation factor inflates without bound, overflows to inf, and BDF gets a
+NaN Jacobian. Measured, sealed at 1100 K, with and without N2/O2 in the species
+list:
+
+| charge / mol | lean network | N2/O2 present but absent |
+|---:|---:|---|
+| 0.05 | `p/K - 1` = -1.7e-07 | **RAISED**: CO2 reached -2.572 mol |
+| 0.1 | +3.5e-09 | -2.6e-11 |
+| 0.4 | -5.4e-13 | +1.6e-07 |
+| 1.0 | +2.6e-08 | +1.9e-11 |
+
+The hair trigger on the charge is a NaN Jacobian, not an instability. **It refuses
+loudly rather than lying** (`check_raw_solution`: "a failed integration wearing a
+success flag"), so it is a latent fragility. PRE-EXISTING; M6 made it reachable.
+⚠ Note what it is NOT: the lean column is exact at `units_f/units_r` up to 129.5,
+so the solid-state term's own sign switch handles a 130x derivative jump at its
+operating point without trouble. The fix is a `LAYER_REABSORB`-style honest
+diagonal on the gas block — hot loop, moves invariants, wants a session of its own.
+
+**2. ⚠⚠ THE DEFAULT SOLVER TOLERANCE IS NOT CONVERGED FOR A VENTED KILN — 2.6x IN
+THE ANSWER, AND IT CORRECTED A ROW THIS PROJECT HAD ALREADY WRITTEN DOWN.**
+
+| rtol / atol | converted at 1100 K | p(CO2) / bar |
+|---|---:|---:|
+| 1e-6 / 1e-9 (**the default**) | 39.04% | 0.0000 |
+| 1e-8 / 1e-11 | **13.97%** | **0.7275** = K(1100 K) exactly |
+| 1e-10 / 1e-13 | 13.97% | 0.7275 |
+
+It CONVERGES, so the loose reading is an artefact. **The tight runs are also
+FASTER** (1.4–3.3 s against 5–13 s) — the loose solver was thrashing. Cause: the
+vent. `k_vent` is 1e3 mol/(bar s), so the gas balance is far stiffer than the
+chemistry feeding it. ⚠ **Not M6's term** — it reproduces with the solid-state
+term as the network's only reaction. **Any slow source feeding this vent is
+exposed to it, which means other examples in this repo may be quoting
+tolerance-limited numbers.** Nobody has swept them. That is a cheap, high-value
+audit: re-run each example at rtol 1e-8/atol 1e-11 and diff.
 
 **UNCHANGED: `psi = np.exp(-a / T)` in `activity.activity_coefficients` overflows
-for the PSRK quadratic `H2O <-> N2` pair at every T below 4.28 K**, and the RHS's
-own clamp is `T_MIN = 1.0`, which sits inside that band. PRE-EXISTING, **measured
-inert**. The precedent for the fix is `gamma_ref_range` in the same file; the
-activity kernel is the hottest code in the project and a change there wants the
-full suite behind it.
+for the PSRK quadratic `H2O <-> N2` pair below 4.28 K**, and the RHS's own clamp
+is `T_MIN = 1.0`, inside that band. PRE-EXISTING, **measured inert**.
 
 ⚠ **AND THE BLOCK-ORDER TRAP STILL HOLDS:** the state vector is
 `pack(n_liquid, n_liquid2, n_gas, n_solid, T)` — **liquid2 is SECOND, not last.**
-Take a bound across ALL blocks first; that bound is label-independent.
 
 ---
 
-# M6 — SOLID-PHASE REACTIONS
+# THE NEXT TASK — A GAS-CONSUMING SURFACE REACTION, i.e. `PHASE_INDEX["solid"]`
 
-MILESTONES §M6 has the detail. **⚠ Two of its premises were checked at the end of
-M5 and one of them is half wrong — read this section before following that one.**
+## Why this and not a numbered milestone
 
-## THE ENGINE SIDE: there is no solid phase for a reaction to write
+It fixes a wrong answer a player can see. `ammonia_synthesis` runs in a flask with
+no iron in it, because the catalyst is folded into the barrier. That is the licence
+`sulfur_dioxide_oxidation` already takes, and M5 reported it rather than fixing it.
 
-`PHASE_INDEX` in `network/builder.py` is `{"liquid": 0, "gas": 1}` and RAISES on
-anything else — deliberately, and its comment names a solid-phase reaction as the
-next case it would otherwise have swallowed silently. **That is where M6 starts.**
-Note that the solid BLOCK already exists in the state vector (M3 put it there for
-precipitation) and is written by a TERM, `vessel_integrator.PrecipitationArrays`,
-not by any reaction. So the first question M6 has to answer is whether a
-solid-phase reaction is a third `PHASE_INDEX` entry or a second term, and the
-`pack(n_liquid, n_liquid2, n_gas, n_solid, T)` order is the constraint.
+## ⚠ What M6 established about it, so this does not get re-derived
 
-## ⚠ THE DATA SIDE, MEASURED 2026-08-24 — AND IT REORDERS THE MILESTONE
+**It IS mass action, and M6's term is measurably NOT a rate law for it.** A gas
+REACTANT's pressure sits in the DENOMINATOR of `Q`, so an atmosphere depleted of it
+drives the affinity form's reverse flux to **2.6e15 formula units per second**.
+`build_solid_state_arrays` REFUSES a declaration with a gas reactant, naming that.
+So the two mechanisms are deliberately kept apart:
 
-MILESTONES §M6 says the green-vitriol seed's "solid-basis formation data is
-curated and waiting". **That is true of the REACTANT and false of the PRODUCT.**
-`mineral_data.MINERALS` has 25 entries; here is what M6's own rows need:
+| | M6's term (`SolidStateArrays`) | what you are building |
+|---|---|---|
+| example | `CaCO3(s) -> CaO(s) + CO2(g)` | `ZnS(s) + O2(g) -> ZnO(s) + SO2(g)`; `N2 + 3 H2 -> 2 NH3` **over iron** |
+| control | thermodynamic — stops at `Q = K` | kinetic — `dG` is hugely negative, it runs |
+| rate law | affinity, `(k_f - k_r Q) * units` | **mass action**: first order in a gas pressure, gated on a solid being present |
+| home | a term | **a third `PHASE_INDEX` entry** |
 
-| target | reactant priced? | product priced? | verdict |
-|---|---|---|---|
-| `FeSO4 -> Fe2O3 + SO3` (the seed) | yes, `green vitriol` | **no Fe2O3 entry** | needs one mineral |
-| `calcination`: `CaCO3 -> CaO + CO2` | yes, `calcite` | yes, `quicklime` | **RUNNABLE TODAY** |
-| `calcination`: `Al(OH)3 -> Al2O3 + H2O` | no | no | needs two |
-| `roasting` (all five rows) | only `sphalerite` (ZnS) | **no ZnO entry** | **zero rows complete** |
+## What it needs, in the order the constraints bite
 
-⚠⚠ **SO START WITH THE LIME CYCLE, NOT THE GREEN-VITRIOL SEED.** `lime-cycle` and
-`solvay-process` step 5 are the same reaction, and both of its solids are already
-curated with measured CRC data — so the FIRST solid-phase reaction can be built
-against species that already price, which means a failure is unambiguously the
-engine's and not the data's. The seed and the roasting rows each want one or two
-`mineral_data` entries first, and that is a separate, well-understood job with a
-build script (`tools/build_mineral_data.py`) already written for it.
+1. **`PHASE_INDEX = {"liquid": 0, "gas": 1, "solid": 2}`**, and a block in the
+   vessel RHS for it. Read the comment on that line first — it now carries the
+   whole argument for why M6 did NOT add the entry, and it names this case as the
+   one that should.
+2. **A way for a template to declare a SOLID participant.** A catalyst is neither
+   consumed nor produced but must be PRESENT; a roasting sulfide is consumed. Both
+   are `nu` on the solid block, so this may be one mechanism.
+   ⚠ `ReactionTemplate` matches SMARTS on a molecular graph and **a lattice is not
+   a graph** — `[Ca+2].[O-2]` has no bonds to rewrite. So the solid participant
+   has to be DECLARED on the template rather than discovered, the way
+   `SOLID_STATE_REACTIONS` is a curated table. Do not try to make SMARTS reach it.
+3. **The rate law's basis.** M6's term is on mol (solid) and bar (gas); the kernel
+   is on mol/L. ⚠ **Decide this by arithmetic before writing code** — a solid's
+   "concentration" in the block is meaningless (the block is mol and `V_S` is
+   nominal), so a heterogeneous rate written on `nS/V` is a number with no
+   referent. First order in `nS` (mol) is the constant-particle-count idealisation
+   and is what M6 uses; `nS^(2/3)` (shrinking core) is physically better and has
+   INFINITE slope at zero, which `SOLID_GATE_TIME` refuses for a measured reason.
+4. **The data is already there.** `mineral_data` has 37 entries as of M6,
+   including **all five roasting oxides and all five sulfides** — so `roasting`'s
+   DATA refusal is closed and it is waiting on exactly this feature.
+   ⚠ `mercury-from-cinnabar` will still need its own template: HgO decomposes at
+   roasting temperature and that row gives the METAL.
+5. **A catalyst must not be able to seed itself.** See
+   `chemsim-solid-gate-fix` — a cycle's gain on its catalyst is unbounded, and the
+   round-off-seeded lead chamber reached 89% yield on 1.2e-4 mol of phantom NOx.
+   A solid catalyst gated on `nS` has exactly that exposure.
 
-## ⚠ AND M5's STANDARD APPLIES TO M6's TWO CLASSES. THE ROWS ARE ALREADY READ:
+**Done when:** a flask with no iron in it makes NO ammonia, one with iron does, and
+a roasting row runs and conserves matter.
 
-* **`roasting` IS one mechanism** — all five rows are `metal sulfide + O2 -> metal
-  oxide + SO2`. ⚠ With one wrinkle: `mercury-from-cinnabar` gives the METAL, not
-  the oxide, because HgO decomposes at roasting temperature. One template will not
-  cover that row honestly.
-* **`calcination` is TWO mechanisms** — two rows are decarbonation
-  (`carbonate -> oxide + CO2`) and one is dehydration (`hydroxide -> oxide +
-  H2O`). Crediting the class on one of them would be the `deprotonation` mistake
-  again. Split it, or build both.
+## AFTER THAT
 
-⚠ M3 added 15 element reference states, so the floor is wider than when M6 was
-written.
-
-**Done when:** a solid-phase reaction runs, conserves matter, and has an example.
-Aim it at the lime cycle first.
-
----
-
-# AFTER M6
-
-**M7 (dissociation as an equilibrium — ⚠ M12 took most of its case away;
-re-scope before scheduling)**, M8+ (electrochemistry — ⚠ **that one WILL break
-the spectator zeros**).
+**M7 (dissociation as an equilibrium — ⚠ M12 took most of its case away; re-scope
+before scheduling)**, M8+ (electrochemistry — ⚠ **that one WILL break the spectator
+zeros**). And the cheap audit named above: **re-run every example at rtol 1e-8 and
+diff**, because M6 found one quoted number that was 2.6x wrong and nobody has
+checked the others.
 
 TRAPS SPECIFIC TO THIS ARC:
 
 ⚠ BOUND A MECHANISM ARITHMETICALLY AGAINST THE ACTUAL SIMULATED STATE BEFORE
-WRITING CODE. Twelve times now, most recently by measuring that an ester and
-water find zero reactions — which turned "ester-hydrolysis is already covered by
-the reversible esterification" from an argument into a refuted one.
-⚠ A CLASS IS A MECHANISM CLAIM. Read the rows, not the name. Six refusals and one
-split in M5 alone.
-⚠ A GREEN SUITE IS NOT EVIDENCE THE INVARIANTS TABLE HOLDS. The tests pin those
-rows far looser than the digits quoted. Re-measure before quoting.
-⚠ **AND A COMMITTED GENERATED REPORT IS NOT A BASELINE.** `COVERAGE_REPORT.md`
-was stale by 39 species when M5 started. Regenerate at HEAD — a `git worktree` of
-HEAD costs one command and no risk to the working tree.
-⚠ Windows console is cp1252: a warning glyph inside a print() kills a validation
-script. Docstrings fine, printed text ASCII. (FOURTEEN sessions running.)
-⚠ **`python - <<'PY'` HEREDOCS BIT AGAIN THIS SESSION.** Use the Write tool for
-anything containing an escape, a quote or a markdown table, and run it as a file.
-⚠ Redirecting a long Python run to a file BLOCK-BUFFERS it. Use `python -u`.
+WRITING CODE. Thirteen times now — and M6 is the first time the arithmetic was
+done, the wrong thing was built anyway, and building it was WORTH IT because the
+prediction and the measurement then agreed to five figures.
+⚠ A CLASS IS A MECHANISM CLAIM. Read the rows, not the name. M6 read four classes
+and split two of them; `thermal-decomposition`'s four rows are four mechanisms and
+have NOT been split yet — that is a small, honest coverage job.
+⚠ **A CONSTANT SHARED BETWEEN ROWS IS A CLAIM THAT THEY ARE THE SAME EVENT.**
+⚠ A GREEN SUITE IS NOT EVIDENCE THE INVARIANTS TABLE HOLDS — and now neither is a
+converged-looking number at the default tolerance. Re-measure before quoting.
+⚠ **A COMMITTED GENERATED REPORT IS NOT A BASELINE.** Regenerate at HEAD.
+⚠ Windows console is cp1252: a warning glyph inside a `print()` kills a script.
+Docstrings fine, printed text ASCII. (FIFTEEN sessions running — M6 hit it too.)
+⚠ **`python - <<'PY'` HEREDOCS BIT AGAIN.** Use the Write tool for anything with
+an escape, a quote or a markdown table, and run it as a file.
+⚠ **AND WRITING A FILE THROUGH PYTHON'S TEXT MODE ON WINDOWS EMITS CRLF**, which
+turned a 25-line edit into a whole-file diff twice this session. This repo is
+MIXED: markdown and `.psv` are CRLF, most Python is LF. Check `git diff --stat`
+before committing and normalise if a file you barely touched shows as rewritten.
+⚠ Redirecting a long Python run to a file BLOCK-BUFFERS it. Use `python -u` — and
+do not pipe a long run through `tail`, which holds everything until EOF.
 
 ALSO PRESERVE:
 
@@ -242,15 +287,16 @@ number — and a LATENT fragility is a third case: report it, do not refuse it.
 The setup/hot-loop split: when adding a physical model, first ask "what uniform
 array form does this collapse to?"
 `World.rig is None` exactly the old per-vessel path; `losses=None` exactly
-lossless; `precipitation=False` exactly no ionic lattice; the Born term exactly
-zero in PURE water; the five pH values; SAVE_VERSION stores the CONDITION, never
-the instant; every gaseous element reference state Hf = Gf = 0 EXACTLY; a
-reference state that its own database does not price at Hf = 0 is REFUSED; no
-mineral pricing differently under the two providers; `ion_data` and `electrolyte`
-never subtracted from each other; a declared rate order may never be reversible;
-the reflux ratio is the ratio of two drain conductances out of one condenser,
-declared rather than inferred; the fragmentation SEARCH runs only after the
-greedy pass has been REFUSED; an ion is never counted in the held-ideal flag;
-a rate CAP scales BOTH pre-exponentials by one factor, because `K = k_f/k_r` is
-the invariant it may not move; **and a template that moves a hydrogen ATOM must
-collapse explicit Hs, or it forks the species list while conserving every atom.**
+lossless; `precipitation=False` exactly no ionic lattice; **`solid_state=False`
+exactly no crystal reacting**; the Born term exactly zero in PURE water; the five
+pH values; SAVE_VERSION stores the CONDITION, never the instant; every gaseous
+element reference state Hf = Gf = 0 EXACTLY; a reference state its own database
+does not price at Hf = 0 is REFUSED; no mineral pricing differently under the two
+providers; `ion_data` and `electrolyte` never subtracted from each other; a
+declared rate order may never be reversible; the reflux ratio is the ratio of two
+drain conductances out of one condenser, declared rather than inferred; the
+fragmentation SEARCH runs only after the greedy pass has been REFUSED; an ion is
+never counted in the held-ideal flag; a rate CAP scales BOTH pre-exponentials by
+one factor; a template that moves a hydrogen ATOM must collapse explicit Hs;
+**a lattice may REACT and may never DISSOLVE — the fusion law is still 407x wrong
+in both directions, and M6 did not soften that by one digit.**

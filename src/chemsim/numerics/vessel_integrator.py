@@ -1013,9 +1013,49 @@ class SolidStateArrays:
                        np.inf).min(axis=1)
         return fwd, rev
 
+    @property
+    def total_nu_gas(self) -> np.ndarray:
+        """(m,) how many moles of gas each row evolves. The exponent on K."""
+        return self.nu_gas.sum(axis=1)
+
     def equilibrium_pressure(self, T: float) -> np.ndarray:
         """``K(T)``, (m,), in bar^(sum nu_gas). For reporting, not the RHS."""
         return np.exp(-(self.dH - T * self.dS) / (R * T))
+
+    def threshold_temperature(
+        self, P_ambient: float, lo: float = 200.0, hi: float = 3000.0
+    ) -> np.ndarray:
+        """(m,) K -- the temperature each row needs to run against the room.
+
+        ⚠ THIS IS NOT ``K(T) = P_ambient``, AND FOR A ONE-GAS ROW IT REDUCES TO
+        IT. A row evolving ``n`` moles of gas has ``K`` in units of ``bar^n``, so
+        comparing it against a pressure is a units error the moment ``n > 1``.
+        What the comparison has to be is the reaction QUOTIENT against ``K``, and
+        the honest reference state for "in the open" is the one where the evolved
+        gases are the whole atmosphere and share the ambient total:
+
+            each gas at P/n   ->   Q = (P_ambient / n)^n   ->   solve K(T) = Q
+
+        For ``n = 1`` that is exactly ``K = P_ambient``, so every lime number
+        this project has measured is unmoved. For the two-gas rows it matters a
+        lot: green vitriol's ``K`` reaches 1 bar^2 at 918 K and its threshold is
+        874 K, because two gases sharing one bar is 0.25 bar^2 and not 1.
+
+        ⚠ It is a REFERENCE STATE and not a prediction of what a real retort
+        does. A retort full of air dilutes the products further (so it decomposes
+        cooler) and a sealed one concentrates them (so it stalls). Both of those
+        the RHS integrates; this is the one-number summary that goes in a report.
+        """
+        n = np.maximum(self.total_nu_gas, 1.0)
+        target = (P_ambient / n) ** n
+        a = np.full(self.m, lo)
+        b = np.full(self.m, hi)
+        for _ in range(80):
+            mid = 0.5 * (a + b)
+            below = self.equilibrium_pressure(mid) < target
+            a = np.where(below, mid, a)
+            b = np.where(below, b, mid)
+        return 0.5 * (a + b)
 
 
 @dataclass

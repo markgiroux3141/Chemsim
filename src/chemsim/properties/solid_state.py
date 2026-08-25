@@ -83,10 +83,17 @@ where the experimental activation energies quoted for calcination cluster at
 
 ## ⚠ WHAT IS A CLOCK AND WHAT IS PHYSICS
 
-``DECOMPOSITION_A`` is the only free number here and it sets the SPEED ALONE:
+``RECOMBINATION_A`` is the only free number here and it sets the SPEED ALONE:
 the equilibrium is carried entirely by ``lnK``, which does not contain it. Two
-runs at different ``A`` reach the same final state at different times, and
-``validation/`` measures that rather than asserting it.
+runs at different ``A0`` reach the same final state at different times.
+
+⚠ **It is the REVERSE pre-exponential, not the forward one, and that inversion
+is the correction a second row forced.** Declared forward, one constant makes a
+lime kiln work and leaves green vitriol thirteen decades too slow -- measured,
+0.00% conversion in 20,000 s at every temperature its thermodynamics allow.
+The forward constant is ``A0 exp(dS/R)``: the entropy of making gas belongs in
+the pre-exponential, not in a constant shared by rows that make different
+amounts of it. The whole argument is at ``RECOMBINATION_A``.
 
 ## ⚠ dCp = 0, STATED -- AND THE CORRECTION WAS BUILT AND REJECTED
 
@@ -125,30 +132,79 @@ Two guards keep it that way:
 
 from __future__ import annotations
 
+import math
 from typing import NamedTuple
 
+from chemsim.constants import R
 from chemsim.properties.mineral_data import MINERALS, MineralRecord
 
 T_REF = 298.15
 
-# 1/s. The forward pre-exponential of a solid decomposition -- a CLOCK, not a
-# measurement, and the only free number in this module.
+# 1/(bar s). ⚠⚠ THIS IS THE **REVERSE** PRE-EXPONENTIAL, WHICH IS THE OPPOSITE OF
+# THIS PROJECT'S USUAL DIRECTION, AND THE INVERSION IS THE WHOLE POINT.
 #
-# ⚠ WHAT PINS IT, since this project does not accept a constant nobody chose.
-# With ``Ea = dH`` derived above, ``A`` is fixed by one observable: how long a
-# lime kiln takes. At 1200 K -- the temperature the catalog's own `lime-cycle`
-# row runs its kiln at -- this value gives ``k = 1.59e-3 1/s``, i.e. a time
-# constant of 630 s. A real kiln calcines a charge in tens of minutes. The same
-# constant gives the lime dehydration a 20 s time constant at 900 K, which is
-# likewise the right order for a hydroxide well past its decomposition point.
+# Everywhere else here a template declares FORWARD kinetics and the reverse is
+# derived by detailed balance. For a solid decomposition that is exactly backwards,
+# and the first version of this module got it wrong in a way that only showed up on
+# the second row:
 #
-# ⚠ AND IT CANNOT MOVE AN EQUILIBRIUM, which is why one number covers both rows.
-# It multiplies the whole flux, forward and reverse alike, so it divides out of
-# ``flux = 0``. A wrong ``A`` moves the clock and nothing else -- the case this
-# project's memory records as "rate errors are forgiven and only bad THERMO data
-# snowballs". There is no source that would distinguish the two rows'
-# pre-exponentials, so inventing two would be decoration.
-DECOMPOSITION_A = 1.0e5
+#   * declared as a FORWARD constant, ``A = 1e5 1/s``, calcite calcines in 630 s at
+#     1200 K -- a real kiln -- and **green vitriol never decomposes at all.** Its
+#     ``dH`` is 340 kJ/mol against calcite's 179, so with ``Ea = dH`` its rate
+#     constant at 1000 K is 1.7e-13 1/s. Measured: 0.00% conversion in 20,000 s at
+#     every temperature from 700 to 1000 K, where a real retort is done in minutes.
+#     **Thirteen decades of clock error**, on a row whose thermodynamics were
+#     exactly right.
+#
+# ⚠ **THE MISSING PHYSICS IS THE ENTROPY OF MAKING GAS, AND FOLDING IT INTO A
+# CONSTANT IS THE MISTAKE.** A decomposition that releases two moles of gas has an
+# enormous activation entropy; one that releases one has much less. With the
+# transition state taken to resemble the products -- which is the same late-TS
+# assumption that makes the reverse barrierless and fixes ``Ea = dH`` -- that
+# entropy is ``dS`` itself, so the forward pre-exponential is
+#
+#     A_fwd = A0 * exp(dS / R)
+#
+# and ``A0`` is what is left over. **``A0`` is the REVERSE constant**, because
+#
+#     k_rev = A_fwd exp(-(Ea - dH)/RT) exp(-dS/R) = A0     exactly, at every T.
+#
+# ⚠ AND THAT IS WHY ONE NUMBER CAN COVER EVERY ROW. ``A0`` is the pre-exponential
+# of a single elementary event -- a gas molecule arriving at a crystal surface and
+# reacting, with no barrier to climb -- and that event is the SAME event for
+# calcite, for green vitriol and for baking soda. The forward direction is not one
+# event: it is that event run backwards against a different amount of gas-making
+# entropy each time, which is precisely what ``exp(dS/R)`` carries.
+#
+# ⚠ WHAT PINS THE VALUE. Unchanged from the first version's calibration, so that
+# nothing measured for the lime cycle moves: it is the reverse constant that a
+# 630 s calcination time constant at 1200 K implies. What changed is that it is now
+# DECLARED there rather than derived there, and the four rows come out:
+#
+#     row                                   dH/kJ   dS/J/K   tau at
+#     calcination-decarbonation             179.2    160.3   622 s at 1200 K
+#     calcination-dehydration               108.5    143.6   149 s at  900 K
+#     sulfate-thermal-decomposition         340.0    377.6    26 s at 1000 K
+#     bicarbonate-thermal-decomposition     135.6    334.4    44 s at  450 K
+#
+# A lime kiln in ten minutes, a red-hot retort of green vitriol in half a minute,
+# and baking soda in a 450 K calciner in under a minute -- which is the catalog's
+# own `calciner, 450 K`. **Three of those four are timescales nothing was
+# calibrated against**, and they came out right because the entropy is no longer
+# hiding in the constant.
+#
+# ⚠ IT STILL CANNOT MOVE AN EQUILIBRIUM. ``A0`` multiplies the whole flux, forward
+# and reverse alike, so it divides out of ``flux = 0``. A wrong ``A0`` moves the
+# clock and nothing else -- the case this project's memory records as "rate errors
+# are forgiven and only bad THERMO data snowballs".
+#
+# ⚠ AND THE FORWARD CONSTANT IS NOW ROW-DEPENDENT AND CAN BE LARGE, stated rather
+# than capped. ``A_fwd`` for the bicarbonate row is 1.2e14 1/s, so at the RHS's
+# ``T_MAX`` clamp of 5000 K its rate constant reaches 5e12 1/s. That is a real
+# statement about baking soda at 5000 K and not an artefact, and it is deliberately
+# NOT guarded: ``validation/rate_ceiling.py`` records that the unimolecular ceiling
+# is left unguarded here rather than guarded on an invented number.
+RECOMBINATION_A = 4.259e-4
 
 # Formation sources this module will subtract a lattice from. Anything else is
 # an ESTIMATE, and a group-contribution number on one side of a lattice
@@ -238,6 +294,40 @@ SOLID_STATE_REACTIONS: tuple[SolidStateReaction, ...] = (
             "rather than from here, which is why the two must not both carry it"
         ),
     ),
+    # ⚠ CHAIN 2's SEED, AND ITS PRODUCT IS NOT WHAT THE CATALOG ROW SAYS.
+    # `vitriol-distillation` step 1 reads `iron-ii-sulfate -> iron-ii-OXIDE +
+    # sulfur-trioxide`, which balances and is not the reaction. FeO does not
+    # survive red heat; anhydrous green vitriol gives HEMATITE with half its
+    # sulfur reduced. So this row is written as the chemistry rather than as the
+    # catalog entry, and `mineral_data` records that FeO was tried and refused --
+    # on the crystal Cps, which CRC does not tabulate for it.
+    #
+    # ⚠ AND IT IS THIS PROJECT'S FIRST REACTION WITH TWO GAS PRODUCTS, which
+    # makes `K` carry units of bar^2 and changes what "hot enough" means. See
+    # `threshold_temperature`.
+    SolidStateReaction(
+        name="sulfate-thermal-decomposition",
+        solids=(("green vitriol", -2), ("hematite", +1)),
+        gases=(("O=S=O", +1), ("O=S(=O)=O", +1)),
+        mechanism="sulfate-thermal-decomposition",
+        note=(
+            "the dry distillation of green vitriol -- where oil of vitriol came "
+            "from before the lead chamber. The SO3 half is what a receiver of "
+            "water turns into sulfuric acid; the SO2 half is the reduction that "
+            "makes the residue hematite rather than FeO"
+        ),
+    ),
+    SolidStateReaction(
+        name="bicarbonate-thermal-decomposition",
+        solids=(("nahcolite", -2), ("soda ash", +1)),
+        gases=(("O=C=O", +1), ("O", +1)),
+        mechanism="bicarbonate-thermal-decomposition",
+        note=(
+            "`solvay-process` step 3, and the reason a cake rises. Two gases "
+            "again, and it goes at 392 K against the catalog's own 450 K "
+            "calciner -- the closest agreement of any row here"
+        ),
+    ),
 )
 
 
@@ -308,7 +398,11 @@ def price(
         # here. An EXOTHERMIC row as written would get Ea = 0 -- barrierless
         # forward -- and its reverse would carry the whole |dH|.
         Ea=max(dH, 0.0),
-        A=DECOMPOSITION_A,
+        # DERIVED from the reverse constant and this row's own entropy -- see
+        # RECOMBINATION_A. ``math.exp(dS/R)`` is the entropy of making gas, and
+        # it is the difference between a retort that works and one that is
+        # thirteen decades too slow.
+        A=RECOMBINATION_A * math.exp(dS / R),
         minerals=tuple(resolved),
         basis="; ".join(sources),
     )
@@ -322,10 +416,6 @@ def decomposition_pressure(priced: PricedSolidReaction, T: float) -> float:
     it the reaction runs. Reported rather than only integrated, so a route can be
     checked against it without running a vessel.
     """
-    import math
-
-    from chemsim.constants import R
-
     return math.exp(-(priced.dH - T * priced.dS) / (R * T))
 
 
