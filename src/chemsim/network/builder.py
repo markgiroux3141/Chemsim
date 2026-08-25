@@ -44,6 +44,31 @@ from chemsim.reactions.thermo import COLLISION_LIMIT, T_REF
 # phase added (a solid-phase reaction, say) would have been swallowed the same
 # way. ``ReactionTemplate.phases`` now resolves "any" into concrete phases before
 # anything reaches here.
+#
+# ⚠⚠ THAT NEXT PHASE ARRIVED IN M6 AND IT IS NOT AN ENTRY HERE, WHICH IS A
+# MEASUREMENT AND NOT AN OMISSION. ``CaCO3(s) -> CaO(s) + CO2(g)`` is built and
+# runs; it lives in ``numerics.vessel_integrator.SolidStateArrays`` as a TERM
+# beside precipitation. The reason is that a pure solid has UNIT ACTIVITY, so its
+# equilibrium is a statement about the GAS alone -- calcite and quicklime
+# together fix ``p_CO2`` at ``K(T)`` however much of each is present. Mass action
+# on the solid amounts cannot say that:
+#
+#     k_f n(CaCO3) = k_r n(CaO) p     ->     p = (k_f/k_r) n_A / n_B
+#
+# and that form was BUILT FIRST and measured settling at exactly that ratio --
+# 3.0863 against 3.0863 at 1100 K, 1.2139 against 1.2139 at 1200 K, five figures
+# on both. Dropping the reverse instead deletes the kiln mechanic outright: a
+# sealed flask equilibrates at 7.95% conversion at 1100 K where forward-only
+# reads 100%.
+#
+# ⚠ WHAT WOULD STILL WANT AN ENTRY HERE is a gas-CONSUMING surface reaction --
+# ``roasting`` (metal sulfide + O2 -> metal oxide + SO2), and the five
+# heterogeneous templates in ``reactions/library`` that fold a catalyst into an
+# apparent barrier so that a flask with no iron in it makes ammonia. Those ARE
+# mass action; they are first order in a gas pressure and gated on a solid being
+# present. The affinity form the term uses is measurably not a rate law for them
+# (an atmosphere depleted of O2 drives its reverse to 2.6e15 formula units per
+# second), which is why the two mechanisms are kept apart rather than merged.
 PHASE_INDEX = {"liquid": 0, "gas": 1}
 
 

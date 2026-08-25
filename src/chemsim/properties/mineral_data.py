@@ -32,6 +32,28 @@ reference that cancels out of every equilibrium it appears in.
 ``validation/game_gates.py`` re-measures the bound above, so the verdict cannot
 go stale if a solubility mechanic ever lands.
 
+## ⚠ WHAT M6 CHANGED, AND WHAT IT DID NOT
+
+**The lattice is now a SPECIES the solid block can hold** -- ``lattice`` is its
+canonical one-species SMILES and ``by_lattice()`` the index. Nothing above is
+softened by that: it still never dissolves, still never boils, and
+``thermochemistry`` still refuses it by name, because the fusion law is still
+the wrong law. What changed is that a crystal can now REACT while staying a
+crystal -- ``CaCO3(s) -> CaO(s) + CO2(g)`` -- which touches none of the
+dissolution question.
+
+⚠ **AND THE ION-BY-ION REPRESENTATION CANNOT EXPRESS THE LIME CYCLE, which is
+the measurement that forced this.** Quicklime ion-by-ion is ``[Ca+2].[O-2]``,
+and the oxide ion is in no aqueous table anywhere because it does not exist in
+water -- CaO does not dissolve to Ca2+ + O2-, it HYDRATES. ``thermochemistry``
+refuses ``[O-2]`` and ``solubility_product`` refuses quicklime for exactly that
+reason. So there was no route to the product of calcining limestone that went
+through ions, and the choice was the lattice or nothing.
+
+``Cp_solid`` and ``Vm_solid`` are the price of that: a species in the solid
+block occupies volume and holds heat. Both are measured, both from CRC, and
+neither enters an equilibrium.
+
 ## Provenance
 
 dGf is DERIVED from dHf and S0 against the CRC element reference states in
@@ -59,6 +81,12 @@ class MineralRecord(NamedTuple):
     name: str
     cas: str
     ions: tuple                    # canonical SMILES of the dissolved ions
+    # ⚠ THE LATTICE AS ONE SPECIES, canonical. Not a molecule and not a
+    # solution: it is the crystal, and M6 is what made it need a name. The
+    # solid block can now hold it whole, which is the only representation the
+    # lime cycle has -- quicklime ion-by-ion needs ``[O-2]``, and the oxide ion
+    # is absent from every aqueous table because it does not exist in water.
+    lattice: str
     formula: dict                  # element counts of one formula unit
     purpose: str                   # what a chain wants it FOR
     Hf_solid: float                # kJ/mol, crystalline, 298.15 K
@@ -72,6 +100,15 @@ class MineralRecord(NamedTuple):
     # solubility exists. The verdict above, per species, as data.
     fusion_law_bound: tuple | None
     solubility_note: str | None
+    # ⚠ THE VESSEL'S BOOKKEEPING HALF, and it is NOT part of any equilibrium.
+    # A crystal in the solid block takes up room and holds heat; Layer 4 asks
+    # every species for both. ``Cp_solid`` is a 298 K constant from the same
+    # CRC row as ``Hf_solid``, and it is deliberately NOT used to put a
+    # ``dCp(T)`` on any ln K -- see ``tools/build_mineral_data.py``, where that
+    # correction was measured making one row better and one worse.
+    Cp_solid: float | None = None      # J/(mol K), crystalline, 298.15 K
+    Vm_solid: float | None = None      # L/mol, crystal molar volume
+    condensed_source: str = ""
 
 
 
@@ -80,6 +117,7 @@ MINERALS: dict[str, MineralRecord] = {
     'calcite': MineralRecord(
         name='calcite', cas='471-34-1',
         ions=('[Ca+2]', 'O=C([O-])[O-]'),
+        lattice='O=C([O-])[O-].[Ca+2]',
         formula={'Ca': 1, 'C': 1, 'O': 3},
         purpose='limestone -- calcination to quicklime',
         Hf_solid=-1207.6, Gf_solid=-1129.07, S0_solid=91.7,
@@ -88,11 +126,14 @@ MINERALS: dict[str, MineralRecord] = {
         physical_source='Tm=CRC_INORG; Hfus=CRC',
         fusion_law_bound=(0.001543, 0.00014, 11.02131),
         solubility_note='14 mg/L (CRC), MW 100.09',
+        Cp_solid=83.5, Vm_solid=0.036932,
+        condensed_source='Cps from the same CRC row as Hfs/S0s; Vm from the CRC inorganic solid-density table, via chemicals 1.5.2',
     ),
     # the product of calcining limestone
     'quicklime': MineralRecord(
         name='quicklime', cas='1305-78-8',
         ions=('[Ca+2]', '[O-2]'),
+        lattice='[Ca+2].[O-2]',
         formula={'Ca': 1, 'O': 1},
         purpose='the product of calcining limestone',
         Hf_solid=-634.9, Gf_solid=-603.27, S0_solid=38.1,
@@ -101,11 +142,14 @@ MINERALS: dict[str, MineralRecord] = {
         physical_source='Tm=CRC_INORG; Hfus=CRC',
         fusion_law_bound=None,
         solubility_note=None,
+        Cp_solid=42.0, Vm_solid=0.01679,
+        condensed_source='Cps from the same CRC row as Hfs/S0s; Vm from the CRC inorganic solid-density table, via chemicals 1.5.2',
     ),
     # quicklime + water; a cheap strong base
     'slaked lime': MineralRecord(
         name='slaked lime', cas='1305-62-0',
         ions=('[Ca+2]', '[OH-]', '[OH-]'),
+        lattice='[Ca+2].[OH-].[OH-]',
         formula={'Ca': 1, 'O': 2, 'H': 2},
         purpose='quicklime + water; a cheap strong base',
         Hf_solid=-985.2, Gf_solid=-897.51, S0_solid=83.4,
@@ -114,11 +158,14 @@ MINERALS: dict[str, MineralRecord] = {
         physical_source='Tm=COMMON_CHEMISTRY',
         fusion_law_bound=None,
         solubility_note=None,
+        Cp_solid=87.5, Vm_solid=0.033679,
+        condensed_source='Cps from the same CRC row as Hfs/S0s; Vm from the CRC inorganic solid-density table, via chemicals 1.5.2',
     ),
     # dry-distils to the H2SO4 SEED that bootstraps chain 2
     'green vitriol': MineralRecord(
         name='green vitriol', cas='7720-78-7',
         ions=('[Fe+2]', 'O=S(=O)([O-])[O-]'),
+        lattice='O=S(=O)([O-])[O-].[Fe+2]',
         formula={'Fe': 1, 'S': 1, 'O': 4},
         purpose='dry-distils to the H2SO4 SEED that bootstraps chain 2',
         Hf_solid=-928.4, Gf_solid=-820.38, S0_solid=107.5,
@@ -127,11 +174,14 @@ MINERALS: dict[str, MineralRecord] = {
         physical_source='no measured Tm or Hfus in any source consulted',
         fusion_law_bound=None,
         solubility_note=None,
+        Cp_solid=100.6, Vm_solid=0.041619,
+        condensed_source='Cps from the same CRC row as Hfs/S0s; Vm from the CRC inorganic solid-density table, via chemicals 1.5.2',
     ),
     # wood ash -- the lye of chain 1's detour A
     'potash': MineralRecord(
         name='potash', cas='584-08-7',
         ions=('[K+]', '[K+]', 'O=C([O-])[O-]'),
+        lattice='O=C([O-])[O-].[K+].[K+]',
         formula={'K': 2, 'C': 1, 'O': 3},
         purpose="wood ash -- the lye of chain 1's detour A",
         Hf_solid=-1151.0, Gf_solid=-1065.31, S0_solid=155.5,
@@ -140,11 +190,14 @@ MINERALS: dict[str, MineralRecord] = {
         physical_source='Tm=CRC_INORG; Hfus=CRC',
         fusion_law_bound=(0.013733, 8.03, 0.00171),
         solubility_note='1110 g/L (CRC), MW 138.21',
+        Cp_solid=114.4, Vm_solid=0.060352,
+        condensed_source='Cps from the same CRC row as Hfs/S0s; Vm from the CRC inorganic solid-density table, via chemicals 1.5.2',
     ),
     # the sodium twin of potash
     'soda ash': MineralRecord(
         name='soda ash', cas='497-19-8',
         ions=('[Na+]', '[Na+]', 'O=C([O-])[O-]'),
+        lattice='O=C([O-])[O-].[Na+].[Na+]',
         formula={'Na': 2, 'C': 1, 'O': 3},
         purpose='the sodium twin of potash',
         Hf_solid=-1130.7, Gf_solid=-1046.89, S0_solid=135.0,
@@ -153,11 +206,14 @@ MINERALS: dict[str, MineralRecord] = {
         physical_source='Tm=CRC_INORG; Hfus=CRC',
         fusion_law_bound=(0.0082, 2.06, 0.00398),
         solubility_note='218 g/L (CRC), MW 105.99',
+        Cp_solid=112.3, Vm_solid=0.041728,
+        condensed_source='Cps from the same CRC row as Hfs/S0s; Vm from the CRC inorganic solid-density table, via chemicals 1.5.2',
     ),
     # the nitre bed -- chain 2's nitrogen carrier
     'saltpetre': MineralRecord(
         name='saltpetre', cas='7757-79-1',
         ions=('[K+]', 'O=[N+]([O-])[O-]'),
+        lattice='O=[N+]([O-])[O-].[K+]',
         formula={'K': 1, 'N': 1, 'O': 3},
         purpose="the nitre bed -- chain 2's nitrogen carrier",
         Hf_solid=-494.6, Gf_solid=-394.66, S0_solid=133.1,
@@ -166,11 +222,14 @@ MINERALS: dict[str, MineralRecord] = {
         physical_source='Tm=CRC_INORG; Hfus=CRC',
         fusion_law_bound=(8.958898, 3.51, 2.55239),
         solubility_note='355 g/L (CRC), MW 101.10',
+        Cp_solid=96.4, Vm_solid=0.04803,
+        condensed_source='Cps from the same CRC row as Hfs/S0s; Vm from the CRC inorganic solid-density table, via chemicals 1.5.2',
     ),
     # brine, and the chlor-alkali route
     'rock salt': MineralRecord(
         name='rock salt', cas='7647-14-5',
         ions=('[Na+]', '[Cl-]'),
+        lattice='[Cl-].[Na+]',
         formula={'Na': 1, 'Cl': 1},
         purpose='brine, and the chlor-alkali route',
         Hf_solid=-411.2, Gf_solid=-384.14, S0_solid=72.1,
@@ -179,11 +238,14 @@ MINERALS: dict[str, MineralRecord] = {
         physical_source='Tm=CRC_INORG; Hfus=CRC',
         fusion_law_bound=(0.015118, 6.15, 0.00246),
         solubility_note='359 g/L (CRC), MW 58.44',
+        Cp_solid=50.5, Vm_solid=0.026932,
+        condensed_source='Cps from the same CRC row as Hfs/S0s; Vm from the CRC inorganic solid-density table, via chemicals 1.5.2',
     ),
     # the neutralised residue of a sulfuric process
     "Glauber's salt": MineralRecord(
         name="Glauber's salt", cas='7757-82-6',
         ions=('[Na+]', '[Na+]', 'O=S(=O)([O-])[O-]'),
+        lattice='O=S(=O)([O-])[O-].[Na+].[Na+]',
         formula={'Na': 2, 'S': 1, 'O': 4},
         purpose='the neutralised residue of a sulfuric process',
         Hf_solid=-1387.1, Gf_solid=-1269.18, S0_solid=149.6,
@@ -192,11 +254,14 @@ MINERALS: dict[str, MineralRecord] = {
         physical_source='Tm=CRC_INORG; Hfus=CRC',
         fusion_law_bound=None,
         solubility_note=None,
+        Cp_solid=128.2, Vm_solid=0.052609,
+        condensed_source='Cps from the same CRC row as Hfs/S0s; Vm from the CRC inorganic solid-density table, via chemicals 1.5.2',
     ),
     # what is LEFT in the retort after HNO3 is distilled off saltpetre
     'potassium bisulfate': MineralRecord(
         name='potassium bisulfate', cas='7646-93-7',
         ions=('[K+]', 'O=S(=O)([O-])O'),
+        lattice='O=S(=O)([O-])O.[K+]',
         formula={'K': 1, 'S': 1, 'O': 4, 'H': 1},
         purpose='what is LEFT in the retort after HNO3 is distilled off saltpetre',
         Hf_solid=-1160.6, Gf_solid=-1031.07, S0_solid=138.1,
@@ -205,11 +270,14 @@ MINERALS: dict[str, MineralRecord] = {
         physical_source='Tm=CRC_INORG',
         fusion_law_bound=None,
         solubility_note=None,
+        Cp_solid=None, Vm_solid=0.058694,
+        condensed_source='no Cps',
     ),
     # the lye potash becomes with slaked lime
     'caustic potash': MineralRecord(
         name='caustic potash', cas='1310-58-3',
         ions=('[K+]', '[OH-]'),
+        lattice='[K+].[OH-]',
         formula={'K': 1, 'O': 1, 'H': 1},
         purpose='the lye potash becomes with slaked lime',
         Hf_solid=-424.6, Gf_solid=-379.45, S0_solid=81.2,
@@ -218,11 +286,14 @@ MINERALS: dict[str, MineralRecord] = {
         physical_source='Tm=CRC_INORG; Hfus=CRC',
         fusion_law_bound=None,
         solubility_note=None,
+        Cp_solid=68.9, Vm_solid=0.027449,
+        condensed_source='Cps from the same CRC row as Hfs/S0s; Vm from the CRC inorganic solid-density table, via chemicals 1.5.2',
     ),
     # lye
     'caustic soda': MineralRecord(
         name='caustic soda', cas='1310-73-2',
         ions=('[Na+]', '[OH-]'),
+        lattice='[Na+].[OH-]',
         formula={'Na': 1, 'O': 1, 'H': 1},
         purpose='lye',
         Hf_solid=-425.8, Gf_solid=-379.63, S0_solid=64.4,
@@ -231,11 +302,14 @@ MINERALS: dict[str, MineralRecord] = {
         physical_source='Tm=CRC_INORG; Hfus=CRC',
         fusion_law_bound=None,
         solubility_note=None,
+        Cp_solid=59.5, Vm_solid=0.018778,
+        condensed_source='Cps from the same CRC row as Hfs/S0s; Vm from the CRC inorganic solid-density table, via chemicals 1.5.2',
     ),
     # a second vitriol, for contrast
     'blue vitriol': MineralRecord(
         name='blue vitriol', cas='7758-98-7',
         ions=('[Cu+2]', 'O=S(=O)([O-])[O-]'),
+        lattice='O=S(=O)([O-])[O-].[Cu+2]',
         formula={'Cu': 1, 'S': 1, 'O': 4},
         purpose='a second vitriol, for contrast',
         Hf_solid=-771.4, Gf_solid=-662.13, S0_solid=109.2,
@@ -244,11 +318,14 @@ MINERALS: dict[str, MineralRecord] = {
         physical_source='Tm=COMMON_CHEMISTRY',
         fusion_law_bound=None,
         solubility_note=None,
+        Cp_solid=None, Vm_solid=0.044336,
+        condensed_source='no Cps',
     ),
     # AgCl -- the canonical 'it went cloudy' precipitate
     'chlorargyrite': MineralRecord(
         name='chlorargyrite', cas='7783-90-6',
         ions=('[Ag+]', '[Cl-]'),
+        lattice='[Ag+].[Cl-]',
         formula={'Ag': 1, 'Cl': 1},
         purpose="AgCl -- the canonical 'it went cloudy' precipitate",
         Hf_solid=-127.0, Gf_solid=-109.75, S0_solid=96.3,
@@ -257,11 +334,14 @@ MINERALS: dict[str, MineralRecord] = {
         physical_source='Tm=CRC_INORG; Hfus=CRC',
         fusion_law_bound=None,
         solubility_note=None,
+        Cp_solid=50.8, Vm_solid=0.025777,
+        condensed_source='Cps from the same CRC row as Hfs/S0s; Vm from the CRC inorganic solid-density table, via chemicals 1.5.2',
     ),
     # AgBr -- the photographic halide
     'bromargyrite': MineralRecord(
         name='bromargyrite', cas='7785-23-1',
         ions=('[Ag+]', '[Br-]'),
+        lattice='[Ag+].[Br-]',
         formula={'Ag': 1, 'Br': 1},
         purpose='AgBr -- the photographic halide',
         Hf_solid=-100.4, Gf_solid=-96.94, S0_solid=107.1,
@@ -270,11 +350,14 @@ MINERALS: dict[str, MineralRecord] = {
         physical_source='Tm=CRC_INORG; Hfus=CRC',
         fusion_law_bound=None,
         solubility_note=None,
+        Cp_solid=52.4, Vm_solid=0.029022,
+        condensed_source='Cps from the same CRC row as Hfs/S0s; Vm from the CRC inorganic solid-density table, via chemicals 1.5.2',
     ),
     # AgI -- the least soluble silver halide
     'iodargyrite': MineralRecord(
         name='iodargyrite', cas='7783-96-2',
         ions=('[Ag+]', '[I-]'),
+        lattice='[Ag+].[I-]',
         formula={'Ag': 1, 'I': 1},
         purpose='AgI -- the least soluble silver halide',
         Hf_solid=-61.8, Gf_solid=-66.23, S0_solid=115.5,
@@ -283,11 +366,14 @@ MINERALS: dict[str, MineralRecord] = {
         physical_source='Tm=CRC_INORG; Hfus=CRC',
         fusion_law_bound=None,
         solubility_note=None,
+        Cp_solid=56.8, Vm_solid=0.041333,
+        condensed_source='Cps from the same CRC row as Hfs/S0s; Vm from the CRC inorganic solid-density table, via chemicals 1.5.2',
     ),
     # AgNO3 -- the SOLUBLE reagent; it must NOT precipitate, which is a test
     'lunar caustic': MineralRecord(
         name='lunar caustic', cas='7761-88-8',
         ions=('[Ag+]', 'O=[N+]([O-])[O-]'),
+        lattice='O=[N+]([O-])[O-].[Ag+]',
         formula={'Ag': 1, 'N': 1, 'O': 3},
         purpose='AgNO3 -- the SOLUBLE reagent; it must NOT precipitate, which is a test',
         Hf_solid=-124.4, Gf_solid=-33.37, S0_solid=140.9,
@@ -296,11 +382,14 @@ MINERALS: dict[str, MineralRecord] = {
         physical_source='Tm=CRC_INORG; Hfus=CRC',
         fusion_law_bound=None,
         solubility_note=None,
+        Cp_solid=93.1, Vm_solid=0.039051,
+        condensed_source='Cps from the same CRC row as Hfs/S0s; Vm from the CRC inorganic solid-density table, via chemicals 1.5.2',
     ),
     # BaSO4 -- gravimetric sulfate, and stone-insoluble
     'barite': MineralRecord(
         name='barite', cas='7727-43-7',
         ions=('[Ba+2]', 'O=S(=O)([O-])[O-]'),
+        lattice='O=S(=O)([O-])[O-].[Ba+2]',
         formula={'Ba': 1, 'S': 1, 'O': 4},
         purpose='BaSO4 -- gravimetric sulfate, and stone-insoluble',
         Hf_solid=-1473.2, Gf_solid=-1362.05, S0_solid=132.2,
@@ -309,11 +398,14 @@ MINERALS: dict[str, MineralRecord] = {
         physical_source='Tm=CRC_INORG; Hfus=CRC',
         fusion_law_bound=None,
         solubility_note=None,
+        Cp_solid=101.8, Vm_solid=0.05198,
+        condensed_source='Cps from the same CRC row as Hfs/S0s; Vm from the CRC inorganic solid-density table, via chemicals 1.5.2',
     ),
     # the soluble barium reagent barite is precipitated from
     'barium chloride': MineralRecord(
         name='barium chloride', cas='10361-37-2',
         ions=('[Ba+2]', '[Cl-]', '[Cl-]'),
+        lattice='[Ba+2].[Cl-].[Cl-]',
         formula={'Ba': 1, 'Cl': 2},
         purpose='the soluble barium reagent barite is precipitated from',
         Hf_solid=-855.0, Gf_solid=-806.73, S0_solid=123.7,
@@ -322,11 +414,14 @@ MINERALS: dict[str, MineralRecord] = {
         physical_source='Tm=CRC_INORG; Hfus=CRC',
         fusion_law_bound=None,
         solubility_note=None,
+        Cp_solid=75.1, Vm_solid=0.053393,
+        condensed_source='Cps from the same CRC row as Hfs/S0s; Vm from the CRC inorganic solid-density table, via chemicals 1.5.2',
     ),
     # CaSO4 -- what M1's three acid-displacement steps drop (as the anhydrate)
     'anhydrite': MineralRecord(
         name='anhydrite', cas='7778-18-9',
         ions=('[Ca+2]', 'O=S(=O)([O-])[O-]'),
+        lattice='O=S(=O)([O-])[O-].[Ca+2]',
         formula={'Ca': 1, 'S': 1, 'O': 4},
         purpose="CaSO4 -- what M1's three acid-displacement steps drop (as the anhydrate)",
         Hf_solid=-1434.5, Gf_solid=-1321.92, S0_solid=106.5,
@@ -335,11 +430,14 @@ MINERALS: dict[str, MineralRecord] = {
         physical_source='Tm=CRC_INORG; Hfus=CRC',
         fusion_law_bound=None,
         solubility_note=None,
+        Cp_solid=99.7, Vm_solid=0.045994,
+        condensed_source='Cps from the same CRC row as Hfs/S0s; Vm from the CRC inorganic solid-density table, via chemicals 1.5.2',
     ),
     # PbSO4
     'anglesite': MineralRecord(
         name='anglesite', cas='7446-14-2',
         ions=('[Pb+2]', 'O=S(=O)([O-])[O-]'),
+        lattice='O=S(=O)([O-])[O-].[Pb+2]',
         formula={'Pb': 1, 'S': 1, 'O': 4},
         purpose='PbSO4',
         Hf_solid=-920.0, Gf_solid=-813.02, S0_solid=148.5,
@@ -348,11 +446,14 @@ MINERALS: dict[str, MineralRecord] = {
         physical_source='Tm=CRC_INORG; Hfus=CRC',
         fusion_law_bound=None,
         solubility_note=None,
+        Cp_solid=103.2, Vm_solid=0.048219,
+        condensed_source='Cps from the same CRC row as Hfs/S0s; Vm from the CRC inorganic solid-density table, via chemicals 1.5.2',
     ),
     # PbI2 -- the golden rain
     'lead iodide': MineralRecord(
         name='lead iodide', cas='10101-63-0',
         ions=('[Pb+2]', '[I-]', '[I-]'),
+        lattice='[I-].[I-].[Pb+2]',
         formula={'Pb': 1, 'I': 2},
         purpose='PbI2 -- the golden rain',
         Hf_solid=-175.5, Gf_solid=-173.71, S0_solid=174.9,
@@ -361,11 +462,14 @@ MINERALS: dict[str, MineralRecord] = {
         physical_source='Tm=CRC_INORG; Hfus=CRC',
         fusion_law_bound=None,
         solubility_note=None,
+        Cp_solid=77.4, Vm_solid=0.074838,
+        condensed_source='Cps from the same CRC row as Hfs/S0s; Vm from the CRC inorganic solid-density table, via chemicals 1.5.2',
     ),
     # CaF2 -- and the source of HF
     'fluorite': MineralRecord(
         name='fluorite', cas='7789-75-5',
         ions=('[Ca+2]', '[F-]', '[F-]'),
+        lattice='[Ca+2].[F-].[F-]',
         formula={'Ca': 1, 'F': 2},
         purpose='CaF2 -- and the source of HF',
         Hf_solid=-1228.0, Gf_solid=-1175.56, S0_solid=68.5,
@@ -374,11 +478,14 @@ MINERALS: dict[str, MineralRecord] = {
         physical_source='Tm=CRC_INORG; Hfus=CRC',
         fusion_law_bound=None,
         solubility_note=None,
+        Cp_solid=67.0, Vm_solid=0.024552,
+        condensed_source='Cps from the same CRC row as Hfs/S0s; Vm from the CRC inorganic solid-density table, via chemicals 1.5.2',
     ),
     # ZnS -- the zinc ore, and a sulfide precipitate
     'sphalerite': MineralRecord(
         name='sphalerite', cas='1314-98-3',
         ions=('[Zn+2]', '[S-2]'),
+        lattice='[S-2].[Zn+2]',
         formula={'Zn': 1, 'S': 1},
         purpose='ZnS -- the zinc ore, and a sulfide precipitate',
         Hf_solid=-206.0, Gf_solid=-201.23, S0_solid=57.7,
@@ -387,11 +494,14 @@ MINERALS: dict[str, MineralRecord] = {
         physical_source='Tm=CRC_INORG; Hfus=CRC',
         fusion_law_bound=None,
         solubility_note=None,
+        Cp_solid=46.0, Vm_solid=0.023832,
+        condensed_source='Cps from the same CRC row as Hfs/S0s; Vm from the CRC inorganic solid-density table, via chemicals 1.5.2',
     ),
     # Mg(OH)2 -- milk of magnesia
     'brucite': MineralRecord(
         name='brucite', cas='1309-42-8',
         ions=('[Mg+2]', '[OH-]', '[OH-]'),
+        lattice='[Mg+2].[OH-].[OH-]',
         formula={'Mg': 1, 'O': 2, 'H': 2},
         purpose='Mg(OH)2 -- milk of magnesia',
         Hf_solid=-924.5, Gf_solid=-833.44, S0_solid=63.2,
@@ -400,6 +510,8 @@ MINERALS: dict[str, MineralRecord] = {
         physical_source='Tm=CRC_INORG',
         fusion_law_bound=None,
         solubility_note=None,
+        Cp_solid=77.0, Vm_solid=0.024608,
+        condensed_source='Cps from the same CRC row as Hfs/S0s; Vm from the CRC inorganic solid-density table, via chemicals 1.5.2',
     ),
 }
 
@@ -418,3 +530,27 @@ def lattice_smiles() -> frozenset:
 def by_ions() -> dict:
     """Reverse index: the tuple of dissolved ions -> the mineral record."""
     return {r.ions: r for r in MINERALS.values()}
+
+
+def by_lattice() -> dict:
+    """Reverse index: the canonical LATTICE SMILES -> the mineral record.
+
+    ⚠ THIS IS THE INDEX THAT LETS A CRYSTAL BE A SPECIES, and it is a different
+    claim from ``by_ions``. ``by_ions`` says what a mineral becomes when it
+    DISSOLVES, which is the only thing this table was for before M6. This one
+    says what it is while it is still a solid -- and a species keyed here is
+    priced on the solid basis, never boils, and is never handed to the fusion
+    law. See ``properties/solid_state.py``.
+    """
+    return {r.lattice: r for r in MINERALS.values()}
+
+
+def priced_solid(name: str) -> bool:
+    """Can this mineral sit in a vessel's solid block at all?
+
+    Needs the formation pair (every entry here has one) plus the two BOOKKEEPING
+    numbers Layer 4 asks of every species. An entry missing either is reference
+    data still, but it cannot be charged into a flask.
+    """
+    r = MINERALS.get(name)
+    return r is not None and r.Cp_solid is not None and r.Vm_solid is not None

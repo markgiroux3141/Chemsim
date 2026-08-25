@@ -195,6 +195,55 @@ norbornane`, which loses the whole anhydride. It is labelled
 recorded here rather than fixed, because inventing the missing products would be
 authoring chemistry inside an audit corpus.
 
+### ⚠ M6 read `calcination` and `roasting`, and re-labelled NOTHING
+
+M6's two classes were read against the same standard before any code was
+written. The verdicts differ, and neither produced a re-label:
+
+| class | rows | verdict |
+|---|---:|---|
+| `calcination` | 3 | **TWO mechanisms.** `lime-cycle` 1 and `solvay-process` 5 are DECARBONATION (`carbonate -> oxide + CO2`); `bayer-process` 3 is DEHYDRATION (`hydroxide -> oxide + H2O`). Both are built. |
+| `roasting` | 5 | **ONE mechanism** -- `metal sulfide + O2 -> metal oxide + SO2` -- in four rows. ⚠ `mercury-from-cinnabar` gives the METAL, because HgO decomposes at roasting temperature, so one template will not cover that row honestly. |
+
+⚠ **The class names were left alone, and that is deliberate.** M1's rule is that
+a class must name a MECHANISM, and `calcination` names two. The reason not to
+split the label is that the split does not change what anything scores: the two
+decarbonation rows are covered by M6's `calcination-decarbonation` and the
+dehydration row is not covered by anything, so a re-label would move the same
+rows between the same buckets. **What M6 recorded instead is that its
+dehydration TEMPLATE is not the catalog's dehydration ROW.** Bayer's
+`Al(OH)3 -> Al2O3 + H2O` needs two minerals `mineral_data` does not have, so M6
+built the same mechanism on `Ca(OH)2 -> CaO + H2O` -- **the mechanism is covered
+and the row still reads uncovered**, which is the standard costing something in
+the honest direction.
+
+`roasting` remains at zero rows covered, and now for two independent reasons:
+of its five sulfides only ZnS prices and **none of the five oxides does** (data);
+and roasting CONSUMES a gas, which M6's affinity form is measurably not a rate
+law for (mechanism -- see `properties/solid_state.py`). The second reason is the
+useful one, because it says which engine feature the class is waiting on.
+
+### ⚠ M6 DID re-label five rows, in two classes it had not been asked about
+
+Reading `calcination`'s rows led straight into the two classes that finish the
+`lime-cycle` route, and both of them were two mechanisms. Split rather than
+refused, on the `catalytic-hydrogenation` precedent -- every row here IS a clean
+mechanism:
+
+| was | rows | became | has a mechanism |
+|---|---:|---|---|
+| `hydration` | 2 of 3 | `lime-slaking` | ✔ `SolidStateArrays` reversed |
+| `hydration` | 1 of 3 | `carbonyl-hydration` | ✘ -- chloral hydrate is a gem-diol on a carbonyl, not a lattice taking on water |
+| `carbonation` | 1 of 2 | `solid-carbonation` | ✔ `SolidStateArrays`, EMERGENT |
+| `carbonation` | 1 of 2 | `basic-carbonate-precipitation` | ✘ -- the white-lead stack is a metathesis in solution |
+
+⚠⚠ **`solid-carbonation` IS THE FIRST CLASS IN THIS CORPUS CREDITED TO A
+MECHANISM NOBODY WROTE.** It is not a template and it is not one row's reverse:
+it is the `calcination-dehydration` row forwards and the
+`calcination-decarbonation` row backwards, sharing the quicklime in the solid
+block. `lime-slaking` is the dehydration row's own reverse. **Two declarations,
+three credited classes**, and `lime-cycle` becomes the 26th template-ready route.
+
 Three further findings the report makes explicit:
 
 * **10 refusals need only a boiling point.** Their formation half already

@@ -48,6 +48,7 @@ from chemsim.numerics.vessel_integrator import (
     IONIC_SPLIT_LIMIT,
     PhaseArrays,
     PrecipitationArrays,
+    SolidStateArrays,
     VesselConditions,
     VesselIntegrator,
     _poly,
@@ -65,6 +66,8 @@ from chemsim.properties import (
     build_born_arrays,
     fit_inverse_cubic,
 )
+from chemsim.properties import mineral_data
+from chemsim.properties.volatility import NONVOLATILE_A
 
 # Temperature window the infinite-dilution reference is fitted over. Narrower
 # than the 250-450 K used for liquid properties, and deliberately so: PSRK's gas
@@ -486,7 +489,46 @@ def build_phase_arrays(
     henry = np.zeros(n, dtype=bool)
     reference_solvent: list[str | None] = [None] * n
 
+    lattices = mineral_data.by_lattice()
+
     for i, smi in enumerate(species):
+        # ⚠ A MINERAL IS RESOLVED HERE AND NOT BY THE THREE PROVIDERS, BECAUSE
+        # ALL THREE ARE RIGHT TO REFUSE IT. ``thermochemistry`` refuses a lattice
+        # SMILES by name -- a solid-basis formation value wearing a ThermoData
+        # would be shifted by ``standard_state`` and dissolved by the fusion
+        # law -- and ``volatility``/``condensed`` are built on top of it. So the
+        # crystal's numbers come straight from ``mineral_data``, which is where
+        # SMILES meet tables, exactly as ``build_precipitation_arrays`` does one
+        # function down.
+        #
+        # ⚠ ``solidifies`` STAYS FALSE, and that is the entire bargain. A lattice
+        # in the solid block may now REACT (M6) but it still may not DISSOLVE,
+        # because the only dissolution law here is the fusion law and that law is
+        # measured wrong for a lattice by up to 407x in both directions. Nothing
+        # about M6 softens that; the two questions never touch.
+        mineral = lattices.get(smi)
+        if mineral is not None:
+            if mineral.Cp_solid is None or mineral.Vm_solid is None:
+                raise ValueError(
+                    f"{smi!r} is {mineral.name}, whose formation pair is "
+                    "curated but whose crystal Cp or molar volume is not. A "
+                    "species in the solid block has to say how much room it "
+                    "takes and how much heat it holds; borrowing an ion's "
+                    "placeholder for a mineral would be silent. Regenerate "
+                    "mineral_data, or charge its ions instead: "
+                    f"{list(mineral.ions)}."
+                )
+            vol_A[i] = NONVOLATILE_A         # 1e-30 bar; a crystal does not boil
+            condensable[i] = False
+            Tc[i] = 1.0                      # keeps the Watson factor defined
+            v_liq[i] = (mineral.Vm_solid, 0.0, 0.0, 0.0)
+            Cp_liq[i] = (mineral.Cp_solid, 0.0, 0.0, 0.0)
+            # Unreachable -- nothing in this engine can put a lattice in the
+            # headspace -- but a zero there would make a stray mole heat-free,
+            # so the crystal's own constant stands in rather than nothing.
+            Cp_gas[i] = (mineral.Cp_solid, 0.0, 0.0, 0.0)
+            continue
+
         v = volatility.get(smi)
         c = condensed.get(smi)
         t = thermo.get(smi)
@@ -657,6 +699,114 @@ def build_precipitation_arrays(
     )
 
 
+def build_solid_state_arrays(
+    species: list[str],
+) -> tuple[SolidStateArrays, list[str]]:
+    """Every solid-state reaction this species set can run, plus what it cannot.
+
+    M6. Layer 5's half of the term, and the mirror of
+    ``build_precipitation_arrays`` one function up -- with the species check
+    running the OTHER WAY, which is the whole difference between the two
+    representations.
+
+    ⚠ Precipitation needs the IONS present, because the solid block holds ions
+    and the lattice never becomes a species. This needs the LATTICE present,
+    because a crystal that reacts while staying a crystal has no ion-by-ion
+    form: quicklime ion-by-ion is ``[Ca+2].[O-2]``, and the oxide ion is in no
+    aqueous table anywhere because it does not exist in water. Both
+    representations of CaCO3 can be in one vessel and they are not the same
+    species; nothing here reconciles them, and ``solid_state_report`` says so.
+
+    A row qualifies when every mineral's LATTICE and every gas is a species
+    here, and the declaration prices. Refusals pass through into the report
+    rather than being dropped -- "the kiln did nothing" is otherwise
+    indistinguishable from a bug.
+    """
+    from chemsim.properties.solid_state import (
+        SOLID_STATE_REACTIONS,
+        UnpricedSolidReaction,
+        price,
+    )
+
+    thermo = ThermochemistryProvider()
+    index = {s: i for i, s in enumerate(species)}
+    n = len(species)
+    rows_solid: list[np.ndarray] = []
+    rows_gas: list[np.ndarray] = []
+    names: list[str] = []
+    dH: list[float] = []
+    dS: list[float] = []
+    A: list[float] = []
+    Ea: list[float] = []
+    report: list[str] = []
+
+    for decl in SOLID_STATE_REACTIONS:
+        lattices = {
+            name: mineral_data.MINERALS[name].lattice
+            for name, _ in decl.solids
+            if name in mineral_data.MINERALS
+        }
+        missing = [
+            name for name, _ in decl.solids
+            if lattices.get(name) not in index
+        ] + [smi for smi, _ in decl.gases if smi not in index]
+        if missing:
+            continue                      # not a candidate here; not a failure
+        # ⚠ A GAS REACTANT IS REFUSED, and ``SolidStateArrays`` carries the
+        # measurement: its pressure sits in the DENOMINATOR of Q, so an
+        # atmosphere with none of it left drives the reverse flux to 2.6e15
+        # formula units per second. That is the affinity form saying it is not
+        # a rate law for a gas-CONSUMING surface reaction -- a different
+        # mechanism, which wants the mass-action kernel.
+        consuming = [smi for smi, nu in decl.gases if nu < 0]
+        if consuming:
+            report.append(
+                f"{decl.name}: REFUSED -- {consuming} appear on the reactant "
+                "side as gases. The affinity form puts a gas reactant's "
+                "pressure in the denominator of Q, so an atmosphere depleted "
+                "of it gives an unbounded reverse rate. A gas-consuming "
+                "surface reaction (roasting; a solid catalyst) is a different "
+                "mechanism and wants a third PHASE_INDEX entry, not this term."
+            )
+            continue
+        try:
+            priced = price(decl, thermo)
+        except UnpricedSolidReaction as exc:
+            report.append(
+                f"{decl.name}: every species is present but the reaction has "
+                f"no priced pair -- {str(exc).splitlines()[0]}"
+            )
+            continue
+        row_s = np.zeros(n)
+        for name, nu in decl.solids:
+            row_s[index[lattices[name]]] += float(nu)
+        row_g = np.zeros(n)
+        for smi, nu in decl.gases:
+            row_g[index[smi]] += float(nu)
+        rows_solid.append(row_s)
+        rows_gas.append(row_g)
+        names.append(decl.name)
+        dH.append(priced.dH)
+        dS.append(priced.dS)
+        A.append(priced.A)
+        Ea.append(priced.Ea)
+
+    nu_solid = np.array(rows_solid) if rows_solid else np.zeros((0, n))
+    nu_gas = np.array(rows_gas) if rows_gas else np.zeros((0, n))
+    return (
+        SolidStateArrays(
+            nu_solid=nu_solid,
+            nu_gas=nu_gas,
+            dH=np.array(dH),
+            dS=np.array(dS),
+            A_fwd=np.array(A),
+            Ea_fwd=np.array(Ea),
+            names=tuple(names),
+        ),
+        report,
+    )
+
+
 @dataclass
 class Vessel:
     """A reaction vessel: contents, phases, temperature, and the boundary."""
@@ -689,6 +839,12 @@ class Vessel:
     # term is worth; ``precipitation_report`` still says which lattices this
     # vessel could have dropped, so turning it off cannot hide the question.
     precipitation: bool = True
+    # Whether a crystal may REACT while staying a crystal -- M6's term.
+    # ⚠ On by default for the same reason ``precipitation`` is: a kiln in which
+    # limestone does not calcine is not an idealised kiln, it is a wrong one.
+    # Set False to measure what the term is worth; ``solid_state_report`` still
+    # says which reactions this vessel could have run.
+    solid_state: bool = True
     heat_capacity: float = 50.0    # J/K, the glassware itself (see VesselConditions)
     ingress: dict[str, float] = field(default_factory=dict)  # mol/s into headspace
     # Composition of the room outside, as mole fractions. Air by default. Set it
@@ -789,10 +945,18 @@ class Vessel:
         self.precipitation_arrays, self.precipitation_refusals = (
             build_precipitation_arrays(self.species)
         )
+        # M6: which solid-state reactions this species set can run. Same
+        # contract -- built even when the term is switched off.
+        self.solid_state_arrays, self.solid_state_refusals = (
+            build_solid_state_arrays(self.species)
+        )
         self.integrator = VesselIntegrator(
             self.kinetics, self.phases, self.conditions,
             precipitation=(
                 self.precipitation_arrays if self.precipitation else None
+            ),
+            solid_state=(
+                self.solid_state_arrays if self.solid_state else None
             ),
         )
 
@@ -1506,6 +1670,54 @@ class Vessel:
             f"round-off it could not settle against a positive holding: {worst}"
         )
 
+    def solid_state_report(self) -> str:
+        """Which reactions between crystals this vessel can run, and at what
+        temperature each becomes possible against the room.
+
+        M6. Written the way ``lle_report`` and ``precipitation_report`` are: it
+        answers the same question whether the term is on or off, because "the
+        limestone just sat there" is otherwise indistinguishable from a bug.
+
+        ⚠ THE TEMPERATURE IT PRINTS IS NOT A CONSTANT SOMEONE CHOSE. ``K(T)`` is
+        the gas pressure a pair of crystals sits at; the reaction can only run to
+        completion once that exceeds what the room is pushing back with. So the
+        kiln temperature is where ``K(T) = P_ambient``, and it comes out of the
+        CRC formation data rather than out of this file.
+        """
+        arr = self.solid_state_arrays
+        lines: list[str] = []
+        if not arr.m:
+            lines.append(
+                "no solid-state reaction is available in this vessel: none of "
+                "the declared rows has all of its minerals AND gases as species "
+                "here. Charge the lattice (properties/solid_state.lattice_"
+                "species()), not its ions -- the two are different species and "
+                "only the lattice can react as a solid."
+            )
+        for j, name in enumerate(arr.names):
+            K = float(arr.equilibrium_pressure(self.T)[j])
+            lo, hi = 200.0, 3000.0
+            for _ in range(80):                       # bisect K(T) = P_ambient
+                mid = 0.5 * (lo + hi)
+                if float(arr.equilibrium_pressure(mid)[j]) < self.P_ambient:
+                    lo = mid
+                else:
+                    hi = mid
+            lines.append(
+                f"{name}: dH {arr.dH[j] / 1000:+.1f} kJ/mol, "
+                f"dS {arr.dS[j]:+.1f} J/(mol K); "
+                f"K({self.T:.0f} K) = {K:.4g} bar, and it needs "
+                f"{0.5 * (lo + hi):.0f} K to beat the room's "
+                f"{self.P_ambient:.3f} bar"
+            )
+        if not self.solid_state:
+            lines.append(
+                "-- but solid_state=False on this vessel, so the term is OFF "
+                "and no crystal will react."
+            )
+        lines.extend(self.solid_state_refusals)
+        return "\n".join(lines)
+
     def energy_report(self) -> str:
         """The energy balance, the way ``state`` and ``conservation_report`` are
         the mass one: every watt the temperature equation sees, and how much
@@ -1542,6 +1754,7 @@ class Vessel:
             f"  reaction        {p['q_rxn']:+12.4e} W",
             f"  vaporisation    {p['q_vap']:+12.4e} W",
             f"  fusion/lattice  {p['q_fus']:+12.4e} W",
+            f"  solid-state     {p.get('q_solid', 0.0):+12.4e} W",
             f"  wall loss       {p['q_loss']:+12.4e} W",
             f"  vent            {p['q_vent']:+12.4e} W",
             f"  applied         {p['Q_input']:+12.4e} W",

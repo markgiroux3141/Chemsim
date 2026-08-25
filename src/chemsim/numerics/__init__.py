@@ -6,11 +6,16 @@ __all__ = ["Integrator", "Source"]
 
 from chemsim.numerics.vessel_integrator import (  # noqa: E402
     PhaseArrays,
+    PrecipitationArrays,
+    SolidStateArrays,
     VesselConditions,
     VesselIntegrator,
 )
 
-__all__ = [*__all__, "VesselIntegrator", "PhaseArrays", "VesselConditions"]
+__all__ = [
+    *__all__, "VesselIntegrator", "PhaseArrays", "VesselConditions",
+    "PrecipitationArrays", "SolidStateArrays",
+]
 
 from chemsim.numerics.rig_integrator import (  # noqa: E402
     EdgeArrays,

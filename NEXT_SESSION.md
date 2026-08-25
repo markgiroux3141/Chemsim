@@ -397,6 +397,26 @@ fails on unrelated changes and says nothing when it passes.**
 | ⚠ mixed-standard-state reaction shift | **+323 kJ/mol** on `methyl oleate + glycerol -> monoolein + methanol`; now a NOTICE |
 | ⚠ Joback vs ATCT on HOCl | **-211.3 vs -76.8 kJ/mol**, a 134.5 kJ/mol error that would have been silent |
 | ⚠ Joback on triolein | Tb **1690 K**, Tc **4020 K**, omega **-0.64** -> refused by name, not by scipy |
+| **M6 -- calcination, dH / dS at 298 K** | calcite **+179.19 kJ/mol, +160.25 J/(mol K)**; slaked lime **+108.47 / +143.62** |
+| ... `Ea` DERIVED as `max(dH, 0)` | calcite **179.19 kJ/mol** vs experimental 170-200; reverse barrier **exactly 0** |
+| ... the reverse rate constant | `A exp(-dS/R)` = **4.259e-4** and **3.150e-3** 1/(bar s), TEMPERATURE-INDEPENDENT |
+| ... `K(T)` = P_ambient, i.e. the kiln | **1119 K** (literature ~1170) and **756 K** (~785); `dCp = 0` costs 30-50 K |
+| ⚠⚠ **mass action on the solid amounts** | settled at `p/K` = **3.0863 vs n_A/n_B 3.0863** (1100 K) and **1.2139 vs 1.2139** (1200 K). BUILT, measured, REPLACED |
+| ... sealed 1 L, 0.1 mol calcite | conversion **0.12 / 1.23 / 7.95 / 37.3%** at 900 / 1000 / 1100 / 1200 K; forward-only reads 100% at all four |
+| ... swept, 1 bar of air, 20 ks | **1.29 / 6.53 / 14.29 / 99.75 / 100.00%** at 1000 / 1073 / 1100 / 1150 / 1200 K |
+| ... the equilibrium is amount-INDEPENDENT | 0.05 / 0.2 / 0.8 mol charged -> `n_A/n_B` **5.30 / 24.33 / 102.62**, p(CO2) **0.727497 / 0.727507 / 0.727507 bar** |
+| ... `DECOMPOSITION_A` is a CLOCK | 1e4 / 1e5 / 1e6 1/s -> sealed p(CO2) **3.723133 bar** at all three (7 figures) |
+| ... the sign-switch kink, parked at equilibrium | 2,000,000 s in **0.2 s** wall, `p/K - 1` = **+3.8e-10**, at `units_f/units_r` up to **129.5** |
+| ... a kiln's fuel bill | **-14.374 W** solid-state against **+14.374 W** wall at 1200 K, 0.1 mol |
+| ... carbonation, EMERGENT (nothing declares it) | 0.02 mol slaked lime + CO2, 700 K, 50 ks -> **4.391e-3 mol limestone**; calcium exact to 1e-9 |
+| ... `mineral_data` | **25 minerals, 23 with `Cp_solid` and `Vm_solid`**; calcite 83.5 J/(mol K) and 0.036932 L/mol |
+| ⚠ a zero Jacobian column in a sealed flask | N2/O2 in the network but absent: 0.05 mol **RAISES** (CO2 to -2.572 mol); 0.1 / 0.4 / 1.0 mol fine. Pre-existing, refuses loudly |
+| `tests/test_solid_state.py` | **23 tests in 28 s** |
+| **M6 -- routes template-ready** | **26 / 173** (was 25); `lime-cycle` is COMPLETE end to end from limestone |
+| ... reaction classes covered | **32 / 214** (was 29 / 212); `calcination`, `lime-slaking`, `solid-carbonation` |
+| ... templates in the project | **34, UNCHANGED** -- M6 covered three classes with a TERM and no new template |
+| ⚠ classes split by M6's row reading | `hydration` -> `lime-slaking` + `carbonyl-hydration`; `carbonation` -> `solid-carbonation` + `basic-carbonate-precipitation`. 5 rows re-labelled |
+| the whole suite | **750 tests in 11:19** (was 727 in 11:34) |
 
 ⚠ **The prep's numbers have NOT been re-measured for three sessions.** The suite
 pins them and `tests/test_prep_side_products.py` passes. Re-run

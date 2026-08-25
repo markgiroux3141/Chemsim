@@ -195,6 +195,42 @@ def solid_formation_pair(cas: str):
     return None
 
 
+def solid_condensed_pair(cas: str):
+    """(Cps J/(mol K), Vm m3/mol) for the crystal, or ``None`` where absent.
+
+    ⚠ THESE TWO ARE FOR THE VESSEL'S BOOKKEEPING, NOT FOR ITS EQUILIBRIA. A
+    mineral in the solid block occupies volume and holds heat, and Layer 4 asks
+    every species for both; before M6 a lattice had no answer and the block
+    borrowed an ion's nominal placeholder. ``Cps`` comes from the SAME CRC row
+    as the ``Hfs``/``S0s`` pair above -- one row, one compilation -- and ``Vm``
+    from the CRC inorganic solid-density table.
+
+    ⚠ AND ``Cps`` IS NOT USED TO CORRECT ln K, WHICH WAS MEASURED AND REFUSED.
+    It is a 298 K constant while a gas Cp here is a real polynomial, so a
+    ``dCp(T)`` built from the pair is half-corrected: it moves calcination's
+    1 bar decomposition temperature from 1118.2 K to 1107.7 K (literature
+    ~1170 K, so WORSE by 10 K) while moving portlandite's from 755.2 to 774.9 K
+    (literature ~785 K, BETTER by 20 K). One improves and one degrades, which is
+    the signature of a correction that is not consistently applied rather than
+    of a missing physics term. ``solid_state.py`` therefore keeps dCp = 0 and
+    says so, exactly as ``PrecipitationArrays.ln_Ksp`` does.
+    """
+    import chemicals.heat_capacity as hc
+    import chemicals.volume as vo
+
+    hc._load_Cp_data()
+    vo._load_rho_data()
+    cp = hc.CRC_standard_data
+    vm = vo.rho_data_CRC_inorg_s_const
+    c = float(cp.loc[cas, "Cps"]) if cas in cp.index else None
+    if c is not None and c != c:                    # NaN
+        c = None
+    v = float(vm.loc[cas, "Vm"]) if cas in vm.index else None
+    if v is not None and v != v:
+        v = None
+    return c, v
+
+
 def collect():
     from chemicals import (
         Hfs, Hfs_methods, Hfus, Hfus_methods, S0s, S0s_methods, Tm, Tm_methods,
@@ -259,8 +295,11 @@ def collect():
             real = SOLUBILITY_298[name][0]
             bound = (round(pred, 6), real, round(pred / real, 5))
 
+        Cps, Vm = solid_condensed_pair(cas)
         table[name] = dict(
-            name=name, cas=cas, ions=ions, formula=comp, purpose=purpose,
+            name=name, cas=cas, ions=ions, lattice=Molecule.from_smiles(
+                ".".join(ions)).smiles,
+            formula=comp, purpose=purpose,
             Hf_solid=round(Hf, 2), Gf_solid=round(Gf, 2), S0_solid=round(S, 2),
             Tm=round(tm[0], 2) if tm else None,
             Hfus=round(hf[0] / 1000.0, 3) if hf else None,
@@ -272,6 +311,16 @@ def collect():
             ) or "no measured Tm or Hfus in any source consulted",
             fusion_law_bound=bound,
             solubility_note=SOLUBILITY_298.get(name, (None, None))[1],
+            Cp_solid=round(Cps, 2) if Cps is not None else None,
+            Vm_solid=round(Vm * 1000.0, 6) if Vm is not None else None,
+            condensed_source=(
+                "Cps from the same CRC row as Hfs/S0s; Vm from the CRC "
+                "inorganic solid-density table, via chemicals 1.5.2"
+                if Cps is not None and Vm is not None
+                else "; ".join(
+                    f"no {k}" for k, v in (("Cps", Cps), ("Vm", Vm))
+                    if v is None)
+            ),
         )
         report.append(
             f"  {name:20s} Hfs spread "
@@ -317,6 +366,28 @@ reference that cancels out of every equilibrium it appears in.
 ``validation/game_gates.py`` re-measures the bound above, so the verdict cannot
 go stale if a solubility mechanic ever lands.
 
+## ⚠ WHAT M6 CHANGED, AND WHAT IT DID NOT
+
+**The lattice is now a SPECIES the solid block can hold** -- ``lattice`` is its
+canonical one-species SMILES and ``by_lattice()`` the index. Nothing above is
+softened by that: it still never dissolves, still never boils, and
+``thermochemistry`` still refuses it by name, because the fusion law is still
+the wrong law. What changed is that a crystal can now REACT while staying a
+crystal -- ``CaCO3(s) -> CaO(s) + CO2(g)`` -- which touches none of the
+dissolution question.
+
+⚠ **AND THE ION-BY-ION REPRESENTATION CANNOT EXPRESS THE LIME CYCLE, which is
+the measurement that forced this.** Quicklime ion-by-ion is ``[Ca+2].[O-2]``,
+and the oxide ion is in no aqueous table anywhere because it does not exist in
+water -- CaO does not dissolve to Ca2+ + O2-, it HYDRATES. ``thermochemistry``
+refuses ``[O-2]`` and ``solubility_product`` refuses quicklime for exactly that
+reason. So there was no route to the product of calcining limestone that went
+through ions, and the choice was the lattice or nothing.
+
+``Cp_solid`` and ``Vm_solid`` are the price of that: a species in the solid
+block occupies volume and holds heat. Both are measured, both from CRC, and
+neither enters an equilibrium.
+
 ## Provenance
 
 dGf is DERIVED from dHf and S0 against the CRC element reference states in
@@ -344,6 +415,12 @@ class MineralRecord(NamedTuple):
     name: str
     cas: str
     ions: tuple                    # canonical SMILES of the dissolved ions
+    # ⚠ THE LATTICE AS ONE SPECIES, canonical. Not a molecule and not a
+    # solution: it is the crystal, and M6 is what made it need a name. The
+    # solid block can now hold it whole, which is the only representation the
+    # lime cycle has -- quicklime ion-by-ion needs ``[O-2]``, and the oxide ion
+    # is absent from every aqueous table because it does not exist in water.
+    lattice: str
     formula: dict                  # element counts of one formula unit
     purpose: str                   # what a chain wants it FOR
     Hf_solid: float                # kJ/mol, crystalline, 298.15 K
@@ -357,6 +434,15 @@ class MineralRecord(NamedTuple):
     # solubility exists. The verdict above, per species, as data.
     fusion_law_bound: tuple | None
     solubility_note: str | None
+    # ⚠ THE VESSEL'S BOOKKEEPING HALF, and it is NOT part of any equilibrium.
+    # A crystal in the solid block takes up room and holds heat; Layer 4 asks
+    # every species for both. ``Cp_solid`` is a 298 K constant from the same
+    # CRC row as ``Hf_solid``, and it is deliberately NOT used to put a
+    # ``dCp(T)`` on any ln K -- see ``tools/build_mineral_data.py``, where that
+    # correction was measured making one row better and one worse.
+    Cp_solid: float | None = None      # J/(mol K), crystalline, 298.15 K
+    Vm_solid: float | None = None      # L/mol, crystal molar volume
+    condensed_source: str = ""
 '''
 
 FOOTER = '''
@@ -375,6 +461,30 @@ def lattice_smiles() -> frozenset:
 def by_ions() -> dict:
     """Reverse index: the tuple of dissolved ions -> the mineral record."""
     return {r.ions: r for r in MINERALS.values()}
+
+
+def by_lattice() -> dict:
+    """Reverse index: the canonical LATTICE SMILES -> the mineral record.
+
+    ⚠ THIS IS THE INDEX THAT LETS A CRYSTAL BE A SPECIES, and it is a different
+    claim from ``by_ions``. ``by_ions`` says what a mineral becomes when it
+    DISSOLVES, which is the only thing this table was for before M6. This one
+    says what it is while it is still a solid -- and a species keyed here is
+    priced on the solid basis, never boils, and is never handed to the fusion
+    law. See ``properties/solid_state.py``.
+    """
+    return {r.lattice: r for r in MINERALS.values()}
+
+
+def priced_solid(name: str) -> bool:
+    """Can this mineral sit in a vessel's solid block at all?
+
+    Needs the formation pair (every entry here has one) plus the two BOOKKEEPING
+    numbers Layer 4 asks of every species. An entry missing either is reference
+    data still, but it cannot be charged into a flask.
+    """
+    r = MINERALS.get(name)
+    return r is not None and r.Cp_solid is not None and r.Vm_solid is not None
 '''
 
 
@@ -386,6 +496,7 @@ def render(table: dict) -> str:
         out.append(f"    {name!r}: MineralRecord(")
         out.append(f"        name={rec['name']!r}, cas={rec['cas']!r},")
         out.append(f"        ions={rec['ions']!r},")
+        out.append(f"        lattice={rec['lattice']!r},")
         out.append(f"        formula={rec['formula']!r},")
         out.append(f"        purpose={rec['purpose']!r},")
         out.append(f"        Hf_solid={rec['Hf_solid']!r}, "
@@ -396,6 +507,9 @@ def render(table: dict) -> str:
         out.append(f"        physical_source={rec['physical_source']!r},")
         out.append(f"        fusion_law_bound={rec['fusion_law_bound']!r},")
         out.append(f"        solubility_note={rec['solubility_note']!r},")
+        out.append(f"        Cp_solid={rec['Cp_solid']!r}, "
+                   f"Vm_solid={rec['Vm_solid']!r},")
+        out.append(f"        condensed_source={rec['condensed_source']!r},")
         out.append("    ),")
     out.append("}")
     out.append(FOOTER)

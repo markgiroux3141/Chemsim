@@ -26,11 +26,11 @@ solvay-process | 2 | carbonation | ammonium-hydroxide + carbon-dioxide + sodium-
 solvay-process | 3 | bicarbonate calcination | sodium-bicarbonate | sodium-carbonate + carbon-dioxide + water | calciner, 450 K | thermal-decomposition
 solvay-process | 4 | ammonia recovery | ammonium-chloride + calcium-hydroxide | ammonia + calcium-chloride + water | still | proton-transfer
 solvay-process | 5 | lime kiln for CO2 | calcium-carbonate | calcium-oxide + carbon-dioxide | kiln, 1200 K | calcination
-solvay-process | 6 | lime slaking | calcium-oxide + water | calcium-hydroxide | slaker | hydration
+solvay-process | 6 | lime slaking | calcium-oxide + water | calcium-hydroxide | slaker | lime-slaking
 chloralkali | 1 | brine electrolysis | sodium-chloride + water | sodium-hydroxide + chlorine + hydrogen | membrane cell, 3 V | electrolysis
 lime-cycle | 1 | calcination | calcium-carbonate | calcium-oxide + carbon-dioxide | kiln, 1200 K | calcination
-lime-cycle | 2 | slaking | calcium-oxide + water | calcium-hydroxide | exothermic | hydration
-lime-cycle | 3 | carbonation of mortar | calcium-hydroxide + carbon-dioxide | calcium-carbonate + water | months, ambient | carbonation
+lime-cycle | 2 | slaking | calcium-oxide + water | calcium-hydroxide | exothermic | lime-slaking
+lime-cycle | 3 | carbonation of mortar | calcium-hydroxide + carbon-dioxide | calcium-carbonate + water | months, ambient | solid-carbonation
 haber-bosch | 1 | ammonia synthesis | nitrogen + hydrogen + iron | ammonia + iron | 700 K, 200 bar, promoted iron | catalytic-gas-synthesis
 ostwald-process | 1 | ammonia oxidation | ammonia + oxygen + platinum | nitric-oxide + water + platinum | 1150 K, Pt-Rh gauze | catalytic-gas-oxidation
 ostwald-process | 2 | NO oxidation | nitric-oxide + oxygen | nitrogen-dioxide | cooling train | gas-phase-oxidation
@@ -112,7 +112,7 @@ triarylmethane-dyes | 2 | oxidation to the dye | leucomalachite-green + lead-iv-
 prussian-blue-route | 1 | ferrocyanide from potash and blood | potassium-carbonate + iron | potassium-ferrocyanide + carbon-dioxide | calcination with animal matter | pyrolytic-synthesis
 prussian-blue-route | 2 | pigment precipitation | potassium-ferrocyanide + iron-iii-sulfate | prussian-blue + potassium-sulfate | aqueous, ambient | precipitation-metathesis
 white-lead-route | 1 | acetate formation | lead + acetic-acid + oxygen | lead-acetate + water | stack process, dung heat | oxidative-dissolution
-white-lead-route | 2 | carbonation | lead-acetate + carbon-dioxide + water | basic-lead-carbonate + acetic-acid | months in the stack | carbonation
+white-lead-route | 2 | carbonation | lead-acetate + carbon-dioxide + water | basic-lead-carbonate + acetic-acid | months in the stack | basic-carbonate-precipitation
 vermilion-route | 1 | mercury sulfide formation | mercury + sulfur-s8 | mercury-sulfide | trituration then sublimation | direct-combination
 chrome-yellow-route | 1 | precipitation | lead-acetate + potassium-chromate | chrome-yellow + potassium-acetate | aqueous | precipitation-metathesis
 phenol-cumene | 1 | Friedel-Crafts alkylation | benzene + propylene + phosphoric-acid | cumene + phosphoric-acid | 520 K, solid phosphoric acid | friedel-crafts-alkylation
@@ -152,7 +152,7 @@ penicillin-route | 3 | reacylation | 6-apa + 4-hydroxyphenylglycine | amoxicilli
 aspirin-impurity | 1 | ester hydrolysis | aspirin + water | salicylic-acid + acetic-acid | humidity, months | ester-hydrolysis
 chloroform-route | 1 | haloform reaction | acetone + calcium-hypochlorite | chloroform + calcium-acetate + calcium-hydroxide | 330 K, aqueous | haloform
 chloral-route | 1 | exhaustive chlorination | ethanol + chlorine | chloral + hydrogen-chloride + water | chlorine bubbled, days | radical-halogenation
-chloral-route | 2 | hydrate formation | chloral + water | chloral-hydrate | crystallises | hydration
+chloral-route | 2 | hydrate formation | chloral + water | chloral-hydrate | crystallises | carbonyl-hydration
 ddt-route | 1 | condensation | chloral + chlorobenzene + sulfuric-acid | ddt + water + sulfuric-acid | conc H2SO4, 290 K | friedel-crafts-hydroxyalkylation
 freon-route | 1 | halogen exchange | carbon-tetrachloride + hydrogen-fluoride + antimony-pentachloride | dichlorodifluoromethane + hydrogen-chloride + antimony-pentachloride | 340 K, SbF3/SbCl5 | swarts-halogen-exchange
 ptfe-route | 1 | HCFC-22 synthesis | chloroform + hydrogen-fluoride + antimony-pentachloride | chlorodifluoromethane + hydrogen-chloride + antimony-pentachloride | 340 K | swarts-halogen-exchange

@@ -3782,6 +3782,206 @@ the measurements that justify them.
     `data/catalog/route_steps.psv` (11 re-labelled rows);
     `examples/named_routes.py` (NEW); `tests/test_named_routes.py` (NEW).
 
+84. ✔✔ **M6 IS DONE: A REACTION NOW HAPPENS INSIDE A CRYSTAL, AND THE MILESTONE'S
+    REAL FINDING IS THAT ITS OWN BRIEF POSED A TRUE DICHOTOMY AND THE ANSWER WAS
+    THE ONE THAT LOOKED LIKE MORE WORK. `PHASE_INDEX` STILL HAS TWO ENTRIES.**
+
+    `CaCO3(s) -> CaO(s) + CO2(g)` runs, conserves every atom, carries its own
+    endothermic load into the energy balance, and has an example. **Two
+    declarations cover three catalog steps.** New: `properties/solid_state.py`,
+    `numerics.vessel_integrator.SolidStateArrays`,
+    `vessel.build_solid_state_arrays`, `Vessel.solid_state` /
+    `Vessel.solid_state_report`, `examples/lime_cycle.py`,
+    `tests/test_solid_state.py` (23 tests, 28 s). `mineral_data` regenerated with
+    three new fields.
+
+    ## ⚠⚠ THE FIRST IMPLEMENTATION WAS MASS ACTION AND IT WAS MEASURED WRONG
+
+    M6's brief asked: a third `PHASE_INDEX` entry, or a second term next to
+    precipitation? The arithmetic was done first, as the arc's rule requires, and
+    it predicted that mass action on the solid amounts would give
+
+        p / K  =  n(calcite) / n(quicklime)
+
+    because a pure solid has UNIT ACTIVITY and mass action cannot say so. It was
+    then BUILT that way anyway — and the prediction landed to five figures:
+    **3.0863 against 3.0863 at 1100 K, 1.2139 against 1.2139 at 1200 K.** That
+    turned the argument into a measurement, which is why it is worth keeping.
+
+    ⚠ **AND DROPPING THE REVERSE IS NOT A WAY OUT.** Sealed 1 L, 0.1 mol charged:
+
+    | T / K | equilibrium conversion | forward-only |
+    |---:|---:|---:|
+    | 900 | 0.12% | 100% |
+    | 1000 | 1.23% | 100% |
+    | 1100 | 7.95% | 100% |
+    | 1200 | 37.3% | 100% |
+
+    Under 1 bar of air, the equilibrium says calcite does not calcine below
+    ~1150 K at all. **The kiln's whole mechanic is the part forward-only
+    deletes.**
+
+    The form that works is `flux = (k_f - k_r Q) * units` with **ONE `units`,
+    chosen by the sign of the affinity** rather than one per direction. It is a
+    common factor, so it divides out of `flux = 0` — amount-independent
+    equilibrium — while an exhausted side still stops the reaction. That sign
+    switch is a kink at the exact operating point, and it was measured: a vessel
+    parked at equilibrium for **2,000,000 s costs 0.2 s of wall clock and lands
+    on K to 4e-13**, at `units_f/units_r` up to 129.5.
+
+    ## ⚠ THE REPRESENTATION WAS FORCED, AND IT IS THE SECOND MEASUREMENT
+
+    **The lattice had to become a species, and item 78's representation could not
+    do it.** The solid block holds IONS — that is what makes precipitation
+    conserve matter by construction. Quicklime ion-by-ion is `[Ca+2].[O-2]`, and
+    **the oxide ion is in no aqueous table anywhere**, because CaO does not
+    dissolve to Ca2+ + O2-, it hydrates. `thermochemistry` refuses `[O-2]` on net
+    charge; `solubility_product` had already refused quicklime for exactly this
+    reason. So there was no ionic route to the product of calcining limestone,
+    and both halves of that refusal are now pinned by a test — so a future
+    curation of `[O-2]` is told what it opens.
+
+    `mineral_data` gained `lattice` (canonical one-species SMILES), `Cp_solid`
+    and `Vm_solid`. Both new numbers are measured CRC, `Cps` from the SAME ROW as
+    the `Hfs`/`S0s` pair; 23 of 25 minerals carry all three, and a mineral
+    missing either is refused loudly when charged rather than borrowing an ion's
+    placeholder.
+
+    ⚠ **NOTHING ABOUT THE FUSION-LAW VERDICT IS SOFTENED.** A crystal may now
+    REACT while staying a crystal, and it still may not DISSOLVE — 407x wrong in
+    both directions is still 407x wrong. `solidifies` is False for every lattice,
+    its vapour pressure is 1e-30 bar, and a test integrates limestone under water
+    for 1000 s to show it does nothing. The two questions never touch.
+
+    ## ⚠ Ea IS DERIVED, WHICH IS WHAT MAKES THE REVERSE SURVIVABLE
+
+    An endothermic decomposition whose reverse is a gas landing on an oxide
+    surface has no reverse barrier, so `Ea = dH` — the same floor
+    `detailed_balance` enforces everywhere else here. Two consequences:
+
+    * calcite's barrier comes out at **179.2 kJ/mol** against experimental
+      calcination activation energies quoted at 170–200. Nothing was fitted.
+    * the reverse rate constant becomes `A exp(-dS/R)`, **temperature-
+      independent** (4.26e-4 1/(bar s)). ⚠ And the cancellation is done in
+      CLOSED FORM at setup rather than as `k_f / K`: at 300 K those two
+      exponentials are 1e-32 and 1e+21 and their product is an ordinary 4e-4.
+      Written as a ratio it would be a division of two near-overflow numbers in
+      the hot loop.
+
+    `DECOMPOSITION_A = 1e5 1/s` is the only free number, and it is a CLOCK:
+    it multiplies the whole flux so it divides out of the equilibrium. Measured
+    over two decades — the same sealed pressure to **seven figures**. One
+    constant covers both rows because no source would distinguish them.
+
+    ## FOUR MECHANICS NOBODY WROTE
+
+    * **A kiln temperature.** 14% conversion at 1100 K under air, 99.8% at
+      1150 K. The threshold is where `K(T)` crosses ambient;
+      `solid_state_report` BISECTS for it rather than printing a stored number.
+    * **A sealed tube that stalls** — the table above.
+    * **Slaking** (`lime-cycle` step 2): the dehydration row run backwards.
+      ⚠ Priced against water VAPOUR, so slaking with liquid water gets the
+      condensation enthalpy from the vessel's own evaporation term. The two must
+      not both carry it.
+    * **Carbonation** (`lime-cycle` step 3), and this one is not any single row's
+      reverse: it is the dehydration row forwards and the decarbonation row
+      backwards, **sharing the quicklime in the solid block**. 0.02 mol of slaked
+      lime under CO2 at 700 K yields limestone through a quicklime intermediate
+      neither declaration names in that role, calcium exact to 1e-9.
+
+    ## ⚠ THE COVERAGE ACCOUNTING COST TWO MORE SPLITS, AND BOUGHT A ROUTE
+
+    Regenerated at HEAD: **26 / 173 routes template-ready** (was 25) and
+    **32 / 214 classes** (was 29 / 212). `lime-cycle` is COMPLETE end to end from
+    limestone and is the first entry in the report's list.
+
+    M5's standard had to be spent twice more, and both times the answer was
+    SPLIT rather than refuse, on the `catalytic-hydrogenation` precedent:
+
+    | was | rows | became | why |
+    |---|---:|---|---|
+    | `hydration` | 3 | `lime-slaking` (2) + `carbonyl-hydration` (1) | two are `CaO + H2O -> Ca(OH)2`; the third is CHLORAL HYDRATE, a gem-diol on a carbonyl |
+    | `carbonation` | 2 | `solid-carbonation` (1) + `basic-carbonate-precipitation` (1) | setting mortar is a solid-state reaction; the white-lead stack is a metathesis in solution |
+
+    ⚠⚠ **AND THIS IS THE FIRST TIME A CLASS HAS BEEN CREDITED TO A MECHANISM
+    THAT EMERGED RATHER THAN BEING WRITTEN.** `lime-slaking` is the dehydration
+    row run backwards; `solid-carbonation` is not any single row's reverse.
+    **Two declarations, three credited mechanisms.** `calcination` is credited
+    the way `precipitation-metathesis` is -- to a TERM, with `N_TEMPLATES`
+    deliberately not incremented.
+
+    ## ⚠ M5's STANDARD, SPENT AGAIN — AND THIS TIME IT COST A CATALOG ROW
+
+    `calcination` is TWO mechanisms and both are built. ⚠ **But the dehydration
+    built is not the catalog's own row.** Bayer's `Al(OH)3 -> Al2O3 + H2O` needs
+    two minerals `mineral_data` does not have; `Ca(OH)2 -> CaO + H2O` is the same
+    mechanism on species that already price. **The mechanism is covered and the
+    row is NOT claimed** — `data/catalog` still scores it uncovered. That is the
+    standard costing something in the honest direction for once.
+
+    ## ⚠⚠ AND THE THIRD `PHASE_INDEX` ENTRY IS STILL WANTED — BY A DIFFERENT
+    MECHANISM
+
+    `roasting` is refused twice over, and the second half is new and is the
+    useful part:
+
+    * **data** — all five rows are `metal sulfide + O2 -> metal oxide + SO2`; of
+      the five sulfides only ZnS prices and **none of the five oxides does**.
+    * **⚠ mechanism** — roasting CONSUMES a gas, and the affinity form is
+      measurably not a rate law for that. A gas reactant's pressure sits in the
+      DENOMINATOR of Q, so `p_O2 -> 0` drives the reverse flux to **2.6e15
+      formula units per second**. A gas reactant is REFUSED where the arrays are
+      built, naming that.
+
+    A gas-consuming surface reaction IS mass action — first order in a gas
+    pressure, gated on a solid being present — so it is exactly what the third
+    `PHASE_INDEX` entry is for. **That is also the shape of the five
+    heterogeneous templates** (`alkene_hydrogenation`, `nitro_hydrogenation`,
+    `ammonia_synthesis`, both methanol rows), so **item 83's "a flask with no
+    iron in it makes ammonia" is NOT fixed by M6** — but it now has a definite
+    shape rather than being a gap.
+
+    ## ⚠ dCp = 0 — AND THE CORRECTION WAS BUILT AND REJECTED BY MEASUREMENT
+
+    Same discipline as `PrecipitationArrays.ln_Ksp`, and the cost is stated: the
+    1 bar decomposition temperature is 1118.2 K for calcite (literature ~1170)
+    and 755.2 K for slaked lime (~785), so kilns run 30–50 K cool. A `dCp(T)`
+    correction from the new `Cps` values moves calcite to 1107.7 K (**worse by
+    10 K**) and slaked lime to 774.9 K (better by 20). **One improves and one
+    degrades**, which is the signature of a half-applied correction rather than
+    of missing physics — a mineral's `Cp_solid` is a 298 K constant while a gas
+    `Cp` here is a real cubic. A half-correction that helps one row and hurts
+    another is worse than a stated omission, so the omission stays. The
+    generating script records the measurement so it is not re-attempted blind.
+
+    ## ⚠ ONE LATENT FRAGILITY FOUND — PRE-EXISTING, MADE REACHABLE, NOT FIXED
+
+    A species that is in the network but **absent from a flask with no vent, no
+    liquid and no reaction** has an identically ZERO Jacobian column — verbatim
+    the `num_jac` trap `LAYER_REABSORB` documents. Sealed at 1100 K, with and
+    without N2/O2 in the species list:
+
+    | charge / mol | lean network | N2/O2 present but absent |
+    |---:|---:|---|
+    | 0.05 | `p/K - 1` = -1.7e-07 | **RAISED**: CO2 reached -2.572 mol |
+    | 0.1 | +3.5e-09 | -2.6e-11 |
+    | 0.4 | -5.4e-13 | +1.6e-07 |
+    | 1.0 | +2.6e-08 | +1.9e-11 |
+
+    The hair trigger on the charge is a NaN Jacobian, not a physical
+    instability. **It does not return a wrong number** — `check_raw_solution`
+    raises "a failed integration wearing a success flag" — so it is reported, not
+    refused and not silently fixed. The second route in is the same one:
+    a flask at EXACTLY zero pressure with `k_vent = 1e3` inhales 1013 mol/s at
+    t = 0; 0.01 bar of nitrogen in the headspace removes the overflow entirely.
+    Both are modelling errors in the caller (a sealed tube contains no air; an
+    open flask contains air), and the example and tests model them correctly.
+
+    The reason NOT to fix it tonight: the fix is a `LAYER_REABSORB`-style honest
+    diagonal on the gas block, which is a change in the hot loop of every vessel
+    in the project and would move invariants. It wants the full suite behind it
+    and a session of its own.
+
 IMMEDIATE NEXT TASK: see **`MILESTONES.md`**, which is the plan of record as of
 2026-08-22 and supersedes the ordering below. It is derived from `data/catalog`
 (1,583 compounds, 173 routes) plus four measured capability probes, and it
@@ -3805,9 +4005,11 @@ down; the one below is what closing them found. In order:
 3. **A curated overlay for aspirin and salicylic acid**, whose formation halves
    are both Joback -- named by `validation/game_gates.py` panel 3, and the
    acetylation K is chain 1's weakest number.
-4. **SOLID-PHASE REACTIONS**, for chain 2's green-vitriol seed
-   (`FeSO4 -> Fe2O3 + SO3`, a dry decomposition with no liquid to dissolve into).
-   The solid-basis formation data is curated and waiting.
+4. ~~SOLID-PHASE REACTIONS~~ -- **DONE, item 84.** ⚠ But NOT for the
+   green-vitriol seed: `FeSO4 -> Fe2O3 + SO3` needs an Fe2O3 mineral entry that
+   does not exist, and the claim that the seed's data "is curated and waiting"
+   was checked and is half wrong -- true of the reactant, false of the product.
+   The engine half is built; that row is a curation job.
 5. **THEN dissociation as an equilibrium.** Stiffness ratio 7.05e21. Deliberately
    after there are chains to measure it against, and there are now two.
 
@@ -3856,9 +4058,16 @@ KNOWN ISSUES worth fixing opportunistically:
 - ~~The kernel cannot express a declared rate order~~ -- **FIXED, item 69**, and
   it did NOT close the LHHW/Michaelis-Menten item below: still no site balance
   and no saturation term.
-- **NO SOLID-PHASE REACTIONS**, newly load-bearing: chain 2's green-vitriol seed
-  is `FeSO4 -> Fe2O3 + SO3`, a dry decomposition with no liquid for the solid to
-  dissolve into. Its solid-basis formation data is curated and waiting.
+- ~~NO SOLID-PHASE REACTIONS~~ -- **BUILT, item 84**, as a TERM rather than a
+  third `PHASE_INDEX` entry, and the choice was measured. What is still missing
+  is the OTHER solid mechanism: a gas-CONSUMING surface reaction (`roasting`, and
+  the five heterogeneous templates that fold a catalyst into an apparent
+  barrier). That one IS mass action and it IS the third `PHASE_INDEX` entry.
+  ⚠ The green-vitriol seed `FeSO4 -> Fe2O3 + SO3` is now blocked on DATA alone:
+  there is no Fe2O3 entry in `mineral_data`, and item 84's term would run the row
+  unchanged the day there is one. Item 84 corrects the sentence this bullet used
+  to end with: the seed's solid-basis data is curated for the REACTANT and not
+  for the product.
 - **`tools/build_physical_data.py` CLASSIFIES `CRC_INORG` AS ESTIMATED**, which
   it is not -- harmless there because every candidate in that script is organic,
   and it would have refused the entire mineral floor. Worth correcting if that

@@ -903,6 +903,122 @@ class PrecipitationArrays:
 
 
 @dataclass
+class SolidStateArrays:
+    """A reaction that happens INSIDE a crystal, as arrays. Layer 5 -> Layer 4.
+
+    M6. ``CaCO3(s) -> CaO(s) + CO2(g)``: matter changes identity while staying a
+    solid, and the gas it evolves leaves through the headspace.
+
+    ## WHY THIS IS A TERM AND NOT A THIRD ``PHASE_INDEX`` ENTRY
+
+    ⚠ **The kinetics kernel cannot express it, and that was measured rather than
+    assumed.** A pure solid has UNIT ACTIVITY, so a pair of crystals fixes the
+    gas pressure above them at ``K(T)`` regardless of how much of each is there.
+    Mass action on the solid amounts gives instead
+
+        k_f n(CaCO3) = k_r n(CaO) p        ->      p_eq = (k_f/k_r) n_A / n_B
+
+    which sweeps from infinity to zero as a charge converts. Real calcite either
+    goes to completion (``p < K``) or does not start (``p > K``); the mass-action
+    form always stops partway, so it is a different shape of answer and not a
+    loose one. Dropping the reverse instead deletes the kiln mechanic outright:
+    a sealed 1 L flask holding 0.1 mol of calcite equilibrates at **7.95%**
+    conversion at 1100 K and at 0.12% at 900 K, where forward-only reads 100% at
+    both. ``properties/solid_state.py`` carries that table.
+
+    So ``PHASE_INDEX`` keeps its two entries and this sits beside
+    ``PrecipitationArrays``, for the same reason and by the same precedent.
+
+    ## THE FORM
+
+        Q     = prod over gas participants of p_i^nu_i          bar^(sum nu)
+        flux  = k_f(T) * units_fwd  -  k_r(T) * Q * units_rev   mol/s
+
+    with ``units_fwd``/``units_rev`` the formula units of the reactant and
+    product SOLID sides the block can supply -- the same ``units`` bound
+    ``PrecipitationArrays`` uses, and the same limit: the solid block is an
+    inventory, so two solid-state reactions sharing a mineral cannot attribute it
+    between them.
+
+    ⚠ **THERE IS NO ``_avail`` GATE HERE, AND ITS ABSENCE IS THE POINT.**
+    Dissolution needed one because its driving force (undersaturation) is
+    non-zero at an EMPTY block, so something had to stop a phantom crop
+    dissolving -- and a constant-scale knee there put 4e7 on the Jacobian
+    diagonal of blocks holding nothing. This term's driving force IS the amount
+    present: it is exactly zero and its slope is ``k_f`` at an empty block, which
+    is bounded by ``A`` (1e5 1/s in the limit, ~1e-3 at a kiln's 1200 K, 1.3e3 at
+    the ``T_MAX`` clamp). Nothing to regularise, so nothing is regularised.
+
+    ## ⚠ THE TWO RATE CONSTANTS ARE COMBINED ANALYTICALLY, NOT DIVIDED
+
+    ``k_r`` is not ``k_f / K``. Written that way it is a ratio of two exponentials
+    that are each enormous and nearly cancel -- at 300 K, ``exp(-Ea/RT)`` is
+    1e-32 and ``exp(-lnK)`` is 1e+21, and their product is a perfectly ordinary
+    4e-4. So the cancellation is done at SETUP, in closed form:
+
+        k_r(T) = A exp(-dS/R) * exp(-(Ea - dH)/RT)
+
+    and ``Ea - dH`` is exactly ZERO for an endothermic decomposition, because
+    ``Ea`` is derived as ``max(dH, 0)`` -- see ``solid_state.py``. **The reverse
+    of a calcination is barrierless and its rate constant is a temperature-
+    independent 4.26e-4 1/(bar s).** No clip, no floor, and no exponential in
+    this term can overflow.
+
+    ## ⚠ GAS PARTICIPANTS MUST ALL BE PRODUCTS, AND THAT IS A REFUSAL
+
+    ``nu_gas`` is required positive, checked where these arrays are built. A gas
+    REACTANT puts its pressure in the denominator of ``Q``, so an atmosphere
+    with none of it left drives ``Q`` to infinity and the reverse flux with it --
+    measured on a roasting declaration, where ``p_O2 -> 0`` gives a reverse rate
+    of 2.6e15 formula units per second. That is not a numerical artefact to be
+    clipped: it says the affinity form is only a rate law when the gas is on one
+    side, and a gas-consuming surface reaction (roasting, and the five
+    heterogeneous templates that fold a catalyst into an apparent barrier) is a
+    DIFFERENT mechanism that wants the mass-action kernel and a third
+    ``PHASE_INDEX`` entry. Refusing here is what keeps the two apart.
+    """
+
+    # (m, n) signed stoichiometry over the species vector. Solids live in the
+    # SOLID block, gases in the GAS block; the split is why these are two arrays
+    # and not one -- a single delta could not say which block to write.
+    nu_solid: np.ndarray
+    nu_gas: np.ndarray
+    dH: np.ndarray            # (m,) J/mol at 298.15 K, + = endothermic
+    dS: np.ndarray            # (m,) J/(mol K) at 298.15 K, dCp = 0
+    A_fwd: np.ndarray         # (m,) 1/s
+    Ea_fwd: np.ndarray        # (m,) J/mol -- DERIVED as max(dH, 0)
+    names: tuple = ()
+
+    def __post_init__(self) -> None:
+        # The reverse pair, in closed form. See the docstring: this is the whole
+        # reason nothing in the hot loop divides one exponential by another.
+        self.A_rev = self.A_fwd * np.exp(-self.dS / R)
+        self.Ea_rev = np.maximum(self.Ea_fwd - self.dH, 0.0)
+        # Which species each side needs, as positive counts. Precomputed so the
+        # RHS does two maxima fewer per call.
+        self.consumed = np.maximum(-self.nu_solid, 0.0)
+        self.formed = np.maximum(self.nu_solid, 0.0)
+
+    @property
+    def m(self) -> int:
+        return int(self.nu_solid.shape[0])
+
+    def units(self, n_solid: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+        """(forward, reverse) formula units this solid block can supply, (m,)."""
+        fwd = np.where(self.consumed > 0.0,
+                       n_solid[None, :] / np.maximum(self.consumed, 1.0),
+                       np.inf).min(axis=1)
+        rev = np.where(self.formed > 0.0,
+                       n_solid[None, :] / np.maximum(self.formed, 1.0),
+                       np.inf).min(axis=1)
+        return fwd, rev
+
+    def equilibrium_pressure(self, T: float) -> np.ndarray:
+        """``K(T)``, (m,), in bar^(sum nu_gas). For reporting, not the RHS."""
+        return np.exp(-(self.dH - T * self.dS) / (R * T))
+
+
+@dataclass
 class VesselConditions:
     """Scalar operating conditions and boundary fluxes."""
 
@@ -1094,6 +1210,7 @@ class VesselIntegrator:
         phases: PhaseArrays,
         conditions: VesselConditions,
         precipitation: "PrecipitationArrays | None" = None,
+        solid_state: "SolidStateArrays | None" = None,
     ):
         if np.isnan(kinetics.dH).any():
             raise ValueError(
@@ -1107,6 +1224,9 @@ class VesselIntegrator:
         # solution and the RHS adds an identically zero term. Same contract
         # ``losses=None`` and ``World.rig is None`` keep.
         self.prec = precipitation
+        # M6. Same contract again: ``None`` is EXACTLY the old behaviour -- no
+        # crystal can react, and the RHS adds an identically zero term.
+        self.solid = solid_state
         self.n = kinetics.n_species
         self._ingress = (
             np.zeros(self.n)
@@ -1464,6 +1584,7 @@ class VesselIntegrator:
             return delta[idx].T @ rates * V, -float(dH[idx] @ rates) * V
 
         prec = self.prec
+        solid = self.solid
 
         def rhs(t: float, y: np.ndarray) -> np.ndarray:
             nL1 = np.maximum(y[:n], 0.0)
@@ -1700,6 +1821,57 @@ class VesselIntegrator:
             else:
                 precipitate = 0.0
 
+            # --- a reaction INSIDE the crystal --------------------------
+            # M6. Neither block above can write this: the reactant and the
+            # product are both solids and the gas it evolves is a third place
+            # again. See ``SolidStateArrays`` for why it is a term rather than a
+            # third ``PHASE_INDEX`` entry -- a pure solid has unit activity, and
+            # mass action on the solid amounts gives an equilibrium pressure
+            # that depends on how much of the charge has converted.
+            #
+            # Nothing here is gated. This term's driving force IS the amount of
+            # solid present, so it is exactly zero at an empty block with a
+            # bounded slope, which is the property ``_avail`` had to manufacture
+            # for dissolution.
+            if solid is not None and solid.m:
+                k_f = solid.A_fwd * np.exp(-solid.Ea_fwd / (R * T))
+                k_r = solid.A_rev * np.exp(-solid.Ea_rev / (R * T))
+                # Q over the GAS participants only -- a crystal is at unit
+                # activity, which is the whole reason this cannot be mass
+                # action. ``nu_gas`` is positive by construction (a gas
+                # REACTANT is refused where these arrays are built), so this
+                # product is bounded by the headspace's own pressures and
+                # collapses to zero for a gas that is simply absent.
+                Q = np.prod(np.maximum(p, 0.0)[None, :] ** solid.nu_gas, axis=1)
+                units_f, units_r = solid.units(nS)
+                # ⚠ ONE ``units`` FOR BOTH DIRECTIONS, CHOSEN BY THE SIGN OF THE
+                # AFFINITY -- not one per direction. This is the whole
+                # unit-activity claim in one line, and the version that got it
+                # wrong was BUILT AND MEASURED first: with ``k_f units_f -
+                # k_r Q units_r`` a sealed kiln settles at
+                #
+                #     p / K  =  n(calcite) / n(quicklime)
+                #
+                # exactly -- 3.0863 against 3.0863 at 1100 K and 1.2139 against
+                # 1.2139 at 1200 K, five figures on both. That IS mass action on
+                # the solid amounts, and it is the failure ``SolidStateArrays``
+                # predicts from a pure solid having unit activity. Written this
+                # way ``units`` is a common factor, so it divides out of
+                # ``net = 0`` and the equilibrium is ``Q = K`` whatever the
+                # crystals weigh -- while an EXHAUSTED side still stops the
+                # reaction, because that direction's ``units`` is zero.
+                net = k_f - k_r * Q                             # 1/s, signed
+                s_flux = net * np.where(net > 0.0, units_f, units_r)   # mol/s
+                dn_solid_rxn = s_flux @ solid.nu_solid
+                dn_gas_srxn = s_flux @ solid.nu_gas
+                # Endothermic forward, so a running kiln COOLS its own charge.
+                q_solid = -float(s_flux @ solid.dH)
+            else:
+                dn_solid_rxn = 0.0
+                dn_gas_srxn = 0.0
+                q_solid = 0.0
+                s_flux = None
+
             # --- liquid <-> liquid --------------------------------------
             # Equality of ACTIVITY is the equilibrium, exactly as it is for the
             # vapour, so the driving force is the same subtraction. Two
@@ -1796,7 +1968,7 @@ class VesselIntegrator:
             # to this one transfer would be the only place it existed, and would
             # disagree with the enthalpy every other transfer carries.
             dT = (
-                q_rxn + q_vap + q_fus + q_loss + q_vent + cond.Q_input
+                q_rxn + q_vap + q_fus + q_solid + q_loss + q_vent + cond.Q_input
             ) / max(Cp_total, CP_MIN)
 
             if probe is not None:
@@ -1804,22 +1976,28 @@ class VesselIntegrator:
                 probe.update(
                     T=T, Cp_total=Cp_total, dT=dT,
                     q_rxn=q_rxn, q_vap=q_vap, q_fus=q_fus, q_loss=q_loss,
-                    q_vent=q_vent, Q_input=cond.Q_input,
-                    q_sum=q_rxn + q_vap + q_fus + q_loss + q_vent
+                    q_vent=q_vent, Q_input=cond.Q_input, q_solid=q_solid,
+                    q_sum=q_rxn + q_vap + q_fus + q_solid + q_loss + q_vent
                     + cond.Q_input,
                     evap=evap, solute=solute, vent=vent,
                     precipitate=precipitate if np.ndim(precipitate) else
                     np.zeros(n),
                     dn_rxn1=dn_rxn1, dn_rxn2=dn_rxn2, dn_gas_rxn=dn_gas_rxn,
                     lle=lle,
+                    solid_flux=(
+                        np.zeros(0) if s_flux is None else s_flux
+                    ),
+                    dn_solid_rxn=(
+                        np.zeros(n) if s_flux is None else dn_solid_rxn
+                    ),
                     q_rxn_terms=np.concatenate(sink) if sink else np.zeros(0),
                 )
 
             return np.concatenate([
                 dn_rxn1 - evap1 - evap_dry + solute1 - lle - precipitate,
                 dn_rxn2 - evap2 + solute2 + lle,              # liquid layer 2
-                dn_gas_rxn + evap - vent + ingress,           # vapour
-                -solute + precipitate,                        # solid
+                dn_gas_rxn + dn_gas_srxn + evap - vent + ingress,   # vapour
+                -solute + precipitate + dn_solid_rxn,         # solid
                 [dT],
             ])
 

@@ -363,7 +363,16 @@ def test_the_two_phases_get_genuinely_different_reverse_rates(thermo):
 
 def test_an_unintegrable_phase_is_refused_by_the_arrays_not_defaulted(thermo):
     """The same line, guarded. A phase Layer 4 has no block for must raise, or the
-    next one added gets swallowed into the liquid block exactly as "any" was."""
+    next one added gets swallowed into the liquid block exactly as "any" was.
+
+    ⚠ ``"solid"`` IS STILL THE EXAMPLE OF A REFUSED PHASE AFTER M6, AND THAT IS
+    A MEASUREMENT RATHER THAN AN OMISSION. M6 built solid-phase chemistry and it
+    is a TERM (``SolidStateArrays``), not a third entry here, because a pure
+    solid has UNIT ACTIVITY: mass action on the solid amounts settles at
+    ``p/K = n_A/n_B``, measured at 3.0863 against 3.0863 on a sealed kiln at
+    1100 K. What would still want an entry in this table is a gas-CONSUMING
+    surface reaction -- roasting, or a solid catalyst -- which is a different
+    mechanism. See ``properties/solid_state.py``."""
     from chemsim.network.builder import PHASE_INDEX
     from chemsim.reactions import ConcreteReaction
 

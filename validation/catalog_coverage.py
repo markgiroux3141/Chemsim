@@ -309,6 +309,66 @@ TEMPLATE_CLASSES = {
     # ``arene-hydrogenation``) are honest, named gaps.
     "alkene-hydrogenation": "alkene_hydrogenation",
     "nitro-hydrogenation": "nitro_hydrogenation",
+    # ---------------------------------------------------------------------
+    # M6 -- properties/solid_state.py. The SECOND class covered by a TERM.
+    # ---------------------------------------------------------------------
+    # ⚠ AND THE SECOND CLASS WHERE THE KINETICS KERNEL CANNOT EXPRESS THE
+    # MECHANISM AT ALL, for a reason that is now measured rather than argued: a
+    # pure solid has UNIT ACTIVITY, so mass action on the solid amounts settles
+    # at ``p/K = n_A/n_B`` -- built, measured at 3.0863 against 3.0863 on a
+    # sealed kiln at 1100 K, replaced. The covering mechanism is
+    # ``vessel_integrator.SolidStateArrays``, and ``N_TEMPLATES`` is again
+    # deliberately not incremented.
+    #
+    # ⚠ M1's STANDARD APPLIED FIRST, AND THIS CLASS IS TWO MECHANISMS. Its three
+    # rows are decarbonation twice (``lime-cycle`` 1, ``solvay-process`` 5) and
+    # dehydration once (``bayer-process`` 3). BOTH are built, which is why the
+    # class is credited -- crediting it on the decarbonation alone would have
+    # been the ``deprotonation`` mistake.
+    #
+    # ⚠ WHAT IS NOT CREDITED BY THIS, on exactly the precipitation precedent
+    # above. A class being covered is a MECHANISM claim; whether a row's species
+    # price is the SPECIES question this audit counts separately. Measured: the
+    # two decarbonation rows run today (calcite and quicklime both price), and
+    # the dehydration MECHANISM was built on ``Ca(OH)2 -> CaO + H2O`` because
+    # Bayer's own ``Al(OH)3 -> Al2O3 + H2O`` needs two minerals ``mineral_data``
+    # does not have. So the mechanism is there and one of the three rows still
+    # needs two lattices.
+    #
+    # ⚠ ``roasting`` IS NOT CREDITED, and its refusal has two independent halves.
+    # DATA: all five rows are one mechanism, but only ZnS prices among the
+    # sulfides and NONE of the five oxides does. MECHANISM: roasting CONSUMES a
+    # gas, and the affinity form ``SolidStateArrays`` uses is measurably not a
+    # rate law for that -- ``p_O2 -> 0`` puts the pressure in the denominator of
+    # Q and drives the reverse to 2.6e15 formula units per second, so a gas
+    # reactant is REFUSED where the arrays are built. That second half is the
+    # useful one: it says roasting is waiting on a third ``PHASE_INDEX`` entry
+    # (a gas-consuming surface reaction IS mass action), not on this term.
+    "calcination": "vessel_integrator.SolidStateArrays (a TERM)",
+    # ⚠ AND TWO MORE CLASSES WERE SPLIT RATHER THAN REFUSED, on the
+    # ``catalytic-hydrogenation`` precedent from M5 -- because like that class
+    # and unlike ``fermentation``, every row here IS a clean mechanism.
+    #
+    # ``hydration`` had THREE rows: two are lime slaking (``CaO + H2O ->
+    # Ca(OH)2``) and one is CHLORAL HYDRATE, a gem-diol forming on a carbonyl.
+    # Those are not one mechanism. ``carbonation`` had TWO: setting mortar
+    # (``Ca(OH)2 + CO2 -> CaCO3 + H2O``, a solid-state reaction) and the white-lead
+    # stack (``lead acetate + CO2 + water -> basic lead carbonate``, a metathesis
+    # in solution). Also not one mechanism. Five rows re-labelled in
+    # ``route_steps.psv``; the two halves M6 does not cover are named gaps.
+    #
+    # ⚠⚠ NEITHER OF THESE IS DECLARED ANYWHERE, WHICH IS THE POINT. Lime slaking
+    # is the ``calcination-dehydration`` row RUN BACKWARDS -- available only
+    # because the term is reversible. Solid carbonation is not any single row's
+    # reverse: it is the dehydration row forwards and the decarbonation row
+    # backwards, sharing the quicklime in the solid block. Two declarations, three
+    # mechanisms, and this is the first time a class has been credited to a
+    # mechanism that EMERGED rather than being written.
+    "lime-slaking": "vessel_integrator.SolidStateArrays reversed (a TERM)",
+    "solid-carbonation": (
+        "vessel_integrator.SolidStateArrays, two rows sharing the solid "
+        "block (a TERM; EMERGENT -- nothing declares this reaction)"
+    ),
 }
 
 # How many templates that is, counted rather than asserted -- the old text said
