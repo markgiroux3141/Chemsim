@@ -201,10 +201,26 @@ whose whole contents are a few mol: the seventh-figure move is the difference
 between two fictions. ⚠ The rig runs ~122 Jacobians per solve against the ~316 an
 overflow needs — **one longer run away from the same crash.**
 
-## 5. S2's ONE COVERAGE GAP IS CLOSED
+## ⚠⚠ 5. S2's COVERAGE GAP IS CLOSED — AND THE SWEEP EXPOSED A SIXTH INSTRUMENT FAULT
 
 `KNOWN_REFUSAL` is empty and `oil_of_vitriol` is in `EXPENSIVE`. ⚠ S2's diagnosis
 was **right about the answer and wrong about the column**.
+
+`--only oil_of_vitriol` now **completes in 1061 s tight against 57 s loose
+(18.5x)** — and reports `QUOTABLE DIGITS MOVE, worst 99.85%`. ⚠⚠ **That headline
+is wrong.** Four of its five moved lines are the CREATED-MATTER residual and
+every one gets SMALLER (900 K 4.038e-08 → 6.166e-11; 690 K 2.935e-05 →
+2.728e-07): a residual converging toward zero, and exactly the rows
+`NEXT_SESSION.md` already carries as **"NOT AN INVARIANT"**. The one physical
+number among the five moves **1.5154e-03 → 1.5155e-03, rel 6.6e-05 — three
+decades under the audit's own 1e-3 band.**
+
+⚠⚠ **A RELATIVE-DIFFERENCE TEST IS MEANINGLESS ON A COLUMN WHOSE CONVERGED VALUE
+IS ZERO.** `0.000e+00 → 2.728e-07` reads as "99% moved" and means "a residual got
+smaller". `REPORT_ABS` exists for this and 2.9e-05 clears it. **Reported, not
+fixed** — raising it blunts the test for genuine quantities, and picking the
+number owes its own predict-then-measure pass. **This is a good cheap first job
+if the `species-ready` work stalls.**
 
 ---
 

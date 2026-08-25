@@ -1604,6 +1604,42 @@ gives the 0.0160000000 mol of SO2 that S2's diagnosis already said was correct.
 "a species absent from a sealed flask", and the column is layer 2's SO2, frozen
 rather than flat.
 
+### ⚠⚠ AND THEN THE SWEEP WAS ACTUALLY RUN, WHICH TURNED UP A SIXTH INSTRUMENT FAULT
+
+`tolerance_audit.py --only oil_of_vitriol` — the run S2 could not do at all —
+**completes in 1061 s tight against 57 s loose (18.5x)** and reports
+`<-- QUOTABLE DIGITS MOVE, worst 99.85%`. ⚠ **That headline is wrong, and the
+five lines behind it say why:**
+
+| line | default | tight | what it is |
+|---|---|---|---|
+| 900 K | 4.038e-08 | **6.166e-11** | created matter |
+| 675 K | 5.620e-07 | **1.587e-09** | created matter |
+| 690 K | 2.935e-05 | **2.728e-07** | created matter |
+| 730 K | 5.233e-06 | **7.357e-07** | created matter |
+| 450 K | 1.5154e-03 | 1.5155e-03 | **liquid held — rel 6.6e-05** |
+
+**Four of the five are the created-matter residual, and every one gets SMALLER**
+— a residual converging toward zero, which is a residual behaving. They are
+exactly the rows `NEXT_SESSION.md` already carries as **"NOT AN INVARIANT"**,
+on S2's own measurement that a 0.5% nudge to the INERT nitrogen swings them
+between 2.5e-09 and 4.5e-04. The one physical number in the list moves by
+**6.6e-05 relative, three decades under the audit's own 1e-3 reportable band.**
+
+⚠⚠ **A RELATIVE-DIFFERENCE TEST IS MEANINGLESS ON A COLUMN WHOSE CONVERGED VALUE
+IS ZERO.** `0.000e+00 -> 2.728e-07` gives rel 0.991 and reads as "99% moved"; it
+means "a residual got smaller". The audit HAS a both-below guard
+(`REPORT_ABS = 1e-9`) and 2.9e-05 clears it comfortably while still being a
+residual. **Reported and NOT fixed:** raising the guard would blunt it for
+genuine quantities, and picking the number needs its own measurement and its own
+prediction-then-measure pass. It is named here and in the audit so the next
+reader does not take the flag at face value.
+
+**So the honest verdict on the closed gap: the example sweeps now, its only
+physical number is converged at the default, and the flag it raises is the
+instrument dividing one near-zero by another.** Sixth session running, the
+instrument was part of the story.
+
 ### WHAT WAS BUILT
 
 * `src/chemsim/numerics/jacobian.py` — `factor_bound` and `BoundedJacobian`, wired

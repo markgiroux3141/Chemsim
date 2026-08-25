@@ -197,6 +197,32 @@ EXPENSIVE = ["plate_column", "fractional_distillation", "oil_of_vitriol"]
 # block) could not have reached it.
 KNOWN_REFUSAL: dict[str, str] = {}
 
+# ⚠⚠ AND RUNNING THAT SWEEP FOR THE FIRST TIME EXPOSED A FAULT IN THIS FILE.
+# ``--only oil_of_vitriol`` completes in 1061 s tight against 57 s loose and
+# reports "QUOTABLE DIGITS MOVE, worst 99.85%". **That headline is wrong.** Four
+# of its five moved lines are the CREATED-MATTER residual, and every one gets
+# SMALLER at the tight tolerance:
+#
+#     900 K   4.038e-08 -> 6.166e-11        675 K   5.620e-07 -> 1.587e-09
+#     690 K   2.935e-05 -> 2.728e-07        730 K   5.233e-06 -> 7.357e-07
+#
+# i.e. a residual converging toward zero, which is a residual behaving -- and
+# they are exactly the rows NEXT_SESSION.md already carries as "NOT AN
+# INVARIANT". The single physical number among the five (liquid held at 450 K)
+# moves 1.5154e-03 -> 1.5155e-03, **rel 6.6e-05, three decades under this file's
+# own 1e-3 reportable band**.
+#
+# ⚠⚠ A RELATIVE-DIFFERENCE TEST IS MEANINGLESS ON A COLUMN WHOSE CONVERGED VALUE
+# IS ZERO. ``0.000e+00 -> 2.728e-07`` gives rel 0.991 and reads as "99% moved";
+# it means "a residual got smaller". ``REPORT_ABS`` exists for exactly this and
+# 2.9e-05 clears it comfortably while still being a residual.
+#
+# ⚠ REPORTED AND NOT FIXED. Raising ``REPORT_ABS`` blunts the test for genuine
+# quantities, and choosing the number owes its own measurement and its own
+# predict-then-measure pass -- the same standard every other threshold in this
+# project was held to. Named here so the next reader does not take the flag at
+# face value.
+
 
 def set_tolerance(rtol: float | None, atol: float | None) -> None:
     """Rebind the two ``run`` defaults, or restore them with ``None``.
