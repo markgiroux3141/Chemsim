@@ -45,7 +45,7 @@ calcium-chloride | 4 | 0 | 0 | 4 | 0 | ion
 potassium-nitrate | 4 | 3 | 0 | 1 | 0 | ion
 methane | 4 | 2 | 0 | 2 | 0 | measured
 hydrogen-cyanide | 4 | 2 | 0 | 2 | 0 | refused
-mercury | 4 | 2 | 1 | 1 | 0 | refused
+mercury | 4 | 2 | 1 | 1 | 0 | measured
 toluene | 4 | 3 | 0 | 1 | 0 | joback
 nitrobenzene | 4 | 3 | 0 | 1 | 0 | joback
 sodium-phenoxide | 4 | 0 | 4 | 0 | 0 | ion

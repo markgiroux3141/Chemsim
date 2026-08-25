@@ -20,6 +20,7 @@ from chemsim.properties.benson import estimate as benson_estimate
 from chemsim.properties.electrolyte import electrolyte_provider
 from chemsim.properties.element_data import (
     ELEMENTAL,
+    LATTICE_ELEMENTS,
     REFERENCE_STATES,
     element_of,
     is_monatomic,
@@ -113,7 +114,7 @@ def test_joback_still_misprices_S8_and_the_provider_no_longer_asks_it():
     assert "Joback" not in data.source
 
 
-@pytest.mark.parametrize("smiles", ["[S]", "[C]", "[Hg]", "[Fe]", "S=S"])
+@pytest.mark.parametrize("smiles", ["[S]", "[C]", "[Fe]", "S=S"])
 def test_an_uncurated_elemental_species_refuses_by_name(smiles):
     provider = ThermochemistryProvider()
     with pytest.raises(ValueError) as exc:
@@ -129,6 +130,88 @@ def test_a_monatomic_refusal_names_the_reference_state_to_charge_instead():
     provider = ThermochemistryProvider()
     with pytest.raises(ValueError, match="S1SSSSSSS1"):
         provider.get("[S]")
+
+
+# ---------------------------------------------------------------------------
+# S4 -- MERCURY, the one monatomic symbol the refusal above does NOT reach
+# ---------------------------------------------------------------------------
+# ``[Hg]`` was in the list above until S4, refused twice over: as a metal
+# ("a metallic lattice") and as a bare monatomic symbol ("the ideal-gas record
+# is the ATOM, not the substance"). Both are statements about a REPRESENTATION
+# and both are false here -- mercury's reference state is a liquid with a
+# boiling point, and its vapour genuinely is the atom.
+def test_mercury_prices_and_its_reference_state_is_the_LIQUID_not_zero():
+    data = ThermochemistryProvider().get("[Hg]")
+    assert data.Hf == pytest.approx(61.40, abs=0.01)
+    assert data.Gf == pytest.approx(31.853, abs=0.01)
+    # ⚠ The I2 bug in one line: a CONDENSED reference state pinned to zero.
+    assert data.Hf != 0.0 and data.Gf != 0.0
+    rec = ELEMENTAL["[Hg]"]
+    assert rec.reference_state and rec.reference_phase == "l"
+    assert REFERENCE_STATES["Hg"].smiles == "[Hg]"
+    assert "Hg" not in LATTICE_ELEMENTS
+
+
+def test_mercurys_heat_capacity_is_the_EXACT_monatomic_value_not_a_fit():
+    """5R/2 at every temperature -- an answer, not a correlation.
+
+    Every other Cp in this table is a cubic fitted to a sampled curve with a
+    residual to report. A monatomic ideal gas has no rotational or vibrational
+    modes, so its Cp is 20.786 J/(mol K) exactly, forever, and the fit has to
+    reproduce that rather than approximate it.
+    """
+    exact = 2.5 * 8.31446261815324
+    coeffs = ELEMENTAL["[Hg]"].Cp_coeffs
+    for T in (273.15, 298.15, 400.0, 500.0, 600.0):
+        cp = sum(c * T ** i for i, c in enumerate(coeffs))
+        assert cp == pytest.approx(exact, rel=1e-3), T
+
+
+def test_mercurys_cross_check_is_the_TIGHTEST_of_the_condensed_reference_states(
+    thermo, volatility
+):
+    """12 J/mol, from two measurements that never met.
+
+    CRC's (Hf, S0) pair on one side and the WebBook's Antoine curve on the
+    other; nothing was fitted to make them agree. Tighter than bromine's 53
+    J/mol, and three decades tighter than sulfur's stated bound.
+    """
+    residual = _reference_residual("[Hg]", ELEMENTAL["[Hg]"], thermo, volatility)
+    assert abs(residual) < 0.05
+    assert abs(residual) < abs(
+        _reference_residual("BrBr", ELEMENTAL["BrBr"], thermo, volatility)
+    )
+
+
+def test_mercurys_vapour_pressure_is_CURATED_because_lee_kesler_was_wrong(
+    volatility,
+):
+    """And the error is invisible at Tb, which is why Tb is not a check.
+
+    Lee-Kesler from Tb/Tc/Pc reads 38.3 kPa at 523 K against CRC's 10.0 -- 3.8x
+    -- while agreeing at the boiling point to five figures, because it is
+    ANCHORED there. Corresponding states has no domain over a liquid metal.
+    """
+    v = volatility.get("[Hg]")
+    assert "NIST WebBook" in v.source
+    # CRC's own vapour-pressure decade table, five decades of it.
+    for T, P_pa in ((315.0, 1.0), (393.0, 100.0), (449.0, 1e3), (523.0, 1e4)):
+        assert v.coefficient(T) * 1e5 == pytest.approx(P_pa, rel=0.05), T
+
+
+def test_mercurys_latent_heat_is_the_slope_of_the_curve_the_engine_EVALUATES():
+    """The invariant the curated Antoine would otherwise have broken.
+
+    ``build_element_data`` differentiates Hvap out of the Lee-Kesler curve so
+    that the latent heat cannot disagree with the vapour pressure. A curated
+    Antoine steps outside that curve, so for such a species the generator takes
+    Clausius-Clapeyron on the CURATED one instead: 59.444 kJ/mol against
+    Lee-Kesler's 57.344 and CRC's measured 59.11.
+    """
+    rec = ELEMENTAL["[Hg]"]
+    assert rec.Hvap == pytest.approx(59.444, abs=0.01)
+    assert "CURATED Antoine" in rec.physical_source
+    assert "NOT on Lee-Kesler" in rec.physical_source
 
 
 # ---------------------------------------------------------------------------

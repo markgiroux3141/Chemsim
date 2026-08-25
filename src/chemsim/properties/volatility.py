@@ -126,6 +126,16 @@ _CURATED_ANTOINE: dict[str, tuple[float, float, float, float, float]] = {
     "COC(C)=O":  (4.18821, 1164.426, -52.690, 275.0, 330.0),   # methyl acetate
     "CC(C)=O":   (4.42448, 1312.253, -32.445, 259.0, 508.0),   # acetone
     "C=C":       (3.87261,  584.146,  -18.307, 149.0, 188.0),  # ethylene
+    # S4 -- mercury, and this entry is here because Lee-Kesler was MEASURED
+    # WRONG for it before it was written. Corresponding states with an acentric
+    # factor built from Tb/Tc/Pc has no domain over a liquid METAL: the fitted
+    # curve reads 38.3 kPa at 523 K against CRC's 10.0 kPa (3.8x), and it is
+    # anchored at Tb so the error is invisible at the boiling point -- which is
+    # exactly the trap "boils at 1 atm is not an independent check" names.
+    # Measured against the CRC vapour-pressure decade table, this curve is
+    # within 2% from 315 K to 629 K, five decades of pressure.
+    # (Huber, Laesecke & Friend 2006, as tabulated by the WebBook.)
+    "[Hg]":      (4.85767, 3007.129,  -10.001, 298.14, 749.99),  # mercury
 }
 
 # Henry's law constants for permanent gases IN WATER, as H(T_ref) in bar per unit

@@ -65,6 +65,32 @@ which is the constant-particle-count idealisation; real calcination is
 shrinking-core (``n^(2/3)``), whose slope at zero is INFINITE and which this
 project refuses for the reason ``SOLID_GATE_TIME`` records.
 
+## ⚠⚠ S4: A ROW MAY HAVE NO SOLID PRODUCT, AND THAT COST A BOUND
+
+``2 HgO(s) -> 2 Hg(g) + O2(g)`` is the fifth row here and the first whose
+products are ALL GAS -- mercury boils at 629.8 K and its retort runs at 900. The
+four rows above it turn one crystal into another, so ``units_rev`` (how many
+formula units of the PRODUCT side the solid block can supply) always had
+something to take a minimum over. Over an empty side that minimum is ``+inf``,
+and the RHS multiplies it by a negative affinity.
+
+⚠ **Measured before it was fixed, not predicted: a sealed 1 L retort holding
+0.5 mol of montroydite at 900 K raised ``array must not contain infs or NaNs``**
+the moment ``Q`` crossed ``K`` -- which it does at that charge, because ``ln K``
+is only +9.2 there. At 0.05 mol it never crosses and the run is clean, so the
+bug had a charge threshold as well as a temperature one.
+
+**Infinity was the wrong bound rather than a bound needing softening**, and the
+existing rows say what the right one is: calcination's reverse is bounded by
+``n(CaO)`` -- the SEED the carbonate grows on -- and not by the CO2 pressure,
+which lives in ``Q``. This engine cannot nucleate a solid from nothing (S3 named
+that gap). So a row with no solid product deposits onto its own REACTANT crystal,
+and ``units_rev`` falls back to ``units_fwd``: the equilibrium stays ``Q = K``
+because the factor is common to both directions, and an exhausted charge stops
+the reaction both ways -- mercury vapour and oxygen in a cold flask cannot make
+montroydite again once the last of it is gone. That is the nucleation gap stated,
+not worked around. ``SolidStateArrays.units`` carries the argument.
+
 ## ⚠ Ea IS NOT DECLARED. IT IS THE REACTION ENTHALPY, AND THAT IS A DERIVATION
 
 An endothermic decomposition whose reverse is a gas landing on an oxide surface
@@ -204,18 +230,53 @@ T_REF = 298.15
 # clock and nothing else -- the case this project's memory records as "rate errors
 # are forgiven and only bad THERMO data snowballs".
 #
-# ⚠ AND THE FORWARD CONSTANT IS NOW ROW-DEPENDENT AND CAN BE LARGE, stated rather
-# than capped. ``A_fwd`` for the bicarbonate row is 1.2e14 1/s, so at the RHS's
-# ``T_MAX`` clamp of 5000 K its rate constant reaches 5e12 1/s. That is a real
-# statement about baking soda at 5000 K and not an artefact, and it is deliberately
-# NOT guarded: ``validation/rate_ceiling.py`` records that the unimolecular ceiling
-# is left unguarded here rather than guarded on an invented number.
+# ⚠ AND THE FORWARD CONSTANT IS ROW-DEPENDENT AND CAN BE LARGE, stated rather
+# than capped. The five rows run from 1.4e4 to 1.9e18 1/s, and ``A0`` is the
+# same number in all of them -- the spread is ``exp(dS/R)``, i.e. how much gas
+# each row makes.
+#
+# ⚠⚠ S4 MEASURED WHAT THAT COSTS AND THE ANSWER IS INSIDE THE RHS's CLAMP.
+# ``validation/rate_ceiling.py`` now reads this table (it never used to -- these
+# rows are not ``Reaction`` objects, so its first two panels cannot see them),
+# and it prints the temperature at which each row's ``k_f`` crosses the
+# unimolecular ceiling of 1e14 1/s:
+#
+#     oxide-thermal-decomposition        3710 K     <- inside T_MAX = 5000 K
+#     sulfate-thermal-decomposition      7543 K
+#     bicarbonate-thermal-decomposition 75136 K
+#     the two calcination rows            never
+#
+# STILL NOT GUARDED, and the reason is the one above rather than an omission:
+# ``A0`` multiplies the whole affinity flux, forward and reverse alike, so it
+# divides out of ``flux = 0``. An over-ceiling forward constant moves a CLOCK
+# and cannot move an equilibrium -- the case this project's memory records as
+# "rate errors are forgiven and only bad THERMO data snowballs". The mercury
+# retort runs at 900 K, 2810 K below its own crossing.
 RECOMBINATION_A = 4.259e-4
 
 # Formation sources this module will subtract a lattice from. Anything else is
 # an ESTIMATE, and a group-contribution number on one side of a lattice
 # subtraction is the failure ``solubility_product`` records at 25-29 decades.
-CURATED_FORMATION = ("experimental", "element reference state")
+#
+# ⚠⚠ THE THIRD PREFIX IS HERE BECAUSE THIS GUARD FALSELY REFUSED CRC's OWN
+# MEASUREMENT, and the near-miss is worth keeping: it is a PREFIX MATCH ON A
+# PROVENANCE STRING, so what it actually tests is how a sentence begins. A
+# GASEOUS element reference state says "element reference state (gaseous)" and
+# passes; a CONDENSED one -- mercury, bromine, iodine, S8 -- says "Hf and S0
+# both from CRC via chemicals 1.5.2; Gf DERIVED ...", which is the same CRC row
+# arriving through ``element_data``'s derivation and was being called an
+# estimate. Measured in S4, on ``[Hg]``, and it would have refused a row
+# evolving Br2 or I2 identically.
+#
+# ⚠ The weakness is the mechanism, not the list: a tier belongs in the RECORD
+# and this reads it out of prose. Left as a list because widening it is a
+# one-line data change while moving the tier into ``ThermoData`` reaches every
+# provider in Layer 1 -- stated, so the next row that trips it knows why.
+CURATED_FORMATION = (
+    "experimental",
+    "element reference state",
+    "Hf and S0 both from",
+)
 
 
 class UnpricedSolidReaction(ValueError):
@@ -268,12 +329,18 @@ class PricedSolidReaction(NamedTuple):
 # species that already price, so the MECHANISM is covered honestly and the ROW is
 # not claimed. `data/catalog` scores rows, and this one still reads uncovered.
 #
-# ⚠ AND `roasting` IS NOT HERE, which is a data refusal rather than an engine
-# one. All five of its rows are `metal sulfide + O2 -> metal oxide + SO2`; of the
-# five sulfides only ZnS prices, and NONE of the five oxides does. So zero rows
-# are complete. The engine below would run them unchanged the day the oxides are
-# curated -- and `mercury-from-cinnabar` would still need its own template,
-# because HgO decomposes at roasting temperature and that row gives the METAL.
+# ⚠ AND `roasting` IS NOT HERE, which is a MECHANISM refusal and not a data one:
+# a gas REACTANT puts its pressure in the denominator of Q, so `price` refuses
+# such a declaration by name and `properties/surface.py` carries the mass-action
+# term it wants instead.
+#
+# ⚠⚠ THE ONE THING THIS COMMENT USED TO SAY THAT S4 REFUTED: it read
+# "`mercury-from-cinnabar` would still need its own template, because HgO
+# decomposes at roasting temperature and that row gives the METAL." It needs no
+# template. The decomposition is an ORDINARY ROW of this table -- the last one
+# below -- and the row falls out of that row and the roasting one sharing a
+# crystal. The reason the oxide decomposes at roasting heat is not an obstacle
+# to expressing the route; it IS the route.
 SOLID_STATE_REACTIONS: tuple[SolidStateReaction, ...] = (
     SolidStateReaction(
         name="calcination-decarbonation",
@@ -334,6 +401,39 @@ SOLID_STATE_REACTIONS: tuple[SolidStateReaction, ...] = (
             "calciner -- the closest agreement of any row here"
         ),
     ),
+    # ⚠⚠ S4 -- THE FIRST ROW HERE WITH NO SOLID PRODUCT AT ALL, and that is a
+    # structural first rather than a bigger one of the same thing. Every row
+    # above turns one crystal into another; this one turns a crystal ENTIRELY
+    # into gas, because mercury boils at 629.8 K and this runs at 900.
+    #
+    # ⚠ IT BREAKS ``SolidStateArrays.units`` AS THAT FUNCTION WAS WRITTEN, and
+    # the break is measured, not predicted: ``units_rev`` is a minimum over the
+    # solids FORMED, and the minimum of an empty set was ``np.inf``. The reverse
+    # flux is ``net * units_rev``, so the instant the affinity turns negative --
+    # which happens in any sealed retort, because ln K is only +9.2 at 900 K --
+    # the term returns -inf and BDF gets a NaN Jacobian. See ``units`` for the
+    # fix and for why the honest bound is not infinity.
+    #
+    # ⚠ AND THE MECHANISM NAME IS NOT A CATALOG CLASS ON ITS OWN. No route step
+    # reads `mercury-oxide -> mercury + oxygen`; this is one HALF of
+    # `mercury-from-cinnabar`'s single row, whose other half is
+    # `cinnabar-roasting` in properties/surface.py. The class it helps cover is
+    # `roasting-to-metal`, and it is covered by the two of them TOGETHER --
+    # nothing declares the row itself. See validation/catalog_coverage.py.
+    SolidStateReaction(
+        name="oxide-thermal-decomposition",
+        solids=(("montroydite", -2),),
+        gases=(("[Hg]", +2), ("O=O", +1)),
+        mechanism="oxide-thermal-decomposition",
+        note=(
+            "`mercury-from-cinnabar`'s second half, and the reaction oxygen "
+            "was discovered by. HgO does not survive the retort that makes it "
+            "-- it goes at 689 K against the room and the roast runs at 900 -- "
+            "so a cinnabar roast never accumulates the oxide it makes, and what "
+            "comes over is the METAL. Nothing declares that: it is this row and "
+            "`cinnabar-roasting` sharing one crystal in the solid block"
+        ),
+    ),
 )
 
 
@@ -350,6 +450,23 @@ def price(
     dG = 0.0
     resolved: list[tuple[MineralRecord, int]] = []
     sources: list[str] = []
+
+    # ⚠ S4. A row with NO crystal on either side is the one case
+    # ``SolidStateArrays.units`` cannot bound at all -- both of its fallbacks
+    # are empty, so both directions return +inf and the flux is a NaN. It is
+    # also not a solid-state reaction: with every participant a gas, the
+    # kinetics kernel is what should be running it, on the ideal-gas basis
+    # rather than on a lattice subtraction. Refused here, where the declaration
+    # is, rather than left for the arrays to discover as an integrator failure.
+    if not decl.solids:
+        raise UnpricedSolidReaction(
+            f"{decl.name!r}: no solid participants at all. A reaction that "
+            "happens INSIDE a crystal needs a crystal; with every species in "
+            "the gas block this is an ordinary gas-phase reaction and belongs "
+            "in reactions/library.py, priced on the ideal-gas basis. (The "
+            "arrays cannot bound such a row either: units() takes a minimum "
+            "over each side's solids and both sides would be empty.)"
+        )
 
     for name, nu in decl.solids:
         rec = MINERALS.get(name)

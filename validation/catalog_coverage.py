@@ -484,6 +484,62 @@ TEMPLATE_CLASSES = {
         "vessel_integrator.SolidStateArrays (a TERM; this declaration's products "
         "ARE the row's, unlike the sulfate half)"
     ),
+    # ---------------------------------------------------------------------
+    # S4 -- ``roasting-to-metal``. THE FALSE CREDIT S1 FOUND, PAID OFF.
+    # ---------------------------------------------------------------------
+    # S1 credited ``roasting`` and discovered that it had thereby claimed
+    # ``mercury-from-cinnabar`` -- ``mercury-sulfide + oxygen -> mercury +
+    # sulfur-dioxide`` -- on a term that makes the OXIDE. It split the row out
+    # under this name and left it uncovered, and recorded that reaching it would
+    # need "a second reaction nobody built". S4 built the second reaction.
+    #
+    # ⚠⚠ AND NOTHING DECLARES THE ROW. This is the SECOND class credited to a
+    # mechanism that EMERGED (``solid-carbonation`` was the first), and it is
+    # the first time the emergent reaction is a CATALOG ROW rather than a
+    # by-product of one. Two declarations, in two different terms, sharing one
+    # crystal in the solid block:
+    #
+    #     surface.py     2 HgS + 3 O2 -> 2 HgO + 2 SO2      SurfaceArrays
+    #     solid_state.py 2 HgO        -> 2 Hg  +   O2       SolidStateArrays
+    #     ----------------------------------------------------------------
+    #     what a retort does:  HgS + O2 -> Hg + SO2         nobody wrote this
+    #
+    # Measured, not argued: a sealed 10 L retort of pure oxygen holding 0.02 mol
+    # of cinnabar at 900 K comes out at 0.020000000000 mol of mercury and
+    # 0.020000000000 mol of SO2 -- 1:1 to twelve figures, having consumed
+    # 0.020000 mol of O2. That IS the catalog row, coefficient for coefficient.
+    # The montroydite never reaches 4e-5 of the charge, because its own clock at
+    # 900 K is 0.24 s against the roast's 5,918 s.
+    #
+    # ⚠⚠ WHICH ROUTES IT MOVES -- PREDICTED FIRST, THEN MEASURED, per S1's third
+    # mistake and S3's standing check. ``mercury-from-cinnabar`` is a ONE-STEP
+    # route, so this credit is the whole of it: predicted +1 template-ready
+    # route and exactly one, and unlike S1's ``pyrite-roasting`` this one RUNS
+    # END TO END. Both minerals price, mercury is now a curated element, and the
+    # run above is the route.
+    #
+    # ⚠ THE NAME WAS RE-EXAMINED AND KEPT, WHICH WAS NOT THE EXPECTED ANSWER.
+    # The brief for S4 said the re-label was what would get reversed -- fold the
+    # row back into ``roasting`` now that its product is reachable. Refused, and
+    # the arithmetic runs both ways:
+    #
+    #     keep ``roasting-to-metal``  ->  36/218 classes, 28/173 routes
+    #     fold back into ``roasting`` ->  35/217 classes, 28/173 routes
+    #
+    # The routes are identical, so the choice is purely about what the class
+    # column SAYS. ``roasting-to-metal`` records a real mechanistic difference
+    # and not an outcome: this ore's oxide does not survive the furnace that
+    # makes it, which is why one row needs two mechanisms where the other four
+    # need one. Folding it back would delete the distinction S1 paid to find,
+    # to make one counter smaller. M1's standard asks whether "is it covered"
+    # has a yes/no answer for the class, and it does -- see ``solid-carbonation``
+    # above, which is an emergent pair under a name of its own for the same
+    # reason.
+    "roasting-to-metal": (
+        "vessel_integrator.SurfaceArrays + SolidStateArrays sharing one crystal "
+        "in the solid block (two TERMS; EMERGENT -- nothing declares this "
+        "reaction, and it is the catalog's own row)"
+    ),
 }
 
 # How many templates that is, counted rather than asserted -- the old text said
@@ -813,6 +869,39 @@ def main() -> int:
         species = {x for s in mine for x in s.reactants + s.products}
         real = [s for s in species if s in compounds]
         markers = len(species) - len(real)
+        # ⚠⚠ S4 MEASURED THIS COLUMN AND IT IS BLIND TO ``mineral_data``, WHICH
+        # UNDERSTATES IT BY 14 ROUTES. ``tier`` comes from the plain
+        # ``ThermochemistryProvider``, which REFUSES a lattice by name --
+        # correctly, because the fusion law is 407x wrong for one. But since M3 a
+        # lattice HAS a home: ``mineral_data``, on the solid basis with
+        # ``Cp_solid`` and ``Vm_solid``, which is what precipitation,
+        # ``SolidStateArrays`` and ``SurfaceArrays`` all price from.
+        #
+        # So a route whose ONLY refused species are minerals this project prices
+        # reads species-UNREADY while running end to end. Measured: **14 routes**,
+        # i.e. 49 -> at most 63 of 173. They include ``lime-cycle``, which M6
+        # declared complete from limestone and ``examples/lime_cycle.py``
+        # demonstrably runs, and ``haber-bosch`` and ``methanol-synthesis``, where
+        # the only "refused" species is the solid CATALYST S1 curated so that it
+        # could be put in the flask:
+        #
+        #     2-ethylhexanol-route, aniline-route, copper-smelting,
+        #     deacon-process, fischer-tropsch, haber-bosch,
+        #     hydrogenation-margarine, mercury-from-cinnabar, methanol-synthesis,
+        #     nylon66-route, phenacetin-route, steam-reforming, vermilion-route,
+        #     water-gas-shift
+        #
+        # ⚠ NOT FIXED HERE, DELIBERATELY. It changes the definition of a
+        # PUBLISHED column, so it owes the standing check S1's third mistake
+        # installed -- which routes does it move, predicted before measuring --
+        # and a full verification pass behind it. It is the next session's
+        # instrument job.
+        #
+        # ⚠ AND IT IS THE OPPOSITE SHAPE TO ``pyrite-roasting``, which reads
+        # template-ready and does NOT run. This one reads unready and DOES:
+        # S4 measured `mercury-from-cinnabar` closing at 0.020000000000 mol of
+        # mercury on a 0.02 mol charge. Two columns, two directions of error,
+        # and neither is a bug in the engine.
         ok = all(by_id[s]["tier"] != "refused" for s in real)
         src = ok and all(by_id[s]["tier"] != "joback" for s in real)
         tmpl = all(s.cls in TEMPLATE_CLASSES for s in mine)

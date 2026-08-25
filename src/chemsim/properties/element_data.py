@@ -28,6 +28,7 @@ sublimation energy, which is a real measured number:
 
     H2 N2 O2 F2 Cl2   gaseous reference state    Hf = Gf = 0   exact, free
     Br2               LIQUID  reference state    Hf = +30.90  Gf = +3.08
+    Hg                LIQUID  reference state    Hf = +61.40  Gf = +31.85
     I2                SOLID   reference state    Hf = +62.40  Gf = +19.29
     S8 (rhombic)      SOLID   reference state    Hf = +100.42 Gf = +48.68
 
@@ -44,18 +45,49 @@ ideal-gas value back down into its own phase must return zero:
 and nothing in that expression touched the formation table -- Psat comes from
 Tb/Tc/Pc through Lee-Kesler and Hfus/Tm are separate measurements. It is
 measured in ``tests/test_element_data.py`` and reported in
-``validation/game_gates.py``.
+``validation/game_gates.py``. The residuals:
+
+    Br2   -0.053 kJ/mol      Hg  +0.012 kJ/mol
+    I2    +0.139             S8  +3.052   -- a BOUND, and the test says so
+
+## ⚠ MERCURY IS A METAL AND IT IS IN THE TABLE. S4, AND IT IS NOT AN EXCEPTION
+
+It was refused here twice over -- once as a metal, once as a bare monatomic
+symbol -- and BOTH refusals were about a representation rather than about the
+chemistry:
+
+  * "a metallic lattice" is what ``LATTICE_ELEMENTS`` says of a metal, and it is
+    the reason a metal has no molecular reference state. Mercury's reference
+    state is a **liquid with a boiling point**, which is precisely what this
+    engine's liquid block holds. It is in ``REFERENCE_SMILES`` with bromine.
+  * "the ideal-gas record is the ATOM rather than the substance" is true of
+    ``[C]``, ``[S]`` and ``[Fe]``. **Mercury's vapour IS the atom** -- it boils
+    monatomic at 629.8 K -- so ``[Hg]``'s ideal-gas record is exactly what is in
+    the retort, and mercury has one condensed form, so the symbol names it
+    without ambiguity.
+
+⚠ Its Cp is the second FREE EXACT number in this table after the gaseous zeros:
+a monatomic ideal gas has ``Cp = 5R/2 = 20.786`` J/(mol K) at every temperature,
+which is an answer rather than a fit, and JANAF returns it to four figures.
+
+⚠ And its VAPOUR PRESSURE is the one number here that Lee-Kesler could not do:
+corresponding states over a liquid metal reads **3.8x high at 523 K** while
+being anchored at Tb, so the error is invisible at the boiling point. It has a
+curated NIST Antoine entry in ``volatility.py`` instead, within 2% of CRC across
+five decades -- and the ``Hvap`` above is Clausius-Clapeyron on THAT curve, not
+on Lee-Kesler, so the latent heat still cannot disagree with the vapour pressure
+the engine evaluates.
 
 ## WHAT IS NOT HERE, AND WHY IT IS REFUSED RATHER THAN ESTIMATED
 
-  * **graphite and every metal.** The reference state is a metallic or covalent
-    LATTICE, and this engine's species are molecules. The ideal-gas record for
-    ``[C]`` is the carbon ATOM at Gf +671 kJ/mol -- a real number that is not
-    charcoal.
-  * **a bare monatomic symbol** (``[S]``, ``[C]``, ``[Fe]``). The most ambiguous
-    way there is to name an allotrope; answering with the gas atom's value is a
-    confident answer to a different question. The refusal names the
-    reference-state SMILES to charge instead.
+  * **graphite and every metal whose reference state is a LATTICE.** This
+    engine's species are molecules, and the ideal-gas record for ``[C]`` is the
+    carbon ATOM at Gf +671 kJ/mol -- a real number that is not charcoal.
+    ⚠ Mercury is not one of these; see above.
+  * **a bare monatomic symbol whose vapour is not the atom** (``[S]``, ``[C]``,
+    ``[Fe]``). The most ambiguous way there is to name an allotrope; answering
+    with the gas atom's value is a confident answer to a different question. The
+    refusal names the reference-state SMILES to charge instead.
 """
 
 from __future__ import annotations
@@ -189,7 +221,7 @@ REFERENCE_STATES: dict[str, ReferenceState] = {
         source='CRC via chemicals 1.5.2',
     ),
     'Hg': ReferenceState(
-        species='Hg(l)', smiles=None, phase='l',
+        species='Hg(l)', smiles='[Hg]', phase='l',
         S0=75.9, atoms_per_unit=1,
         source='CRC via chemicals 1.5.2',
     ),
@@ -371,6 +403,18 @@ ELEMENTAL: dict[str, ElementalRecord] = {
         physical_source='Tb=CRC_INORG; Tm=CRC_INORG; Hfus=CRC; Tc=MATTHEWS; Pc=MATTHEWS; Vc=WEBBOOK; Hvap from Lee-Kesler by Clausius-Clapeyron [molar values from CAS 7704-34-9, tabulated per gram-atom, multiplied by 8]',
         cp_source='JANAF, sampled 273-600 K and fitted (worst residual 0.13%)',
     ),
+    # mercury  (CAS 7439-97-6; reference state, condensed -- the gas record is real data)
+    '[Hg]': ElementalRecord(
+        name='mercury', cas='7439-97-6', element='Hg', n_atoms=1,
+        reference_state=True, reference_phase='l',
+        Hf=61.4, Gf=31.853,
+        Cp_coeffs=(20.974497874107, -0.001267464958, 2.779108e-06, -1.991e-09),
+        Tb=629.77, Tc=1735.0, Pc=1608.028, Vc=35.0,
+        Hvap=59.444, Tm=234.32, Hfus=2.295,
+        formation_source='Hf and S0 both from CRC via chemicals 1.5.2; Gf DERIVED against the CRC element reference states',
+        physical_source='Tb=CRC_INORG; Tm=CRC_INORG; Hfus=CRC; Tc=MATTHEWS; Pc=MATTHEWS; Vc=YAWS; Hvap by Clausius-Clapeyron on the CURATED Antoine curve volatility.py actually evaluates, NOT on Lee-Kesler',
+        cp_source='JANAF, sampled 273-600 K and fitted (worst residual 0.04%)',
+    ),
     # ozone  (CAS 10028-15-6; elemental, NOT a reference state)
     'O=[O+][O-]': ElementalRecord(
         name='ozone', cas='10028-15-6', element='O', n_atoms=3,
@@ -392,7 +436,7 @@ ELEMENTAL: dict[str, ElementalRecord] = {
 # Kept as data rather than dropped, so the REFUSAL can name the reason. A
 # refusal that says "no data" where the truth is "your representation cannot
 # express this" is a worse answer than no answer.
-LATTICE_ELEMENTS: dict[str, str] = {'C': 'graphite -- a covalent lattice', 'P': 'white phosphorus -- a molecular solid whose P4 SMILES RDKit canonicalises to aromatic phosphorus', 'Na': 'a metallic lattice', 'K': 'a metallic lattice', 'Ca': 'a metallic lattice', 'Fe': 'a metallic lattice', 'Cu': 'a metallic lattice', 'Zn': 'a metallic lattice', 'Hg': 'liquid mercury -- a metal, not a molecule'}
+LATTICE_ELEMENTS: dict[str, str] = {'C': 'graphite -- a covalent lattice', 'P': 'white phosphorus -- a molecular solid whose P4 SMILES RDKit canonicalises to aromatic phosphorus', 'Na': 'a metallic lattice', 'K': 'a metallic lattice', 'Ca': 'a metallic lattice', 'Fe': 'a metallic lattice', 'Cu': 'a metallic lattice', 'Zn': 'a metallic lattice'}
 
 
 def element_of(molecule) -> str | None:

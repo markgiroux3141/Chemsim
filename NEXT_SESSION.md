@@ -468,6 +468,46 @@ fails on unrelated changes and says nothing when it passes.**
 | ⚠⚠ **S3 -- `ROUTE_INDEX.md` was STALE BY THREE MILESTONES** | not regenerated since the **initial commit**, while `route_steps.psv` was re-labelled by M5, M6 and S1. Regenerating moved **21 labels: 11 M5, 5 M6, 1 S1, 4 S3**. No audit reads it, so it broke nothing and warned nobody |
 | ... and verified S2's way | **byte-identical across `PYTHONHASHSEED=0` and `=1`**. The only unstable site; the greedy `max` already had a `c` tie-break |
 | ... templates in the project | **34, UNCHANGED** -- S3 added no template and no engine code |
+| **S4 -- the RETORT, sealed 10 L / pure O2 / 0.02 mol cinnabar / 900 K** | **0.020000000000 mol Hg and 0.020000000000 mol SO2 on 0.020000 mol O2 consumed.** `HgS + O2 -> Hg + SO2`, the catalog row, from a 2:3:2:2 and a 2:2:1 that do not mention each other |
+| ⚠ ... the montroydite that carries it | **8e-7 mol at the start, 3.4e-8 by 20 ks** -- rate x clock, never 4e-5 of the charge. Its clock at 900 K is **0.2405 s** against the roast's **5,918 s** |
+| ⚠⚠ ... the two clocks CROSS at | **611.7 K** under 1 bar of O2 (304.4 kJ/mol DERIVED against 150 DECLARED). Nothing gates on temperature anywhere |
+| ⚠ ... the oxide's share of the mercury released | **2.0e-6 / 4.3e-4 / 1.9e-2 / 0.341 / 0.913** at 900 / 773 / 700 / 650 / 600 K |
+| ... cool the retort to 400 K | **97.9%** of the mercury condenses into the liquid block |
+| ⚠⚠ ... and NO oxide re-forms at 400 K | **289 K below its own threshold**, in a flask full of Hg vapour and O2. There is none left to grow ON -- the nucleation gap, as a modelled bound |
+| ⚠⚠ **S4 -- a row with NO solid product BROKE `units_rev`** | sealed 1 L, 0.5 mol montroydite, 900 K: **RAISES `array must not contain infs or NaNs`** once Q crosses K. The minimum over an empty set is `+inf`, times a negative affinity |
+| ⚠ ... and the failure had a CHARGE threshold too | **0.05 mol in the same flask is clean** -- Q never reaches K -- and the small charge is the one an example would have been written with |
+| ... fixed, and the sealed 0.5 mol run now | stalls at **71.8%** with **Q = 9764.8 vs K = 9764.8 bar^3**; identical at 60 s and 6000 s |
+| ... the four pre-S4 solid-state rows | **bit-for-bit UNMOVED** by the fallback (both sides carry a crystal), pinned by a test |
+| **S4 -- mercury in `element_data`** | **Hf +61.40, Gf +31.853 kJ/mol**, reference phase `'l'`. Removed from `LATTICE_ELEMENTS`; `REFERENCE_SMILES['Hg'] = '[Hg]'` |
+| ⚠ ... its Cp is EXACT, not a fit | **5R/2 = 20.786 J/(mol K)** at every temperature; JANAF returns it to four figures. The only non-fitted Cp in that table besides the gaseous zeros |
+| ⚠ ... the reference-state cross-check | **+0.012 kJ/mol** -- the TIGHTEST of the four (Br2 -0.053, I2 +0.139, S8 +3.052) |
+| ⚠⚠ ... and Lee-Kesler had to go | over a liquid METAL it reads **38.3 kPa at 523 K against CRC's 10.0 (3.8x)** while matching at Tb to five figures, because it is ANCHORED there. Curated NIST Antoine: within **2%** of CRC over five decades; residual **+2.808 -> +0.012** |
+| ⚠ ... and `Hvap` follows the curve the engine EVALUATES | **59.444 kJ/mol** by Clausius-Clapeyron on the curated Antoine, against Lee-Kesler's 57.344 and CRC's measured **59.11**. The generator's "cannot disagree" invariant kept, not traded |
+| ⚠⚠ **S4 -- `CURATED_FORMATION` falsely refused CRC's own row** | it is a PREFIX MATCH ON PROSE: a GASEOUS reference state passes, a CONDENSED one says "Hf and S0 both from CRC ..." and read as an ESTIMATE. **Would have refused Br2, I2 and S8 identically** |
+| ⚠⚠ **S4 -- `rate_ceiling` could not see `SOLID_STATE_REACTIONS`** | its panels walk `net.reactions` and those rows never become one, while its summary claims "nothing approaches the unimolecular ceiling". Fourth panel added |
+| ... what the fourth panel says | at 298 K the claim HOLDS by 26 decades. Hot: **oxide-thermal-decomposition 1.93e18 1/s, crosses 1e14 at 3710 K -- INSIDE the RHS's 5000 K clamp**; sulfate 7543 K; bicarbonate 75,136 K; the two calcination rows never |
+| **S4 -- routes template-ready** | **28 / 173** (was 27). `mercury-from-cinnabar`, a ONE-STEP route -- predicted before crediting, then measured -- and unlike `pyrite-roasting` it RUNS |
+| ... reaction classes covered | **36 / 218** (was 35 / 218); `roasting-to-metal`, credited to an EMERGENT pair of TERMS |
+| ⚠⚠ ... the re-label was NOT reversed, and both ways were measured | keep: **36/218, 28 routes**. Fold back into `roasting`: **35/217, 28 routes**. Routes identical, so the choice is only what the class column SAYS |
+| ... covered steps | **98 / 377** (was 97) |
+| ... the species line | **refused 466 -> 465, measured 141 -> 142** -- one species, mercury. S3's byte-stability fix held: EVERY changed line is a real consequence, no noise |
+| ... routes one class away | **60 -> 59**, from **46 -> 45** distinct classes |
+| ⚠ ... a route that is not this one | **`castner-kellner` became species-ready AND fully sourced** (48 -> 49, 4 -> 5). Curating one element paid where nobody was looking |
+| ⚠⚠ **S4 -- `species-ready` IS BLIND TO `mineral_data`** | it asks the plain provider, which REFUSES a lattice by name. **14 routes read species-UNREADY with every refusal a mineral this project prices**: 49/173 where the honest number is at most **63** |
+| ... which routes | 2-ethylhexanol, aniline, copper-smelting, deacon, fischer-tropsch, **haber-bosch**, hydrogenation-margarine, mercury-from-cinnabar, **methanol-synthesis**, nylon66, phenacetin, steam-reforming, vermilion, water-gas-shift -- **plus `lime-cycle`**, which M6 declared complete end to end |
+| ⚠⚠ ... and it is the OPPOSITE shape to `pyrite-roasting` | pyrite reads template-ready and does NOT run; `mercury-from-cinnabar` reads species-unready and DOES. Two columns, two directions of error, neither a bug in the engine |
+| ... NOT FIXED, deliberately | it redefines a PUBLISHED column, so it owes the "which routes does it move" check and a verification pass. Recorded at the line that computes it |
+| ... `ROUTE_INDEX.md` | **unchanged** -- no row was re-labelled |
+| ... templates in the project | **34, UNCHANGED** -- two curated declarations, no template, no new term |
+| ⚠ ... liquid mercury is HELD IDEAL | **99.85%.** A metal has no UNIFAC groups so its gamma is DECLARED 1. Visible cost: O2 and SO2 dissolve in the pool on Henry constants measured IN WATER -- **0.14% of the SO2** |
+| `tests/test_mercury_retort.py` | **14 tests in 4.2 s** |
+| **the whole suite** | **815 passed in 11:50** -- and this is the first MEASURED green number since S1's last fix (which left it at 796 passed / 1 failed and never re-run) |
+| ⚠ `COVERAGE_REPORT.md` re-verified S3's way | **byte-identical across `PYTHONHASHSEED=0`, `=1` and unseeded** |
+| `examples/mercury_retort.py` | **6 panels in 4.2 s** |
+| **S4 -- THE TOLERANCE AUDIT RE-RUN, 12 examples** | **S2's finding UNMOVED: NO example prints a quotable digit that moves.** 5 move below 0.1% (identical list to S2), **7 are byte-identical** (was 6; `mercury_retort` joins them) |
+| ⚠ ... the three self-check examples | `lime_cycle` **1.00**, `roasting_and_the_catalyst_gate` **0.99**, `mercury_retort` **1.00** -- all three OUTPUT IDENTICAL, which is what says the harness's default-rebinding still cannot touch an example that passes its own rtol |
+| ⚠ ... and ONE COUNTER MOVED, which is JITTER and not a finding | "tight is faster in **1 of 12**, worst 7.1x" against S2's "**2 of 11**, worst 7.2x". The example that left the FASTER column is a self-check one landing at 0.99 instead of 1.00 -- its OUTPUT is identical by construction, so the counter is measuring wall clock on a run that did not change. ⚠ Do not read that 2 -> 1 as a regression |
+| ... `oil_of_vitriol` | **STILL NOT SWEPT**, unchanged: RAISES at rtol 1e-8, numbers CONFIRMED correct |
 | ⚠⚠ ... so the zero-column trap has a SECOND trigger | not only "a species absent from a sealed flask" but "a TIGHT TOLERANCE on a flask holding a trace". Same NaN, same fix, same diagnostic |
 | ⚠⚠ ... and "THE TIGHT RUN IS ALSO FASTER" DOES NOT GENERALISE | faster in **2 of 11**, SLOWER in **9**, worst **7.2x**. It held for M6's vented kiln and S1's roast -- a stiff vent fed by slow chemistry -- and nowhere else. Tightening usually COSTS time |
 | ⚠ ... and the audit's own first version manufactured a finding | it reported `wait_until` moving **12.5%**, and that was `0.07 s of wall` against `0.08 s of wall`. Real worst move **1.04e-4**. A wall clock is now excised as a TOKEN, not by dropping the line -- which also stops it hiding `lime_cycle`'s `±14.374 W wall` heat flux |

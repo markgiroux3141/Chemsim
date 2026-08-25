@@ -79,16 +79,54 @@ candidate in that script is organic. It matters enormously here: CRC_INORG is
 the ONLY source of a melting point for sulfur, iodine and every mineral, so
 inheriting that classification would have refused the entire floor.
 
+## MERCURY IS THE EXCEPTION TO THE MONATOMIC REFUSAL, AND THE EXCEPTION HAS A TEST
+
+``[Hg]`` was refused here alongside ``[S]``, ``[C]`` and ``[Fe]``, on the rule
+that a bare element symbol is an ambiguous way to name an allotrope and that the
+ideal-gas record for one is the ATOM rather than the substance. **For mercury
+both halves of that are false, and the refusal was hiding a species this engine
+can hold perfectly well.**
+
+  * **The atom IS the vapour.** Mercury boils at 629.8 K as a MONATOMIC gas, so
+    ``[Hg]``'s ideal-gas record is not a different substance from what is in the
+    retort -- it is exactly what is in the retort. That is what fails for the
+    others: carbon vapour is not charcoal, sulfur vapour is S8 and S2 before it
+    is S, and iron vapour is not iron filings.
+  * **There is nothing to disambiguate.** Mercury has ONE condensed form and it
+    is a liquid, so ``[Hg]`` names it unambiguously -- unlike ``[S]``, where the
+    question "which allotrope" has an answer the symbol does not carry.
+  * **And its reference state is EXPRESSIBLE**, which is what the
+    ``LATTICE_ELEMENTS`` entry got wrong. "Liquid mercury -- a metal, not a
+    molecule" is true of the bonding and false of the representation: this
+    engine's liquid block holds a species with a Tb, and mercury has one. So it
+    joins Br2 in ``REFERENCE_SMILES`` rather than graphite in
+    ``LATTICE_ELEMENTS``.
+
+The entry therefore carries a CONDENSED reference state, and its ideal-gas
+record is the vaporisation energy: **Hf = +61.40, Gf = +31.85 kJ/mol**, on the
+same footing as bromine's +30.90 / +3.08. ⚠ Pinning it to zero would be the I2
+bug again -- the same error the species-by-species fix for Cl2 introduced.
+
+⚠ **TWO FREE EXACT CHECKS COME WITH IT, AND ONE OF THEM IS NEW TO THIS TABLE.**
+The condensed-reference-state identity every entry here is checked against --
+``Gf(g) + R T ln(Psat/P_std) - Hfus (1 - T/Tm) == 0`` -- applies unchanged. The
+new one is the HEAT CAPACITY: a monatomic ideal gas has ``Cp = 5R/2`` EXACTLY,
+20.786 J/(mol K), at every temperature. Every other entry in this table gets its
+Cp from a cubic fitted to a sampled curve with a residual to report; this one
+has an answer that is not a fit, and JANAF returns it to four figures.
+
 ## What is deliberately NOT in the table
 
-  * **graphite, and every metal.** Their reference state is a metallic or
-    covalent LATTICE. This engine's species are molecules, and the ideal-gas
-    record for ``[C]`` is the carbon ATOM at Gf +671 kJ/mol -- a real number
-    that is not charcoal. Refused, naming the reason.
-  * **monatomic elemental symbols** (``[S]``, ``[C]``, ``[Hg]``, ``[Fe]``).
-    A bare element symbol is the most ambiguous way to name an allotrope, and
-    answering with the gas atom's value is a confident answer to a different
-    question. Refused, naming the reference-state SMILES to charge instead.
+  * **graphite, and every metal whose reference state is a LATTICE.** This
+    engine's species are molecules, and the ideal-gas record for ``[C]`` is the
+    carbon ATOM at Gf +671 kJ/mol -- a real number that is not charcoal.
+    Refused, naming the reason. ⚠ Mercury is NOT one of these, and used to be
+    listed as one: see above.
+  * **monatomic elemental symbols whose vapour is not the atom** (``[S]``,
+    ``[C]``, ``[Fe]``). A bare element symbol is the most ambiguous way to name
+    an allotrope, and answering with the gas atom's value is a confident answer
+    to a different question. Refused, naming the reference-state SMILES to
+    charge instead.
   * **P4.** The tetrahedral SMILES ``[P]12[P]3[P]1[P]23`` canonicalises through
     RDKit to an AROMATIC-phosphorus form, which is not the species; and
     phosphorus is absent from Joback, Benson and Fedors alike (recorded in the
@@ -98,6 +136,7 @@ inheriting that classification would have refused the entire floor.
 from __future__ import annotations
 
 import argparse
+import math
 import sys
 from pathlib import Path
 
@@ -107,6 +146,7 @@ sys.path.insert(0, str(REPO / "src"))
 import numpy as np  # noqa: E402
 
 from chemsim.matter import Molecule  # noqa: E402
+from chemsim.properties.volatility import _CURATED_ANTOINE  # noqa: E402
 
 T_REF = 298.15
 R = 8.31446261815324
@@ -213,6 +253,11 @@ REFERENCE_STATES: dict[str, tuple[str, int, str, str]] = {
 REFERENCE_SMILES: dict[str, str] = {
     "H": "[H][H]", "N": "N#N", "O": "O=O", "F": "FF", "Cl": "ClCl",
     "Br": "BrBr", "I": "II", "S": "S1SSSSSSS1",
+    # S4. The only MONATOMIC entry, and the only METAL: mercury's condensed
+    # reference state is a LIQUID this engine's liquid block can hold, and its
+    # vapour is the atom itself. See the module docstring for why that makes it
+    # the one exception to the monatomic refusal rather than a hole in it.
+    "Hg": "[Hg]",
 }
 
 LATTICE_ELEMENTS = {
@@ -222,7 +267,11 @@ LATTICE_ELEMENTS = {
     "Na": "a metallic lattice", "K": "a metallic lattice",
     "Ca": "a metallic lattice", "Fe": "a metallic lattice",
     "Cu": "a metallic lattice", "Zn": "a metallic lattice",
-    "Hg": "liquid mercury -- a metal, not a molecule",
+    # ⚠ "Hg" USED TO BE HERE, reading "liquid mercury -- a metal, not a
+    # molecule". True of the bonding and false of the REPRESENTATION, which is
+    # what this table is about: a lattice element is one whose reference state
+    # this engine cannot hold, and mercury's is a liquid with a boiling point.
+    # Removed in S4; ``REFERENCE_SMILES`` above now carries it.
 }
 
 # ---------------------------------------------------------------------------
@@ -241,6 +290,11 @@ CANDIDATES: list[tuple[str, str, str, bool]] = [
     ("bromine", "BrBr", "7726-95-6", True),
     ("iodine", "II", "7553-56-2", True),
     ("sulfur", "S1SSSSSSS1", "10544-50-0", True),
+    # S4 -- the one MONATOMIC reference state, and the one metal. Its ideal-gas
+    # record is the vaporisation energy of the liquid, exactly as bromine's is;
+    # the module docstring carries the argument for why the monatomic refusal
+    # does not reach it.
+    ("mercury", "[Hg]", "7439-97-6", True),
     # --- elemental but NOT a reference state: real measured values, and
     #     pinning them to zero would be the same error in the other direction
     ("ozone", "[O-][O+]=O", "10028-15-6", False),
@@ -569,6 +623,28 @@ def collect():
             except CriticalPropertyError as exc:
                 notes.append(f"{name}: REFUSED -- {exc}")
                 continue
+            # ⚠ THE LATENT HEAT IS THE SLOPE OF THE CURVE THE ENGINE ACTUALLY
+            # USES, AND THAT IS WHY THIS BRANCH EXISTS. The Lee-Kesler ``Hvap``
+            # above is differentiated out of the Lee-Kesler vapour pressure, so
+            # the two cannot disagree -- but ``volatility`` prefers a CURATED
+            # Antoine when it has one, and for such a species the engine's
+            # vapour pressure is no longer the curve this latent heat came from.
+            # Mercury is the first element that hits it (its Lee-Kesler curve is
+            # 3.8x high at 523 K, which is why ``_CURATED_ANTOINE`` carries it),
+            # and taking Clausius-Clapeyron on the curated curve instead keeps
+            # the invariant rather than trading it away: 59.444 kJ/mol against
+            # Lee-Kesler's 57.344 and CRC's measured 59.11.
+            hvap, hvap_src = est.Hvap, "Hvap from Lee-Kesler by Clausius-Clapeyron"
+            curated_antoine = _CURATED_ANTOINE.get(key)
+            if curated_antoine is not None:
+                a_A, a_B, a_C, _lo, _hi = curated_antoine
+                hvap = float(
+                    R * a_B * math.log(10.0) * tb[0] ** 2 / (tb[0] + a_C) ** 2
+                ) / 1000.0
+                hvap_src = (
+                    "Hvap by Clausius-Clapeyron on the CURATED Antoine curve "
+                    "volatility.py actually evaluates, NOT on Lee-Kesler"
+                )
             physical = dict(
                 Tb=round(tb[0], 2),
                 Tc=round(tc[0], 2),
@@ -576,13 +652,13 @@ def collect():
                 Vc=round(est.Vc, 2),
                 Tm=round(tm[0], 2) if tm else None,
                 Hfus=round(hf[0] * multiplier / 1000.0, 3) if hf else None,
-                Hvap=round(est.Hvap, 3),
+                Hvap=round(hvap, 3),
             )
             p_source = "; ".join(
                 f"{k}={v[1]}"
                 for k, v in (("Tb", tb), ("Tm", tm), ("Hfus", hf), ("Tc", tc),
                              ("Pc", pc), ("Vc", vc)) if v is not None
-            ) + "; Hvap from Lee-Kesler by Clausius-Clapeyron"
+            ) + "; " + hvap_src
             if multiplier != 1:
                 p_source += (
                     f" [molar values from CAS {phys_cas}, tabulated per "
@@ -658,6 +734,7 @@ sublimation energy, which is a real measured number:
 
     H2 N2 O2 F2 Cl2   gaseous reference state    Hf = Gf = 0   exact, free
     Br2               LIQUID  reference state    Hf = +30.90  Gf = +3.08
+    Hg                LIQUID  reference state    Hf = +61.40  Gf = +31.85
     I2                SOLID   reference state    Hf = +62.40  Gf = +19.29
     S8 (rhombic)      SOLID   reference state    Hf = +100.42 Gf = +48.68
 
@@ -674,18 +751,49 @@ ideal-gas value back down into its own phase must return zero:
 and nothing in that expression touched the formation table -- Psat comes from
 Tb/Tc/Pc through Lee-Kesler and Hfus/Tm are separate measurements. It is
 measured in ``tests/test_element_data.py`` and reported in
-``validation/game_gates.py``.
+``validation/game_gates.py``. The residuals:
+
+    Br2   -0.053 kJ/mol      Hg  +0.012 kJ/mol
+    I2    +0.139             S8  +3.052   -- a BOUND, and the test says so
+
+## ⚠ MERCURY IS A METAL AND IT IS IN THE TABLE. S4, AND IT IS NOT AN EXCEPTION
+
+It was refused here twice over -- once as a metal, once as a bare monatomic
+symbol -- and BOTH refusals were about a representation rather than about the
+chemistry:
+
+  * "a metallic lattice" is what ``LATTICE_ELEMENTS`` says of a metal, and it is
+    the reason a metal has no molecular reference state. Mercury's reference
+    state is a **liquid with a boiling point**, which is precisely what this
+    engine's liquid block holds. It is in ``REFERENCE_SMILES`` with bromine.
+  * "the ideal-gas record is the ATOM rather than the substance" is true of
+    ``[C]``, ``[S]`` and ``[Fe]``. **Mercury's vapour IS the atom** -- it boils
+    monatomic at 629.8 K -- so ``[Hg]``'s ideal-gas record is exactly what is in
+    the retort, and mercury has one condensed form, so the symbol names it
+    without ambiguity.
+
+⚠ Its Cp is the second FREE EXACT number in this table after the gaseous zeros:
+a monatomic ideal gas has ``Cp = 5R/2 = 20.786`` J/(mol K) at every temperature,
+which is an answer rather than a fit, and JANAF returns it to four figures.
+
+⚠ And its VAPOUR PRESSURE is the one number here that Lee-Kesler could not do:
+corresponding states over a liquid metal reads **3.8x high at 523 K** while
+being anchored at Tb, so the error is invisible at the boiling point. It has a
+curated NIST Antoine entry in ``volatility.py`` instead, within 2% of CRC across
+five decades -- and the ``Hvap`` above is Clausius-Clapeyron on THAT curve, not
+on Lee-Kesler, so the latent heat still cannot disagree with the vapour pressure
+the engine evaluates.
 
 ## WHAT IS NOT HERE, AND WHY IT IS REFUSED RATHER THAN ESTIMATED
 
-  * **graphite and every metal.** The reference state is a metallic or covalent
-    LATTICE, and this engine's species are molecules. The ideal-gas record for
-    ``[C]`` is the carbon ATOM at Gf +671 kJ/mol -- a real number that is not
-    charcoal.
-  * **a bare monatomic symbol** (``[S]``, ``[C]``, ``[Fe]``). The most ambiguous
-    way there is to name an allotrope; answering with the gas atom's value is a
-    confident answer to a different question. The refusal names the
-    reference-state SMILES to charge instead.
+  * **graphite and every metal whose reference state is a LATTICE.** This
+    engine's species are molecules, and the ideal-gas record for ``[C]`` is the
+    carbon ATOM at Gf +671 kJ/mol -- a real number that is not charcoal.
+    ⚠ Mercury is not one of these; see above.
+  * **a bare monatomic symbol whose vapour is not the atom** (``[S]``, ``[C]``,
+    ``[Fe]``). The most ambiguous way there is to name an allotrope; answering
+    with the gas atom's value is a confident answer to a different question. The
+    refusal names the reference-state SMILES to charge instead.
 """
 
 from __future__ import annotations

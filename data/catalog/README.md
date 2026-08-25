@@ -250,7 +250,29 @@ row** -- so the class was read again and split.
 | was | rows | became | has a mechanism |
 |---|---:|---|---|
 | `roasting` | 4 of 5 | `roasting` | ✔ `SurfaceArrays`, three of the four rows runnable |
-| `roasting` | 1 of 5 | `roasting-to-metal` | ✘ -- the row's product is a METAL, and this term makes the oxide |
+| `roasting` | 1 of 5 | `roasting-to-metal` | ✔ **as of S4** -- see below. ✘ when S1 split it out |
+
+⚠⚠ **S4 UPDATE: `roasting-to-metal` IS NOW COVERED, AND THE SPLIT WAS KEPT.**
+S1 named what was missing -- "a second reaction nobody built" -- and it is one
+more row of `SOLID_STATE_REACTIONS`: `2 HgO -> 2 Hg + O2`. Neither declaration
+mentions the other; they share one crystal in the solid block and the catalog's
+own row falls out of the pair, measured at **0.020000000000 mol of mercury and
+0.020000000000 mol of SO2** from 0.02 mol of cinnabar. The class is credited to
+the EMERGENT pair, the way `solid-carbonation` is.
+
+⚠ **The obvious move was to fold the row back into `roasting` now that its
+product is reachable. Both arithmetics were measured and the split was kept:**
+
+| | classes | template-ready routes |
+|---|---|---|
+| keep `roasting-to-metal` | **36/218** | 28/173 |
+| fold back into `roasting` | 35/217 | 28/173 |
+
+The routes are identical, so the choice is only about what the class column
+SAYS -- and `roasting-to-metal` records a mechanism difference rather than an
+outcome: **this ore's oxide does not survive the furnace that makes it**, which
+is why one row needs two mechanisms where the other four need one. Folding back
+would delete the distinction S1 paid to find, for a smaller denominator.
 
 ⚠⚠ **THE SPLIT WAS FORCED BY A FALSE CREDIT, WHICH IS WHY IT IS RECORDED HERE.**
 M6 read `roasting` as ONE mechanism in five rows and flagged that
@@ -271,6 +293,27 @@ The four rows that remain in `roasting`:
 | `lead-smelting` 1 | ✔ | `galena-roasting` |
 | `copper-smelting` 1 | ✔ | `covellite-roasting` |
 | `pyrite-roasting` 1 | ✘ **but it reads template-ready** | **DATA.** Pyrite has `Hfs` in WEBBOOK and `S0s` in nothing, so `mineral_data` refuses the entry under the same-database rule. |
+
+⚠⚠ **AND S4 FOUND THE MIRROR OF THAT ROW, WHICH IS WHAT MAKES THE PAIR
+INFORMATIVE.** `pyrite-roasting` reads template-ready and does NOT run.
+`mercury-from-cinnabar` reads **species-UNREADY and DOES run** — closing at
+0.020000000000 mol of mercury on a 0.02 mol charge — because the species column
+asks the plain `ThermochemistryProvider`, which REFUSES A LATTICE BY NAME. That
+refusal is right (the fusion law is 407x wrong for a lattice) and the conclusion
+drawn from it is not: since M3 a lattice has had a home in `mineral_data`, which
+is what precipitation, `SolidStateArrays` and `SurfaceArrays` all price from.
+
+**Measured: 14 routes read species-UNREADY while every one of their refused
+species is a mineral this project prices** — 49 of 173, where the honest number
+is at most 63. Among them **`lime-cycle`**, which M6 declared complete end to end
+from limestone and which `examples/lime_cycle.py` runs, and **`haber-bosch`** and
+**`methanol-synthesis`**, whose only "refused" species is the solid CATALYST S1
+curated so that it could be put in the flask.
+
+⚠ Not corrected in S4: it redefines a published column, so it owes the standing
+"which routes does it move" check and a verification pass. Recorded at the line
+that computes it, in `validation/catalog_coverage.py`. **Two columns, two
+directions of error, and neither is a bug in the engine.**
 
 ⚠ **AND THE ONE ROUTE THIS MILESTONE ADDS TO THE TEMPLATE-READY LIST IS
 `pyrite-roasting`, WHICH DOES NOT RUN.** That is not a bug in the number, it is

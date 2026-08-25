@@ -1018,20 +1018,63 @@ class SolidStateArrays:
         # RHS does two maxima fewer per call.
         self.consumed = np.maximum(-self.nu_solid, 0.0)
         self.formed = np.maximum(self.nu_solid, 0.0)
+        # ⚠ S4 -- WHETHER EACH SIDE HAS ANY SOLID AT ALL. Every row until S4 had
+        # a crystal on both sides, so ``units`` never met an empty one; see
+        # ``units`` for what the empty minimum used to return and why the fix is
+        # not a clip.
+        self.has_consumed = (self.consumed > 0.0).any(axis=1)
+        self.has_formed = (self.formed > 0.0).any(axis=1)
 
     @property
     def m(self) -> int:
         return int(self.nu_solid.shape[0])
 
     def units(self, n_solid: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
-        """(forward, reverse) formula units this solid block can supply, (m,)."""
+        """(forward, reverse) formula units this solid block can supply, (m,).
+
+        ⚠⚠ **A SIDE WITH NO SOLID ON IT FALLS BACK TO THE OTHER SIDE, AND THAT
+        IS A NUCLEATION STATEMENT RATHER THAN A CLIP.** S4 added the first row
+        here that turns a crystal ENTIRELY into gas -- ``2 HgO(s) -> 2 Hg(g) +
+        O2(g)``, mercury being a gas at the 900 K its own retort runs at -- so
+        the product side has no solid to take a minimum over. The minimum of an
+        empty set is ``+inf``, and the RHS multiplies it by a negative affinity:
+        measured, a sealed 1 L retort holding 0.5 mol of montroydite at 900 K
+        raised ``array must not contain infs or NaNs`` the moment ``Q`` crossed
+        ``K``, which it does at that charge because ``ln K`` is only +9.2 there.
+
+        **Infinity is not a bound that needs softening; it is the wrong bound.**
+        What ``units`` measures on the reverse side is the crystal the reaction
+        has to run ON, and reading the existing rows that way they already say
+        so: calcination's reverse is bounded by ``n(CaO)`` -- the SEED the
+        carbonate grows on -- not by the CO2 pressure, which is in ``Q``. This
+        engine cannot nucleate a solid out of nothing (S3 named that gap: a
+        surface term is extensive in the solid, so zero solid is zero rate for
+        ever). So for a row whose products are all gas, the seed the deposition
+        lands on is the REACTANT crystal, and the reverse gets that bound.
+
+        Two consequences, both wanted:
+
+          * ``units`` stays a COMMON FACTOR of the two directions for such a
+            row -- it is the same number either way -- so the equilibrium is
+            still ``Q = K`` and not ``Q = K n_A/n_B``, which is the whole
+            property this term exists to have;
+          * and an EXHAUSTED charge stops the reaction in both directions. Once
+            the last of the oxide is gone, mercury vapour and oxygen in the
+            flask cannot make it again. That is the nucleation gap stated
+            rather than worked around, and it is honest here: HgO really does
+            need a surface.
+
+        ⚠ The four rows that existed before S4 all carry a crystal on each side,
+        so both fallbacks are inert for them -- bit for bit, which a test pins.
+        """
         fwd = np.where(self.consumed > 0.0,
                        n_solid[None, :] / np.maximum(self.consumed, 1.0),
                        np.inf).min(axis=1)
         rev = np.where(self.formed > 0.0,
                        n_solid[None, :] / np.maximum(self.formed, 1.0),
                        np.inf).min(axis=1)
-        return fwd, rev
+        return (np.where(self.has_consumed, fwd, rev),
+                np.where(self.has_formed, rev, fwd))
 
     @property
     def total_nu_gas(self) -> np.ndarray:

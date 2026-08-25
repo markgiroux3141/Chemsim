@@ -29,6 +29,19 @@ rather than remembered:
      temperature than a collision frequency does. That third panel is a REPORTED
      LIMITATION, not a failure: the crossing temperatures are real and one of
      them is only 416 K.
+
+⚠⚠ S4 ADDED A FOURTH PANEL BECAUSE POINT 2 WAS A CLAIM ABOUT A TABLE THIS
+SCRIPT DID NOT READ. ``cold_panel`` and ``hot_panel`` walk ``net.reactions``, and
+``SOLID_STATE_REACTIONS`` never becomes a ``Reaction`` -- it is a curated table
+integrated by a TERM. Point 2 survives the widening at 298 K, by 26 decades on
+the worst row. The hot half does not: a solid decomposition's forward constant is
+``A0 exp(dS/R)`` and the entropy of making three moles of gas is enormous, so
+S4's ``2 HgO -> 2 Hg + O2`` sits at 1.9e18 1/s and crosses 1e14 at **3710 K** --
+inside the RHS's own 5000 K clamp, and the first row in the project to do so.
+``sulfate-thermal-decomposition`` crosses at 7543 K and had never been measured
+either. Reported, not guarded, for the reason ``solid_state.RECOMBINATION_A``
+gives: it is a CLOCK and not an equilibrium, because the constant multiplies both
+directions of an affinity flux and divides out of ``flux = 0``.
 """
 from __future__ import annotations
 
@@ -231,10 +244,55 @@ def water_panel(nets) -> None:
           f"{k_at(rev, T_REF):.4e} L/(mol s)")
 
 
+def solid_state_panel() -> float:
+    """⚠ S4 -- THE TABLE THIS AUDIT DID NOT READ, AND IT HAS THE FASTEST ROW.
+
+    ``cold_panel`` and ``hot_panel`` walk ``net.reactions``, i.e. the KINETICS
+    kernel. ``SOLID_STATE_REACTIONS`` is a curated table that never becomes a
+    ``Reaction``, so nothing here has ever looked at it -- while this script's
+    own summary line says "nothing is within orders of the unimolecular
+    ceiling", which is a claim about every rate constant in the project.
+
+    It is still TRUE at 298 K, by decades, and that is worth printing rather
+    than assuming. What is not true is the hot half: the forward constant of a
+    solid decomposition is ``A0 exp(dS/R)`` and the entropy of making three
+    moles of gas is enormous, so S4's ``2 HgO -> 2 Hg + O2`` carries
+    A_fwd = 1.9e18 1/s and crosses the unimolecular ceiling at **3710 K** --
+    inside the RHS's own ``T_MAX`` clamp of 5000 K, and the first row in this
+    project to do so.
+
+    ⚠ REPORTED, NOT GUARDED, on the policy this script already states: a cap
+    here would be an invented number, and the cost of the overshoot is a CLOCK
+    and not an equilibrium -- ``A0`` multiplies the whole affinity flux, forward
+    and reverse alike, so it divides out of ``flux = 0``. And it is 2810 K above
+    the temperature the row's own retort runs at.
+    """
+    from chemsim.properties import solid_state as ss
+
+    print("\n=== THE SOLID-STATE TABLE, which the two panels above cannot see ===")
+    print(f"  unimolecular ceiling {UNIMOLECULAR_LIMIT:.1e} 1/s; the RHS clamps "
+          "T at 5000 K")
+    print(f"  {'row':<36} {'A_fwd/s':>11} {'k(298)':>11} {'crosses at':>12}")
+    coldest = float("inf")
+    for decl in ss.SOLID_STATE_REACTIONS:
+        p = ss.price(decl, THERMO)
+        k298 = p.A * math.exp(-p.Ea / (R * T_REF))
+        # A exp(-Ea/RT) = ceiling  ->  T = Ea / (R ln(A/ceiling))
+        ratio = p.A / UNIMOLECULAR_LIMIT
+        cross = (p.Ea / (R * math.log(ratio))) if ratio > 1.0 else float("inf")
+        coldest = min(coldest, cross)
+        where = f"{cross:12.0f}" if math.isfinite(cross) else "       never"
+        print(f"  {decl.name:<36} {p.A:11.4e} {k298:11.4e} {where}")
+    print("  Every k(298) is decades under the ceiling, which is the claim the")
+    print("  summary below makes. The crossing column is the hot half of it.")
+    return coldest
+
+
 def main() -> None:
     nets = networks()
     over = cold_panel(nets)
     coldest = hot_panel(nets)
+    solid_coldest = solid_state_panel()
     water_panel(nets)
 
     print("\n" + "=" * 74)
@@ -246,6 +304,16 @@ def main() -> None:
         print("Clean at 298 K, which is the guard's domain, and nothing is within")
         print("orders of the unimolecular ceiling -- which is why that case is not")
         print("guarded rather than being guarded on an invented number.")
+    if math.isfinite(solid_coldest):
+        print("!! AND ALSO REPORTED RATHER THAN FIXED: a solid decomposition's "
+              "forward")
+        print(f"!! constant crosses the unimolecular ceiling at "
+              f"{solid_coldest:.0f} K, which is INSIDE")
+        print("!! the RHS's 5000 K clamp. It is an entropy of gas-making in a "
+              "pre-exponential,")
+        print("!! it moves a CLOCK and not an equilibrium, and no route here "
+              "runs within")
+        print("!! 2800 K of it. See solid_state.RECOMBINATION_A.")
     if math.isfinite(coldest):
         print(f"!! STILL OPEN, AND REPORTED RATHER THAN FIXED: the coldest "
               f"crossing is {coldest:.0f} K.")

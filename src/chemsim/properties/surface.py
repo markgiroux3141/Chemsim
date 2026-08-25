@@ -127,16 +127,49 @@ table for that. So ``alpha`` is zero and the ordering is NOT claimed.
 
 ## WHAT IS HERE AND WHAT IS REFUSED
 
-Three of the catalog's five ``roasting`` rows are built. The other two are
-refused for reasons that are not this module's:
+FOUR of the catalog's five ``roasting`` rows now run end to end. The fifth is
+refused for a reason that is not this module's:
 
   * ``pyrite-roasting`` -- pyrite has ``Hfs`` in WEBBOOK and ``S0s`` in nothing,
     so ``mineral_data`` refuses it under the same-database rule. A DATA refusal,
     recorded there.
-  * ``mercury-from-cinnabar`` -- the roast itself is built (cinnabar to
-    montroydite), so the MECHANISM is covered. The catalog's row gives the METAL,
-    because HgO decomposes at roasting heat, and mercury metal is not a species
-    in this project. The row is not claimed.
+
+⚠ ``mercury-from-cinnabar`` USED TO BE THE SECOND ENTRY IN THAT LIST AND IS NOW
+CLAIMED, WITHOUT ONE LINE OF THIS MODULE CHANGING. S1 wrote here that the roast
+to the OXIDE was as far as this project could take it, because "the row gives
+the metal and mercury metal is not a species here". S4 curated mercury as an
+element (its reference state is a LIQUID, so its ideal-gas record is a real
+vaporisation number) and declared ``2 HgO -> 2 Hg + O2`` in ``solid_state``.
+Neither declaration mentions the other; they share one crystal in the solid
+block, and what a retort does falls out:
+
+    this module      2 HgS + 3 O2 -> 2 HgO + 2 SO2       a gas at a surface
+    solid_state.py   2 HgO        -> 2 Hg  +   O2        inside the crystal
+    -----------------------------------------------------------------------
+    the catalog row    HgS +   O2 ->   Hg  +   SO2       nobody wrote this
+
+Measured on a sealed 10 L retort of pure oxygen holding 0.02 mol of cinnabar at
+900 K: **0.020000000000 mol of mercury and 0.020000000000 mol of SO2**, 1:1 to
+twelve figures, on 0.020000 mol of oxygen consumed. The montroydite standing in
+the solid block is this roast's rate times the decomposition's own clock -- 0.24
+s at 900 K against this row's 5,918 s -- so it starts at **8e-7 mol** and FALLS
+with the ore, never reaching 4e-5 of the charge. The intermediate is real, and
+invisible.
+
+⚠ AND THE TWO CLOCKS CROSS, WHICH IS A MECHANIC NOBODY WROTE EITHER. The
+decomposition's barrier is 304 kJ/mol against this module's 150, so cooling the
+retort slows it far faster than it slows the roast. Under 1 bar of oxygen they
+are equal at **611.7 K**; above that the oxide is a vanishing intermediate and
+the retort gives the METAL, below it the oxide piles up and the retort gives
+the OXIDE instead. Measured, as the fraction of the mercury released from the
+cinnabar that is still sitting in the solid block as montroydite:
+
+    900 K   2.0e-6        700 K   1.9e-2        600 K   0.913
+    773 K   4.3e-4        650 K   0.341
+
+⚠ Nothing gates on temperature anywhere in either term. That column is two
+Arrhenius factors with different exponents, and the exponents were written in
+different modules one milestone apart.
 """
 
 from __future__ import annotations
@@ -186,7 +219,17 @@ LN_K_IRREVERSIBLE = 20.0
 # the difference between a solid-basis number and a gas-basis one, so a
 # group-contribution estimate on either side of it is the 25-29 decade failure
 # ``solubility_product`` recorded.
-CURATED_FORMATION = ("experimental", "element reference state")
+#
+# ⚠ The third prefix, and why a prefix match is the weak part of this guard, is
+# recorded once at ``solid_state.CURATED_FORMATION``. The short version: a
+# CONDENSED element reference state's provenance begins with the derivation
+# rather than the tier, so CRC's own row for mercury was being read as an
+# estimate.
+CURATED_FORMATION = (
+    "experimental",
+    "element reference state",
+    "Hf and S0 both from",
+)
 
 
 class UnpricedSurfaceReaction(ValueError):
@@ -283,13 +326,16 @@ SURFACE_REACTIONS: tuple[SurfaceReaction, ...] = (
         T_run=1100.0,
         note="`copper-smelting` step 1",
     ),
-    # ⚠ THE MECHANISM, NOT THE CATALOG ROW. `mercury-from-cinnabar` reads
-    # `mercury-sulfide + oxygen -> mercury + sulfur-dioxide`, and it reads that
-    # way because HgO decomposes at the temperature the roast runs at -- which
-    # `mineral_data` records on montroydite itself. The roast to the OXIDE is
-    # this reaction and is honest; the second step needs mercury metal as a
-    # species and that is not curated. So the class is credited on the three
-    # rows above and this row is NOT claimed.
+    # ⚠⚠ HALF OF A ROW, AND THE OTHER HALF IS IN ANOTHER MODULE. This makes the
+    # OXIDE, and `mercury-from-cinnabar` reads `mercury-sulfide + oxygen ->
+    # mercury + sulfur-dioxide` -- which is why S1 re-labelled that row
+    # `roasting-to-metal` and left it uncovered rather than claim it here.
+    #
+    # S4 declared the other half, `solid_state.oxide-thermal-decomposition`, and
+    # the two of them together ARE the row: the montroydite this makes decomposes
+    # 24,610x faster than this reaction makes it at 900 K, so it never
+    # accumulates and what comes over is the metal. NOTHING declares that. This
+    # row's own note has not changed by one coefficient.
     SurfaceReaction(
         name="cinnabar-roasting",
         solids=(("cinnabar", -2, 1.0), ("montroydite", +2, 0.0)),
@@ -297,10 +343,10 @@ SURFACE_REACTIONS: tuple[SurfaceReaction, ...] = (
         mechanism="roasting",
         T_run=900.0,
         note=(
-            "the roast in `mercury-from-cinnabar`'s 900 K retort, as far as this "
-            "project can take it: to the OXIDE. The row gives the metal because "
-            "montroydite decomposes at that heat, and mercury metal is not a "
-            "species here -- so the ROW is not claimed"
+            "the roast in `mercury-from-cinnabar`'s 900 K retort, and it stops "
+            "at the OXIDE -- which is the whole reaction, because montroydite "
+            "does not survive that heat. `solid_state` takes it the rest of the "
+            "way and neither declaration knows about the other"
         ),
     ),
 )

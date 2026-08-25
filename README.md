@@ -81,6 +81,7 @@ python examples/vessel.py               # boiling, boiling dry, self-heating, di
 python examples/workshop.py             # crystallisation, melting, pH/titration, the engine
 python examples/activity.py             # azeotropes and real solubilities, from UNIFAC
 python examples/named_routes.py         # 17 named historical routes, integrated end to end
+python examples/mercury_retort.py       # a route that EMERGES from two declarations
 ```
 
 ## The interface
@@ -442,12 +443,20 @@ python validation/catalog_coverage.py  # the audit
 
 | | |
 |---|---|
-| formation half measured or Benson | **715 / 1583 (45%)** |
+| formation half measured or Benson | **716 / 1583 (45%)** |
 | formation half falls back to Joback | 402 (25%) |
-| refused | 466 (29%), of which ~195 are charged organics the Born model correctly declines |
+| refused | 465 (29%), of which ~195 are charged organics the Born model correctly declines |
 | UNIFAC-decomposable (can enter an LLE) | 836 (53%) |
-| reaction classes with a template | **29 / 212** (was 12) |
-| routes template-ready end to end | **25 / 173** (was 7) |
+| reaction classes with a template | **36 / 218** (was 12) |
+| routes template-ready end to end | **28 / 173** (was 7) |
+
+⚠ The class denominator MOVES, because a class is a mechanism claim and reading
+a class's rows sometimes splits it: 212 -> 218 over M6, S1 and S3. Six of the
+eleven classes gained since M5 are covered by TERMS rather than by templates —
+a reaction inside a crystal, a gas arriving at one, an ionic lattice leaving
+solution — and one of those, `roasting-to-metal`, is covered by **two terms
+that emerge into a route neither of them declares**. The template count has been
+34 since M5.
 
 **The species side is in reasonable shape and the reaction side is still the
 binding one**, but M5 changed the shape of that gap rather than just its size.

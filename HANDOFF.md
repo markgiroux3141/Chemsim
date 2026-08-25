@@ -4417,6 +4417,176 @@ the measurements that justify them.
         expressible here at all. `arsine` and `arsenic` are both refused outright,
         independently.
 
+88. ✔✔ **A ROUTE EMERGED. `mercury-from-cinnabar` RUNS, OUT OF TWO DECLARATIONS
+    THAT DO NOT MENTION EACH OTHER — AND THE RE-LABEL S1 MADE WAS *NOT*
+    REVERSED.**
+
+    S1 credited `roasting`, found it had claimed a route whose product its term
+    does not make, split the row out as `roasting-to-metal` and named what was
+    missing: "a second reaction nobody built". It is three lines:
+
+        properties/surface.py      2 HgS + 3 O2 -> 2 HgO + 2 SO2   SurfaceArrays
+        properties/solid_state.py  2 HgO        -> 2 Hg  +   O2    SolidStateArrays
+        --------------------------------------------------------------------
+        what a retort does           HgS +   O2 ->   Hg  +   SO2   NOBODY WROTE IT
+
+    Sealed 10 L retort, pure oxygen, 0.02 mol of cinnabar, 900 K:
+    **0.020000000000 mol of mercury and 0.020000000000 mol of SO2 on 0.020000
+    mol of oxygen consumed.** The catalog row, coefficient for coefficient.
+    **35/218 → 36/218 classes, 97 → 98 steps, 27 → 28 template-ready routes**,
+    and unlike S1's `pyrite-roasting` this one RUNS end to end.
+
+    ## ⚠⚠ THE BRIEF SAID TO REVERSE THE RE-LABEL. BOTH WAYS WERE MEASURED
+
+    |  | classes | routes |
+    |---|---|---|
+    | keep `roasting-to-metal` | **36/218** | 28/173 |
+    | fold back into `roasting` | 35/217 | 28/173 |
+
+    **The routes are identical, so the choice is only about what the class column
+    says.** `roasting-to-metal` records a MECHANISM difference and not an
+    outcome: this ore's oxide does not survive the furnace that makes it, which
+    is why one row needs two mechanisms where the other four need one.
+    `solid-carbonation` is the precedent. Folding back would delete the
+    distinction S1 paid to find, for a smaller denominator.
+
+    ## ⚠⚠ THE FIRST ROW WHOSE PRODUCTS ARE ALL GAS, AND IT BROKE A BOUND
+
+    `units_rev` is a minimum over the solids FORMED, and over an empty set that
+    is `+inf`. **Measured before it was fixed: a sealed 1 L retort holding 0.5
+    mol of montroydite at 900 K raised `array must not contain infs or NaNs`**
+    the instant `Q` crossed `K` — which it does at that charge, `ln K` being only
+    +9.2 there. ⚠ **At 0.05 mol in the same flask it never crosses and the run is
+    clean, so the failure had a CHARGE threshold as well as a temperature one —
+    and the small charge is the one an example would have been written with.**
+
+    **Infinity was the wrong bound, not a bound needing softening.** The four
+    existing rows say what the right one is: calcination's reverse is bounded by
+    `n(CaO)`, the SEED, not by the CO2 pressure, which is in `Q`. This engine
+    cannot nucleate a solid from nothing (S3 named that), so a row with no solid
+    product deposits onto its own REACTANT crystal. `units` therefore stays a
+    COMMON FACTOR — the sealed 0.5 mol run stalls at 71.8% with Q and K agreeing
+    to 0.05% — and an exhausted charge stops it in BOTH directions, which is the
+    nucleation gap stated rather than worked around. **The four pre-S4 rows are
+    bit-for-bit unmoved**, pinned.
+
+    ## ⚠⚠ MERCURY IS IN `element_data`, AND BOTH REFUSALS WERE ABOUT REPRESENTATION
+
+    `[Hg]` was refused as "a metallic lattice" and as a bare monatomic symbol
+    whose "ideal-gas record is the ATOM, not the substance". Both true of the
+    bonding, false of the representation: **its reference state is a LIQUID with
+    a boiling point**, which the liquid block holds, and **its vapour IS the
+    atom** — it boils monatomic at 629.8 K. Hf +61.40, Gf +31.853 kJ/mol, a
+    condensed reference state like bromine's. Pinning it to zero would be the I2
+    bug again.
+
+    **Two free exact checks came with it, one new to that table:**
+
+      * **Cp = 5R/2 = 20.786 J/(mol K) EXACTLY at every temperature.** Every
+        other Cp there is a fit with a residual; this one is an answer.
+      * **the condensed-reference-state identity closes to +0.012 kJ/mol** — the
+        tightest of the four (Br2 −0.053, I2 +0.139, S8 +3.052).
+
+    ⚠⚠ **AND THAT SECOND CHECK IS WHAT CAUGHT LEE-KESLER.** Over a liquid METAL
+    the estimated vapour pressure reads **38.3 kPa at 523 K against CRC's 10.0 —
+    3.8x — while agreeing at the boiling point to five figures, because it is
+    ANCHORED there.** "Boils at 1 atm is not an independent check", arriving with
+    a real cost: the condenser panel would have been wrong by that factor. A
+    curated NIST Antoine (within 2% of CRC over five decades) takes the residual
+    from +2.808 to +0.012.
+
+    ⚠ **And dropping it in would have BROKEN a stated invariant.**
+    `build_element_data` differentiates `Hvap` out of the Lee-Kesler curve so the
+    latent heat cannot disagree with the vapour pressure — but `volatility`
+    prefers a curated Antoine, so that is no longer the curve the engine
+    evaluates. The generator now takes Clausius-Clapeyron on the CURATED curve:
+    **59.444 kJ/mol against Lee-Kesler's 57.344 and CRC's measured 59.11.**
+
+    ## ⚠⚠ TWO INSTRUMENTS WERE WRONG, AND BOTH WERE FOUND BY THE NEW ROW
+
+      * **the curated-source guard falsely refused CRC's own measurement.**
+        `CURATED_FORMATION` is a PREFIX MATCH ON A PROVENANCE STRING, so it tests
+        how a sentence begins. A gaseous reference state says "element reference
+        state (gaseous)" and passes; a CONDENSED one says "Hf and S0 both from
+        CRC …" and was read as an estimate. **It would have refused a row
+        evolving Br2, I2 or S8 identically.** Widened by one prefix; the weakness
+        is the mechanism, and moving the tier into `ThermoData` reaches every
+        Layer-1 provider, so it is stated rather than done.
+      * **`validation/rate_ceiling.py` could not see the table it needed to.** It
+        claims "nothing approaches the unimolecular ceiling" — a claim about
+        every rate constant in the project — while its panels walk
+        `net.reactions`, which `SOLID_STATE_REACTIONS` never becomes. A fourth
+        panel now reads it. The claim holds at 298 K by 26 decades. The hot half
+        does not: **S4's row is 1.93e18 1/s and crosses 1e14 at 3710 K, inside
+        the RHS's own 5000 K clamp**, the first row in the project to do so, and
+        `sulfate-thermal-decomposition` crosses at 7543 K and had never been
+        measured either. Reported, not guarded — the constant multiplies both
+        directions of an affinity flux, so it moves a CLOCK and not an
+        equilibrium.
+
+    ## FOUR MECHANICS NOBODY WROTE
+
+    | | measured |
+    |---|---|
+    | the intermediate is INVISIBLE | montroydite's inventory is the roast's rate times its own clock: **8e-7 mol at the start, 3.4e-8 by 20 ks.** Its clock at 900 K is 0.24 s against the roast's 5,918 s |
+    | **the two clocks CROSS** | 304.4 kJ/mol DERIVED against 150 DECLARED, so cooling slows the first far faster — equal at **611.7 K**. The oxide's share of the mercury released: 2.0e-6 at 900 K, 4.3e-4 at 773, 1.9e-2 at 700, 0.341 at 650, **0.913 at 600**. Nothing gates on temperature |
+    | a retort CONDENSES | cool the same flask to 400 K and **97.9%** of the metal is in the liquid block |
+    | the oxide CANNOT come back | at 400 K, **289 K below its own threshold**, in a flask full of mercury vapour and oxygen — no oxide forms, because there is none left to grow on |
+
+    `examples/mercury_retort.py`, six panels, 4 s. 14 tests, 4 s.
+
+    ⚠ **THE TOLERANCE AUDIT WAS RE-RUN AND S2's FINDING IS UNMOVED:** across 12
+    examples **no example prints a quotable digit that moves**; 5 move below
+    0.1% (S2's exact list) and 7 are byte-identical, `mercury_retort` joining
+    them. It is the audit's THIRD self-check example — `lime_cycle` 1.00,
+    `roasting_and_the_catalyst_gate` 0.99, `mercury_retort` 1.00, all three
+    OUTPUT IDENTICAL, which is what says the harness's default-rebinding still
+    cannot touch an example that passes its own rtol. ⚠ One counter moved and it
+    is JITTER, not a regression: "tight is faster in 1 of 12" against S2's "2 of
+    11", and the example that left that column is a self-check one landing at
+    0.99 rather than 1.00 with output identical by construction.
+    ⚠ **The whole suite: 815 passed in 11:50** — the first measured green number
+    since S1's last fix, which left it at 796 passed / 1 failed and was never
+    re-run. `COVERAGE_REPORT.md` re-verified byte-identical across
+    `PYTHONHASHSEED` 0, 1 and unseeded.
+
+    ⚠ **NOT MODELLED, STATED:** liquid mercury is **99.85% HELD IDEAL** (a metal
+    has no UNIFAC groups, so γ is DECLARED 1 — what M4 built that flag for), and
+    the visible cost is O2 and SO2 dissolving in the pool on Henry constants
+    measured IN WATER: **0.14% of the SO2**, named and bounded.
+
+    ## ⚠⚠ AND A FIFTH INSTRUMENT FINDING, FROM RECONCILING THE REPORT DIFF
+
+    Every changed line in `COVERAGE_REPORT.md` is a real consequence — S3's
+    byte-stability fix held. Reconciling them turned up a column that has been
+    understating itself since M3.
+
+    **`species-ready` is blind to `mineral_data`.** It asks whether every species
+    resolves under the plain `ThermochemistryProvider`, which REFUSES A LATTICE
+    BY NAME — correctly, the fusion law being 407x wrong for one. But a lattice
+    has had a home since M3, on the solid basis, and it is what precipitation,
+    `SolidStateArrays` and `SurfaceArrays` all price from.
+
+    **Measured: 14 routes read species-UNREADY while every refused species is a
+    mineral this project prices** — 49 of 173 where the honest number is at most
+    63. Among them: `lime-cycle`, which M6 declared complete end to end from
+    limestone and which `examples/lime_cycle.py` runs; and `haber-bosch` and
+    `methanol-synthesis`, where the only "refused" species is **the solid
+    CATALYST S1 curated so it could be put in the flask.**
+
+    ⚠⚠ **It is the exact OPPOSITE shape to `pyrite-roasting`** — that reads
+    template-ready and does NOT run; this reads species-unready and DOES. Two
+    columns, two directions of error, neither a bug in the engine, and having
+    both is what makes the pair informative.
+
+    ⚠ **NOT FIXED, DELIBERATELY** — it changes a published column's definition,
+    so it owes the standing "which routes does it move" check and a verification
+    pass. Recorded at the line that computes it. Next session's instrument job.
+
+    ⚠ One more thing the diff paid for: **`castner-kellner` became species-ready
+    AND fully sourced** (48 → 49, 4 → 5). Curating one element paid somewhere
+    nobody was looking.
+
 IMMEDIATE NEXT TASK: see **`MILESTONES.md`**, which is the plan of record as of
 2026-08-22 and supersedes the ordering below. It is derived from `data/catalog`
 (1,583 compounds, 173 routes) plus four measured capability probes, and it

@@ -19,8 +19,9 @@ of the examples**, which is what this does.
 ``rtol=1e-6, atol=1e-9``. This module rebinds those two DEFAULTS and re-imports
 nothing else, so an example that passes its own tolerance explicitly is left
 exactly alone -- which is right, because those are the ones already converged
-(``lime_cycle`` and ``roasting_and_the_catalyst_gate`` both pass
-``rtol=1e-8``). What gets swept is every call that took the default.
+(``lime_cycle``, ``roasting_and_the_catalyst_gate`` and ``mercury_retort`` all
+pass ``rtol=1e-8``). What gets swept is every call that took the default, and
+those three are the audit's own self-check: they must come out byte-identical.
 
 ## ⚠ HOW A DIFFERENCE IS JUDGED, WHICH IS THE ONLY SUBTLE PART
 
@@ -130,6 +131,11 @@ CHEAP = [
     "named_routes",
     "lime_cycle",
     "roasting_and_the_catalyst_gate",
+    # S4. Its third self-check example: it passes rtol 1e-8 on every call, so
+    # rebinding the defaults must leave its output BYTE-IDENTICAL at a speedup
+    # of 1.00. If that row ever moves, the rebinding has stopped working and
+    # every other row in the report is suspect.
+    "mercury_retort",
 ]
 EXPENSIVE = ["plate_column", "fractional_distillation"]
 

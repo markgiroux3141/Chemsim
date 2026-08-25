@@ -331,20 +331,22 @@ def test_the_declared_constant_is_the_REVERSE_one_and_it_is_shared(thermo):
 
 
 def test_the_four_rows_land_on_four_real_timescales(thermo):
-    """⚠ THREE OF THESE FOUR ARE TIMESCALES NOTHING WAS CALIBRATED AGAINST.
+    """⚠ FOUR OF THESE FIVE ARE TIMESCALES NOTHING WAS CALIBRATED AGAINST.
 
-    ``RECOMBINATION_A`` is pinned by the lime kiln alone. The other three rows
-    then come out at the temperature their own chemistry is run at, and they land
-    on the right order -- a red-hot retort of green vitriol in half a minute, and
-    baking soda in the catalog's own 450 K calciner in under a minute. That is
-    what says the entropy belonged in the pre-exponential rather than in the
-    constant.
+    ``RECOMBINATION_A`` is pinned by the lime kiln alone. The other rows then
+    come out at the temperature their own chemistry is run at, and they land on
+    the right order -- a red-hot retort of green vitriol in half a minute,
+    baking soda in the catalog's own 450 K calciner in under a minute, and S4's
+    montroydite gone in a quarter of a second in a 900 K mercury retort, which
+    is why that retort never accumulates the oxide it makes. That is what says
+    the entropy belonged in the pre-exponential rather than in the constant.
     """
     expect = {
         "calcination-decarbonation": (1200.0, 631.0),
         "calcination-dehydration": (900.0, 146.0),
         "sulfate-thermal-decomposition": (1000.0, 25.4),
         "bicarbonate-thermal-decomposition": (450.0, 43.7),
+        "oxide-thermal-decomposition": (900.0, 0.2405),
     }
     for decl in ss.SOLID_STATE_REACTIONS:
         T, tau = expect[decl.name]
