@@ -41,7 +41,7 @@ the memory files (auto-loaded), especially chemsim-solid-state-reactions,
   chemsim-template-library.
 
 ```bash
-python examples/lime_cycle.py                # M6, seven panels, ~60 s
+python examples/lime_cycle.py                # M6, eight panels, ~17 s
 python examples/named_routes.py              # M5's 17 routes, ~24 s
 python validation/rate_ceiling.py            # M12's standing audit, seconds
 python validation/catalog_coverage.py         # 26/173, 32/214, ~3 min
