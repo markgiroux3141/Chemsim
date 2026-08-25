@@ -44,8 +44,8 @@ The same species is routinely a feedstock in one route and an intermediate in an
 | # | step | in | out | conditions | class |
 |--:|---|---|---|---|---|
 | 1 | calcination | calcium-carbonate | calcium-oxide + carbon-dioxide | kiln, 1200 K | `calcination` |
-| 2 | slaking | calcium-oxide + water | calcium-hydroxide | exothermic | `hydration` |
-| 3 | carbonation of mortar | calcium-hydroxide + carbon-dioxide | calcium-carbonate + water | months, ambient | `carbonation` |
+| 2 | slaking | calcium-oxide + water | calcium-hydroxide | exothermic | `lime-slaking` |
+| 3 | carbonation of mortar | calcium-hydroxide + carbon-dioxide | calcium-carbonate + water | months, ambient | `solid-carbonation` |
 
 <a id="blast-furnace"></a>
 
@@ -164,7 +164,7 @@ The same species is routinely a feedstock in one route and an intermediate in an
 
 | # | step | in | out | conditions | class |
 |--:|---|---|---|---|---|
-| 1 | cinnabar roasting | mercury-sulfide + oxygen | mercury + sulfur-dioxide | retort, 900 K | `roasting` |
+| 1 | cinnabar roasting | mercury-sulfide + oxygen | mercury + sulfur-dioxide | retort, 900 K | `roasting-to-metal` |
 
 <a id="gunpowder"></a>
 
@@ -223,7 +223,7 @@ The same species is routinely a feedstock in one route and an intermediate in an
 | # | step | in | out | conditions | class |
 |--:|---|---|---|---|---|
 | 1 | acetate formation | lead + acetic-acid + oxygen | lead-acetate + water | stack process, dung heat | `oxidative-dissolution` |
-| 2 | carbonation | lead-acetate + carbon-dioxide + water | basic-lead-carbonate + acetic-acid | months in the stack | `carbonation` |
+| 2 | carbonation | lead-acetate + carbon-dioxide + water | basic-lead-carbonate + acetic-acid | months in the stack | `basic-carbonate-precipitation` |
 
 <a id="acetic-fermentation"></a>
 
@@ -491,7 +491,7 @@ The same species is routinely a feedstock in one route and an intermediate in an
 
 | # | step | in | out | conditions | class |
 |--:|---|---|---|---|---|
-| 1 | dehydration of green vitriol | iron-ii-sulfate | iron-ii-oxide + sulfur-trioxide | retort, red heat | `thermal-decomposition` |
+| 1 | dehydration of green vitriol | iron-ii-sulfate | iron-ii-oxide + sulfur-trioxide | retort, red heat | `sulfate-thermal-decomposition` |
 | 2 | condensation to oil of vitriol | sulfur-trioxide + water | sulfuric-acid | receiver | `hydrolysis` |
 
 <a id="saltpetre-nitric"></a>
@@ -860,10 +860,10 @@ The same species is routinely a feedstock in one route and an intermediate in an
 |--:|---|---|---|---|---|
 | 1 | brine ammoniation | sodium-chloride + ammonia + water | sodium-chloride + ammonium-hydroxide | absorber | `carbonate-equilibrium` |
 | 2 | carbonation | ammonium-hydroxide + carbon-dioxide + sodium-chloride | sodium-bicarbonate + ammonium-chloride | Solvay tower, cold | `precipitation-metathesis` |
-| 3 | bicarbonate calcination | sodium-bicarbonate | sodium-carbonate + carbon-dioxide + water | calciner, 450 K | `thermal-decomposition` |
+| 3 | bicarbonate calcination | sodium-bicarbonate | sodium-carbonate + carbon-dioxide + water | calciner, 450 K | `bicarbonate-thermal-decomposition` |
 | 4 | ammonia recovery | ammonium-chloride + calcium-hydroxide | ammonia + calcium-chloride + water | still | `proton-transfer` |
 | 5 | lime kiln for CO2 | calcium-carbonate | calcium-oxide + carbon-dioxide | kiln, 1200 K | `calcination` |
-| 6 | lime slaking | calcium-oxide + water | calcium-hydroxide | slaker | `hydration` |
+| 6 | lime slaking | calcium-oxide + water | calcium-hydroxide | slaker | `lime-slaking` |
 
 <a id="chloralkali"></a>
 
@@ -1230,7 +1230,7 @@ The same species is routinely a feedstock in one route and an intermediate in an
 | # | step | in | out | conditions | class |
 |--:|---|---|---|---|---|
 | 1 | phenol sulfonation | phenol + sulfuric-acid | benzenesulfonic-acid + water | 370 K, protects the ring | `electrophilic-aromatic-sulfonation` |
-| 2 | nitration and desulfonation | benzenesulfonic-acid + nitric-acid | picric-acid + water + sulfuric-acid | 380 K | `electrophilic-aromatic-nitration` |
+| 2 | nitration and desulfonation | benzenesulfonic-acid + nitric-acid | picric-acid + water + sulfuric-acid | 380 K | `ipso-nitrodesulfonation` |
 
 <a id="mercury-fulminate-route"></a>
 
@@ -1384,7 +1384,7 @@ The same species is routinely a feedstock in one route and an intermediate in an
 | # | step | in | out | conditions | class |
 |--:|---|---|---|---|---|
 | 1 | Bechamp reduction | nitrobenzene + iron + hydrogen-chloride | aniline + iron-iii-oxide + water | boiling, iron filings | `dissolving-metal-reduction` |
-| 2 | catalytic hydrogenation | nitrobenzene + hydrogen + copper | aniline + water + copper | 470 K, Cu on silica | `catalytic-hydrogenation` |
+| 2 | catalytic hydrogenation | nitrobenzene + hydrogen + copper | aniline + water + copper | 470 K, Cu on silica | `nitro-hydrogenation` |
 
 <a id="mauveine-route"></a>
 
@@ -1733,7 +1733,7 @@ The same species is routinely a feedstock in one route and an intermediate in an
 | # | step | in | out | conditions | class |
 |--:|---|---|---|---|---|
 | 1 | Williamson etherification | 4-nitrophenol + sodium-hydroxide + bromoethane | 4-nitrophenetole + sodium-bromide + water | reflux in ethanol | `williamson-ether-synthesis` |
-| 2 | nitro reduction | 4-nitrophenetole + hydrogen + nickel | p-phenetidine + water + nickel | catalytic hydrogenation | `catalytic-hydrogenation` |
+| 2 | nitro reduction | 4-nitrophenetole + hydrogen + nickel | p-phenetidine + water + nickel | catalytic hydrogenation | `nitro-hydrogenation` |
 | 3 | acetylation | p-phenetidine + acetic-anhydride | phenacetin + acetic-acid | 360 K | `n-acylation` |
 
 <a id="salicin-hydrolysis"></a>
@@ -1820,7 +1820,7 @@ The same species is routinely a feedstock in one route and an intermediate in an
 | # | step | in | out | conditions | class |
 |--:|---|---|---|---|---|
 | 1 | exhaustive chlorination | ethanol + chlorine | chloral + hydrogen-chloride + water | chlorine bubbled, days | `radical-halogenation` |
-| 2 | hydrate formation | chloral + water | chloral-hydrate | crystallises | `hydration` |
+| 2 | hydrate formation | chloral + water | chloral-hydrate | crystallises | `carbonyl-hydration` |
 
 <a id="water-gas-shift"></a>
 
@@ -2853,7 +2853,7 @@ The same species is routinely a feedstock in one route and an intermediate in an
 | # | step | in | out | conditions | class |
 |--:|---|---|---|---|---|
 | 1 | arsine generation | arsenic + zinc + sulfuric-acid | arsine + zinc-sulfate + hydrogen | nascent hydrogen | `dissolving-metal-reduction` |
-| 2 | thermal decomposition to the mirror | arsine | arsenic + hydrogen | heated tube | `thermal-decomposition` |
+| 2 | thermal decomposition to the mirror | arsine | arsenic + hydrogen | heated tube | `hydride-thermal-deposition` |
 
 <a id="kjeldahl"></a>
 
@@ -3377,7 +3377,7 @@ The same species is routinely a feedstock in one route and an intermediate in an
 
 | # | step | in | out | conditions | class |
 |--:|---|---|---|---|---|
-| 1 | nitrobenzene reduction to the hydroxylamine | nitrobenzene + hydrogen + platinum | phenylhydroxylamine + water + platinum | controlled hydrogenation | `catalytic-hydrogenation` |
+| 1 | nitrobenzene reduction to the hydroxylamine | nitrobenzene + hydrogen + platinum | phenylhydroxylamine + water + platinum | controlled hydrogenation | `nitro-partial-hydrogenation` |
 | 2 | Bamberger rearrangement | phenylhydroxylamine + sulfuric-acid | 4-aminophenol + sulfuric-acid | dilute acid, 340 K | `bamberger-rearrangement` |
 | 3 | acetylation | 4-aminophenol + acetic-anhydride | paracetamol + acetic-acid | aqueous, 360 K | `n-acylation` |
 
@@ -4361,7 +4361,7 @@ The same species is routinely a feedstock in one route and an intermediate in an
 | # | step | in | out | conditions | class |
 |--:|---|---|---|---|---|
 | 1 | toluene dinitration | toluene + nitric-acid + sulfuric-acid | 2,4-dinitrotoluene + water + sulfuric-acid | mixed acid, two stages | `electrophilic-aromatic-nitration` |
-| 2 | hydrogenation to the diamine | 2,4-dinitrotoluene + hydrogen + nickel | toluenediamine + water + nickel | 370 K, 30 bar | `catalytic-hydrogenation` |
+| 2 | hydrogenation to the diamine | 2,4-dinitrotoluene + hydrogen + nickel | toluenediamine + water + nickel | 370 K, 30 bar | `nitro-hydrogenation` |
 | 3 | phosgenation | toluenediamine + phosgene | toluene-diisocyanate + hydrogen-chloride | 370 K, chlorobenzene solvent | `phosgenation` |
 | 4 | foam formation | toluene-diisocyanate + polypropylene-glycol-unit + water | polyurethane-unit + carbon-dioxide | ambient, amine and tin catalysts | `polyaddition` |
 
@@ -4448,7 +4448,7 @@ The same species is routinely a feedstock in one route and an intermediate in an
 
 | # | step | in | out | conditions | class |
 |--:|---|---|---|---|---|
-| 1 | urea pyrolysis | urea | cyanic-acid + ammonia | 620 K | `thermal-decomposition` |
+| 1 | urea pyrolysis | urea | cyanic-acid + ammonia | 620 K | `urea-deammoniation` |
 | 2 | trimerisation | cyanic-acid | melamine + carbon-dioxide | 670 K, 80 bar | `trimerisation` |
 
 <a id="silicone-route"></a>
@@ -4613,7 +4613,7 @@ The same species is routinely a feedstock in one route and an intermediate in an
 | # | step | in | out | conditions | class |
 |--:|---|---|---|---|---|
 | 1 | aldol condensation | butyraldehyde + sodium-hydroxide | 2-ethylhexenal + water + sodium-hydroxide | 400 K, dilute caustic | `aldol-condensation` |
-| 2 | hydrogenation | 2-ethylhexenal + hydrogen + nickel | 2-ethylhexanol + nickel | 420 K, 50 bar | `catalytic-hydrogenation` |
+| 2 | hydrogenation | 2-ethylhexenal + hydrogen + nickel | 2-ethylhexanol + nickel | 420 K, 50 bar | `enal-hydrogenation` |
 
 <a id="dop-route"></a>
 
@@ -4737,7 +4737,7 @@ The same species is routinely a feedstock in one route and an intermediate in an
 
 | # | step | in | out | conditions | class |
 |--:|---|---|---|---|---|
-| 1 | fat hardening | triolein + hydrogen + nickel | tristearin + nickel | 450 K, 3 bar, Ni | `catalytic-hydrogenation` |
+| 1 | fat hardening | triolein + hydrogen + nickel | tristearin + nickel | 450 K, 3 bar, Ni | `alkene-hydrogenation` |
 | 2 | trans isomer byproduct | oleic-acid + hydrogen + nickel | elaidic-acid + nickel | partial hydrogenation isomerises | `isomerisation` |
 
 <a id="ethanol-hydration"></a>
@@ -4894,7 +4894,7 @@ The same species is routinely a feedstock in one route and an intermediate in an
 | 1 | pentosan hydrolysis | xylose + water | xylose | dilute H2SO4, 450 K steam | `hydrolysis` |
 | 2 | triple dehydration | xylose + sulfuric-acid | furfural + water + sulfuric-acid | 450 K, steam stripped | `dehydration-cyclisation` |
 | 3 | decarbonylation to furan | furfural + palladium | furan + carbon-monoxide + palladium | 470 K, Pd | `decarbonylation` |
-| 4 | hydrogenation to THF | furan + hydrogen + nickel | tetrahydrofuran + nickel | 420 K, Ni | `catalytic-hydrogenation` |
+| 4 | hydrogenation to THF | furan + hydrogen + nickel | tetrahydrofuran + nickel | 420 K, Ni | `arene-hydrogenation` |
 
 <a id="vanillin-lignin"></a>
 
@@ -5035,7 +5035,7 @@ The same species is routinely a feedstock in one route and an intermediate in an
 
 | # | step | in | out | conditions | class |
 |--:|---|---|---|---|---|
-| 1 | glucose hydrogenation | glucose + hydrogen + nickel | sorbitol + nickel | 420 K, 100 bar | `catalytic-hydrogenation` |
+| 1 | glucose hydrogenation | glucose + hydrogen + nickel | sorbitol + nickel | 420 K, 100 bar | `carbonyl-hydrogenation` |
 | 2 | microbial oxidation | sorbitol + oxygen | sorbose + water | Acetobacter, 300 K | `biological-oxidation` |
 | 3 | acetonide protection | sorbose + acetone + sulfuric-acid | diacetone-sorbose + water + sulfuric-acid | acid, ambient | `acetal-formation` |
 | 4 | oxidation | diacetone-sorbose + potassium-permanganate | diacetone-ketogulonic-acid | alkaline, 310 K | `permanganate-alcohol-oxidation` |
@@ -5137,7 +5137,7 @@ The same species is routinely a feedstock in one route and an intermediate in an
 |--:|---|---|---|---|---|
 | 1 | cycloaddition | 1,3-butadiene + ethylene | cyclohexene | 470 K, 20 bar | `diels-alder-cycloaddition` |
 | 2 | maleic anhydride adduct | cyclopentadiene + maleic-anhydride | norbornene-dicarboxylic-anhydride | 273 K, ethyl acetate | `diels-alder-cycloaddition` |
-| 3 | hydrogenation of the adduct | norbornene-dicarboxylic-anhydride + hydrogen + palladium | norbornane + palladium | H2, Pd/C | `catalytic-hydrogenation` |
+| 3 | hydrogenation of the adduct | norbornene-dicarboxylic-anhydride + hydrogen + palladium | norbornane + palladium | H2, Pd/C | `alkene-hydrogenation` |
 
 <a id="mannich-route"></a>
 
@@ -5359,7 +5359,7 @@ The same species is routinely a feedstock in one route and an intermediate in an
 | # | step | in | out | conditions | class |
 |--:|---|---|---|---|---|
 | 1 | citronellal cyclisation | citronellal + zinc-chloride | isopulegol + zinc-chloride | ene reaction, 270 K, ZnBr2 | `carbonyl-ene-cyclisation` |
-| 2 | hydrogenation | isopulegol + hydrogen + nickel | menthol + nickel | 350 K, Raney Ni | `catalytic-hydrogenation` |
+| 2 | hydrogenation | isopulegol + hydrogen + nickel | menthol + nickel | 350 K, Raney Ni | `alkene-hydrogenation` |
 
 ## Reaction classes used, by frequency
 
@@ -5368,21 +5368,19 @@ This is the list a template library has to grow into. `validation/catalog_covera
 | class | steps | routes |
 |---|---:|---:|
 | proton-transfer | 11 | 9 |
-| catalytic-hydrogenation | 10 | 10 |
 | hydrolysis | 8 | 8 |
 | combustion | 6 | 6 |
-| electrophilic-aromatic-nitration | 6 | 4 |
 | glycoside-hydrolysis | 6 | 5 |
 | radical-polymerisation | 6 | 6 |
 | nucleophilic-substitution | 6 | 6 |
-| roasting | 5 | 5 |
 | carbothermic-reduction | 5 | 5 |
 | precipitation-metathesis | 5 | 5 |
+| electrophilic-aromatic-nitration | 5 | 3 |
 | polycondensation | 5 | 5 |
 | fermentation | 5 | 5 |
 | ester-hydrolysis | 5 | 5 |
 | carbanion-generation | 5 | 5 |
-| thermal-decomposition | 4 | 4 |
+| roasting | 4 | 4 |
 | electrolysis | 4 | 4 |
 | ammoxidation | 4 | 2 |
 | gas-solid-reduction | 4 | 3 |
@@ -5392,12 +5390,12 @@ This is the list a template library has to grow into. `validation/catalog_covera
 | gas-phase-oxidation | 3 | 3 |
 | catalytic-gas-oxidation | 3 | 3 |
 | calcination | 3 | 3 |
-| hydration | 3 | 3 |
 | catalytic-gas-synthesis | 3 | 2 |
 | acid-displacement-precipitating | 3 | 3 |
 | formulation | 3 | 3 |
 | esterification-nitration | 3 | 3 |
 | pyrolysis | 3 | 3 |
+| nitro-hydrogenation | 3 | 3 |
 | alkali-fusion | 3 | 3 |
 | diazotisation | 3 | 3 |
 | friedel-crafts-hydroxyalkylation | 3 | 3 |
@@ -5406,8 +5404,9 @@ This is the list a template library has to grow into. `validation/catalog_covera
 | alcohol-oxidation | 3 | 3 |
 | intramolecular-williamson | 3 | 3 |
 | esterification | 3 | 3 |
+| alkene-hydrogenation | 3 | 3 |
 | isomerisation | 3 | 3 |
-| carbonation | 2 | 2 |
+| lime-slaking | 2 | 2 |
 | disproportionation-hydrolysis | 2 | 2 |
 | halide-oxidation | 2 | 2 |
 | oxidative-dissolution | 2 | 2 |
@@ -5445,18 +5444,23 @@ This is the list a template library has to grow into. `validation/catalog_covera
 | redox-oxygen-transfer | 1 | 1 |
 | nitrosation | 1 | 1 |
 | acid-anhydride-absorption | 1 | 1 |
+| sulfate-thermal-decomposition | 1 | 1 |
 | comproportionation | 1 | 1 |
 | salt-metathesis | 1 | 1 |
 | dissolution | 1 | 1 |
 | carbonate-equilibrium | 1 | 1 |
+| bicarbonate-thermal-decomposition | 1 | 1 |
+| solid-carbonation | 1 | 1 |
 | thermal-fixation | 1 | 1 |
 | acid-displacement | 1 | 1 |
 | gas-solid-fixation | 1 | 1 |
 | amphoteric-dissolution | 1 | 1 |
 | boudouard | 1 | 1 |
 | slagging | 1 | 1 |
+| roasting-to-metal | 1 | 1 |
 | metallothermic-reduction | 1 | 1 |
 | deflagration | 1 | 1 |
+| ipso-nitrodesulfonation | 1 | 1 |
 | nitrolysis | 1 | 1 |
 | aldol-cannizzaro | 1 | 1 |
 | oxidative-nitrosation | 1 | 1 |
@@ -5470,6 +5474,7 @@ This is the list a template library has to grow into. `validation/catalog_covera
 | aldol-cyclisation | 1 | 1 |
 | n-alkylation | 1 | 1 |
 | pyrolytic-synthesis | 1 | 1 |
+| basic-carbonate-precipitation | 1 | 1 |
 | direct-combination | 1 | 1 |
 | hock-rearrangement | 1 | 1 |
 | electrophilic-aromatic-halogenation | 1 | 1 |
@@ -5478,11 +5483,13 @@ This is the list a template library has to grow into. `validation/catalog_covera
 | kolbe-schmitt-carboxylation | 1 | 1 |
 | acylation-esterification | 1 | 1 |
 | crystallisation | 1 | 1 |
+| nitro-partial-hydrogenation | 1 | 1 |
 | bamberger-rearrangement | 1 | 1 |
 | sulfonamide-formation | 1 | 1 |
 | amide-coupling | 1 | 1 |
 | haloform | 1 | 1 |
 | radical-halogenation | 1 | 1 |
+| carbonyl-hydration | 1 | 1 |
 | steam-reforming | 1 | 1 |
 | water-gas-shift | 1 | 1 |
 | fischer-tropsch | 1 | 1 |
@@ -5504,6 +5511,7 @@ This is the list a template library has to grow into. `validation/catalog_covera
 | interfacial-polycondensation | 1 | 1 |
 | allylic-chlorination | 1 | 1 |
 | polyaddition | 1 | 1 |
+| urea-deammoniation | 1 | 1 |
 | trimerisation | 1 | 1 |
 | direct-process | 1 | 1 |
 | hydrolysis-condensation | 1 | 1 |
@@ -5516,6 +5524,7 @@ This is the list a template library has to grow into. `validation/catalog_covera
 | xanthation | 1 | 1 |
 | regeneration | 1 | 1 |
 | aldol-condensation | 1 | 1 |
+| enal-hydrogenation | 1 | 1 |
 | saponification | 1 | 1 |
 | salting-out | 1 | 1 |
 | glycolysis | 1 | 1 |
@@ -5524,6 +5533,7 @@ This is the list a template library has to grow into. `validation/catalog_covera
 | ether-condensation | 1 | 1 |
 | depolymerisation | 1 | 1 |
 | decarbonylation | 1 | 1 |
+| arene-hydrogenation | 1 | 1 |
 | hydration-ring-opening | 1 | 1 |
 | alkene-isomerisation | 1 | 1 |
 | electrophilic-hydroxyalkylation | 1 | 1 |
@@ -5536,6 +5546,7 @@ This is the list a template library has to grow into. `validation/catalog_covera
 | photoreduction | 1 | 1 |
 | chemical-reduction | 1 | 1 |
 | complexation-dissolution | 1 | 1 |
+| carbonyl-hydrogenation | 1 | 1 |
 | biological-oxidation | 1 | 1 |
 | acetal-formation | 1 | 1 |
 | permanganate-alcohol-oxidation | 1 | 1 |
@@ -5572,5 +5583,6 @@ This is the list a template library has to grow into. `validation/catalog_covera
 | intramolecular-aldol | 1 | 1 |
 | alpha-halogenation | 1 | 1 |
 | haloform-cleavage | 1 | 1 |
+| hydride-thermal-deposition | 1 | 1 |
 | oxidative-digestion | 1 | 1 |
 

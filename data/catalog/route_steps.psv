@@ -12,7 +12,7 @@ contact-process | 1 | sulfur combustion | sulfur-s8 + oxygen | sulfur-dioxide | 
 contact-process | 2 | catalytic SO2 oxidation | sulfur-dioxide + oxygen + vanadium-pentoxide | sulfur-trioxide + vanadium-pentoxide | 700-900 K, V2O5 | catalytic-gas-oxidation
 contact-process | 3 | absorption into oleum | sulfur-trioxide + sulfuric-acid | disulfuric-acid | absorber, 98% acid | acid-anhydride-absorption
 contact-process | 4 | oleum dilution | disulfuric-acid + water | sulfuric-acid | dilution | hydrolysis
-vitriol-distillation | 1 | dehydration of green vitriol | iron-ii-sulfate | iron-ii-oxide + sulfur-trioxide | retort, red heat | thermal-decomposition
+vitriol-distillation | 1 | dehydration of green vitriol | iron-ii-sulfate | iron-ii-oxide + sulfur-trioxide | retort, red heat | sulfate-thermal-decomposition
 vitriol-distillation | 2 | condensation to oil of vitriol | sulfur-trioxide + water | sulfuric-acid | receiver | hydrolysis
 pyrite-roasting | 1 | pyrite roasting | iron-disulfide + oxygen | iron-iii-oxide + sulfur-dioxide | roaster, 1100 K | roasting
 claus-process | 1 | partial combustion of H2S | hydrogen-sulfide + oxygen | sulfur-dioxide + water | thermal stage | combustion
@@ -23,7 +23,7 @@ leblanc-process | 3 | lixiviation | sodium-carbonate + water | sodium-carbonate 
 leblanc-process | 4 | galligu waste weathering | calcium-sulfide + water + carbon-dioxide | calcium-carbonate + hydrogen-sulfide | tip, open air | hydrolysis
 solvay-process | 1 | brine ammoniation | sodium-chloride + ammonia + water | sodium-chloride + ammonium-hydroxide | absorber | carbonate-equilibrium
 solvay-process | 2 | carbonation | ammonium-hydroxide + carbon-dioxide + sodium-chloride | sodium-bicarbonate + ammonium-chloride | Solvay tower, cold | precipitation-metathesis
-solvay-process | 3 | bicarbonate calcination | sodium-bicarbonate | sodium-carbonate + carbon-dioxide + water | calciner, 450 K | thermal-decomposition
+solvay-process | 3 | bicarbonate calcination | sodium-bicarbonate | sodium-carbonate + carbon-dioxide + water | calciner, 450 K | bicarbonate-thermal-decomposition
 solvay-process | 4 | ammonia recovery | ammonium-chloride + calcium-hydroxide | ammonia + calcium-chloride + water | still | proton-transfer
 solvay-process | 5 | lime kiln for CO2 | calcium-carbonate | calcium-oxide + carbon-dioxide | kiln, 1200 K | calcination
 solvay-process | 6 | lime slaking | calcium-oxide + water | calcium-hydroxide | slaker | lime-slaking
@@ -227,7 +227,7 @@ mdi-route | 1 | aniline-formaldehyde condensation | aniline + formaldehyde + hyd
 mdi-route | 2 | phosgenation | methylenedianiline + phosgene | mdi + hydrogen-chloride | 370 K, chlorobenzene | phosgenation
 urea-formaldehyde-route | 1 | methylolation | urea + formaldehyde | monomethylolurea | pH 8, 330 K | nucleophilic-addition
 urea-formaldehyde-route | 2 | acid cure | monomethylolurea | urea-formaldehyde-unit + water | pH 4, 380 K, press | polycondensation
-melamine-route | 1 | urea pyrolysis | urea | cyanic-acid + ammonia | 620 K | thermal-decomposition
+melamine-route | 1 | urea pyrolysis | urea | cyanic-acid + ammonia | 620 K | urea-deammoniation
 melamine-route | 2 | trimerisation | cyanic-acid | melamine + carbon-dioxide | 670 K, 80 bar | trimerisation
 silicone-route | 1 | direct process | chloromethane + silicon + copper | dichlorodimethylsilane + copper | 570 K, Cu catalyst, fluid bed | direct-process
 silicone-route | 2 | hydrolysis | dichlorodimethylsilane + water | polydimethylsiloxane-unit + hydrogen-chloride | aqueous, ambient | hydrolysis-condensation
@@ -377,7 +377,7 @@ haloform-iodoform | 2 | cleavage | triiodoacetone + sodium-hydroxide | iodoform 
 fehling-test | 1 | reduction of copper(II) | glucose + copper-ii-ion + sodium-hydroxide | gluconic-acid + copper-i-oxide + water | boiling, tartrate complexed | metal-ion-aldehyde-oxidation
 tollens-test | 1 | silver mirror | benzaldehyde + silver-ion + ammonia + hydroxide | sodium-benzoate + silver + water + ammonia | warm, ammoniacal silver nitrate | metal-ion-aldehyde-oxidation
 marsh-test | 1 | arsine generation | arsenic + zinc + sulfuric-acid | arsine + zinc-sulfate + hydrogen | nascent hydrogen | dissolving-metal-reduction
-marsh-test | 2 | thermal decomposition to the mirror | arsine | arsenic + hydrogen | heated tube | thermal-decomposition
+marsh-test | 2 | thermal decomposition to the mirror | arsine | arsenic + hydrogen | heated tube | hydride-thermal-deposition
 kjeldahl | 1 | digestion | glycine + sulfuric-acid + potassium-sulfate | ammonium-sulfate + carbon-dioxide + sulfur-dioxide + water | 640 K, copper catalyst | oxidative-digestion
 kjeldahl | 2 | distillation | ammonium-sulfate + sodium-hydroxide | ammonia + sodium-sulfate + water | steam distillation | proton-transfer
 kjeldahl | 3 | titration | ammonia + boric-acid | ammonium-borate | back-titrated with standard acid | proton-transfer

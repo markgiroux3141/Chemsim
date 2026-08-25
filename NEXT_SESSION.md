@@ -458,6 +458,16 @@ fails on unrelated changes and says nothing when it passes.**
 | ... and fixing it cost 1 second | Part 2 alone tightened: the example goes **8.1 s -> 9.1 s**, not 8.1 -> 58.9. The 7.2x was the OTHER panels, which move by 4e-4 and are left alone |
 | ⚠⚠ ... `oil_of_vitriol` CANNOT BE SWEPT | **RAISES** at rtol 1e-8 in `burn(690 K, s8=0.002, o2=0.10)` -- `lu_factor` gets a NaN Jacobian after **50.7 s** of thrashing |
 | ... and its numbers are CONFIRMED, not suspect | SO2 = **0.016000** at the default, **0.016000** at rtol 1e-8 with a 1e-9 mol trace of SO2 charged, **0.016001** with 1e-6 mol, **0.016000** at rtol 1e-7 |
+| **S3 -- reaction classes covered** | **35 / 218** (was 33 / 215); `thermal-decomposition` split into four mechanisms, NO engine work |
+| ... covered steps | **97 / 377** (was 95) |
+| **S3 -- routes template-ready** | **27 / 173, UNCHANGED.** Predicted before crediting and then measured: all four affected routes are blocked on a SECOND uncovered class |
+| ⚠ ... what DID move | `solvay-process` and `vitriol-distillation` went from two classes away to ONE. Routes one-class-away **58 -> 60**, from **44 -> 46** distinct classes, and `hydrolysis` is now greedy **rank 4 (+2 routes)** |
+| ⚠⚠ ... the LATENT false credit | `sulfate-thermal-decomposition` is credited and `vitriol-distillation` step 1 still reads `-> iron-ii-OXIDE`, where the declaration makes HEMATITE. Inert only because step 2 `hydrolysis` is uncovered. **Crediting `hydrolysis` trips it** |
+| ⚠⚠ ... and how near that is | `hydrolysis` unlocks **exactly ONE route alone, and it is `vitriol-distillation`**. The whole standalone payoff of the 4th-ranked template is the landmine route |
+| ⚠⚠ **S3 -- the COVERAGE REPORT was not byte-stable** | `sorted(covered, ...)` sorted a SET with no tie-break: **17 lines of pure `PYTHONHASHSEED` noise per regeneration, every number identical.** Fixed in one line |
+| ⚠⚠ **S3 -- `ROUTE_INDEX.md` was STALE BY THREE MILESTONES** | not regenerated since the **initial commit**, while `route_steps.psv` was re-labelled by M5, M6 and S1. Regenerating moved **21 labels: 11 M5, 5 M6, 1 S1, 4 S3**. No audit reads it, so it broke nothing and warned nobody |
+| ... and verified S2's way | **byte-identical across `PYTHONHASHSEED=0` and `=1`**. The only unstable site; the greedy `max` already had a `c` tie-break |
+| ... templates in the project | **34, UNCHANGED** -- S3 added no template and no engine code |
 | ⚠⚠ ... so the zero-column trap has a SECOND trigger | not only "a species absent from a sealed flask" but "a TIGHT TOLERANCE on a flask holding a trace". Same NaN, same fix, same diagnostic |
 | ⚠⚠ ... and "THE TIGHT RUN IS ALSO FASTER" DOES NOT GENERALISE | faster in **2 of 11**, SLOWER in **9**, worst **7.2x**. It held for M6's vented kiln and S1's roast -- a stiff vent fed by slow chemistry -- and nowhere else. Tightening usually COSTS time |
 | ⚠ ... and the audit's own first version manufactured a finding | it reported `wait_until` moving **12.5%**, and that was `0.07 s of wall` against `0.08 s of wall`. Real worst move **1.04e-4**. A wall clock is now excised as a TOKEN, not by dropping the line -- which also stops it hiding `lime_cycle`'s `±14.374 W wall` heat flux |

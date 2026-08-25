@@ -397,6 +397,93 @@ TEMPLATE_CLASSES = {
         "vessel_integrator.SolidStateArrays, two rows sharing the solid "
         "block (a TERM; EMERGENT -- nothing declares this reaction)"
     ),
+    # ---------------------------------------------------------------------
+    # S3 -- ``thermal-decomposition`` SPLIT. NO engine work: both covering
+    # mechanisms were already DECLARED by M6, under exactly these two names.
+    # ---------------------------------------------------------------------
+    # M6 read this class against M1's standard, recorded "four rows and they are
+    # four mechanisms", and left it alone because it ran out of session rather
+    # than because the reading was in doubt. The reading holds: the rows are a
+    # solid sulfate decomposing, a solid bicarbonate decomposing, a MOLECULAR
+    # decomposition of a melt, and a gas DEPOSITING a metalloid. Four mechanisms
+    # sharing one furnace, which is the ``catalytic-hydrogenation`` shape exactly.
+    #
+    # ⚠⚠ WHICH ROUTES THIS MOVES: **ZERO**, CHECKED BEFORE CREDITING. That check
+    # is here because S1's roasting credit moved ``mercury-from-cinnabar`` into
+    # the template-ready list on the strength of a mechanism that does not make
+    # that row's product. Every one of the four affected routes is blocked on a
+    # SECOND uncovered class, so no route can move on this credit at all:
+    #
+    #     vitriol-distillation  step 2   hydrolysis                   uncovered
+    #     solvay-process        step 1   carbonate-equilibrium        uncovered
+    #     melamine-route        step 2   trimerisation                uncovered
+    #     marsh-test            step 1   dissolving-metal-reduction   uncovered
+    #
+    # ⚠ AND THE GREEDY CURVE'S "+1 route" FOR THIS CLASS WAS NEVER A STANDALONE
+    # UNLOCK: it sits at rank 14, i.e. after ``hydrolysis`` has been added at
+    # rank 6. Read as a standalone promise it would have delivered a route it
+    # cannot -- the same misreading as S1's, arriving from a different table. The
+    # standalone table is the one that answers this question and it does not list
+    # this class at all.
+    #
+    # So the honest summary is **+2 classes covered, +3 to the denominator, +0
+    # template-ready routes**. What it buys is that two classes stop reading as
+    # gaps when their mechanism has been built and MEASURED since M6 -- both rows
+    # RUN, pinned in ``tests/test_solid_state.py`` at 25.4 s at 1000 K and 43.7 s
+    # at 450 K. That is strictly better than S1's outcome, which was +1
+    # template-ready route that does not run.
+    #
+    # ⚠⚠ AND ONE OF THE TWO CREDITS IS A LATENT FALSE CREDIT, RECORDED RATHER
+    # THAN HIDDEN. ``vitriol-distillation`` step 1 reads ``iron-ii-sulfate ->
+    # iron-ii-OXIDE + sulfur-trioxide``; the declaration makes HEMATITE, as
+    # ``2 FeSO4 -> Fe2O3 + SO2 + SO3``. The credit is honest for a reason that is
+    # the OPPOSITE of the cinnabar case, and telling the two apart is the point:
+    #
+    #   * cinnabar -- the ROW is right (a retort does give the metal) and the
+    #     mechanism stops short of it, so reaching the row needs a second
+    #     reaction nobody has built. NOT covered; re-labelled ``roasting-to-metal``.
+    #   * green vitriol -- the MECHANISM is right and the ROW is wrong. FeO does
+    #     not survive red heat, and ``mineral_data`` refuses it anyway (CRC
+    #     tabulates no crystal Cp for it). Nothing further is needed to reach the
+    #     real products, so the mechanism covers the step.
+    #
+    # ⚠ THE LANDMINE, STATED FOR WHOEVER TRIPS IT: the class is credited and the
+    # ROW still names a product this engine never makes. Today that is inert,
+    # because step 2 is uncovered and the route cannot go template-ready.
+    # **The day ``hydrolysis`` is credited, ``vitriol-distillation`` becomes
+    # template-ready on a step whose stated product does not exist in the run.**
+    # Whoever credits ``hydrolysis`` owes this row a second look. The corpus row
+    # is deliberately NOT corrected, on the ``diels-alder-route`` precedent:
+    # inventing chemistry inside an audit corpus is not allowed, and correcting
+    # this one means re-balancing it to 2 FeSO4 and adding an SO2 nobody wrote.
+    #
+    # ⚠ THE TWO HALVES THAT ARE NOT CREDITED, AND WHY THEY DIFFER IN COST:
+    #
+    #   * ``urea-deammoniation`` (``urea -> cyanic-acid + ammonia``) is blocked on
+    #     a TEMPLATE ONLY. All three species resolve, and the kinetics kernel can
+    #     already express a unimolecular decomposition in a liquid -- urea MELTS
+    #     at 406 K and the row is run at 620 K, so it is a liquid-phase graph
+    #     rewrite, not a lattice. ⚠ One caveat that is a physical fact and not a
+    #     gap: cyanic acid is one of the nine neutral species with no boiling
+    #     point in ANY source, so it resolves as ``nonvolatile`` and cannot be put
+    #     in the gas block. The HNCO would come off into the liquid.
+    #   * ``hydride-thermal-deposition`` (``arsine -> arsenic + hydrogen``) is
+    #     blocked on BOTH, and its mechanism gap is a named one: NUCLEATION.
+    #     ``SurfaceArrays`` is first order and EXTENSIVE in the solid amount, so a
+    #     solid at zero mol has zero rate for ever -- and the term is irreversible
+    #     by construction, so no roasting row can be run backwards to deposit one.
+    #     Depositing a solid from no solid is not expressible here at all. The
+    #     species half is independent: ``arsine`` and ``arsenic`` are both refused
+    #     outright (a bare element symbol, and no estimator for AsH3).
+    "sulfate-thermal-decomposition": (
+        "vessel_integrator.SolidStateArrays (a TERM; the DECLARATION makes "
+        "hematite where the catalog row says iron-ii-oxide -- the row is the "
+        "one that is wrong, see the source)"
+    ),
+    "bicarbonate-thermal-decomposition": (
+        "vessel_integrator.SolidStateArrays (a TERM; this declaration's products "
+        "ARE the row's, unlike the sulfate half)"
+    ),
 }
 
 # How many templates that is, counted rather than asserted -- the old text said
@@ -646,7 +733,7 @@ def main() -> int:
     w("")
     w("| covered class | template | steps using it |")
     w("|---|---|---:|")
-    for c in sorted(covered, key=lambda x: -step_classes[x]):
+    for c in sorted(covered, key=lambda x: (-step_classes[x], x)):
         w(f"| {c} | `{TEMPLATE_CLASSES[c]}` | {step_classes[c]} |")
     w("")
     w("### The most-used classes with NO template")

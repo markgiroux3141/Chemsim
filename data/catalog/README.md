@@ -30,6 +30,22 @@ python tools/build_route_index.py   # writes ROUTE_INDEX.md
 python validation/catalog_coverage.py  # writes COVERAGE_REPORT.md + derived/
 ```
 
+⚠⚠ **RUN ALL THREE. `ROUTE_INDEX.md` WAS STALE BY THREE MILESTONES AND NOBODY
+NOTICED**, because it is the one generated file no audit reads — the coverage
+audit parses `route_steps.psv` directly, so a stale index changes no measured
+number and produces no failure. Found in S3: it had not been regenerated since
+the **initial commit**, while `route_steps.psv` was re-labelled by M5, M6 and S1.
+Regenerating it moved **21 class labels — 11 from M5, 5 from M6, 1 from S1 and 4
+from S3.** Anyone who read this index to find a step's class between M5 and S3
+got a pre-M5 answer.
+
+⚠ **AND `COVERAGE_REPORT.md` WAS NOT BYTE-STABLE UNTIL S3 FIXED IT.**
+`sorted(covered, ...)` sorted a *set* with no tie-break, so regenerating it
+produced ~17 lines of `PYTHONHASHSEED` noise with every number identical — enough
+to hide a real one-line change in review, which is what regenerating it is *for*.
+It is now byte-identical across hash seeds; if a regeneration ever produces a
+diff again, that diff is real.
+
 ---
 
 ## ⚠ The reaction class is a MECHANISM, not an outcome (settled 2026-08-23)
@@ -300,33 +316,100 @@ it is the `calcination-dehydration` row forwards and the
 block. `lime-slaking` is the dehydration row's own reverse. **Two declarations,
 three credited classes**, and `lime-cycle` becomes the 26th template-ready route.
 
-### ⚠ ONE CLASS M6 READ AND DID NOT SPLIT, RECORDED SO THE READING IS NOT LOST
+### ⚠ S3 SPLIT `thermal-decomposition` — AND CHECKED WHICH ROUTES THE NUMBER MOVED
 
-`thermal-decomposition` has four rows and they are **four mechanisms**, so it is
-an outcome label by M1's rule. It is left alone only because splitting it is a
-separate, self-contained job and M6 ran out of session, not because the reading is
-in doubt:
+M6 read this class, recorded "four rows and they are **four mechanisms**", and
+left it alone because splitting it was a separate self-contained job and the
+session ran out — not because the reading was in doubt. The reading held. Four
+mechanisms sharing one furnace, which is the `catalytic-hydrogenation` shape:
 
-| route | step | what it is | covered? |
-|---|---|---|---|
-| `vitriol-distillation` | `FeSO4 -> FeO + SO3` | a solid sulfate decomposing to a solid oxide plus gas | ✔ the mechanism is built (as hematite -- see below) |
-| `solvay-process` 3 | `NaHCO3 -> Na2CO3 + CO2 + H2O` | a solid bicarbonate, two gases | ✔ built |
-| `melamine-route` | `urea -> cyanic acid + ammonia` | a MOLECULAR decomposition; urea melts first | ✘ a graph rewrite, not a lattice |
-| `marsh-test` | `arsine -> arsenic + hydrogen` | a gas-phase decomposition depositing a METAL | ✘ |
+| route | step | became | what it is | covered? |
+|---|---|---|---|---|
+| `vitriol-distillation` 1 | `FeSO4 -> FeO + SO3` | `sulfate-thermal-decomposition` | a solid sulfate decomposing to a solid oxide plus gas | ✔ built, **runs** (25.4 s at 1000 K) |
+| `solvay-process` 3 | `NaHCO3 -> Na2CO3 + CO2 + H2O` | `bicarbonate-thermal-decomposition` | a solid bicarbonate, two gases | ✔ built, **runs** (43.7 s at 450 K) |
+| `melamine-route` 1 | `urea -> cyanic acid + ammonia` | `urea-deammoniation` | a MOLECULAR decomposition; urea melts first | ✘ a graph rewrite, not a lattice |
+| `marsh-test` 2 | `arsine -> arsenic + hydrogen` | `hydride-thermal-deposition` | a gas decomposing and DEPOSITING a metalloid | ✘ nucleation — see below |
 
-So the split is `sulfate-thermal-decomposition` + `bicarbonate-thermal-decomposition`
-(both covered) against two named gaps. **That is +2 classes covered for four rows
-re-labelled**, and it is the cheapest coverage left in the corpus.
+**No engine work: both covering mechanisms were already declared by M6 under
+exactly these two names**, and both are pinned by `tests/test_solid_state.py`.
 
-⚠ **AND THE FIRST ROW NAMES A PRODUCT THAT IS NOT THE REACTION.**
-`iron-ii-OXIDE` balances and is not what happens: FeO does not survive red heat,
-and anhydrous green vitriol gives HEMATITE with half its sulfur reduced to SO2.
-`properties/solid_state.py` declares the chemistry rather than the row, and
-`tools/build_mineral_data.py` records that FeO was tried and refused -- on the
-half nobody would guess, its crystal heat capacity, which CRC does not tabulate
-for it at all. Recorded here rather than corrected in the corpus, on the same rule
-the `diels-alder-route` imbalance above follows: inventing chemistry inside an
-audit corpus is not allowed, and neither is quietly reproducing its mistakes.
+⚠⚠ **WHICH ROUTES IT MOVED: ZERO — PREDICTED BEFORE CREDITING AND THEN
+MEASURED.** That check exists because S1's `roasting` credit moved
+`mercury-from-cinnabar` into the template-ready list on the strength of a
+mechanism that does not make that row's product. Here every one of the four
+affected routes is blocked on a **second** uncovered class:
+
+| route | its other gap | covered? |
+|---|---|---|
+| `vitriol-distillation` | step 2 `hydrolysis` | ✘ |
+| `solvay-process` | step 1 `carbonate-equilibrium` | ✘ |
+| `melamine-route` | step 2 `trimerisation` | ✘ |
+| `marsh-test` | step 1 `dissolving-metal-reduction` | ✘ |
+
+Measured: **33/215 classes → 35/218**, covered steps **95 → 97**, template-ready
+routes **27 → 27**. So the honest summary is **+2 classes, +3 to the denominator,
++2 steps, and no route moved at all**.
+
+⚠ **AND THE GREEDY CURVE'S "+1 route" FOR THIS CLASS WAS NEVER A STANDALONE
+UNLOCK.** It sat at rank 14 — i.e. *after* `hydrolysis` was added at rank 6. Read
+as a standalone promise it would have delivered a route it cannot; the standalone
+table is the one that answers that question, and it never listed this class. Same
+misreading as S1's, arriving from a different table.
+
+**What did move is the shape of the remaining work**, and it is the one thing
+here worth acting on: `solvay-process` and `vitriol-distillation` both went from
+two classes away to **ONE**, so routes-one-class-away went 58 → 60 from 44 → 46
+distinct classes, and `hydrolysis` jumped to **greedy rank 4 (+2 routes)**.
+
+### ⚠⚠ ONE OF THE TWO CREDITS IS A LATENT FALSE CREDIT, AND IT IS NOW RANK 4 AWAY
+
+`vitriol-distillation` step 1 reads `iron-ii-sulfate -> iron-ii-OXIDE +
+sulfur-trioxide`. The declaration makes **hematite**: `2 FeSO4 -> Fe2O3 + SO2 +
+SO3`. The credit is honest for a reason that is the **opposite** of the cinnabar
+case, and telling the two apart is the whole point of the check:
+
+* **cinnabar** — the ROW is right (a retort does give the metal) and the mechanism
+  stops short of it, so reaching the row needs a second reaction nobody built.
+  Not covered; re-labelled `roasting-to-metal`.
+* **green vitriol** — the MECHANISM is right and the ROW is wrong. FeO does not
+  survive red heat, and `mineral_data` refuses it anyway — on the half nobody
+  would guess, its crystal heat capacity, which CRC does not tabulate for it at
+  all. Nothing further is needed to reach the real products.
+
+⚠ **THE LANDMINE, STATED FOR WHOEVER TRIPS IT:** the class is credited and the
+row still names a product this engine never makes. Today that is inert, because
+step 2 is uncovered. **The day `hydrolysis` is credited, `vitriol-distillation`
+goes template-ready on a step whose stated product does not exist in the run** —
+and this split just made `hydrolysis` the 4th-best template to build. Whoever
+builds it owes this row a second look.
+
+⚠⚠ **AND IT IS SHARPER THAN "SOMEDAY": measured, `hydrolysis` unlocks exactly
+ONE route on its own, and that route is `vitriol-distillation`.** So the entire
+standalone payoff of the 4th-ranked template is the one route carrying a step
+whose product the engine does not make. That is not an argument against building
+`hydrolysis` — it is the reason to read this paragraph first.
+
+The corpus row is deliberately **not** corrected, on the `diels-alder-route`
+precedent: inventing chemistry inside an audit corpus is not allowed, and
+correcting this one means re-balancing it to 2 FeSO₄ and adding an SO₂ nobody
+wrote. Recorded rather than reproduced quietly.
+
+### ⚠ THE TWO GAPS COST DIFFERENT AMOUNTS, WHICH IS WHY THEY ARE TWO CLASSES
+
+* **`urea-deammoniation` is blocked on a TEMPLATE ONLY.** All three species
+  resolve, and the kinetics kernel can already express a unimolecular
+  decomposition in a liquid — urea melts at 406 K and the row runs at 620 K, so
+  it is a liquid-phase graph rewrite, not a lattice. ⚠ One caveat that is a
+  physical fact rather than a gap: cyanic acid is one of the nine neutral species
+  with no boiling point in **any** source, so it resolves as `nonvolatile` and
+  cannot be put in the gas block — the HNCO would come off into the liquid.
+* **`hydride-thermal-deposition` is blocked on BOTH, and its mechanism gap has a
+  name: NUCLEATION.** `SurfaceArrays` is first order and **extensive** in the
+  solid amount, so a solid at zero mol has zero rate for ever — and the term is
+  irreversible by construction, so no roasting row can be run backwards to
+  deposit one. Depositing a solid from no solid is not expressible here at all.
+  The species half is independent and also missing: `arsine` and `arsenic` are
+  both refused outright (no estimator for AsH₃; a bare element symbol for As).
 
 Three further findings the report makes explicit:
 
