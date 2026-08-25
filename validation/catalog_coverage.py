@@ -76,7 +76,17 @@ from chemsim.properties.electrolyte import electrolyte_provider  # noqa: E402
 # about itself, which is why adding a curated entry upstream moves this report
 # without anyone touching this file.
 
-TIER_ORDER = ["measured", "benson", "joback", "ion", "refused"]
+# ⚠ ``nonvolatile`` WAS ADDED BY M5 AND IT USED TO BE COUNTED AS ``ion``, WHICH
+# THIS REPORT DESCRIBES AS "correct, and not an estimate at all". Nine NEUTRAL
+# species in the catalog have no boiling point in any source and none that can
+# be estimated -- phosphoric acid, guanidine, arginine, creatine, cyanic acid,
+# two triglycerides -- and for them the statement "does not enter the vapour"
+# is also correct, but it is a different claim from an ion's and it was being
+# made under the ion's name. It ranks BELOW ion in ``_worst`` because it is a
+# missing vapour-pressure curve as well as a physical fact: nothing can compute
+# a standard-state shift for one, and ``standard_state.mixed_basis`` exists
+# because that silently mattered.
+TIER_ORDER = ["measured", "benson", "joback", "ion", "nonvolatile", "refused"]
 
 
 def _thermo_tier(source: str) -> str:
@@ -92,10 +102,12 @@ def _thermo_tier(source: str) -> str:
     return "measured"
 
 
-def _volatility_tier(source: str, kind: str) -> str:
+def _volatility_tier(source: str, kind: str, charged: bool) -> str:
     s = source.lower()
     if kind == "nonvolatile":
-        return "ion"
+        # An ion does not evaporate, full stop. A NEUTRAL that does not
+        # evaporate is a separate claim -- see TIER_ORDER.
+        return "ion" if charged else "nonvolatile"
     if "experimental antoine" in s or "measured" in s:
         return "measured"
     if "joback" in s:
@@ -163,7 +175,7 @@ def audit_compound(comp, thermo, vol, ionic, unifac) -> dict:
             t = provider.get(mol)
             v = vol.get(mol)
             t_tiers.append(_thermo_tier(t.source))
-            v_tiers.append(_volatility_tier(v.source, v.kind))
+            v_tiers.append(_volatility_tier(v.source, v.kind, ionic_species))
     except Exception as exc:  # noqa: BLE001
         row["why"] = f"{type(exc).__name__}: {str(exc)[:90]}"
         return row
@@ -257,13 +269,54 @@ TEMPLATE_CLASSES = {
     "acid-displacement-precipitating": (
         "electrolyte.dissociation_templates + PrecipitationArrays (a TERM)"
     ),
+    # ---------------------------------------------------------------------
+    # M5 -- reactions/synthesis.py. Twenty templates, seventeen classes.
+    # ---------------------------------------------------------------------
+    # ⚠ EVERY ONE OF THESE WAS CHECKED ROW BY ROW BEFORE BEING ADDED, and six
+    # candidate classes were REFUSED on that check rather than credited --
+    # ``fermentation``, ``pyrolysis``, ``isomerisation``, ``thermal-cracking``,
+    # ``catalytic-air-oxidation`` and ``separation``. The argument for each is in
+    # ``reactions/synthesis.py``'s module docstring; the short form is that a class
+    # is credited only when every ROW of it is the mechanism the template
+    # implements, which is the standard M1 established and this is the first
+    # milestone to spend it.
+    "glycoside-hydrolysis": "glycoside_hydrolysis",
+    "electrophilic-aromatic-nitration": "aromatic_nitration",
+    "williamson-ether-synthesis": "williamson_ether_synthesis",
+    "friedel-crafts-hydroxyalkylation": "friedel_crafts_hydroxyalkylation",
+    "kolbe-schmitt-carboxylation": "kolbe_schmitt",
+    "transesterification": "transesterification",
+    "n-acylation": "n_acylation",
+    "cannizzaro-disproportionation": "cannizzaro",
+    "perkin-condensation": "perkin_condensation",
+    "knoevenagel-doebner-condensation": "knoevenagel_doebner",
+    "alkene-hydration": "alkene_hydration",
+    "alkyne-hydration": "alkyne_hydration",
+    "disproportionation": "halogen_disproportionation",
+    # TWO templates each, because the class has two mechanisms in it and crediting
+    # it on one of them would be the ``deprotonation`` mistake again.
+    "ester-hydrolysis": "ester_hydrolysis + saponification",
+    "catalytic-gas-synthesis": (
+        "ammonia_synthesis + methanol_from_carbon_monoxide/dioxide"
+    ),
+    # ⚠ THESE TWO LABELS DID NOT EXIST BEFORE M5. ``catalytic-hydrogenation`` was
+    # the most-used class with no template in the corpus (10 steps) and its ten
+    # rows are FIVE mechanisms -- nitro to amine, nitro to hydroxylamine, C=C, C=O,
+    # and an arene. Refusing it outright would have been wrong in the other
+    # direction: unlike ``fermentation``, every row IS a clean mechanism. So the
+    # rows were re-labelled on M1's precedent and two of the five are built. The
+    # other three (``nitro-partial-hydrogenation``, ``carbonyl-hydrogenation``,
+    # ``arene-hydrogenation``) are honest, named gaps.
+    "alkene-hydrogenation": "alkene_hydrogenation",
+    "nitro-hydrogenation": "nitro_hydrogenation",
 }
 
 # How many templates that is, counted rather than asserted -- the old text said
 # "10 templates" and ``library.py`` has 8.
 N_LIBRARY_TEMPLATES = 8
+N_SYNTHESIS_TEMPLATES = 20
 N_ELECTROLYTE_TEMPLATES = 6
-N_TEMPLATES = N_LIBRARY_TEMPLATES + N_ELECTROLYTE_TEMPLATES
+N_TEMPLATES = N_LIBRARY_TEMPLATES + N_SYNTHESIS_TEMPLATES + N_ELECTROLYTE_TEMPLATES
 
 
 def marginal_unlock(steps, routes):
@@ -495,7 +548,8 @@ def main() -> int:
     w(
         f"The catalog's {len(steps)} steps use **{len(step_classes)} distinct "
         f"reaction classes**. This project implements **{N_TEMPLATES} templates** "
-        f"({N_LIBRARY_TEMPLATES} in `reactions/library.py` and "
+        f"({N_LIBRARY_TEMPLATES} in `reactions/library.py`, "
+        f"{N_SYNTHESIS_TEMPLATES} in `reactions/synthesis.py` and "
         f"{N_ELECTROLYTE_TEMPLATES} dissociation templates in "
         f"`properties/electrolyte.py`), which between them cover "
         f"**{len(covered)}** of those classes, i.e. "

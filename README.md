@@ -80,6 +80,7 @@ python examples/thermochemistry.py      # properties + equilibrium from structur
 python examples/vessel.py               # boiling, boiling dry, self-heating, distillation
 python examples/workshop.py             # crystallisation, melting, pH/titration, the engine
 python examples/activity.py             # azeotropes and real solubilities, from UNIFAC
+python examples/named_routes.py         # 17 named historical routes, integrated end to end
 ```
 
 ## The interface
@@ -441,18 +442,28 @@ python validation/catalog_coverage.py  # the audit
 
 | | |
 |---|---|
-| formation half measured or Benson | **702 / 1583 (44%)** |
+| formation half measured or Benson | **715 / 1583 (45%)** |
 | formation half falls back to Joback | 402 (25%) |
-| refused | 479 (30%), of which 195 are charged organics the Born model correctly declines |
-| UNIFAC-decomposable (can enter an LLE) | 790 (50%) |
-| reaction classes with a template | **8 / 197** |
-| routes template-ready end to end | **3 / 173** |
+| refused | 466 (29%), of which ~195 are charged organics the Born model correctly declines |
+| UNIFAC-decomposable (can enter an LLE) | 836 (53%) |
+| reaction classes with a template | **29 / 212** (was 12) |
+| routes template-ready end to end | **25 / 173** (was 7) |
 
-**The species side is in reasonable shape and the reaction side is not**, and
-that gap is the finding. A catalog where every compound resolves is worth
-nothing if the transformation joining two of them has no template — and 189 of
-the 197 distinct reaction classes here have none. Growing the template library,
-not the data tables, is what would move the number that matters.
+**The species side is in reasonable shape and the reaction side is still the
+binding one**, but M5 changed the shape of that gap rather than just its size.
+Twenty new templates in `reactions/synthesis.py` took the route count from 7 to
+25 — and the reason it took twenty rather than five is the finding: the gap is a
+long tail with no bottleneck in it. **Before M5, 63 routes sat one class away
+from 50 distinct classes; after, 56 sit one class away from 43.** Eighteen routes
+cost twenty templates, and the next eighteen will cost about the same.
+
+⚠ **Six candidate classes were REFUSED rather than credited**, on the standard
+that a reaction class is a *mechanism* claim and not an outcome:
+`catalytic-air-oxidation` is three mechanisms, `fermentation` is a metabolic
+network, `pyrolysis` mostly acts on things with no molecular graph. A seventh,
+`catalytic-hydrogenation`, was **split** into five mechanism labels instead —
+because unlike the others, every one of its rows *is* a clean mechanism. See
+`data/catalog/README.md`.
 
 Note also that the roles in the route index are **derived from the steps, not
 declared**: a species consumed but never produced is a primary feedstock, one

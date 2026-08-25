@@ -144,20 +144,56 @@ that it was deliberate rather than a typo.
 
 Read `COVERAGE_REPORT.md` for the full breakdown. The four numbers that matter:
 
-| | |
-|---|---|
-| formation half is **measured or Benson** | **702 / 1583 (44%)** |
-| formation half falls back to **Joback** | 402 / 1583 (25%) |
-| **refused** outright | 479 / 1583 (30%) |
-| **UNIFAC**-decomposable (can enter an LLE) | 790 / 1583 (50%) |
-| reaction classes with a **template** | **8 / 197** |
-| routes that are **template-ready** end to end | **3 / 173** |
+| | before M5 | after M5 |
+|---|---|---|
+| formation half is **measured or Benson** | 709 / 1583 (45%) | **715 / 1583 (45%)** |
+| formation half falls back to **Joback** | 402 / 1583 (25%) | 402 / 1583 (25%) |
+| **refused** outright | 472 / 1583 (30%) | 466 / 1583 (29%) |
+| **UNIFAC**-decomposable (can enter an LLE) | 830 / 1583 (52%) | 836 / 1583 (53%) |
+| reaction classes with a **template** | 12 / 206 | **29 / 212** |
+| routes that are **template-ready** end to end | 3 → 7 / 173 | **25 / 173** |
 
-The species side is in decent shape and the reaction side is not, and that gap
-is the honest headline. A catalog where every compound resolves is still worth
-nothing if the transformation connecting two of them has no template — and 189
-of the 197 distinct reaction classes here have none. Growing the template
-library, not the data tables, is what would move the number that matters.
+⚠ **Both columns were re-measured on 2026-08-24; the "before" column is not what
+this file used to claim.** The committed report predated M4's UNIFAC work, so the
+numbers it carried (790 decomposable, 8 classes, 3 routes) were stale rather than
+wrong-at-the-time. Regenerating at the previous commit gives the "before" column
+above, and that is what M5 should be measured against.
+
+The species side is in decent shape and the reaction side is still the binding
+one, but it is no longer the same shape of problem: the reaction half moved from
+12 classes to 29 and from 7 routes to 25 in one milestone, and what limits the
+next 25 is that **the remaining classes unlock about one route each**. Before M5,
+63 routes sat one class away from 50 distinct classes; after, 56 sit one class
+away from 43. There is no lever left to pull.
+
+### ⚠ M5 re-labelled 11 more rows, on the same standard M1 set
+
+Two classes were outcome labels and are now mechanisms. The audit numbers above
+already include this; read the row, not the class name.
+
+| was | rows | became | why |
+|---|---:|---|---|
+| `electrophilic-aromatic-nitration` | 1 of 6 | `ipso-nitrodesulfonation` | `picric-acid-route` step 2 replaces **three sulfonate groups** with nitro. That is ipso substitution, not the Ar–H nitration the other five rows are. |
+| `catalytic-hydrogenation` | all 10 | five labels | the **most-used class with no template** in the corpus, and its ten rows are five mechanisms sharing a reactor |
+
+The hydrogenation split, in full — and note that it was split rather than
+refused, because unlike `fermentation` every one of these rows *is* a clean
+mechanism:
+
+| became | rows | has a template |
+|---|---:|---|
+| `nitro-hydrogenation` | 3 | ✔ `nitro_hydrogenation` |
+| `alkene-hydrogenation` | 3 | ✔ `alkene_hydrogenation` |
+| `nitro-partial-hydrogenation` | 1 | ✘ — nitrobenzene stopped at the hydroxylamine is a different stoichiometry, and it is the whole difficulty of the paracetamol route |
+| `arene-hydrogenation` | 2 | ✘ |
+| `carbonyl-hydrogenation` | 1 | ✘ |
+
+⚠ **One catalog row is unbalanced and was labelled rather than corrected.**
+`diels-alder-route` step 3 reads `norbornene-dicarboxylic-anhydride + hydrogen →
+norbornane`, which loses the whole anhydride. It is labelled
+`alkene-hydrogenation` because that is the mechanism it means; the imbalance is
+recorded here rather than fixed, because inventing the missing products would be
+authoring chemistry inside an audit corpus.
 
 Three further findings the report makes explicit:
 

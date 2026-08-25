@@ -188,10 +188,48 @@ def _fit_antoine(
 
     # C is bounded away from -T_min so the pole can never land inside the range.
     lo = -0.7 * float(Ts.min())
+    # ``least_squares`` requires x0 strictly INSIDE the bounds and raises a bare
+    # "Initial guess is outside of provided bounds" if it is not -- a scipy
+    # message that names neither the species nor the cause. The physical case
+    # (B0 <= 0, a vapour pressure falling with temperature) is refused upstream
+    # by ``_refuse_inverted_slope``; this clamp covers the numeric edge where a
+    # very steep but valid curve puts B0 past the bound.
+    B0 = min(max(float(B0), 1.0), 9.9e4)
     fit = least_squares(
         residual, x0=[A0, B0, 0.0], bounds=([-50.0, 0.0, lo], [50.0, 1.0e5, 500.0])
     )
     return float(fit.x[0]), float(fit.x[1]), float(fit.x[2])
+
+
+def _refuse_inverted_slope(mol, t, omega: float, Ts: np.ndarray, Ps: np.ndarray) -> None:
+    """Refuse a vapour pressure that FALLS with temperature, and say why.
+
+    ⚠ **THIS IS AN ESTIMATOR OUTSIDE ITS DOMAIN, AND IT ARRIVES AS A SCIPY
+    TRACEBACK RATHER THAN AS A REFUSAL.** Found in M5 on triolein: Joback hands
+    a C57 triglyceride ``Tb = 1690 K`` and ``Tc = 4020 K``, from which
+    ``acentric_factor`` derives **omega = -0.64**. A negative acentric factor is
+    physical only for a quantum fluid -- hydrogen is -0.22, helium -0.39 -- and
+    for anything else it inverts the Lee-Kesler slope, so the sampled saturation
+    pressure DROPS as the sample heats. The Antoine fit then wants a negative B,
+    which is outside its bounds, and scipy says "Initial guess is outside of
+    provided bounds": a message that names neither triolein nor Joback.
+
+    The refusal is the honest outcome and not a bound to widen. A fitted B of the
+    wrong sign is not a hard fit, it is a molecule the estimator cannot price, and
+    the same shape as the class bug ``element_data`` was written for.
+    """
+    if Ps[-1] > Ps[0]:
+        return
+    raise VolatilityError(
+        f"refusing to build a volatility model for {mol.smiles!r}: over the fit "
+        f"window {Ts[0]:.0f}-{Ts[-1]:.0f} K its estimated saturation pressure "
+        f"FALLS with temperature ({Ps[0]:.3g} -> {Ps[-1]:.3g} bar), which no "
+        f"liquid does. The cause is upstream: Tb={t.Tb:.0f} K and Tc={t.Tc:.0f} K "
+        f"give an acentric factor of {omega:.3f}, and a negative acentric factor "
+        f"belongs to a quantum fluid, not to this molecule. Its physical half "
+        f"came from {t.physical_source or 'an estimator'}, which is outside its "
+        f"fitted domain here. Add a curated Antoine entry or a measured Tb/Tc/Pc."
+    )
 
 
 # A non-volatile species still needs Antoine coefficients, because the kernel
@@ -303,6 +341,7 @@ class VolatilityProvider:
 
         Ts = np.linspace(T_lo, T_hi, 40)
         Ps = np.array([lee_kesler_psat(T, t.Tc, t.Pc, omega) for T in Ts])
+        _refuse_inverted_slope(mol, t, omega, Ts, Ps)
         A, B, C = _fit_antoine(Ts, Ps)
 
         # Name the provenance of Tb/Tc/Pc rather than assuming Joback supplied

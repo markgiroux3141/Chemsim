@@ -57,7 +57,7 @@ vanadium-pentoxide | 3 | 0 | 0 | 0 | 3 | refused
 sodium-sulfate | 3 | 0 | 1 | 2 | 0 | ion
 platinum | 3 | 0 | 0 | 0 | 3 | refused
 calcium-phosphate | 3 | 3 | 0 | 0 | 0 | refused
-phosphoric-acid | 3 | 0 | 0 | 1 | 2 | ion
+phosphoric-acid | 3 | 0 | 0 | 1 | 2 | nonvolatile
 aluminium-oxide | 3 | 1 | 1 | 1 | 0 | refused
 potassium-sulfate | 3 | 1 | 0 | 2 | 0 | ion
 cellulose-unit | 3 | 2 | 1 | 0 | 0 | joback
@@ -82,7 +82,7 @@ urea | 3 | 2 | 0 | 1 | 0 | ion
 copper-i-oxide | 3 | 0 | 0 | 1 | 2 | refused
 sucrose | 3 | 3 | 0 | 0 | 0 | joback
 vanillin | 3 | 0 | 0 | 3 | 0 | benson
-sodium-iodide | 3 | 0 | 0 | 3 | 0 | refused
+sodium-iodide | 3 | 0 | 0 | 3 | 0 | ion
 sodium-ethoxide | 3 | 3 | 0 | 0 | 0 | refused
 ethyl-acetoacetate | 3 | 2 | 0 | 1 | 0 | joback
 sulfur-trioxide | 2 | 0 | 2 | 0 | 0 | measured
@@ -152,8 +152,8 @@ butyraldehyde | 2 | 1 | 0 | 1 | 0 | joback
 phthalic-anhydride | 2 | 1 | 0 | 1 | 0 | refused
 butane | 2 | 1 | 0 | 1 | 0 | joback
 maleic-anhydride | 2 | 1 | 0 | 1 | 0 | benson
-tristearin | 2 | 1 | 0 | 1 | 0 | refused
-triolein | 2 | 2 | 0 | 0 | 0 | refused
+tristearin | 2 | 1 | 0 | 1 | 0 | nonvolatile
+triolein | 2 | 2 | 0 | 0 | 0 | nonvolatile
 palladium | 2 | 0 | 0 | 0 | 2 | refused
 zinc-chloride | 2 | 0 | 0 | 0 | 2 | refused
 indican | 2 | 2 | 0 | 0 | 0 | joback
@@ -303,7 +303,7 @@ methylenedianiline | 1 | 0 | 1 | 0 | 0 | joback
 mdi | 1 | 0 | 0 | 1 | 0 | refused
 monomethylolurea | 1 | 0 | 1 | 0 | 0 | joback
 urea-formaldehyde-unit | 1 | 0 | 0 | 1 | 0 | joback
-cyanic-acid | 1 | 0 | 1 | 0 | 0 | ion
+cyanic-acid | 1 | 0 | 1 | 0 | 0 | nonvolatile
 melamine | 1 | 0 | 0 | 1 | 0 | joback
 chloromethane | 1 | 1 | 0 | 0 | 0 | joback
 silicon | 1 | 1 | 0 | 0 | 0 | refused
@@ -375,9 +375,9 @@ collagen-marker | 1 | 1 | 0 | 0 | 0 | marker
 tanned-leather-marker | 1 | 0 | 0 | 1 | 0 | marker
 iron-gallate-marker | 1 | 0 | 0 | 1 | 0 | marker
 hydroquinone | 1 | 1 | 0 | 0 | 0 | joback
-potassium-iodide | 1 | 1 | 0 | 0 | 0 | refused
+potassium-iodide | 1 | 1 | 0 | 0 | 0 | ion
 sodium-thiosulfate | 1 | 1 | 0 | 0 | 0 | refused
-silver-iodide | 1 | 0 | 1 | 0 | 0 | refused
+silver-iodide | 1 | 0 | 1 | 0 | 0 | ion
 benzoquinone | 1 | 0 | 0 | 1 | 0 | joback
 silver-thiosulfate-complex | 1 | 0 | 0 | 1 | 0 | refused
 potassium-permanganate | 1 | 1 | 0 | 0 | 0 | refused
@@ -387,7 +387,7 @@ sorbitol | 1 | 0 | 1 | 0 | 0 | joback
 sorbose | 1 | 0 | 1 | 0 | 0 | joback
 ascorbic-acid | 1 | 0 | 0 | 1 | 0 | joback
 2-aminopropanenitrile | 1 | 0 | 1 | 0 | 0 | joback
-ethanimine | 1 | 0 | 1 | 0 | 0 | ion
+ethanimine | 1 | 0 | 1 | 0 | 0 | nonvolatile
 alanine | 1 | 0 | 0 | 1 | 0 | joback
 benzyl-chloride | 1 | 1 | 0 | 0 | 0 | joback
 hydrazine | 1 | 1 | 0 | 0 | 0 | joback

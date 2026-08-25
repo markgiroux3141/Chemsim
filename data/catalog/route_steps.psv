@@ -82,7 +82,7 @@ tnt-route | 1 | mononitration | toluene + nitric-acid + sulfuric-acid | 2-nitrot
 tnt-route | 2 | dinitration | 2-nitrotoluene + nitric-acid + sulfuric-acid | 2,4-dinitrotoluene + water + sulfuric-acid | 340 K | electrophilic-aromatic-nitration
 tnt-route | 3 | trinitration | 2,4-dinitrotoluene + nitric-acid + disulfuric-acid | tnt + water + sulfuric-acid | 390 K, oleum | electrophilic-aromatic-nitration
 picric-acid-route | 1 | phenol sulfonation | phenol + sulfuric-acid | benzenesulfonic-acid + water | 370 K, protects the ring | electrophilic-aromatic-sulfonation
-picric-acid-route | 2 | nitration and desulfonation | benzenesulfonic-acid + nitric-acid | picric-acid + water + sulfuric-acid | 380 K | electrophilic-aromatic-nitration
+picric-acid-route | 2 | nitration and desulfonation | benzenesulfonic-acid + nitric-acid | picric-acid + water + sulfuric-acid | 380 K | ipso-nitrodesulfonation
 rdx-route | 1 | hexamine formation | formaldehyde + ammonia | hexamethylenetetramine + water | aqueous, ambient | condensation
 rdx-route | 2 | nitrolysis | hexamethylenetetramine + nitric-acid | rdx + formaldehyde + water | 290 K, 99% HNO3 | nitrolysis
 petn-route | 1 | pentaerythritol from aldol | acetaldehyde + formaldehyde + calcium-hydroxide | pentaerythritol + calcium-formate | aldol then crossed Cannizzaro | aldol-cannizzaro
@@ -94,7 +94,7 @@ benzene-nitration | 1 | nitronium generation | nitric-acid + sulfuric-acid | nit
 benzene-nitration | 2 | electrophilic attack | benzene + nitronium | arenium-benzene | 330 K | electrophilic-aromatic-substitution
 benzene-nitration | 3 | proton loss | arenium-benzene + bisulfate-ion | nitrobenzene + sulfuric-acid | fast | arenium-deprotonation
 aniline-route | 1 | Bechamp reduction | nitrobenzene + iron + hydrogen-chloride | aniline + iron-iii-oxide + water | boiling, iron filings | dissolving-metal-reduction
-aniline-route | 2 | catalytic hydrogenation | nitrobenzene + hydrogen + copper | aniline + water + copper | 470 K, Cu on silica | catalytic-hydrogenation
+aniline-route | 2 | catalytic hydrogenation | nitrobenzene + hydrogen + copper | aniline + water + copper | 470 K, Cu on silica | nitro-hydrogenation
 mauveine-route | 1 | oxidation of crude aniline | aniline + o-toluidine + p-toluidine + potassium-dichromate | mauveine-a + water | ambient, aqueous | oxidative-coupling
 alizarin-route | 1 | anthracene oxidation | anthracene + potassium-dichromate | anthraquinone + water | sulfuric acid, warm | arene-oxidation-to-quinone
 alizarin-route | 2 | sulfonation | anthraquinone + disulfuric-acid | anthraquinone-2-sulfonic-acid + water | oleum, 420 K | electrophilic-aromatic-sulfonation
@@ -131,11 +131,11 @@ salicylic-kolbe | 2 | carboxylation | sodium-phenoxide + carbon-dioxide | sodium
 salicylic-kolbe | 3 | acidification | sodium-salicylate + sulfuric-acid | salicylic-acid + sodium-bisulfate | ambient | proton-transfer
 aspirin-route | 1 | acetylation | salicylic-acid + acetic-anhydride + sulfuric-acid | aspirin + acetic-acid + sulfuric-acid | 350 K, catalytic acid | acylation-esterification
 aspirin-route | 2 | crystallisation | aspirin + water | aspirin | cool to 273 K, recrystallise | crystallisation
-paracetamol-route | 1 | nitrobenzene reduction to the hydroxylamine | nitrobenzene + hydrogen + platinum | phenylhydroxylamine + water + platinum | controlled hydrogenation | catalytic-hydrogenation
+paracetamol-route | 1 | nitrobenzene reduction to the hydroxylamine | nitrobenzene + hydrogen + platinum | phenylhydroxylamine + water + platinum | controlled hydrogenation | nitro-partial-hydrogenation
 paracetamol-route | 2 | Bamberger rearrangement | phenylhydroxylamine + sulfuric-acid | 4-aminophenol + sulfuric-acid | dilute acid, 340 K | bamberger-rearrangement
 paracetamol-route | 3 | acetylation | 4-aminophenol + acetic-anhydride | paracetamol + acetic-acid | aqueous, 360 K | n-acylation
 phenacetin-route | 1 | Williamson etherification | 4-nitrophenol + sodium-hydroxide + bromoethane | 4-nitrophenetole + sodium-bromide + water | reflux in ethanol | williamson-ether-synthesis
-phenacetin-route | 2 | nitro reduction | 4-nitrophenetole + hydrogen + nickel | p-phenetidine + water + nickel | catalytic hydrogenation | catalytic-hydrogenation
+phenacetin-route | 2 | nitro reduction | 4-nitrophenetole + hydrogen + nickel | p-phenetidine + water + nickel | catalytic hydrogenation | nitro-hydrogenation
 phenacetin-route | 3 | acetylation | p-phenetidine + acetic-anhydride | phenacetin + acetic-acid | 360 K | n-acylation
 salicin-hydrolysis | 1 | glycoside hydrolysis | salicin + water | salicyl-alcohol + glucose | acid or emulsin | glycoside-hydrolysis
 salicin-hydrolysis | 2 | alcohol oxidation | salicyl-alcohol + oxygen | salicylaldehyde + hydrogen-peroxide | mild oxidation | alcohol-oxidation
@@ -220,7 +220,7 @@ epoxy-route | 2 | chlorohydrination | allyl-chloride + chlorine + water | 1,3-di
 epoxy-route | 3 | ring closure | 1,3-dichloro-2-propanol + calcium-hydroxide | epichlorohydrin + calcium-chloride + water | lime, 370 K | intramolecular-williamson
 epoxy-route | 4 | resin formation | bisphenol-a + epichlorohydrin + sodium-hydroxide | diglycidyl-ether-bpa + sodium-chloride + water | 350 K | williamson-ether-synthesis
 polyurethane-route | 1 | toluene dinitration | toluene + nitric-acid + sulfuric-acid | 2,4-dinitrotoluene + water + sulfuric-acid | mixed acid, two stages | electrophilic-aromatic-nitration
-polyurethane-route | 2 | hydrogenation to the diamine | 2,4-dinitrotoluene + hydrogen + nickel | toluenediamine + water + nickel | 370 K, 30 bar | catalytic-hydrogenation
+polyurethane-route | 2 | hydrogenation to the diamine | 2,4-dinitrotoluene + hydrogen + nickel | toluenediamine + water + nickel | 370 K, 30 bar | nitro-hydrogenation
 polyurethane-route | 3 | phosgenation | toluenediamine + phosgene | toluene-diisocyanate + hydrogen-chloride | 370 K, chlorobenzene solvent | phosgenation
 polyurethane-route | 4 | foam formation | toluene-diisocyanate + polypropylene-glycol-unit + water | polyurethane-unit + carbon-dioxide | ambient, amine and tin catalysts | polyaddition
 mdi-route | 1 | aniline-formaldehyde condensation | aniline + formaldehyde + hydrogen-chloride | methylenedianiline + water + hydrogen-chloride | 370 K, HCl | condensation
@@ -245,7 +245,7 @@ celluloid-route | 1 | plasticisation | nitrocellulose-unit + camphor + ethanol |
 oxo-process | 1 | hydroformylation | propylene + carbon-monoxide + hydrogen + cobalt | butyraldehyde + cobalt | 420 K, 200 bar, HCo(CO)4 | hydroformylation
 oxo-process | 2 | branched isomer | propylene + carbon-monoxide + hydrogen + cobalt | isobutyraldehyde + cobalt | same reactor, n:iso selectivity | hydroformylation
 2-ethylhexanol-route | 1 | aldol condensation | butyraldehyde + sodium-hydroxide | 2-ethylhexenal + water + sodium-hydroxide | 400 K, dilute caustic | aldol-condensation
-2-ethylhexanol-route | 2 | hydrogenation | 2-ethylhexenal + hydrogen + nickel | 2-ethylhexanol + nickel | 420 K, 50 bar | catalytic-hydrogenation
+2-ethylhexanol-route | 2 | hydrogenation | 2-ethylhexenal + hydrogen + nickel | 2-ethylhexanol + nickel | 420 K, 50 bar | enal-hydrogenation
 dop-route | 1 | double esterification | phthalic-anhydride + 2-ethylhexanol + p-toluenesulfonic-acid | dioctyl-phthalate + water + p-toluenesulfonic-acid | 480 K, azeotropic water removal | esterification
 phthalic-anhydride-route | 1 | o-xylene air oxidation | o-xylene + oxygen + vanadium-pentoxide | phthalic-anhydride + water + vanadium-pentoxide | 650 K, V2O5, fluid bed | catalytic-air-oxidation
 phthalic-anhydride-route | 2 | naphthalene route | naphthalene + oxygen + vanadium-pentoxide | phthalic-anhydride + carbon-dioxide + water + vanadium-pentoxide | 650 K, the older feed | catalytic-air-oxidation
@@ -253,7 +253,7 @@ maleic-anhydride-route | 1 | butane oxidation | butane + oxygen + vanadium-pento
 soap-saponification | 1 | triglyceride saponification | tristearin + sodium-hydroxide | sodium-stearate + glycerol | 370 K, boiling with lye | saponification
 soap-saponification | 2 | graining out | sodium-stearate + sodium-chloride + water | sodium-stearate + water | salting out, phase split | salting-out
 biodiesel-route | 1 | transesterification | triolein + methanol + sodium-methoxide | methyl-oleate + glycerol + sodium-methoxide | 330 K, 1% NaOMe | transesterification
-hydrogenation-margarine | 1 | fat hardening | triolein + hydrogen + nickel | tristearin + nickel | 450 K, 3 bar, Ni | catalytic-hydrogenation
+hydrogenation-margarine | 1 | fat hardening | triolein + hydrogen + nickel | tristearin + nickel | 450 K, 3 bar, Ni | alkene-hydrogenation
 hydrogenation-margarine | 2 | trans isomer byproduct | oleic-acid + hydrogen + nickel | elaidic-acid + nickel | partial hydrogenation isomerises | isomerisation
 glycerol-epichlorohydrin | 1 | hydrochlorination | glycerol + hydrogen-chloride + acetic-acid | 1,3-dichloro-2-propanol + water + acetic-acid | 380 K, carboxylic acid catalyst | nucleophilic-substitution
 glycerol-epichlorohydrin | 2 | ring closure | 1,3-dichloro-2-propanol + sodium-hydroxide | epichlorohydrin + sodium-chloride + water | caustic, 340 K | intramolecular-williamson
@@ -281,7 +281,7 @@ invert-sugar | 1 | inversion | sucrose + water | glucose + fructose | acid or in
 furfural-route | 1 | pentosan hydrolysis | xylose + water | xylose | dilute H2SO4, 450 K steam | hydrolysis
 furfural-route | 2 | triple dehydration | xylose + sulfuric-acid | furfural + water + sulfuric-acid | 450 K, steam stripped | dehydration-cyclisation
 furfural-route | 3 | decarbonylation to furan | furfural + palladium | furan + carbon-monoxide + palladium | 470 K, Pd | decarbonylation
-furfural-route | 4 | hydrogenation to THF | furan + hydrogen + nickel | tetrahydrofuran + nickel | 420 K, Ni | catalytic-hydrogenation
+furfural-route | 4 | hydrogenation to THF | furan + hydrogen + nickel | tetrahydrofuran + nickel | 420 K, Ni | arene-hydrogenation
 hmf-route | 1 | fructose dehydration | fructose + sulfuric-acid | 5-hydroxymethylfurfural + water + sulfuric-acid | 420 K, DMSO or biphasic | dehydration-cyclisation
 hmf-route | 2 | rehydration byproduct | 5-hydroxymethylfurfural + water + sulfuric-acid | levulinic-acid + formic-acid + sulfuric-acid | the side reaction that limits yield | hydration-ring-opening
 vanillin-eugenol | 1 | isomerisation | eugenol + sodium-hydroxide | isoeugenol + sodium-hydroxide | 470 K, KOH | alkene-isomerisation
@@ -294,7 +294,7 @@ camphor-route | 2 | acetate addition | camphene + acetic-acid + sulfuric-acid | 
 camphor-route | 3 | saponification | isobornyl-acetate + sodium-hydroxide | borneol + sodium-acetate | reflux | ester-hydrolysis
 camphor-route | 4 | oxidation | borneol + oxygen + copper | camphor + water + copper | dehydrogenation, 570 K | alcohol-oxidation
 menthol-route | 1 | citronellal cyclisation | citronellal + zinc-chloride | isopulegol + zinc-chloride | ene reaction, 270 K, ZnBr2 | carbonyl-ene-cyclisation
-menthol-route | 2 | hydrogenation | isopulegol + hydrogen + nickel | menthol + nickel | 350 K, Raney Ni | catalytic-hydrogenation
+menthol-route | 2 | hydrogenation | isopulegol + hydrogen + nickel | menthol + nickel | 350 K, Raney Ni | alkene-hydrogenation
 indigo-natural | 1 | glycoside hydrolysis | indican + water | indoxyl + glucose | fermentation of the leaves | glycoside-hydrolysis
 indigo-natural | 2 | air oxidation | indoxyl + oxygen | indigo + water | beating the vat in air | oxidative-dimerisation
 indigo-natural | 3 | vat reduction for dyeing | indigo + sodium-dithionite + sodium-hydroxide | indigo-white + sodium-bisulfite | the soluble leuco form | reduction
@@ -308,7 +308,7 @@ photography-silver | 1 | emulsion precipitation | silver-nitrate + potassium-iod
 photography-silver | 2 | latent image formation | silver-iodide | silver + iodine | photons, silver speck nucleation | photoreduction
 photography-silver | 3 | development | silver-iodide + hydroquinone | silver + benzoquinone + hydrogen-iodide | alkaline developer, 293 K | chemical-reduction
 photography-silver | 4 | fixing | silver-iodide + sodium-thiosulfate | silver-thiosulfate-complex + sodium-iodide | hypo bath | complexation-dissolution
-vitamin-c-reichstein | 1 | glucose hydrogenation | glucose + hydrogen + nickel | sorbitol + nickel | 420 K, 100 bar | catalytic-hydrogenation
+vitamin-c-reichstein | 1 | glucose hydrogenation | glucose + hydrogen + nickel | sorbitol + nickel | 420 K, 100 bar | carbonyl-hydrogenation
 vitamin-c-reichstein | 2 | microbial oxidation | sorbitol + oxygen | sorbose + water | Acetobacter, 300 K | biological-oxidation
 vitamin-c-reichstein | 3 | acetonide protection | sorbose + acetone + sulfuric-acid | diacetone-sorbose + water + sulfuric-acid | acid, ambient | acetal-formation
 vitamin-c-reichstein | 4 | oxidation | diacetone-sorbose + potassium-permanganate | diacetone-ketogulonic-acid | alkaline, 310 K | permanganate-alcohol-oxidation
@@ -334,7 +334,7 @@ wittig-route | 2 | ylide generation | methyltriphenylphosphonium-iodide + n-buty
 wittig-route | 3 | olefination | ylide-methylenetriphenylphosphorane + benzaldehyde | styrene + triphenylphosphine-oxide | THF, warming to ambient | wittig-olefination
 diels-alder-route | 1 | cycloaddition | 1,3-butadiene + ethylene | cyclohexene | 470 K, 20 bar | diels-alder-cycloaddition
 diels-alder-route | 2 | maleic anhydride adduct | cyclopentadiene + maleic-anhydride | norbornene-dicarboxylic-anhydride | 273 K, ethyl acetate | diels-alder-cycloaddition
-diels-alder-route | 3 | hydrogenation of the adduct | norbornene-dicarboxylic-anhydride + hydrogen + palladium | norbornane + palladium | H2, Pd/C | catalytic-hydrogenation
+diels-alder-route | 3 | hydrogenation of the adduct | norbornene-dicarboxylic-anhydride + hydrogen + palladium | norbornane + palladium | H2, Pd/C | alkene-hydrogenation
 aldol-route | 1 | enolate formation | acetaldehyde + hydroxide | enolate-acetaldehyde + water | dilute base, 278 K | carbanion-generation
 aldol-route | 2 | aldol addition | enolate-acetaldehyde + acetaldehyde | 3-hydroxybutanal | cold, dilute | aldol-addition
 aldol-route | 3 | dehydration | 3-hydroxybutanal | crotonaldehyde + water | warming, acid or base | dehydration

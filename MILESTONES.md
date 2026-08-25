@@ -9,7 +9,9 @@ named in each section.
 are no recipes anywhere in this project — templates are SMARTS rewrites applied
 to whatever species are present, and `build_network` discovers reactions to a
 fixpoint. A player can already mix anything. The reason most mixtures do nothing
-is that the library is 10 templates against the catalog's 197 reaction classes.
+was that the library is 10 templates against the catalog's 197 reaction
+classes. ⚠ **As of M5 that reads 34 templates against 212 classes, 29 of them
+covered** — the shape of the problem changed but not its direction.
 
 ---
 
@@ -524,31 +526,79 @@ separate, argued decision, not a table merge.**
 
 ---
 
-## M5 — Templates to a target, chosen by unlock  *(the grind, bounded)*
+## M5 — Templates to a target, chosen by unlock  ✅ **DONE 2026-08-24**
 
-Not "full coverage". Pick **twenty playable routes** and build only what they
-need, taking the greedy set-cover order from M1: `catalytic-air-oxidation`,
-`acid-displacement`, `electrolysis`, `redox`, `disproportionation`, `pyrolysis`,
-`glycoside-hydrolysis`, `catalytic-gas-synthesis`, `ammoxidation`, `roasting`, …
+**Target was 20+ template-ready routes. Measured: 7 → 25 of 173, and 12 → 29 of
+212 reaction classes**, from **20 new templates** in `reactions/synthesis.py`.
+`examples/named_routes.py` runs 17 of them end to end in ~24 s.
 
-⚠ Several of those are **not template work at all** — `electrolysis` needs M8,
-`roasting` needs M6. Check the mechanism before scheduling the template.
+⚠ **THE GREEDY ORDER M1 HANDED FORWARD WAS MOSTLY OUTCOME LABELS, AND THAT IS
+THE MILESTONE'S REAL FINDING.** Six of the ten classes at the top of that queue
+have no template here, and only one of the six is a difficulty problem:
 
-⚠ Keep the project's rule: bound each new template's A/Ea against a stated
-observable, or declare them hand-authored and say what bounds them. The sulfur
-burner is the worked example — A pinned to the collision limit, the resulting
-soft threshold asserted rather than tuned away.
+| refused class | routes it would have unlocked | why |
+|---|---:|---|
+| `catalytic-air-oxidation` | 3 | three mechanisms — liquid-phase radical autoxidation, Mars–van Krevelen vapour oxidation, and an oxidative ring cleavage |
+| `fermentation` | 2 | a metabolic **network**, not a transformation |
+| `pyrolysis` | 2 | two of three rows read `coal-marker → coal-tar-marker` |
+| `isomerisation` | 2 | three mechanisms under one label |
+| `thermal-cracking` | 1 | a lumped product slate from a radical chain |
+| `separation` | 1 | the engine *does* fractionate — but a distillation is not a reaction class, and that route's feedstock is a marker |
 
-**Done when:** 20+ routes are template-ready end to end and each has an example
-that runs.
+**M1 built the standard; M5 is the first milestone that had to SPEND it, and
+spending it cost six routes off the top of the queue.** What replaced them is a
+long tail, and M5 barely shortened it: **63 routes one class away from 50
+distinct classes before, 56 from 43 after**. So the work was 20 templates for 18
+routes rather than 5 templates for 18, and the next 18 will cost about the same.
+
+⚠ **One class was SPLIT rather than refused, and the distinction matters.**
+`catalytic-hydrogenation` is the most-used class with no template in the corpus
+(10 steps) and its rows are five mechanisms — but unlike `fermentation`, every
+one of them *is* a clean mechanism. So the rows were re-labelled on M1's
+precedent and two of the five built. The other three are named gaps. See
+`data/catalog/README.md`.
+
+### What it also turned up, none of it planned
+
+* **A reversible template is discovered in the FORWARD direction only.** An ester
+  and water in a flask find nothing, however reversible the esterification is,
+  because `build_network` matches reactant patterns. General to every reversible
+  template in the project; **not fixed** — M5 wrote `ester_hydrolysis` from the
+  ester side instead.
+* **A neutral species with no vapour-pressure curve MIXES standard states**, and
+  it was silent. Worth **+323 kJ/mol** on the first reaction that hit it.
+  `standard_state.mixed_basis` now names it and `build_network` prints a notice.
+* **An estimator outside its domain arrived as a scipy traceback.** Joback gives
+  triolein Tb 1690 K / Tc 4020 K, hence a **negative acentric factor**, hence a
+  saturation pressure that falls with temperature. Now a refusal that names the
+  species.
+* **The audit was calling 9 neutral species "ion".** A neutral that does not boil
+  is a different claim from an ion that cannot; it has its own tier now.
+* One engine change was needed: `ReactionTemplate.run` collapses explicit
+  hydrogens, or the ammonia the Haber template makes is a *different species*
+  from the ammonia in the bottle, with the mass balance closing perfectly.
 
 ---
 
 ## M6 — Solid-phase reactions  *(13 steps, ~5 routes, already queued)*
 
 Chain 2's own green-vitriol seed (`FeSO₄ → Fe₂O₃ + SO₃`) is a dry decomposition
-with no liquid for the solid to dissolve into. Solid-basis formation data is
-curated and waiting. Unlocks `roasting`, `calcination`, `carbothermic-reduction`.
+with no liquid for the solid to dissolve into. Unlocks `roasting`, `calcination`,
+`carbothermic-reduction`.
+
+⚠ **"Solid-basis formation data is curated and waiting" was checked at the end of
+M5 and is half wrong.** `green vitriol` is curated; **Fe₂O₃ has no entry**, and of
+the five `roasting` rows only ZnS prices while ZnO does not — so zero roasting
+rows are complete. What IS complete is the **lime cycle**: `calcite` and
+`quicklime` both carry measured CRC data, so `CaCO₃ → CaO + CO₂` can be the first
+solid-phase reaction built against species that already price. **Start there**, so
+that a failure is unambiguously the engine's and not the data's.
+
+⚠ **And M5's standard applies here too, with the rows already read:** `roasting`
+IS one mechanism across all five rows (`metal sulfide + O₂ → metal oxide + SO₂`)
+except `mercury-from-cinnabar`, which gives the metal because HgO decomposes at
+that temperature. **`calcination` is TWO mechanisms** — decarbonation in two rows,
+dehydration in the third.
 
 **Also here:** the lead chamber's missing fourth step (nitrosylsulfuric acid,
 chamber crystals) — a real side reaction in a water-starved chamber, and exactly

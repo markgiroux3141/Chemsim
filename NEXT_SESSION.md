@@ -384,6 +384,19 @@ fails on unrelated changes and says nothing when it passes.**
 | multistep prep, crust on, two washes | 84.0% yield, 99.6% purity, 100.0000% closure |
 | ... the CRUDE cake, as filtered | 97.5% purity at 86.0% yield |
 | ... crystals left stuck to the pot | 0.0147 mol = 1.79 g = 7.9% of the crop |
+| **M5 -- routes template-ready** | **25 / 173** (was 7; re-measured at the previous commit, not read off the stale report) |
+| ... reaction classes covered | **29 / 212** (was 12 / 206; 6 classes GREW by the re-label) |
+| ... templates in the project | **34** (8 library + 20 synthesis + 6 dissociation) |
+| ... `examples/named_routes.py` | **17 routes end to end in 24 s** |
+| Cannizzaro, 1 mol benzaldehyde | benzyl alcohol **0.4666** = benzoate **0.4666** exactly (two aldehyde slots) |
+| p,p'-DDT from 1 mol chloral | **0.1667 mol = one sixth**; six isomers share the product |
+| Haber-Bosch, 5 N2 + 15 H2 at 700 K | **7.63 mol NH3 = 76.3% of theoretical**, and LESS at 800 K |
+| ethylene hydration, same template | **2.9% per pass gas / 99.7% liquid** at 570 K -- the standard state is the whole difference |
+| toluene nitration, generations=3 | **18 species, 29 reactions**; 2,4,6-TNT is 15.3% of the toluene |
+| sucrose inversion, 360 K / 1 h | **99.3%**, and it gives glucose AND fructose from one template |
+| ⚠ mixed-standard-state reaction shift | **+323 kJ/mol** on `methyl oleate + glycerol -> monoolein + methanol`; now a NOTICE |
+| ⚠ Joback vs ATCT on HOCl | **-211.3 vs -76.8 kJ/mol**, a 134.5 kJ/mol error that would have been silent |
+| ⚠ Joback on triolein | Tb **1690 K**, Tc **4020 K**, omega **-0.64** -> refused by name, not by scipy |
 
 ⚠ **The prep's numbers have NOT been re-measured for three sessions.** The suite
 pins them and `tests/test_prep_side_products.py` passes. Re-run
@@ -414,7 +427,27 @@ this session (its docstring says why, and why it must not be "fixed" to match).
 - **A stiff reactant driven to EXACTLY zero still overshoots**, at the 1e-4
   level, reported and converging. Belongs with item 5 (dissociation as an
   equilibrium) and now has a convergence test to measure a fix against.
-- **SOLID-PHASE REACTIONS**, for chain 2's green-vitriol seed.
+- **SOLID-PHASE REACTIONS**, for chain 2's green-vitriol seed. ⚠ M5 added a
+  second reason to want them: five of its templates are HETEROGENEOUS and are
+  written homogeneous with the catalyst folded into the barrier, so a flask with
+  no iron in it makes ammonia and "you need a catalyst" cannot be a gate.
+- ⚠⚠ **A REVERSIBLE TEMPLATE IS DISCOVERED IN THE FORWARD DIRECTION ONLY** --
+  found by M5, general to every reversible template in the project, and NOT
+  fixed. `build_network` matches REACTANT patterns, so an ester and water in a
+  flask are inert however reversible the esterification is:
+  `build_network(["CCOC(C)=O", "O"], [esterification()])` gives **0 reactions**
+  while `["CC(=O)O", "CCO"]` gives 2. The workaround is to write the template
+  from the side a chemist starts on; the fix is expanding on reverse patterns
+  too, which roughly doubles every build's match cost. Measured and pinned by
+  `tests/test_named_routes.py`.
+- **`halogen_disproportionation` is correct and cannot run.** HOCl has no
+  measured boiling point in any source, the same standing refusal carbonic acid
+  carries, so `[O-]Cl` has no ion entry. ⚠ Curating it is a trap: ATCT has the
+  formation half but nothing has the physical half, and the reaction is
+  LIQUID-phase, where the standard-state shift decides the answer.
+- **Three named hydrogenation gaps** from M5's re-label of
+  `catalytic-hydrogenation`: `nitro-partial-hydrogenation` (the whole difficulty
+  of the paracetamol route), `arene-hydrogenation`, `carbonyl-hydrogenation`.
 - ✔ ~~**NO ION CAN PRECIPITATE.**~~ CLOSED 2026-08-23, HANDOFF 79. A metathesis
   drops AgCl. ⚠ What is LEFT of it, and each is stated rather than hidden:
   * **The solid block is an ION INVENTORY, not a set of distinct crystals.** Two

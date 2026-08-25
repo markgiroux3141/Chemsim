@@ -237,6 +237,18 @@ class ReactionTemplate:
         Returns a de-duplicated list of product tuples. RDKit can yield several
         product sets for one input (symmetry / multiple matches); we sanitize
         each product and collapse duplicates by canonical SMILES.
+
+        ⚠ **EXPLICIT HYDROGENS ARE COLLAPSED, AND WITHOUT THAT A TEMPLATE THAT
+        MOVES AN H ATOM SILENTLY FORKS THE SPECIES LIST.** A rewrite that writes
+        hydrogen as an ATOM -- which anything consuming H2 must, because ``[H][H]``
+        has no heavy atom to hang an implicit count on -- hands back a product
+        whose hydrogens are still separate atoms, and ``Molecule`` canonicalises
+        that as ``[H]N([H])[H]`` rather than ``N``. Ammonia made by the Haber
+        template would then be a DIFFERENT species from ammonia charged into the
+        flask: two state-vector entries, no reaction connecting them, and a mass
+        balance that closes perfectly while the answer is wrong. ``RemoveHs``
+        collapses them onto their heavy atom, and it correctly leaves H2 itself
+        alone -- neither of its atoms has a heavy neighbour to fold into.
         """
         rd_reactants = tuple(m._mol for m in reactants)
         outcomes = self._rxn.RunReactants(rd_reactants)
@@ -249,6 +261,7 @@ class ReactionTemplate:
             for p in product_set:
                 try:
                     Chem.SanitizeMol(p)
+                    p = Chem.RemoveHs(p)
                 except (Chem.AtomValenceException, Chem.KekulizeException, ValueError):
                     ok = False
                     break

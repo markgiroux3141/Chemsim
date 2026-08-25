@@ -79,6 +79,16 @@ _PAIRS: tuple[AcidPair, ...] = (
     # --- mineral acids (strong: negative pKa) -----------------------------
     AcidPair("Cl", "[Cl-]", -6.3, "hydrochloric acid"),
     AcidPair("Br", "[Br-]", -8.7, "hydrobromic acid"),
+    # ⚠ ADDED BY M5 AND THE REASON IS A ROUTE, NOT TIDINESS. The Williamson ether
+    # synthesis makes iodide, and without this pair ``[I-]`` was REFUSED -- so a
+    # network could form methyl phenyl ether and then not be integrable, which is
+    # the worst of the three outcomes. HI's own formation data is measured (NIST
+    # CODATA, Hf +26.50 / Gf +1.70 kJ/mol), so only the pKa was needed, and -9.3
+    # is the member of the SAME halide series this table already carries: HCl
+    # -6.3, HBr -8.7, HI -9.3. Taking -10 from a different compilation would have
+    # mixed two sources inside one trend, which is the error the curation rules
+    # exist to prevent.
+    AcidPair("I", "[I-]", -9.3, "hydroiodic acid"),
     AcidPair("O[N+](=O)[O-]", "[O-][N+](=O)[O-]", -1.4, "nitric acid"),
     AcidPair("OS(=O)(=O)O", "[O-]S(=O)(=O)O", -3.0, "sulfuric acid, 1st"),
     AcidPair("[O-]S(=O)(=O)O", "[O-]S(=O)(=O)[O-]", 1.99, "sulfuric acid, 2nd"),

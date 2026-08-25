@@ -3607,6 +3607,181 @@ the measurements that justify them.
     `validation/rate_ceiling.py` (NEW); `tests/test_energy_balance.py` (NEW);
     `validation/adiabatic_tail.py` (now the verification, with the step budget).
 
+83. ✔✔ **M5 IS DONE AT 25 TEMPLATE-READY ROUTES OF 173 (WAS 7), FROM TWENTY NEW
+    TEMPLATES — AND THE MILESTONE'S REAL FINDING IS THAT THE WORK QUEUE M1 LEFT
+    BEHIND WAS MOSTLY OUTCOME LABELS. SIX OF THE TOP TEN CLASSES WERE REFUSED,
+    AND ONLY ONE OF THE SIX FOR DIFFICULTY.**
+
+    Measured against the previous commit, regenerated in a worktree rather than
+    read off the committed report (which predated M4 and was stale):
+
+    | | before | after |
+    |---|---:|---:|
+    | routes template-ready | 7 / 173 | **25 / 173** |
+    | reaction classes covered | 12 / 206 | **29 / 212** |
+    | templates in the project | 14 | **34** |
+    | species refused | 472 | 466 |
+    | UNIFAC-decomposable | 830 | 836 |
+
+    `examples/named_routes.py` runs **17 routes end to end in 24 s**.
+    `tests/test_named_routes.py` is 38 tests.
+
+    ## ⚠⚠ M1 BUILT THE STANDARD; THIS IS THE FIRST MILESTONE THAT HAD TO SPEND IT
+
+    M1 settled that *a reaction class is a MECHANISM claim, not an outcome*, and
+    handed forward a greedy set-cover order. **That order does not survive its own
+    standard.** Refused, with what each would have paid:
+
+    | refused | routes | why |
+    |---|---:|---|
+    | `catalytic-air-oxidation` | 3 | three mechanisms: liquid-phase radical autoxidation (Amoco), Mars–van Krevelen over V2O5, and an oxidative ring cleavage losing 2 C as CO2 |
+    | `fermentation` | 2 | `glucose -> acetone + butanol + ethanol + CO2 + H2` **by Clostridium**. A metabolic network. |
+    | `pyrolysis` | 2 | two of three rows are `coal-marker -> coal-tar-marker` |
+    | `isomerisation` | 2 | cis/trans on nickel, aldose-ketose, and Wöhler's cyanate rearrangement |
+    | `thermal-cracking` | 1 | a lumped product slate from a radical chain |
+    | `separation` | 1 | ⚠ refused in the OTHER direction — the engine genuinely fractionates (M2's plate column), but a distillation is not a reaction class and that route's feedstock is a marker. Crediting it moves the headline by one and makes zero routes runnable. |
+
+    **What replaced them is a long tail, and M5 barely shortened it.** Measured
+    before and after: **63 routes one class away from 50 distinct classes ->
+    56 from 43.** So M5 was 20 templates for 18 routes, not 5 for 18, and the next
+    18 will cost about the same. There is no lever, and that was M1's own
+    conclusion arriving in the work.
+
+    ⚠ **ONE CLASS WAS SPLIT RATHER THAN REFUSED, AND THE DISTINCTION IS THE WHOLE
+    JUDGEMENT.** `catalytic-hydrogenation` is the most-used class with no template
+    in the corpus (10 steps) and its rows are five mechanisms — but unlike
+    `fermentation`, **every one of them IS a clean mechanism**. So the rows were
+    re-labelled on M1's precedent (11 rows, with `picric-acid-route`'s ipso
+    nitration) and two of the five built: `nitro-hydrogenation` and
+    `alkene-hydrogenation`. The other three are named gaps in
+    `data/catalog/README.md`.
+
+    ## ⚠⚠ FOUR THINGS FOUND ON THE WAY, THREE OF THEM SILENT BEFORE
+
+    **1. A REVERSIBLE TEMPLATE IS DISCOVERED IN THE FORWARD DIRECTION ONLY.**
+    Measured, and it is not visible from reading either layer:
+
+        build_network(["CCOC(C)=O", "O"], [esterification()])  ->  0 reactions
+        build_network(["CC(=O)O", "CCO"], [esterification()])  ->  2 reactions
+
+    `_expand_once` matches the template's REACTANT patterns, and an ester is
+    neither an acid nor an alcohol. So **an ester and water in a flask are inert**,
+    however reversible the esterification is; the derived reverse exists only as
+    the mirror of a forward reaction the expansion already found. ⚠ This is
+    GENERAL to every reversible template in the project and it is **NOT FIXED** —
+    fixing it means expanding on reverse patterns too, roughly doubling every
+    build's match cost. M5 wrote `ester_hydrolysis` from the ester side instead,
+    and it is the reason `ester-hydrolysis` needed two templates rather than being
+    credited to the esterification that "already covers it".
+
+    **2. A NEUTRAL SPECIES WITH NO VAPOUR-PRESSURE CURVE MIXES STANDARD STATES,
+    AND IT WAS WORTH +323 kJ/mol.** `standard_state.reaction_shift` skips a
+    species for two reasons and its docstring justified only one. For a derived
+    ION, skipping is correct — the value was anchored on the already-shifted
+    conjugate acid, so the conventions agree. **That argument says nothing about a
+    NEUTRAL whose Psat is under `PSAT_FLOOR_BAR`.** On the biodiesel network:
+    monoolein stays on the ideal-gas basis while methyl oleate, glycerol and
+    methanol move to the liquid one, and `methyl oleate + glycerol -> monoolein +
+    methanol` reports **dH = +330 kJ/mol** for a reaction that is thermoneutral to
+    a few kJ. Nothing was wrong except that two of four species were priced in
+    different currencies. `standard_state.mixed_basis` now names them and
+    `build_network` prints a NOTICE per reaction.
+
+    **3. AN ESTIMATOR OUTSIDE ITS DOMAIN ARRIVED AS A SCIPY TRACEBACK.** Joback
+    gives triolein **Tb = 1690 K and Tc = 4020 K**, from which `acentric_factor`
+    derives **omega = -0.64**. A negative acentric factor belongs to a quantum
+    fluid (H2 -0.22, He -0.39); for anything else it INVERTS the Lee-Kesler slope,
+    so the sampled saturation pressure falls as the sample heats, the Antoine fit
+    wants a negative B, and scipy says *"Initial guess is outside of provided
+    bounds"* — naming neither triolein nor Joback. Now
+    `volatility._refuse_inverted_slope` refuses with the species, the two
+    temperatures and the acentric factor in the message. **Same shape as the class
+    bug `element_data` was written for.**
+
+    **4. THE AUDIT WAS CALLING NINE NEUTRAL SPECIES "ion".**
+    `_volatility_tier` mapped `kind == "nonvolatile"` to the `ion` tier, which the
+    report describes as *"correct, and not an estimate at all"*. Phosphoric acid,
+    guanidine, arginine, creatine, cyanic acid and two triglycerides are neutral,
+    and "does not enter the vapour" is a different claim for them than for an ion —
+    it is also a MISSING vapour-pressure curve, which is exactly what finding 2 is
+    about. `nonvolatile` is now its own tier, ranked below `ion`.
+
+    ## THE ONE ENGINE CHANGE THE TEMPLATES NEEDED
+
+    `ReactionTemplate.run` now calls `Chem.RemoveHs`. Any template consuming H2
+    must write hydrogen as an ATOM (`[H][H]` has no heavy atom to hang an implicit
+    count on), and without the collapse the ammonia the Haber template makes
+    canonicalises as `[H]N([H])[H]` — **a different state-vector entry from the
+    `N` a player charges, with no reaction connecting them and every atom still
+    accounted for.** ⚠ `RemoveHs` correctly leaves H2 itself alone; neither of its
+    atoms has a heavy neighbour to fold into. Both halves are pinned by tests.
+
+    ## FOUR RESULTS THE NETWORK PRODUCES RATHER THAN IS TOLD
+
+    * **Cannizzaro** gives benzyl alcohol and benzoate EQUAL and each ~47% of the
+      aldehyde, not ~94%. Two aldehyde slots, so two molecules per turn. Nobody
+      wrote the 2:1.
+    * **DDT is one sixth of the chloral charged.** `[cH]` matches chlorobenzene's
+      ortho, meta and para independently, so six isomers form and share it. The
+      historical insecticide was a mixture, and this is why — a pattern, not a
+      purity model.
+    * **Haber-Bosch stops at 76% of theoretical at 700 K** and makes LESS at 800 K.
+      No maximum temperature is declared anywhere; detailed balance derived it.
+    * **Ethylene hydration converts 2.9% per pass in the vapour** (a real plant
+      gets ~5%) and **99.7% in the liquid**, same template, same charge, same
+      temperature. The standard state is the entire difference — which is why
+      `alkene_hydration` takes a `phase` argument instead of declaring `"any"`:
+      `"any"` would put both channels in one network and the liquid one would run
+      the flask to completion off a trace of condensate, destroying the number
+      that is the whole point of the process.
+
+    ## ⚠ WHAT M5 LEFT OPEN, REPORTED RATHER THAN FIXED
+
+    * **`halogen_disproportionation` is written, correct, and CANNOT RUN.** HOCl
+      has no measured boiling point in any source — the same standing refusal
+      `electrolyte.py` records for carbonic acid — so `[O-]Cl` has no ion entry
+      and `build_network` refuses by name. ⚠ **And curating it is a trap worth
+      recording:** ATCT gives HOCl `Hf = -76.8 kJ/mol` where **Joback gives
+      -211.3, a 134.5 kJ/mol error** that would have been silent. Adding the
+      formation half without a physical half would leave a species whose
+      equilibrium is measured and whose standard-state shift is invented, in a
+      LIQUID-phase reaction where the shift decides the answer. A test pins the
+      refusal so the day someone adds the pair, they are told the route opened.
+    * **`nitro-partial-hydrogenation`, `arene-hydrogenation` and
+      `carbonyl-hydrogenation`** are named gaps from the split above. The first is
+      the whole difficulty of the paracetamol route.
+    * **The catalyst is never a species** for `alkene_hydrogenation`,
+      `nitro_hydrogenation`, `ammonia_synthesis` or either methanol template. All
+      are heterogeneous and all are written homogeneous with an apparent barrier —
+      the licence `sulfur_dioxide_oxidation` already takes. A flask with no iron in
+      it makes ammonia, and "you need a catalyst" cannot be a gate until M6 gives
+      a solid-phase reactant. Four routes read as species-short for exactly this
+      reason (iron, copper, nickel, mercury(II)) and are runnable in practice.
+    * **`alkene_hydration` and `library.alkene_dehydration` are the same
+      interconversion with different barriers**, one reversible and one not. Both
+      readings are defensible at their own end of the temperature range (80 vs 160
+      kJ/mol), so a network holding both has two channels between one pair of
+      species and its steady state is not its equilibrium. The bound is that the
+      barriers differ by 80 kJ/mol, so one channel is ~1e7x the other at any given
+      temperature. The bundles keep them apart; nothing enforces it.
+    * **`diels-alder-route` step 3 is unbalanced in the catalog** — it loses a
+      whole anhydride. Labelled, not corrected: inventing the missing products
+      would be authoring chemistry inside an audit corpus.
+    * **Nitration feeds itself.** A nitroarene still has aromatic C-H, so toluene ->
+      mono -> di -> tri is not scripted — and neither is anything stopping it. 18
+      species / 29 reactions at `generations=3`. Cap the expansion.
+
+    **Files:** `src/chemsim/reactions/synthesis.py` (NEW, 20 templates);
+    `src/chemsim/reactions/template.py` (RemoveHs);
+    `src/chemsim/properties/volatility.py` (`_refuse_inverted_slope`);
+    `src/chemsim/properties/standard_state.py` (`mixed_basis`);
+    `src/chemsim/network/builder.py` (the mixed-basis NOTICE);
+    `src/chemsim/properties/electrolyte.py` (hydroiodic acid);
+    `validation/catalog_coverage.py` (17 classes, the `nonvolatile` tier);
+    `validation/rate_ceiling.py` (four M5 networks);
+    `data/catalog/route_steps.psv` (11 re-labelled rows);
+    `examples/named_routes.py` (NEW); `tests/test_named_routes.py` (NEW).
+
 IMMEDIATE NEXT TASK: see **`MILESTONES.md`**, which is the plan of record as of
 2026-08-22 and supersedes the ordering below. It is derived from `data/catalog`
 (1,583 compounds, 173 routes) plus four measured capability probes, and it

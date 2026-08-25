@@ -27,6 +27,7 @@ import numpy as np
 
 from chemsim.matter import Molecule
 from chemsim.properties import ThermochemistryProvider, VolatilityProvider
+from chemsim.properties import standard_state
 from chemsim.reactions import (
     ConcreteReaction,
     ReactionTemplate,
@@ -419,6 +420,24 @@ def _concrete_in_phase(
     p_smiles = tuple(m.smiles for m in products)
     fwd = ConcreteReaction(tmpl.name, r_smiles, p_smiles, tmpl.A, tmpl.Ea, phase,
                            orders=tmpl.orders)
+
+    # ⚠ A LIQUID-PHASE REACTION WHOSE SPECIES ARE NOT ALL ON THE SAME BASIS.
+    # ``standard_state.mixed_basis`` explains the failure and what measured it;
+    # the notice is here rather than there because this is where a reaction
+    # exists as a whole. Silent before M5, and worth 323 kJ/mol on the first
+    # network that hit it.
+    if volatility is not None and phase != "gas":
+        mixed = standard_state.mixed_basis(r_smiles, p_smiles, volatility, T_ref)
+        if mixed:
+            notices[f"{fwd.key()}|basis"] = (
+                f"[build_network] NOTICE: '{' + '.join(r_smiles)} -> "
+                f"{' + '.join(p_smiles)}' ({phase} phase) MIXES STANDARD STATES. "
+                f"These species have no liquid standard-state shift while their "
+                f"partners do: {', '.join(mixed)}. Their formation data stays on "
+                f"the ideal-gas basis, so the reaction's dH and dG carry the "
+                f"difference between two conventions on top of the chemistry. "
+                f"Do not read this reaction's equilibrium constant."
+            )
 
     # Evans-Polanyi: this member's barrier follows from its own reaction enthalpy,
     # so one template gives different substrates different rates. With alpha = 0

@@ -44,6 +44,7 @@ from chemsim.properties import (                                # noqa: E402
     dissociation_templates,
     electrolyte_provider,
 )
+from chemsim.reactions import synthesis as S                    # noqa: E402
 from chemsim.reactions.thermo import COLLISION_LIMIT            # noqa: E402
 from chemsim.recipes import BENZOIC_ACID_PREP as PREP           # noqa: E402
 
@@ -85,6 +86,28 @@ def networks() -> dict:
     out["aqueous acids"] = build_network(
         ["O", "CC(=O)O", "c1ccccc1C(=O)O", "Cl", "OS(=O)(=O)O", "C#N", "CCO"],
         list(dissociation_templates()), thermo=THERMO, max_species=80,
+    )
+    # M5. ⚠ EVERY REVERSIBLE TEMPLATE THE MILESTONE ADDED IS HERE, because that is
+    # the standing instruction M12 left it: check the reverse the template
+    # IMPLIES, not only the forward that was typed. Eight of M5's twenty templates
+    # are reversible and all eight appear below.
+    out["synthesis gas"] = build_network(
+        ["N#N", "[H][H]", "[C-]#[O+]", "O=C=O"],
+        S.synthesis_gas_chemistry(), thermo=THERMO, max_species=40,
+    )
+    out["Kolbe-Schmitt"] = build_network(
+        ["Oc1ccccc1", "O=C=O", "O"],
+        [S.kolbe_schmitt()] + list(dissociation_templates()),
+        thermo=THERMO, max_species=40,
+    )
+    out["ester hydrolysis"] = build_network(
+        ["CCOC(C)=O", "O", "CC(=O)Oc1ccccc1C(=O)O"],
+        [S.ester_hydrolysis(), S.transesterification()],
+        thermo=THERMO, max_species=60,
+    )
+    out["alkene hydration"] = build_network(
+        ["C=C", "CC=C", "O"], [S.alkene_hydration()],
+        thermo=THERMO, max_species=40,
     )
     return out
 

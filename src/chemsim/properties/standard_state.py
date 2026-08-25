@@ -198,3 +198,47 @@ def reaction_shift(
             dH += sign * s.dHf
             dG += sign * s.dGf
     return dH, dG, tuple(dict.fromkeys(skipped))
+
+
+def mixed_basis(
+    reactants: tuple[str, ...],
+    products: tuple[str, ...],
+    volatility: VolatilityProvider,
+    T: float = T_REF,
+) -> tuple[str, ...]:
+    """NEUTRAL species left on the gas basis while their partners were shifted.
+
+    ⚠ **``reaction_shift`` HAS TWO REASONS TO SKIP A SPECIES AND ITS DOCSTRING
+    JUSTIFIES ONLY ONE OF THEM.** For a derived ion, skipping is correct: the ion's
+    value was anchored on the already-shifted conjugate acid, so the two
+    conventions agree and adding a second shift would double-count. That argument
+    says nothing at all about the OTHER exit -- a neutral species whose saturation
+    pressure falls under ``PSAT_FLOOR_BAR``, or which has no volatility model
+    because it decomposes before it boils. Skipping one of those does not reconcile
+    two conventions, it MIXES them, and the result is a reaction enthalpy that is
+    part chemistry and part unit conversion.
+
+    Measured on the biodiesel network M5 built: monoolein's estimated vapour
+    pressure is under the floor, so it stays on the ideal-gas basis while methyl
+    oleate, glycerol and methanol are all moved to the liquid one. The reaction
+    shift for ``methyl oleate + glycerol -> monoolein + methanol`` then comes out
+    **+323 kJ/mol**, and ``build_network`` duly reports a transesterification with
+    a 330 kJ/mol endothermicity -- for a reaction that is thermoneutral to within
+    a few kJ. Nothing in the chain was wrong except that two of its four species
+    were priced in different currencies.
+
+    This function names them so a caller can say so. It deliberately does NOT
+    refuse: a network where every species is skipped is uniformly on the gas basis
+    and perfectly consistent, which is why the test is "skipped AND something else
+    was shifted" rather than "skipped".
+    """
+    skipped_neutral: list[str] = []
+    shifted = False
+    for smi in tuple(reactants) + tuple(products):
+        if shift(smi, volatility, T).applied:
+            shifted = True
+        elif Molecule.from_smiles(smi).charge == 0:
+            skipped_neutral.append(smi)
+    if not shifted:
+        return ()
+    return tuple(dict.fromkeys(skipped_neutral))
