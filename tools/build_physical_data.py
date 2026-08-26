@@ -136,6 +136,55 @@ CANDIDATES: list[tuple[str, str]] = [
     ("saccharin", "O=C1NS(=O)(=O)c2ccccc21"),
     ("metformin", "CN(C)C(=N)N=C(N)N"),
     ("glyphosate", "OC(=O)CNCP(=O)(O)O"),
+    # --- S11: the oxo process's own three species -------------------------
+    # ⚠⚠ ADDED BECAUSE A TEMPLATE NEEDED THEM AND NOT BECAUSE A LIST WAS BEING
+    # TIDIED, which is S8's lesson applied the right way round: a species job
+    # FOLLOWS the template it enables. ``hydroformylation_linear`` and its twin
+    # made propene a reagent this project actually runs, and propene had no
+    # measured record here -- so Joback was answering, at **Tb 264.92 K against
+    # a measured 225.53 and Tc 427.64 against 364.9**, both about 17% high.
+    #
+    # ⚠ THE Tc ERROR IS NOT COSMETIC. An oxo reactor sits at 420 K, which is 55 K
+    # ABOVE propene's real critical temperature and 8 K BELOW Joback's -- so the
+    # engine condensed **0.91 mol of "liquid propene" into a supercritical
+    # flask** and the reactor read 167 bar where it was charged to 200. A
+    # boiling point is not a decoration in an engine with a still in it.
+    #
+    # ⚠ AND THE GENERAL CASE IS MUCH LARGER AND IS **NOT** FIXED HERE: 310
+    # catalog species have an experimental Tb in ``chemicals`` and are absent
+    # from this list, 229 of them price one today, and the mean |error| against
+    # the measurement is 5.81% with a worst of 84.89%. See S11 in MILESTONES.md;
+    # adding them all moves every example's volatility and owes a tolerance
+    # audit, which this addition does not (nothing but the oxo route holds any
+    # of these three).
+    ("propene", "CC=C"),
+    # ⚠⚠ AND ETHYLENE, FOR `wacker_oxidation`. Joback gave it **Tb 234.56 K
+    # against a measured 169.38** (+38.5%) and a Tc to match; S10 had already
+    # flagged the same species from the other end, as an ~1574 J/(mol K) liquid
+    # heat capacity at its melting point.
+    #
+    # ⚠⚠ **AND THE PREDICTION THIS ENTRY WAS MADE ON TURNED OUT TO BE WRONG,
+    # WHICH IS WHY IT IS WRITTEN DOWN.** The brief was: a Wacker flask charged
+    # with 0.20 mol of ethylene over 20 mol of water DISSOLVES 0.166 of it (83%),
+    # the whole of the Wacker process is that a gas must dissolve before it meets
+    # the copper, so a measured boiling point should move it. **It does not.**
+    # Measured after: 0.16596 against 0.16588 -- four significant figures
+    # unchanged -- because ethylene's vapour pressure comes from
+    # `volatility._CURATED_ANTOINE` and **Tb does not feed that curve at all**.
+    # What the entry actually corrects is Tc, Tm and Hvap.
+    #
+    # ⚠ The 83% is real and is a SEPARATE fault: a curated Antoine evaluated at
+    # 400 K, which is 118 K above ethylene's critical temperature, gives
+    # Psat = 219.9 bar and a Raoult-law dissolution where a Henry's-law solute is
+    # meant. See S11 in MILESTONES.md; nothing here fixes it.
+    #
+    # ⚠ Unlike the three above this one is NOT free: `competing_pathways` and
+    # `named_routes` both hold ethylene. Measured cost, S11: the worst moved
+    # number in `competing_pathways` is 0.20380 -> 0.20485 (0.5%) and
+    # `named_routes` reports ethanol-hydration at 2.7% instead of 2.9%.
+    ("ethylene", "C=C"),
+    ("butanal", "CCCC=O"),
+    ("2-methylpropanal", "CC(C)C=O"),
     # --- misc bench reagents ----------------------------------------------
     ("formic acid", "O=CO"),
     ("methyl formate", "COC=O"),

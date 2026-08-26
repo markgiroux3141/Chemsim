@@ -177,6 +177,35 @@ def networks() -> dict:
         ["Cl", "O=O"], S.chlorine_recovery_chemistry(),
         thermo=THERMO, max_species=40,
     )
+    # S11, on the same standing instruction -- and this pair is the one row in
+    # the file where the crossing temperature IS a physical statement.
+    #
+    # ⚠⚠ THE OXO REVERSE IS GENUINELY FIRST ORDER. Every other reverse flagged
+    # here is high-order, so its pre-exponential is in L^n/(mol^n s) and
+    # comparing it to a collision limit is M8's unit error; the column is only
+    # good for RANKING. ``hydroformylation_linear_rev`` is
+    # ``butanal -> propene + CO + H2``, ONE molecule falling apart, so its
+    # ``A`` is in 1/s and ``UNIMOLECULAR_LIMIT`` is the right yardstick for it.
+    #
+    # ⚠ AND IT IS **2.0e26 AND 1.2e27 1/s**, thirteen decades over. That is not
+    # a defect and it is the third appearance of a thing this project has now
+    # named twice: an ENTROPY OF GAS-MAKING IN A PRE-EXPONENTIAL. One mole
+    # becomes three, dS_rev = +251.6 J/(mol K), and ``exp(dS/R)`` is 1.4e13 all
+    # by itself -- exactly the shape of ``solid_state.RECOMBINATION_A``'s
+    # crossing at 3710 K. Detailed balance is not free to make it smaller
+    # without breaking ``k_f/k_r = K``.
+    #
+    # ⚠ IT CROSSES AT 969.4 K (branched 966.8), which is 550 K above the
+    # reactor and well past where an aldehyde survives. ⚠ The brief for this
+    # panel predicted ~824 K off a 1e13 ceiling and the audit's own
+    # ``UNIMOLECULAR_LIMIT`` put it 145 K higher; the measured number stands.
+    # Reported on the standing policy: a cap scales
+    # BOTH pre-exponentials by one factor, so it moves a CLOCK and never the
+    # equilibrium. ``validation/hydroformylation.py`` runs the pair to 600 K.
+    out["oxo process"] = build_network(
+        ["C=CC", "[C-]#[O+]", "[H][H]"], S.oxo_chemistry(),
+        thermo=THERMO, max_species=40,
+    )
     return out
 
 

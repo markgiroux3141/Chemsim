@@ -305,20 +305,52 @@ def _resolves(provider, smi) -> bool:
     return True
 
 
-def test_the_measured_table_never_overrides_a_working_joback_record():
-    """Why the invariants table does not move.
+# ⚠⚠ S11 TURNED THIS FROM "NEVER" INTO "ONLY WHERE IT IS DECLARED", AND THE
+# GUARD IS STRONGER FOR IT. The rule below was a SCOPING decision, not a physics
+# claim: the milestone that wrote it was closing a COVERAGE gap and deliberately
+# did not relitigate accuracy on species that already worked. Its own reason --
+# "the moment it stops being true the azeotrope, the boiling points and the crop
+# sizes all move at once" -- is a call for MEASUREMENT rather than a reason never
+# to do it.
+#
+# S11 did relitigate four, because a template needed them and Joback was
+# answering with numbers that were not close:
+#
+#     propene            Tb 264.92 -> 225.53   Tc 427.64 -> 364.21   (+17%)
+#     ethylene           Tb 234.56 -> 169.38   (+38.5%)
+#     butanal            Tb 339.78 -> 347.95
+#     2-methylpropanal   Tb 339.34 -> 337.25
+#
+# ⚠ AND THE COST WAS MEASURED, EXAMPLE BY EXAMPLE, BEFORE THE ENTRY WAS KEPT.
+# The first, third and fourth appear in NO example and move nothing. Ethylene
+# appears in two: `competing_pathways`'s worst moved number is 0.20380 ->
+# 0.20485 (0.5%) and `named_routes` reports ethanol-hydration at 2.7% instead of
+# 2.9%. Both are in the direction a less soluble alkene should push them.
+#
+# ⚠ So the guard now names WHICH records were overridden and still refuses any
+# it does not name. An addition that quietly changes a fifth one fails here, and
+# the message says to come and write down what it cost.
+DELIBERATE_OVERRIDES = {
+    "C=CC": "propene, S11 -- oxo feedstock; Joback Tb and Tc both ~17% high",
+    "C=C": "ethylene, S11 -- Wacker feedstock; Joback Tb 38.5% high",
+    "CCCC=O": "butanal, S11 -- the oxo product",
+    "CC(C)C=O": "2-methylpropanal, S11 -- the branched oxo product",
+}
 
-    Every species in ``MEASURED_PHYSICAL`` is one Joback cannot fully price, so
-    no record that already resolved has had its Tb/Tc/Pc replaced. That is a
-    deliberate scoping choice -- this work closes a COVERAGE gap and does not
-    relitigate accuracy on species that already work -- and it is asserted rather
-    than assumed, because the moment it stops being true the azeotrope, the
-    boiling points and the crop sizes all move at once.
+
+def test_the_measured_table_overrides_a_working_joback_record_only_where_declared():
+    """Why the invariants table does not move by ACCIDENT.
+
+    Every species in ``MEASURED_PHYSICAL`` either is one Joback cannot fully
+    price, or is named in ``DELIBERATE_OVERRIDES`` above with what the override
+    cost. Nothing else may replace a record that already resolved.
     """
     from chemsim.properties.joback import JobackError
     from chemsim.properties.joback import estimate as joback_estimate
 
     for smi in MEASURED_PHYSICAL:
+        if smi in DELIBERATE_OVERRIDES:
+            continue
         try:
             j = joback_estimate(Molecule.from_smiles(smi))
         except JobackError:
@@ -326,5 +358,15 @@ def test_the_measured_table_never_overrides_a_working_joback_record():
         assert None in (j.Tb, j.Tc, j.Pc, j.Vc, j.Hf, j.Gf), (
             f"{smi} resolves fully through Joback, so adding a measured Tb for "
             "it silently changes an existing record -- regenerate "
-            "physical_data.py and read the builder's report"
+            "physical_data.py, MEASURE what it moved in the examples, and add "
+            "it to DELIBERATE_OVERRIDES with the cost written down"
+        )
+
+
+def test_every_declared_override_is_actually_in_the_table():
+    """The other half: a declaration that no longer applies is a stale excuse."""
+    for smi in DELIBERATE_OVERRIDES:
+        assert smi in MEASURED_PHYSICAL, (
+            f"{smi} is declared as a deliberate override but is not in "
+            "MEASURED_PHYSICAL -- remove the declaration"
         )

@@ -411,6 +411,30 @@ TEMPLATE_CLASSES = {
     # visible in this file's tables. **Read the rows, not the ranking.**
     "water-gas-shift": "water_gas_shift",
     "steam-reforming": "steam_reforming",
+    # ---------------------------------------------------------------------
+    # S11 -- hydroformylation, and the FIRST class here covered by a PAIR whose
+    # members compete rather than chain.
+    # ---------------------------------------------------------------------
+    # ⚠⚠ THE CLASS'S TWO CATALOG ROWS ARE ONE REACTION WITH TWO
+    # REGIOCHEMISTRIES -- `butyraldehyde` and `isobutyraldehyde` from the same
+    # reactants, the second row's own condition column reading "same reactor,
+    # n:iso selectivity". So the M1 row check passes only if BOTH products are
+    # made, and one template cannot do it. Two SMARTS differing in which alkene
+    # carbon takes the formyl group, competing for one alkene.
+    #
+    # ⚠ CREDITED ON AN INTEGRATION AND NOT ON THIS TABLE:
+    # ``validation/hydroformylation.py`` charges propene, syngas and cobalt into
+    # a real Vessel and reads both aldehydes out of it. That is the S1 standard,
+    # and this class is exactly the shape S1's false credit had -- a mechanism
+    # that makes one of a row's two products would look identical here.
+    "hydroformylation": "hydroformylation_linear + hydroformylation_branched",
+    # ⚠⚠ S11 -- AND THE FIRST CLASS WHOSE CATALYST IS AN ION. `wacker-process`
+    # writes `copper-ii-ion` on BOTH sides, which is `library._maybe_catalyse`'s
+    # own case -- but `[Cu+2]` is priced from `ion_data` and `thermochemistry`
+    # refuses it outright unless the network carries `electrolyte_provider()`.
+    # So this credit is only real in an AQUEOUS flask, and `validation/wacker.py`
+    # builds one rather than asserting it.
+    "wacker-oxidation": "wacker_oxidation",
     # ⚠⚠ S9 SPLIT `catalytic-gas-oxidation`, AND IT WAS A FALSE CREDIT ON TWO OF
     # ITS THREE ROWS -- found while RANKING the queue rather than while building
     # anything, which is the second time a class has come apart under that check.
@@ -842,7 +866,7 @@ TEMPLATE_CLASSES = {
 # How many templates that is, counted rather than asserted -- the old text said
 # "10 templates" and ``library.py`` has 8.
 N_LIBRARY_TEMPLATES = 8
-N_SYNTHESIS_TEMPLATES = 25
+N_SYNTHESIS_TEMPLATES = 28
 N_ELECTROLYTE_TEMPLATES = 6
 # ⚠ M8 INCREMENTS THIS WHERE M3 AND M6 DELIBERATELY DID NOT, and the difference
 # is what shape the mechanism has. Precipitation, calcination and roasting are

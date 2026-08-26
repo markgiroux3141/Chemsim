@@ -96,6 +96,16 @@ class MeasuredPhysical(NamedTuple):
 
 
 MEASURED_PHYSICAL: dict[str, MeasuredPhysical] = {
+    # 2-methylpropanal  (CAS 78-84-2; Joback: complete)
+    'CC(C)C=O': MeasuredPhysical(
+        Tb=Measured(337.25, 'CRC_ORG', 'experimental'),
+        Tm=Measured(208.15, 'OPEN_NTBKM', 'experimental'),
+        Hfus=None,
+        Tc=Measured(544.0, 'IUPAC', 'experimental'),
+        Pc=Measured(51.0, 'IUPAC', 'experimental'),
+        Vc=Measured(283.0, 'CRC', 'experimental'),
+        omega_reference=Measured(0.325, 'PSRK', 'compilation'),
+    ),
     # N,N-dimethylformamide  (CAS 68-12-2; Joback: unfragmentable)
     'CN(C)C=O': MeasuredPhysical(
         Tb=Measured(425.95, 'CRC_ORG', 'experimental'),
@@ -156,6 +166,16 @@ MEASURED_PHYSICAL: dict[str, MeasuredPhysical] = {
         Vc=None,
         omega_reference=None,
     ),
+    # butanal  (CAS 123-72-8; Joback: complete)
+    'CCCC=O': MeasuredPhysical(
+        Tb=Measured(347.95, 'CRC_ORG', 'experimental'),
+        Tm=Measured(175.15, 'OPEN_NTBKM', 'experimental'),
+        Hfus=Measured(10.77, 'CRC', 'experimental'),
+        Tc=Measured(537.0, 'IUPAC', 'experimental'),
+        Pc=Measured(43.2, 'IUPAC', 'experimental'),
+        Vc=Measured(258.0, 'IUPAC', 'experimental'),
+        omega_reference=Measured(0.352, 'PSRK', 'compilation'),
+    ),
     # carbon disulfide  (CAS 75-15-0; Joback: unfragmentable)
     'S=C=S': MeasuredPhysical(
         Tb=Measured(319.35, 'CRC_ORG', 'experimental'),
@@ -195,6 +215,16 @@ MEASURED_PHYSICAL: dict[str, MeasuredPhysical] = {
         Pc=None,
         Vc=None,
         omega_reference=None,
+    ),
+    # ethylene  (CAS 74-85-1; Joback: complete)
+    'C=C': MeasuredPhysical(
+        Tb=Measured(169.378648434, 'HEOS', 'experimental'),
+        Tm=Measured(104.05, 'OPEN_NTBKM', 'experimental'),
+        Hfus=Measured(3.35, 'CRC', 'experimental'),
+        Tc=Measured(282.35, 'HEOS', 'experimental'),
+        Pc=Measured(50.418, 'HEOS', 'experimental'),
+        Vc=Measured(130.945481716, 'HEOS', 'experimental'),
+        omega_reference=Measured(0.0866, 'HEOS', 'experimental'),
     ),
     # formamide  (CAS 75-12-7; Joback: unfragmentable)
     'NC=O': MeasuredPhysical(
@@ -345,6 +375,16 @@ MEASURED_PHYSICAL: dict[str, MeasuredPhysical] = {
         Pc=None,
         Vc=None,
         omega_reference=None,
+    ),
+    # propene  (CAS 115-07-1; Joback: complete)
+    'C=CC': MeasuredPhysical(
+        Tb=Measured(225.530871246, 'HEOS', 'experimental'),
+        Tm=Measured(88.075, 'OPEN_NTBKM', 'experimental'),
+        Hfus=Measured(3.003, 'CRC', 'experimental'),
+        Tc=Measured(364.211, 'HEOS', 'experimental'),
+        Pc=Measured(45.55, 'HEOS', 'experimental'),
+        Vc=Measured(183.250870442, 'HEOS', 'experimental'),
+        omega_reference=Measured(0.146, 'HEOS', 'experimental'),
     ),
     # propionic anhydride  (CAS 123-62-6; Joback: unfragmentable)
     'CCC(=O)OC(=O)CC': MeasuredPhysical(

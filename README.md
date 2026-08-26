@@ -449,16 +449,16 @@ python validation/catalog_coverage.py  # the audit
 | refused | 444 (28%), of which ~166 are charged organics the Born model correctly declines |
 | UNIFAC-decomposable (can enter an LLE) | 828 (52%) |
 | routes species-ready | **77 / 173** (was 49) |
-| reaction classes with a template | **48 / 229** (was 12) |
-| routes template-ready | 38 / 173 (was 7) |
-| ⚠⚠ **routes template-ready AND species-ready — the one to quote** | **28 / 173** |
+| reaction classes with a template | **50 / 229** (was 12) |
+| routes template-ready | 40 / 173 (was 7) |
+| ⚠⚠ **routes template-ready AND species-ready — the one to quote** | **30 / 173** |
 
-⚠⚠ **38 IS NOT WHAT COULD RUN; 28 IS.** The three readiness columns answer
+⚠⚠ **40 IS NOT WHAT COULD RUN; 30 IS.** The three readiness columns answer
 INDEPENDENT questions and the smallest does not bound the others: a route needs a
-template for every step **and** a price for every species. **10 of the 38
+template for every step **and** a price for every species. **10 of the 40
 template-ready routes have a refused species** — `pyrite-roasting`, `tnt-route`,
 `superphosphate` and seven more. Nothing computed the intersection until S6.
-⚠ And 28 is an **upper bound on what runs**, not a measured count: a class is
+⚠ And 30 is an **upper bound on what runs**, not a measured count: a class is
 credited when a template would fire on the right substrate at all, and
 `pyrite-roasting` is the standing proof that this is not the same as running.
 

@@ -265,10 +265,25 @@ def test_the_250_450_K_FIT_WINDOW_IS_STILL_THE_GENERAL_FAULT():
     cases: their transition temperatures are MEASURED and the Cp was still
     wrong.
 
-    ⚠ And the fault bites at BOTH ends of the window, not just the top:
-    ethylene's fitted curve reads ~1574 J/(mol K) at its 113.9 K melting point.
-    Nothing runs a flask there today, so this is a LATENT fragility -- reported,
-    not refused, and not silently fixed either.
+    ⚠ And the fault bites at BOTH ends of the window, not just the top.
+
+    ⚠⚠ **S11 MOVED ETHYLENE FROM ONE BUCKET INTO THE OTHER WITHOUT TOUCHING THE
+    MECHANISM, WHICH IS WORTH MORE THAN THE NUMBER.** This test used to pin
+    ethylene's fitted curve at **~+1574 J/(mol K)** at its 113.9 K melting point
+    -- absurdly high. S11 gave ethylene a MEASURED Tc (282.35 K against Joback's,
+    for `wacker_oxidation`), the Rowlinson-Bondi fit changed, and the same point
+    now reads **-1782**. Better data, same window, and the species crossed from
+    the "swings absurdly" bucket into the NEGATIVE one. **A correlation
+    extrapolated outside its domain does not get safer when its inputs get
+    better.**
+
+    ⚠ Re-swept in S11 over each species' OWN Tm->Tb at 21 points: **99 negative
+    and 38 swinging over 5x**, worst still carminic acid at -21482. S10 recorded
+    103 and 41 with a script that was not preserved, so the difference of four
+    may be METHOD rather than movement; what is certain is that ethylene moved.
+
+    Nothing runs a flask at 114 K today, so this is a LATENT fragility --
+    reported, not refused, and not silently fixed either.
     """
     thermo = ThermochemistryProvider()
     condensed = CondensedProvider(thermo)
@@ -279,7 +294,16 @@ def test_the_250_450_K_FIT_WINDOW_IS_STILL_THE_GENERAL_FAULT():
     assert sig.parameters["T_hi"].default == 450.0
 
     # and a species whose liquid range is far outside it is still wrong
-    c = condensed.get("C=C")                       # ethylene, liquid 114-235 K
+    c = condensed.get("C=C")                       # ethylene, liquid 104-169 K
     cp_at_tm = sum(a * 113.9 ** i for i, a in enumerate(c.Cp_coeffs))
-    assert cp_at_tm > 1000.0                       # ~1574; real is ~68
+    assert abs(cp_at_tm) > 1000.0                  # ~-1782; real is ~68
+    assert cp_at_tm < 0.0                          # ⚠ S11: it is NEGATIVE now
     assert "Rowlinson" in c.Cp_source              # i.e. not curated away
+
+    # ⚠ AND THE SPECIES ADDED BESIDE IT ARE FINE, which is what says the window
+    # is the fault rather than the additions. Butanal's liquid range sits INSIDE
+    # 250-450 K, and its fitted Cp comes out 129-164 J/(mol K) across it against
+    # a real ~163 at 298 K.
+    b = condensed.get("CCCC=O")
+    for T in (175.15, 261.55, 347.95):
+        assert 100.0 < sum(a * T ** i for i, a in enumerate(b.Cp_coeffs)) < 200.0

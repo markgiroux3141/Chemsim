@@ -70,6 +70,28 @@ REPORT_REL = 1.0e-6
 # the solver's absolute tolerance was never resolved in the first place.
 REPORT_ABS = 1.0e-9
 
+# THE SECOND FLOOR, AND IT IS ASYMMETRIC ON PURPOSE -- S11, engine queue item 6.
+# A token that is SMALL and is getting SMALLER as the solver is refined is a
+# residual converging, not a result moving. A token that is small and getting
+# BIGGER is exactly the defect this audit exists to catch, and it is still
+# reported at the strict ``REPORT_ABS`` floor. So the relaxation is applied in
+# ONE DIRECTION only.
+#
+# THE NUMBER IS NOT INVENTED HERE -- it is the project's own measurement of the
+# very column that forced this. ``NEXT_SESSION.md`` carries the burner's
+# O2-limiting residual as **NOT AN INVARIANT**, with the reason stated as a
+# measurement: an INERT N2 nudge of 0.5%, which changes no chemistry at all,
+# swings that column from **2.5e-09 to 4.5e-04**. A quantity that moves five
+# decades under a perturbation that cannot change the answer is not a quantity
+# anybody quotes, at any value inside that swing. 5e-04 is the top of the
+# measured swing, rounded up to one figure.
+#
+# AND THE SUPPRESSION IS NEVER SILENT. A line whose only moves are converging
+# tokens is still PRINTED, under its own heading and with its own count, so a
+# reader can see what was set aside and disagree. Blunting a test quietly is the
+# failure this file was written to avoid.
+CONVERGING_ABS = 5.0e-4
+
 # ⚠⚠ WALL CLOCKS ARE SCRUBBED AS TOKENS, NOT AS LINES, AND THE FIRST VERSION OF
 # THIS AUDIT GOT THAT WRONG IN BOTH DIRECTIONS AT ONCE.
 #
@@ -214,14 +236,23 @@ KNOWN_REFUSAL: dict[str, str] = {}
 #
 # ⚠⚠ A RELATIVE-DIFFERENCE TEST IS MEANINGLESS ON A COLUMN WHOSE CONVERGED VALUE
 # IS ZERO. ``0.000e+00 -> 2.728e-07`` gives rel 0.991 and reads as "99% moved";
-# it means "a residual got smaller". ``REPORT_ABS`` exists for exactly this and
-# 2.9e-05 clears it comfortably while still being a residual.
+# it means "a residual got smaller".
 #
-# ⚠ REPORTED AND NOT FIXED. Raising ``REPORT_ABS`` blunts the test for genuine
-# quantities, and choosing the number owes its own measurement and its own
-# predict-then-measure pass -- the same standard every other threshold in this
-# project was held to. Named here so the next reader does not take the flag at
-# face value.
+# ⚠⚠ FIXED IN S11, AND **NOT** BY RAISING ``REPORT_ABS``. That was the obvious
+# move and it is the wrong one: ``REPORT_ABS`` is symmetric, so raising it to
+# cover 2.9e-05 would blind this audit to a small quantity GROWING as well as
+# shrinking -- and a residual growing under refinement is the defect the whole
+# file exists to catch. The fix is a SECOND floor, ``CONVERGING_ABS``, applied
+# only when the tight run's value is SMALLER than the loose one's. Direction is
+# the information the old test threw away.
+#
+# ⚠ AND THE NUMBER CAME OUT OF A MEASUREMENT THIS PROJECT ALREADY HAD rather
+# than out of this file: the same column swings 2.5e-09 to 4.5e-04 under an
+# INERT 0.5% N2 nudge (``NEXT_SESSION.md``). See ``CONVERGING_ABS``.
+#
+# ⚠ PREDICTED BEFORE IT WAS RUN: 5 moved lines -> 1, worst 0.9985 -> 6.6e-05,
+# the headline flips from QUOTABLE DIGITS MOVE to "(below 0.1%)", and no other
+# example changes. Measured: see the session notes.
 
 
 def set_tolerance(rtol: float | None, atol: float | None) -> None:
@@ -267,8 +298,9 @@ def run_example(name: str) -> tuple[str, float]:
     return buf.getvalue(), time.time() - t0
 
 
-def moved(a: str, b: str) -> float:
-    """The WORST relative move between these two lines, or 0.0 if none.
+def moved(a: str, b: str) -> tuple[float, int]:
+    """The WORST relative move between these two lines, and how many tokens were
+    set aside as CONVERGING. ``(0.0, k)`` means nothing moved that counts.
 
     ⚠ A MAGNITUDE RATHER THAN A BOOLEAN, AND THAT IS THE DIFFERENCE BETWEEN A
     FINDING AND A LIST. M6's kiln moved by a factor of 2.6 -- 160% -- in a
@@ -283,15 +315,16 @@ def moved(a: str, b: str) -> float:
     """
     na, nb = NUMBER.findall(a), NUMBER.findall(b)
     if len(na) != len(nb):
-        return math.inf
+        return math.inf, 0
     worst = 0.0
+    converging = 0
     for x, y in zip(na, nb):
         try:
             fx, fy = float(x), float(y)
         except ValueError:                                    # pragma: no cover
-            return math.inf
+            return math.inf, 0
         if math.isnan(fx) != math.isnan(fy):
-            return math.inf
+            return math.inf, 0
         if math.isnan(fx):
             continue
         if abs(fx) < REPORT_ABS and abs(fy) < REPORT_ABS:
@@ -299,28 +332,61 @@ def moved(a: str, b: str) -> float:
         denom = max(abs(fx), abs(fy))
         if denom == 0.0:
             continue
-        worst = max(worst, abs(fx - fy) / denom)
-    return worst if worst > REPORT_REL else 0.0
+        rel = abs(fx - fy) / denom
+        if rel <= REPORT_REL:
+            continue
+        # A RESIDUAL CONVERGING, not a result moving. Both ends inside the band
+        # the project has MEASURED this column to be meaningless within, and the
+        # TIGHT run smaller than the loose one. See ``CONVERGING_ABS``.
+        if (abs(fx) < CONVERGING_ABS and abs(fy) < CONVERGING_ABS
+                and abs(fy) < abs(fx)):
+            converging += 1
+            continue
+        worst = max(worst, rel)
+    return (worst if worst > REPORT_REL else 0.0), converging
 
 
-def diff(loose: str, tight: str) -> list[tuple[int, float, str, str]]:
-    """Lines whose numbers moved, WORST FIRST. Structural changes too."""
+def diff(
+    loose: str, tight: str
+) -> tuple[list[tuple[int, float, str, str]], list[tuple[int, int, str, str]]]:
+    """Lines whose numbers MOVED, worst first -- and, separately, the lines
+    whose only differences were tokens that CONVERGED toward zero.
+
+    Two lists rather than one, because they are two findings. The first is what
+    the verdict is computed from; the second is printed so that the relaxation
+    ``CONVERGING_ABS`` applies is visible rather than silent. A line can appear
+    in the first list while still having converging tokens on it -- the 690 K
+    burner row moves in ``liquid held`` and converges in ``created O``.
+    """
     la, lb = loose.splitlines(), tight.splitlines()
     if len(la) != len(lb):
         return [(-1, math.inf, f"{len(la)} lines of output",
-                 f"{len(lb)} lines of output")]
+                 f"{len(lb)} lines of output")], []
     out = []
+    conv = []
     for i, (a, b) in enumerate(zip(la, lb), start=1):
         if a == b:
             continue
         sa, sb = scrub(a), scrub(b)
         if sa == sb:
             continue                    # the only difference was a wall clock
-        rel = moved(sa, sb)
+        rel, n_conv = moved(sa, sb)
         if rel:
             out.append((i, rel, a.strip(), b.strip()))
+        elif n_conv:
+            conv.append((i, n_conv, a.strip(), b.strip()))
     out.sort(key=lambda r: -r[1])
-    return out
+    return out, conv
+
+
+def show_converging(conv: list[tuple[int, int, str, str]]) -> None:
+    """Print the lines set aside by ``CONVERGING_ABS``, so nothing is silent."""
+    for lineno, n_conv, a, b in conv[:6]:
+        print(f"     line {lineno}, {n_conv} token(s) shrank")
+        print(f"       default: {a[:150]}")
+        print(f"       tight  : {b[:150]}")
+    if len(conv) > 6:
+        print(f"     ... and {len(conv) - 6} more")
 
 
 def main() -> int:
@@ -355,7 +421,7 @@ def main() -> int:
         tight, t_tight = run_example(name)
         set_tolerance(None, None)
 
-        rows = diff(loose, tight)
+        rows, conv = diff(loose, tight)
         raised = [ln for ln in tight.splitlines() if ln.startswith("!! RAISED")]
         faster = "FASTER" if t_tight < t_loose else "slower"
         ratio = t_loose / t_tight if t_tight > 0 else float("inf")
@@ -372,7 +438,13 @@ def main() -> int:
             print()
             continue
         if not rows:
-            print("   OUTPUT IDENTICAL -- converged at the default tolerance")
+            if conv:
+                print("   NO RESULT MOVED. "
+                      f"{len(conv)} line(s) differ only in RESIDUAL tokens that "
+                      "got SMALLER under refinement:")
+                show_converging(conv)
+            else:
+                print("   OUTPUT IDENTICAL -- converged at the default tolerance")
             verdicts.append((name, 0, 0.0, t_loose, t_tight))
             print()
             continue
@@ -386,6 +458,10 @@ def main() -> int:
             print(f"       tight  : {b[:150]}")
         if len(rows) > 10:
             print(f"     ... and {len(rows) - 10} more, all smaller")
+        if conv:
+            print(f"   plus {len(conv)} line(s) whose ONLY moves were residual "
+                  "tokens converging toward zero:")
+            show_converging(conv)
         verdicts.append((name, len(rows), worst, t_loose, t_tight))
         print()
 

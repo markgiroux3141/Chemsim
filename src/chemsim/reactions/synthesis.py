@@ -1106,6 +1106,241 @@ def claus_comproportionation(
     )
 
 # ---------------------------------------------------------------------------
+# S11 -- HYDROFORMYLATION, AND THE FIRST TEMPLATE PAIR WHOSE POINT IS WHICH ONE
+# WINS
+# ---------------------------------------------------------------------------
+# ⚠⚠ **THE CATALOG'S TWO ROWS ARE ONE REACTION WITH TWO REGIOCHEMISTRIES**, and
+# that is why this class was worth building rather than merely worth +1:
+#
+#     oxo-process 1  propene + CO + H2 -> butyraldehyde      420 K, 200 bar
+#     oxo-process 2  propene + CO + H2 -> isobutyraldehyde   "same reactor,
+#                                                             n:iso selectivity"
+#
+# Same reactants, same reactor, same catalyst, two products. Nothing about that
+# can be expressed by ONE template, and the pair is the mechanic: two SMARTS
+# competing for the same alkene, whose ratio is a rate ratio and nothing else.
+#
+# ⚠⚠ **AND THE THERMODYNAMICS GET IT BACKWARDS, WHICH IS THE FINDING.** Priced
+# off this project's own tables:
+#
+#     propene + CO + H2 -> butanal            dH -113.73   dG298 -38.72
+#     propene + CO + H2 -> 2-methylpropanal   dH -123.08   dG298 -43.54
+#
+# The BRANCHED aldehyde is 9.35 kJ/mol more exothermic and 4.82 kJ/mol more
+# favourable, so at equilibrium it wins 2.3 to 1 at 420 K. The real reactor makes
+# the LINEAR one, about four to one. **The oxo process is under kinetic control
+# and running against its own thermodynamics**, which is exactly why the linear
+# aldehyde -- the one industry wants, for plasticiser alcohols -- has to be taken
+# out of a reactor rather than waited for.
+#
+# ⚠⚠ **SO EVANS-POLANYI MUST BE OFF HERE, AND THAT IS A DECLARATION AND NOT AN
+# OMISSION.** ``alpha`` scales the barrier with dH, so any alpha > 0 gives the
+# more exothermic branched route the LOWER barrier and predicts the wrong major
+# product with confidence. The regiochemistry of a cobalt hydroformylation is set
+# by which alkyl-cobalt intermediate forms, not by how exothermic the product is.
+# ``alpha=0.0`` on both, stated.
+#
+# THE BARRIER, AND THE ONE FITTED NUMBER IN THIS PAIR:
+#
+#   Ea (linear)   96 kJ/mol -- Natta's apparent barrier for cobalt
+#                 hydroformylation, ~23 kcal/mol; published band 85-125.
+#   dEa           4.8 kJ/mol, THE ONLY FITTED NUMBER HERE. It is set so that
+#                 ``exp(dEa / R T)`` is 4.0 at the catalog row's own 420 K,
+#                 i.e. the reported n:iso for unmodified HCo(CO)4. Everything
+#                 else about the selectivity -- above all its TEMPERATURE
+#                 DEPENDENCE -- is then a prediction and not an input.
+#
+# ⚠ **A IS 1e10 AND IT IS NOT A COLLISION FREQUENCY.** The rate law is third
+# order in the gas (alkene, CO, H2) and first order in the cobalt, so its
+# pre-exponential is in L^3/(mol^3 s) and the collision limit is a number in
+# L/(mol s) -- comparing them is the category error M8 named and
+# ``deacon_oxidation`` already documents. What bounds it instead is the REACTOR:
+# at 1e10, a 1 L flask charged to 200 bar at 420 K over 0.1 mol of cobalt is
+# **94.3% converted in one hour**, against a real cobalt oxo reactor's residence
+# time of tens of minutes to a couple of hours. ``validation/hydroformylation.py``
+# is that measurement.
+#
+# ⚠⚠ **REVERSIBLE, AND THE ALTERNATIVE WAS MEASURED RATHER THAN ARGUED.** Three
+# moles of gas become one, so this equilibrium turns over on heating: an
+# irreversible pair reports **77.9% conversion at 600 K and 1 bar where the
+# reversible pair reports 0.013%**. That is a factor of 6000, on a flask a player
+# can build, and it is why ``alkene_hydrogenation``'s "irreversible is a claim
+# about temperature" argument does NOT transfer here -- retro-hydroformylation is
+# real, industrial, and the reason the process is run at 200 bar at all.
+#
+# ⚠⚠ **AND THE PAIR THEN DOES SOMETHING NOBODY DECLARED: IT CROSSES FROM KINETIC
+# TO THERMODYNAMIC CONTROL ON ITS OWN.** With detailed balance supplying both
+# reverses, the HEADSPACE n:iso at 420 K reads 3.30 after an hour, 3.23 after
+# four days, 0.99 after a year and settles at **0.4283** -- which is
+# ``K(n)/K(iso)`` = 10.08/23.52 to four figures. The kinetic product is eaten by
+# the thermodynamic one through the shared reactant, at a rate set by a reverse
+# barrier nobody typed (``Ea - dH``, 209.7 and 223.9 kJ/mol). ⚠ Nothing a player
+# does reaches that timescale; it is the equilibrium the pair is anchored to,
+# made visible.
+#
+# ⚠⚠ **AND READ THAT AGAINST THE HEADSPACE, NOT THE INVENTORY.** An equilibrium
+# constant is a statement about PARTIAL PRESSURES. At 200 bar and 420 K this
+# reactor holds ~1.7 mol of LIQUID product, and butanal (Tb 347.95 K) is the less
+# volatile of the two, so the flask's total-mole ratio settles at **0.513** while
+# its headspace settles at 0.4283. A real cobalt oxo reactor is a liquid-phase
+# process for exactly this reason, and the two-phase reactor was not asked for --
+# it is what a 200-bar charge of these five species IS.
+#
+# ⚠ THE COBALT IS A GATE AND A KNOB: ``solid_catalyst="cobalt"``, so a flask with
+# no metal in it converts EXACTLY zero. The real catalyst is HCo(CO)4 formed in
+# situ from the charged cobalt under syngas, which is not modelled -- the same
+# statement ``water_gas_shift`` makes about magnetite reduced in situ from the
+# hematite it is charged with. And the site balance is still missing (M10), so
+# the metal is a first-order knob for ever.
+
+
+def hydroformylation_linear(
+    A: float = 1.0e10, Ea: float = 96_000.0, catalyst: str | None = "cobalt",
+) -> ReactionTemplate:
+    """Alkene + CO + H2 -> the LINEAR aldehyde. The oxo process's major product.
+
+    The formyl group goes onto the TERMINAL carbon and the hydrogen onto the
+    substituted one, so propene gives butanal. ``[CX3H2:1]`` is what makes
+    "terminal" a pattern rather than a comment: the matched carbon must carry two
+    hydrogens, which is true of the CH2 end of a 1-alkene and of both ends of
+    ethylene -- where the two templates correctly become the same reaction,
+    because hydroformylating ethylene has no regiochemistry to get wrong.
+
+    ⚠ Its twin is ``hydroformylation_branched`` and neither is meaningful
+    alone. See the block comment above: the class's two catalog rows are this
+    reaction twice, and the selectivity between them is the whole process.
+    """
+    return ReactionTemplate(
+        name="hydroformylation_linear",
+        smarts="[CX3H2:1]=[CX3:2].[C-:3]#[O+:4].[H:5][H:6]"
+               ">>[C:1]([C+0:3](=[O+0:4])[H:6])[C:2][H:5]",
+        A=_surface_kinetics(A, catalyst), Ea=Ea, phase="gas", reversible=True,
+        alpha=0.0, solid_catalyst=catalyst,
+    )
+
+
+def hydroformylation_branched(
+    A: float = 1.0e10, Ea: float = 100_800.0, catalyst: str | None = "cobalt",
+) -> ReactionTemplate:
+    """Alkene + CO + H2 -> the BRANCHED aldehyde. The oxo process's by-product.
+
+    The same addition the other way round: formyl onto the substituted carbon,
+    hydrogen onto the terminal one, so propene gives 2-methylpropanal.
+
+    ⚠⚠ **ITS BARRIER IS 4.8 kJ/mol HIGHER AND THAT IS THE ONLY FITTED NUMBER IN
+    THE PAIR.** ``exp(4800 / R T)`` is 4.0 at the catalog row's 420 K, which is
+    the reported n:iso for unmodified cobalt. ⚠ The number is a SELECTIVITY
+    declared as a barrier difference; it is not derived from anything, and the
+    thermodynamics point the other way (this product is the more stable one).
+    ⚠⚠ **AND WHAT THE RATIO DOES WHEN THE REACTOR IS MOVED IS NOT FITTED, NOR
+    IS IT JUST THE EXPONENTIAL.** Measured in a sealed 200-bar flask over an
+    hour: 4.57 at 380 K, 4.23 at 400, 3.95 at 420, 3.52 at 450 -- tracking
+    ``exp(dEa/RT)`` to three figures -- and then **1.61 at 480 K and 0.70 at
+    520**, against a pure kinetic 3.33 and 3.03. Above ~450 K the two REVERSE
+    reactions get inside the reactor's own residence time and the branched
+    product, which is the more stable one, starts winning; the conversion turns
+    over in the same place. **Nothing declares a maximum operating temperature
+    and a real cobalt oxo reactor sits at 410-450 K.**
+    ``validation/hydroformylation.py`` panel 3 prints both columns side by side.
+    """
+    return ReactionTemplate(
+        name="hydroformylation_branched",
+        smarts="[CX3H2:1]=[CX3:2].[C-:3]#[O+:4].[H:5][H:6]"
+               ">>[C:1]([H:5])[C:2][C+0:3](=[O+0:4])[H:6]",
+        A=_surface_kinetics(A, catalyst), Ea=Ea, phase="gas", reversible=True,
+        alpha=0.0, solid_catalyst=catalyst,
+    )
+
+
+# ---------------------------------------------------------------------------
+# S11 -- THE WACKER PROCESS, AND THE FIRST TEMPLATE WHOSE CATALYST IS AN ION
+# ---------------------------------------------------------------------------
+# `wacker-process` is one row and one class:
+#
+#     ethylene + oxygen + copper-ii-ion -> acetaldehyde + copper-ii-ion
+#                                          PdCl2/CuCl2, 400 K
+#
+# ⚠⚠ **THE CATALYST WRITTEN ON BOTH SIDES IS `[Cu+2]`, AND THAT MAKES THIS THE
+# ONE TEMPLATE HERE THAT CANNOT RUN IN A DRY FLASK.** Every other explicit
+# catalyst in this project is either a proton (`_maybe_catalyse`'s original case)
+# or a CRYSTAL in the solid block (`solid_catalyst`). A copper(II) ion is
+# neither: it is priced from `ion_data` against this project's own water, it has
+# no neutral graph any estimator will touch, and `thermochemistry` refuses it by
+# name unless the network is built with `electrolyte_provider()`. So the gate
+# here is not "did you add the catalyst" but "is there a SOLVENT for it to be an
+# ion in" -- which is what a real Wacker reactor is: an aqueous chloride liquor
+# with ethylene and air bubbled through it.
+#
+# ⚠ **THE COPPER IS NOT THE OXIDANT IN THE STOICHIOMETRY AND IS THE OXIDANT IN
+# THE MECHANISM.** The real cycle is three steps -- palladium oxidises the
+# alkene and is reduced to metal, copper(II) reoxidises the palladium, oxygen
+# reoxidises the copper(I) -- and the catalog row folds all three, keeping only
+# the copper because that is the species a chemist charges. Palladium is not
+# modelled and its absence is why the barrier below is an APPARENT one.
+#
+# ⚠⚠ **AND THE RATE LAW IS A DECLARATION THAT IS DELIBERATELY WRONG IN ONE
+# PLACE, WHICH IS WORTH MORE THAN GETTING IT SILENTLY RIGHT.** The real Wacker
+# rate law is first order in ethylene, first order in palladium, and **ZERO order
+# in oxygen** -- the O2 only reoxidises the copper and never appears in the
+# rate-determining hydroxypalladation. This template declares FIRST order in
+# oxygen, and the reason is mechanical rather than chemical: the kinetics kernel
+# has no availability gate (`_avail` exists only for the solid block), so a
+# reactant at order zero keeps reacting after it runs out and is driven negative.
+# `hydrogen_sulfide_combustion` keeps one O2 slot at order 1 for the same reason.
+# ⚠ **The cost is stated and measured**: doubling the oxygen here doubles the
+# rate, where a real Wacker reactor would not notice. That is right at low
+# oxygen -- where the copper(I) really is waiting for air -- and wrong at high,
+# which is the same shape as the missing site balance (M10).
+#
+# What IS declared correctly is the alkene order: the SMARTS has to consume TWO
+# ethylenes to balance one O2, and mass action would then make the reaction
+# SECOND order in the alkene. `orders=(1.0, 0.0, 1.0, 1.0)` puts it back to
+# first, which is the measured law. ⚠ A declared order may never be reversible,
+# and here that costs nothing: ln K is +113 at 400 K.
+#
+# Ea 65 kJ/mol -- apparent barrier for the aqueous PdCl2/CuCl2 oxidation of
+# ethylene, published band 55-80.
+#
+# ⚠ A IS 1e9 AND IT IS NOT A COLLISION FREQUENCY, for the third-order reason
+# `deacon_oxidation` and `hydroformylation_linear` both document. What bounds it
+# is the REACTOR: at 1e9, a litre of water holding 0.02 mol of Cu(II) at 400 K
+# is **40% converted in one minute and 98% in ten**, against a real one-stage
+# Wacker reactor's 30-40% per pass on a residence time of minutes.
+# `validation/wacker.py` is that measurement.
+
+
+def wacker_oxidation(
+    A: float = 1.0e9, Ea: float = 65_000.0, catalyst: str | None = "[Cu+2]",
+) -> ReactionTemplate:
+    """2 C2H4 + O2 -> 2 CH3CHO over aqueous copper(II). Acetaldehyde from ethylene.
+
+    ⚠ **NEEDS `electrolyte_provider()` AND `dissociation_templates()` BESIDE
+    IT**, because `[Cu+2]` is not a species any of the three neutral providers
+    will price. Build the network with them or the flask refuses loudly, which is
+    the correct behaviour and not a limitation.
+
+    ⚠ Liquid phase, and that is the process: ethylene and oxygen have to
+    DISSOLVE before they can meet the copper. Oxygen is a Henry's-law solute
+    here, so its concentration in the liquor is a computed thing rather than a
+    charged one, and the flask reproduces a bubble column's dependence on how
+    much gas is above it without being told.
+
+    ⚠ Irreversible. ln K is +113 at 400 K, and a declared rate order may never be
+    reversible in any case -- see the block comment for both halves of that.
+    """
+    return ReactionTemplate(
+        name="wacker_oxidation",
+        smarts=_maybe_catalyse(
+            "[CH2:1]=[CH2:2].[CH2:3]=[CH2:4].[OX1:5]=[OX1:6]"
+            ">>[CH3:1][CH1:2]=[O:5].[CH3:3][CH1:4]=[O:6]",
+            catalyst,
+        ),
+        A=_kinetics(A, catalyst), Ea=Ea, phase="liquid",
+        orders=(1.0, 0.0, 1.0, 1.0) if catalyst else (1.0, 0.0, 1.0),
+    )
+
+
+# ---------------------------------------------------------------------------
 # bundles
 # ---------------------------------------------------------------------------
 # Small on purpose. ``alcohol_chemistry`` is one bundle because its five templates
@@ -1208,6 +1443,32 @@ def syngas_generation_chemistry() -> list[ReactionTemplate]:
     shift. A flask with neither in it is inert.
     """
     return [steam_reforming(), water_gas_shift()]
+
+
+def oxo_chemistry() -> list[ReactionTemplate]:
+    """The oxo process: a 1-alkene, syngas and cobalt, giving BOTH aldehydes.
+
+    ⚠ **A BUNDLE OF EXACTLY TWO, AND THEY ARE THE SAME REACTION.** The pair is
+    the point -- the linear and branched additions compete for one alkene and
+    the ratio between them IS the process. Charging only one of them would make
+    a reactor with a selectivity of infinity.
+
+    ⚠ Wants PRESSURE: three moles of gas become one, so at 1 bar the equilibrium
+    turns over just above the reactor's own temperature. And it wants cobalt in
+    the solid block; without it the flask is a flask of propene.
+    """
+    return [hydroformylation_linear(), hydroformylation_branched()]
+
+
+def wacker_chemistry() -> list[ReactionTemplate]:
+    """The Wacker process. ⚠ ONE template, and it needs THREE things beside it.
+
+    ``electrolyte_provider()`` so that ``[Cu+2]`` can be priced at all,
+    ``dissociation_templates()`` so the water it lives in is modelled, and a
+    charge-balancing counter-ion in the flask. A dry flask of ethylene and air
+    does nothing here, which is the correct answer.
+    """
+    return [wacker_oxidation()]
 
 
 def claus_chemistry() -> list[ReactionTemplate]:

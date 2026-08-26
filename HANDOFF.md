@@ -5387,6 +5387,160 @@ the measurements that justify them.
     prose rots exactly like a generated file's.** ⚠ And `validation/smelting.py`
     is **CRLF**, contrary to the handoff's note about newer `validation/*.py`.
 
+96. ✔✔ **S11 — TWO TEMPLATES THAT RACE, AN ION FOR A CATALYST, AND A SPECIES
+    THAT WAS ESTIMATED BECAUSE NOBODY TYPED ITS NAME.** 2026-08-26.
+    **+2 classes (48 -> 50 of 229), +2 template-ready (38 -> 40), +0
+    species-ready, +2 RUNNABLE (28 -> 30). All four predicted before the audit
+    ran; all four came out.** 43 -> 45 templates. ⚠ **NO ENGINE CODE CHANGED** —
+    not one line of `numerics/` or `vessel/`, for the second milestone running.
+
+    ⚠⚠ **THE OXO PROCESS IS THE FIRST CLASS COVERED BY TEMPLATES THAT COMPETE
+    RATHER THAN CHAIN.** `hydroformylation`'s two catalog rows are ONE reaction
+    with TWO regiochemistries — `butyraldehyde` and `isobutyraldehyde` from the
+    same reactants, the second row's own condition column reading "same reactor,
+    n:iso selectivity". One template cannot cover it and the pair IS the
+    mechanic. Measured, 1 L at 200 bar / 420 K / 0.1 mol cobalt / 1 h:
+    **94.32% converted, n:iso 3.9523**, conservation clean.
+
+    ⚠⚠ **AND THE THERMODYNAMICS POINT THE WRONG WAY, WHICH IS WHAT MADE IT WORTH
+    BUILDING.** The BRANCHED aldehyde is **9.35 kJ/mol more exothermic** and wins
+    2.33 to 1 at equilibrium; the real reactor makes the LINEAR one four to one.
+    So the process is under KINETIC control and running against its own
+    thermodynamics — **and Evans-Polanyi therefore had to be switched OFF**,
+    because any alpha > 0 scales the barrier with dH and hands the more
+    exothermic branched route the lower barrier, naming the wrong major product
+    with confidence. `alpha = 0.0` on both, asserted by a test.
+
+    ⚠ **ONE NUMBER IS FITTED**: a 4.8 kJ/mol barrier difference, set so
+    `exp(dEa/RT)` = 4.0 at the catalog row's own 420 K. What is NOT fitted is
+    everything the flask then does. n:iso tracks the exponential to three figures
+    at 380/400/420/450 K (4.569 / 4.234 / 3.952 / 3.543) and then **COLLAPSES —
+    1.867 at 480 K against a kinetic 3.329, 0.760 at 520 against 3.035** —
+    because above ~450 K the two REVERSE reactions get inside the reactor's own
+    hour and the stable branched product starts winning. **Nobody declared a
+    maximum operating temperature and a real cobalt oxo reactor sits at
+    410-450 K.**
+
+    ⚠⚠ **REVERSIBLE, AND THE ALTERNATIVE WAS MEASURED RATHER THAN ARGUED.** Three
+    moles of gas become one, so ln K goes +2.31 at 420 K to **-7.46 at 600**. At
+    600 K and 1 bar an irreversible pair reports **77.9% conversion where the
+    reversible one reports 0.013%** — a factor of ~6000 on a flask a player can
+    build. `alkene_hydrogenation`'s "irreversible is a claim about temperature"
+    argument does NOT transfer: retro-hydroformylation is real and industrial,
+    and it is why the process runs at 200 bar.
+
+    ⚠⚠ **AND THE PAIR CROSSES FROM KINETIC TO THERMODYNAMIC CONTROL UNAIDED.**
+    Headspace n:iso 3.304 at 1 h, 0.993 at a year, **0.4283 settled — which is
+    `K(n)/K(iso)` to four figures**, through reverse barriers (`Ea - dH`, 209.7
+    and 223.9 kJ/mol) that nobody typed. ⚠ The flask's INVENTORY ratio settles at
+    **0.513** instead, because the reactor holds ~1.7 mol of LIQUID product and
+    butanal is the less volatile of the two. **AN EQUILIBRIUM CONSTANT IS A
+    STATEMENT ABOUT PARTIAL PRESSURES: read it against the headspace, never
+    against the inventory.**
+
+    ⚠⚠ **THE WACKER PROCESS IS THE FIRST TEMPLATE WHOSE CATALYST IS AN ION**, and
+    that changes what the gate MEANS. Every other explicit catalyst here is a
+    proton or a crystal; `[Cu+2]` is priced from `ion_data` and `thermochemistry`
+    refuses a charged species by name. **So the gate is not "did you add the
+    catalyst" but "is there a SOLVENT for it to be an ion in"** — and a flask
+    without `electrolyte_provider()` REFUSES rather than running slowly. ⚠ It
+    refuses at the **Vessel**, not at the network: `build_network` succeeds and
+    names the ion, because a network is a GRAPH question and pricing is one layer
+    down. Measured: 1 L of water, 0.02 mol Cu(II), 400 K — **40.1% in one minute,
+    98.2% in ten**, against a real one-stage reactor's 30-40% per pass.
+
+    ⚠⚠ **AND ONE THING IN THAT TEMPLATE IS DELIBERATELY WRONG, WITH THE PRICE
+    MEASURED.** The real Wacker rate law is ZERO order in oxygen; this declares
+    FIRST, because the kinetics kernel has **no availability gate** (`_avail`
+    serves the solid block only) and a reactant at order zero keeps reacting
+    after it runs out. Cost: acetaldehyde in 60 s goes **1.00 / 1.92 / 3.53 /
+    5.85x** as the oxygen charge doubles, where a real reactor gives 1.00
+    throughout. Right at LOW oxygen, wrong at high — the same shape as the
+    missing site balance.
+
+    ⚠⚠⚠ **AND THE LARGEST THING IN THE MILESTONE WAS FOUND BY A FAILING REACTOR,
+    NOT BY AN AUDIT: A SPECIES IS ESTIMATED BECAUSE NOBODY TYPED ITS NAME.**
+    `physical_data.py` is GENERATED — from `CANDIDATES` in
+    `tools/build_physical_data.py`, **a hand-typed list of 33 names.** Propene
+    was not on it, so the oxo reactor's own feedstock read **Tb 264.92 K against
+    a measured 225.53 and Tc 427.64 against 364.21**, both ~17% high, while
+    `chemicals` holds five independent experimental sources agreeing inside
+    0.5 K. ⚠ **The Tc error was not cosmetic**: an oxo reactor at 420 K is 55 K
+    ABOVE propene's real critical temperature and 8 K BELOW Joback's, so the
+    engine condensed **0.91 mol of "liquid propene" into a supercritical flask**,
+    read 167 bar where it was charged to 200, and left 2.8e-24 mol of butanal in
+    a species with no source at all. One candidate line fixed all three.
+
+    **THE GENERAL CASE, MEASURED OVER THE WHOLE CATALOG: 310 species have an
+    experimental Tb in `chemicals` and are absent from the table; 229 of them
+    price a Tb today; mean/median/worst absolute error 5.81% / 2.94% / 84.89%**,
+    with 138 over 2%, 34 over 10% and 11 over 20%. ⚠ **The instrument was wrong
+    first**: the initial count of 360 listed borane boiling at 2823 K and methane
+    at 4273, because `chemicals.CAS_from_any("C")` reads a bare SMILES as a
+    FORMULA. **A single-letter SMILES is also an element symbol.**
+
+    ⚠⚠ **FOUR RECORDS WERE OVERRIDDEN AND A GUARD HAD TO BE REWRITTEN TO ALLOW
+    IT.** `test_the_measured_table_never_overrides_a_working_joback_record`
+    failed and was RIGHT to. But that rule was a SCOPING decision, not a physics
+    claim, and its own stated reason — "the moment it stops being true the
+    azeotrope, the boiling points and the crop sizes all move at once" — is a
+    call for MEASUREMENT. So it is now `DELIBERATE_OVERRIDES`: it names which
+    records were replaced, refuses any it does not name, and a second test
+    refuses a stale entry. **The cost was measured example by example before any
+    entry was kept.** Propene, butanal and 2-methylpropanal appear in no example;
+    ethylene appears in two, and `competing_pathways`'s worst moved number is
+    0.20380 -> 0.20485 (0.5%) with `named_routes` reporting ethanol-hydration at
+    2.7% instead of 2.9%.
+
+    ⚠⚠ **AND ETHYLENE'S ENTRY WAS MADE ON A PREDICTION THAT TURNED OUT WRONG.**
+    The brief: a Wacker flask dissolves 83% of its ethylene charge, the whole
+    process is that a gas must dissolve before meeting the copper, so a measured
+    boiling point should move it. **Measured after: 0.16588 -> 0.16596. Four
+    significant figures unchanged**, because ethylene's vapour pressure comes
+    from `volatility._CURATED_ANTOINE` and **Tb does not feed that curve at
+    all.** ⚠ The 83% is real and is a SEPARATE fault, reported not fixed: a
+    CONDENSABLE species' Raoult law against Psat = 219.9 bar, read off a curated
+    Antoine at 400 K — **118 K above ethylene's critical temperature.** Oxygen
+    beside it is a Henry's-law solute and behaves. **NOTHING IN
+    `build_phase_arrays` COMPARES T TO Tc.**
+
+    ⚠⚠ **ENGINE QUEUE ITEM 6 IS CLOSED, AND NOT BY RAISING `REPORT_ABS`.** That
+    was the obvious move and it is the wrong one: `REPORT_ABS` is SYMMETRIC, so
+    raising it to cover 2.9e-05 would blind the audit to a small quantity
+    GROWING, and a residual growing under refinement is the defect the whole file
+    exists to catch. The fix is a SECOND floor, `CONVERGING_ABS`, applied only
+    when the tight run's value is SMALLER — **direction is the information the
+    old test threw away**. ⚠ And the number came from a measurement the project
+    already had: `NEXT_SESSION.md` records that same column swinging **2.5e-09 to
+    4.5e-04 under an INERT 0.5% N2 nudge.** Predicted before the 19-minute run
+    and all four came out: **5 moved lines -> 1, worst 0.9985 -> 6.60e-05**, the
+    headline flips to "(below 0.1%)", and `CONVERGING_ABS` fires on **ZERO
+    tokens** across all twelve cheap examples.
+
+    ⚠ **`rate_ceiling` GAINED AN OXO PANEL, AND IT IS THE ONE ROW WHOSE CROSSING
+    TEMPERATURE IS A PHYSICAL STATEMENT.** Every other reverse it flags is
+    high-order, so its pre-exponential is in `L^n/(mol^n s)` and the ceiling
+    comparison is M8's unit error. `hydroformylation_linear_rev` is ONE molecule
+    falling apart, so its `A` really is in 1/s: **2.0e26 and 1.2e27**, crossing
+    at **969.4 / 966.8 K**. Third appearance of an ENTROPY OF GAS-MAKING IN A
+    PRE-EXPONENTIAL (dS_rev = +251.6, so `exp(dS/R)` = 1.4e13 by itself).
+    ⚠ The brief predicted ~824 K off a 1e13 ceiling; the measured number stands.
+
+    ⚠ **TWO STANDING REFUSALS WERE RE-QUERIED AND BOTH STAND, AND ONE QUEUE ITEM
+    WAS PRICED TOO CHEAPLY.** Pyrite: `Hfs` in WEBBOOK, `S0s` in nothing.
+    `iron-ii-oxide`: CRC standard row has `Cps = NaN`. And `slagging` was listed
+    as "two curated minerals and one declaration" — silica is fully available,
+    but **calcium silicate has NO data in `chemicals` 1.5.2 under any of its
+    three CAS numbers**, so it is not a curation job at all. `blast-furnace` is
+    blocked twice over, on SOURCES.
+
+    ⚠ Two new standing audits: `validation/hydroformylation.py` and
+    `validation/wacker.py`. Every class credited went into a real `Vessel`.
+    ⚠ The oxo audit's own prose rotted TWICE inside this session — once when
+    reversibility changed the 480/520 K numbers, once when propene's boiling
+    point changed the conversion. **Third session running.**
+
+
 IMMEDIATE NEXT TASK: see **`MILESTONES.md`**, which is the plan of record as of
 2026-08-22 and supersedes the ordering below. It is derived from `data/catalog`
 (1,583 compounds, 173 routes) plus four measured capability probes, and it

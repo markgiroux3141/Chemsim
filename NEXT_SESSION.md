@@ -769,11 +769,50 @@ a solid block AND a liquid block AND a headspace. Neither table's shape.
 template (and neither `silicon-dioxide` nor `calcium-silicate` has a lattice),
 and both its `gas-solid-reduction` rows want an `iron-ii-oxide` `mineral_data`
 refuses on the crystal Cp. The closest any five-step route has been.
+⚠⚠ **S11 RE-QUERIED THAT AND IT WAS PRICED TOO CHEAPLY.** Silica is fully
+available (CRC: Hfs -910700, Gfs -856300, S0s 41.5, Cps 44.4) — but **calcium
+silicate has NO thermochemical data in `chemicals` 1.5.2 under any of its three
+CAS numbers** (10101-39-0, 1344-95-2, 13983-17-0), so `slagging` is not a
+curation job at all. And FeO's CRC standard row has `Cps = NaN`, confirming the
+recorded refusal. `blast-furnace` is blocked TWICE over, on sources rather than
+on work.
 
 ⚠ **A FALSE CITATION SURVIVED FOUR MILESTONES.** `surface.ROASTING_A`'s comment
 has said *"validation/rate_ceiling.py re-measures it"* since S1 and that audit
 had never read the table. **The sentence claiming the check existed is why nobody
 looked.** Fixed, and the near-miss is kept in the source.
+
+**S11 — two competing templates, an ion for a catalyst, and a hand-typed list.
+⚠ NO ENGINE CODE CHANGED (no `numerics/`, no `vessel/`), second milestone
+running. ⚠⚠ BUT `properties/physical_data.py` DID change, and two examples moved
+because of it — that is row 6 below and it is the one to read before trusting an
+old number.**
+
+| row | value | how it is pinned |
+|---|---|---|
+| **the oxo reactor** — 1 L at 200 bar, 420 K, 0.1 mol cobalt, 1 h | **94.32% converted, n 1.437050, iso 0.363599, n:iso 3.9523**, carbon closure exact, conservation clean | `validation/hydroformylation.py` panel 1; `tests/test_hydroformylation.py` |
+| **n:iso IS `exp(dEa/RT)` up to ~450 K** | 380/400/420/450 K: **4.569 / 4.234 / 3.952 / 3.543** against a kinetic 4.569 / 4.235 / 3.953 / 3.607 | panel 3. ⚠ Only the 420 K value is FITTED (4.8 kJ/mol); the curve is a consequence |
+| ⚠⚠ **and it COLLAPSES above ~450 K, steeper than Arrhenius** | 480 K **1.867** against a kinetic 3.329; 520 K **0.760** against 3.035, with the conversion turning over too | panel 3, `test_above_450_K_the_REVERSE_beats_the_barrier_difference`. The reverses get inside the reactor's own hour. **Nobody declared a maximum operating temperature** |
+| ⚠⚠ **the branched aldehyde is the MORE STABLE one** | dH -113.73 vs **-123.08**, dG298 -38.72 vs **-43.54**; at equilibrium iso wins **2.33 to 1** | `test_the_branched_product_is_the_MORE_STABLE_one`. **The process runs against its own thermodynamics**, which is why Evans-Polanyi is OFF in both templates — any alpha > 0 names the wrong major product |
+| **kinetic -> thermodynamic control, unaided** | headspace n:iso 3.304 (1 h) -> 0.993 (1 yr) -> **0.4283 (settled)**, against `K(n)/K(iso)` = **0.4283** | panel 5. ⚠⚠ **The INVENTORY ratio settles at 0.513 instead**, because the reactor holds ~1.7 mol of liquid and butanal is the less volatile. **Read K against the HEADSPACE, never the inventory** |
+| **irreversible would lie, measured** | 600 K / 1 bar: **0.013% reversible against 77.933% irreversible** (~6000x). 600 K / 200 bar: 53.3% | panel 4, `test_irreversible_would_report_a_conversion_the_equilibrium_forbids` |
+| **the Wacker reactor** — 1 L water, 0.02 mol Cu(II), 400 K | **40.06% in 60 s, 88.83% in 300 s, 98.20% in 600 s**; copper out = copper in to 1e-12 | `validation/wacker.py` panel 3; `tests/test_wacker.py` |
+| ⚠ **a flask with no electrolyte support REFUSES** | `build_network` SUCCEEDS and names `[Cu+2]`; **`Vessel` raises** on the net charge | `test_a_flask_with_no_electrolyte_support_REFUSES`. A network is a GRAPH question; pricing is one layer down |
+| ⚠⚠ **the Wacker's oxygen order is DELIBERATELY WRONG** | acetaldehyde in 60 s against O2 charged: **1.00 / 1.92 / 3.53 / 5.85x**. A real reactor gives 1.00 throughout | `test_the_oxygen_order_is_wrong_on_purpose_and_here_is_the_cost`. ⚠ **NOT an invariant to preserve — a LIMIT.** The kernel has no availability gate, so order zero drives O2 negative |
+| ⚠⚠ **ethylene is ~40x too soluble at 400 K** | **0.165958 of 0.20 mol dissolves in 20 mol of water** — 83%, against a real ~2% | `validation/wacker.py` panel 4. A CONDENSABLE species' Raoult law against Psat = **219.9 bar**, read off a curated Antoine **118 K above ethylene's critical temperature**. ⚠ **NOTHING IN `build_phase_arrays` COMPARES T TO Tc.** Reported, not fixed |
+| **`tolerance_audit` on `oil_of_vitriol`** | ⚠⚠ **1 moved line, worst 6.60e-05, "(below 0.1%)"** — was 5 lines and 99.85% | `CONVERGING_ABS = 5e-4`, asymmetric. All four numbers PREDICTED before the 19-minute run |
+| ⚠ ... and `CONVERGING_ABS` fires on **zero tokens** across the twelve cheap examples | the safety measurement that mattered: the relaxation touched nothing but the column it was made for | `/tmp` run of `validation/tolerance_audit.py`, no `--only` |
+| **the oxo reverse pre-exponentials** | **2.0e26 and 1.2e27 1/s**, crossing the unimolecular ceiling at **969.4 / 966.8 K** | `validation/rate_ceiling.py`, new oxo panel. ⚠ The one flagged row whose crossing IS physical — a genuinely FIRST-order reverse. An entropy of gas-making in a pre-exponential, third appearance |
+| ⚠⚠ **310 catalog species have a measured Tb that this engine is not using** | 229 price a Tb today; mean/median/worst |error| **5.81% / 2.94% / 84.89%**; 138 over 2%, 34 over 10%, 11 over 20% | measured against `chemicals` 1.5.2. Cause: `CANDIDATES` in `tools/build_physical_data.py` is a **hand-typed list of 33 names** |
+| ⚠ **four records were deliberately overridden** | propene Tb 264.92 -> 225.53 and Tc 427.64 -> 364.21; ethylene Tb 234.56 -> **169.38**; butanal 339.78 -> 347.95; 2-methylpropanal 339.34 -> 337.25 | `DELIBERATE_OVERRIDES` in `tests/test_critical.py`, plus a second test refusing a stale entry |
+| ⚠⚠ **and TWO EXAMPLES MOVED because of it** | `competing_pathways` worst **0.20380 -> 0.20485 (0.5%)**; `named_routes` ethanol-hydration **2.9% -> 2.7%** | measured before/after, example by example. The other three species appear in no example |
+| **propene's Tc error was not cosmetic** | the oxo flask condensed **0.91 mol of "liquid propene"** 55 K above propene's real Tc and read **167 bar where it was charged to 200**; one candidate line gives **200.00 bar and no liquid** | ⚠ And the 2.8e-24 mol of butanal in a zero-cobalt flask went with it — solver dust from the extra stiff phase, never a gate leak |
+| **four provenance tiers upgrade** | ethylene `joback -> measured`; propylene, butyraldehyde and isobutyraldehyde `joback -> benson` | `data/catalog/derived/species_roles.psv`. A measured Tb lets Benson's formation half assemble where Joback's was standing in — the part of S11's data work a coverage report CAN see |
+| the whole suite | **952 passed / 0 failed in 13:19**, run AFTER every `src/` edit | `python -m pytest -q`. ⚠ `tolerance_audit.py` re-run too, because a DATA table changed: **NO example prints a quotable digit that moves**, and the three self-check examples are OUTPUT IDENTICAL at speedup 1.00 |
+
+⚠⚠ **TWO ROWS ABOVE ARE LIMITS TO REMOVE, NOT INVARIANTS TO KEEP**: the Wacker's
+oxygen order, and ethylene's solubility. Both are marked.
+
 
 # Still open
 
