@@ -5372,6 +5372,14 @@ the measurements that justify them.
     `[Fe]` fails S4's disambiguation test (three solid allotropes, two
     transitions inside thermite's own range) and Alcock tabulates **no
     sublimation curve** for iron, so zinc's best check cannot be run at all.
+    ⚠⚠ **CORRECTION, measured after this entry was written:** the FIRST count
+    overstates the cost. Iron is in no surface row, so the two hot-loop uses of
+    `lattice` are inert for it; the Haber catalyst reads `order_solid`/`nS` and
+    never depended on the flag; the real blocker is ONE branch in
+    `build_phase_arrays`, a setup-layer change with no RHS edit. Patched in
+    place, thermite CAPS at 3490.99 K instead of 5469.43. **The DATA counts (2
+    and 3) stand and are why it is still open.** NEXT_PROMPT engine queue item 1
+    carries the measurement.
 
     ⚠ Three pieces of prose rotted inside this session's own edits — the audit's
     overblowing paragraph, its "a lattice against three curated gases" (two of

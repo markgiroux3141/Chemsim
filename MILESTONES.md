@@ -2733,6 +2733,23 @@ against, measured rather than assumed:
    so the 298 K reference-state identity zinc closed at -0.184 kJ/mol cannot be
    evaluated at all.
 
+⚠⚠ **CORRECTION, MEASURED AFTER THIS SECTION WAS WRITTEN — COUNT 1 ABOVE
+OVERSTATES THE COST, AND NEXT_PROMPT ENGINE QUEUE ITEM 1 CARRIES THE MEASUREMENT.**
+Patching iron's volatility in place and running thermite insulated CAPS it
+(5469.43 → 3490.99 K at 1 J/K, conservation clean, and the 50 J/K flask
+identical because it never reaches Tm). Three things count 1 got wrong:
+`PhaseArrays.lattice`'s two hot-loop uses are in the SURFACE term only and **iron
+is in no surface row**, so `C_mix[Fe] ** 0 == 1.0` exactly and they are inert;
+the Haber catalyst reads `order_solid`/`nS` and **never depended on the flag** —
+what needs `MINERALS["iron"]` is NAME RESOLUTION, which is separable from
+volatility; so the real blocker is **one branch in `build_phase_arrays`** pinning
+`NONVOLATILE_A`/`solidifies = False`, i.e. a setup-layer change with **no RHS
+edit**. Counts 2 and 3 stand and are the reason this is still not done: they are
+DATA objections, and the engine fix does not touch them. **The general
+one-boolean-two-jobs form is still worth fixing** — and note
+`build_surface_arrays` already splits `order_solid`/`order_gas` from the
+declaration and then throws the `nu` split away.
+
 ### 9. WHAT THE FUSION LAW DOES TO A METAL IN WATER, MEASURED BEFORE IT WAS ACCEPTED
 
 `solidifies = True` exposes zinc to the ideal fusion-law solubility, and zinc has

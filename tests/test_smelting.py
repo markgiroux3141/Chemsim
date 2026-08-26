@@ -696,6 +696,18 @@ def test_thermite_runs_away_on_its_own_enthalpy_and_nothing_caps_it(
     both a species' basis and its destination block. Zinc never needed that:
     nothing else referenced its lattice entry.
 
+    ⚠⚠ **CORRECTION, MEASURED AFTER THIS WAS WRITTEN: the paragraph above
+    overstates the cost, and NEXT_PROMPT engine queue item 1 carries the
+    numbers.** ``PhaseArrays.lattice``'s two hot-loop uses are in the SURFACE
+    term only and **iron is in no surface row**, so its ``order`` column is all
+    zeros and ``C_mix[Fe] ** 0 == 1.0`` exactly -- inert, by the same ``p ** 0``
+    invariant S9 pinned. The Haber catalyst reads ``order_solid``/``nS`` and
+    never touched the flag; what needs ``MINERALS["iron"]`` is NAME RESOLUTION,
+    which is separable from volatility. So the real blocker is ONE branch in
+    ``build_phase_arrays``, a setup-layer change with no RHS edit -- and patched
+    in place, thermite CAPS (5469.43 -> 3490.99 K at 1 J/K, conservation clean).
+    **What keeps this open is the DATA, below, not the engine.**
+
     ⚠ The data is nearly there and the mechanism would work -- Alcock's liquid
     equation converts to Antoine exactly (A = 6.352717, B = 19574, C = 0) and
     unanchored puts Tb at 3083.98 K against 3134.15 measured, and boiling the

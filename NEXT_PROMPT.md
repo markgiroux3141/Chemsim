@@ -107,35 +107,86 @@ under that check rather than under a build.**
 
 # ⚠⚠ THE ENGINE AND HONESTY QUEUE — AND IT NOW OUTRANKS THE TABLE ABOVE
 
-1. **⚠⚠ A SPECIES THAT IS BOTH A LATTICE AND A GAS — S10 CUT S9's ITEM 1 IN HALF
-   AND THIS IS THE HALF THAT IS REAL.** S9 filed one gap with two symptoms, on the
-   shared sentence *"a lattice may react and may never boil"*. **The zinc half was
-   a DATA job and is CLOSED** (the retort distils, no engine code changed — §S10).
-   What is left is exactly one thing, and it is sharper than the old version:
-   * **`PhaseArrays.lattice` is a single boolean picking BOTH a species' basis and
-     its destination block**, so a species cannot be a `mineral_data` lattice and
-     a `thermochemistry` gas at once.
-   * **The live case is IRON, and it cannot dodge the way zinc did.** Iron is a
-     declared `solid_catalyst` — `ammonia_synthesis(catalyst="iron")` resolved
-     through `MINERALS["iron"].lattice` — **and** thermite's own solid product, so
-     it cannot simply move to `element_data`. Zinc never needed this: nothing else
-     referenced its lattice entry.
-   * ⚠ **The mechanism and most of the data are already measured as ADEQUATE.**
-     Alcock's iron equation converts to Antoine by exact algebra (A = 6.352717,
-     B = 19574, C = 0) and unanchored puts Tb at 3083.98 K against 3134.15
-     (**−1.60%**); boiling the 2 mol of iron a mole of thermite makes would absorb
-     **749.5 of the 851.5 kJ it releases, 88.0%.** So the cap would work.
-   * ⚠ **Two things still say no even with the engine fixed**, and they are the
-     reason to scope this carefully rather than eagerly: `[Fe]` fails S4's
-     DISAMBIGUATION test (three solid allotropes, two transitions inside
-     thermite's own range, against zinc's single condensed form), and Alcock
-     tabulates **no sublimation curve** for iron, so the 298 K reference-state
-     identity zinc closed at −0.184 kJ/mol cannot be evaluated at all — **ONE
-     cross-check, not four.**
-   ⚠⚠ **WORTH ZERO ROUTES, like S10.** Take it for the mechanic — a thermite that
-   stops where the iron boils — and say so. `test_thermite_runs_away_on_its_own_
-   enthalpy_and_nothing_caps_it` pins the limit and names all three counts; if you
-   close it, that test SHOULD change.
+1. **⚠⚠ A METAL THAT BOILS OUT OF THE SOLID BLOCK — STILL OPEN, AND S10's OWN
+   WRITE-UP OVERSTATED WHAT IT COSTS. THE MEASUREMENT IS BELOW; TRUST IT OVER THE
+   PROSE IN §S10 §8.** S9 filed one gap with two symptoms, on the shared sentence
+   *"a lattice may react and may never boil"*. **The zinc half was a DATA job and
+   is CLOSED** (the retort distils, no engine code changed — §S10). The iron half
+   is open, and it is **much cheaper than §S10 says**.
+
+   ⚠⚠ **IT WAS MEASURED AFTER THE COMMIT, BY PATCHING IRON'S VOLATILITY IN PLACE
+   (Alcock's curve) AND RUNNING THERMITE INSULATED. IT WORKS:**
+
+       vessel Cp    lattice iron    VOLATILE iron    where the iron went
+          1 J/K       5469.43 K        3490.99 K     0.0192 gas / 0.0207 liquid
+         10 J/K       2329.06 K        2284.28 K     0.0399 liquid (it MELTED)
+         50 J/K       1322.45 K        1322.45 K     unchanged — never reaches Tm
+
+   The runaway CAPS, `conservation_report` stays empty, and the 50 J/K flask is
+   **identical** because its temperature never reaches the melting point. ⚠ 3491 K
+   rather than a real ~3135 K is not error: a sealed 1 L flask pressurises, so the
+   iron boils above 1 atm. A vented one would sit nearer 3135. ⚠ The melt at
+   1811 K appears too, which §S10's audit records as something the engine could
+   not see.
+
+   ⚠⚠ **THREE CORRECTIONS TO §S10 §8, ALL OF WHICH MAKE THIS SMALLER:**
+   * **The two hot-loop uses of `PhaseArrays.lattice` are in the SURFACE term
+     ONLY, and iron is in no surface row** — so its `order` column is all zeros
+     and `C_mix[Fe] ** 0 == 1.0` exactly. Inert, by the same `p ** 0` invariant S9
+     already pinned. `SolidStateArrays` (thermite's term) takes explicit
+     `nu_solid`/`nu_gas` from the DECLARATION and never consults the boolean.
+   * **The Haber catalyst never depended on the flag.** It reads `order_solid` and
+     `nS` (`vessel_integrator.py` ~1780, ~1886). What needs `MINERALS["iron"]` is
+     *name resolution* in the network builder — `_catalyst_lattice`, plus
+     thermite's `decl.solids` — and that is separable from volatility. **Iron must
+     keep its `mineral_data` ENTRY; it does not need `lattice` to stay True.**
+   * **So the actual blocker is ONE BRANCH in `build_phase_arrays`** — the
+     `if mineral is not None:` arm that pins `vol_A = NONVOLATILE_A`,
+     `condensable = False` and `solidifies = False`. Letting a `MineralRecord`
+     carry OPTIONAL volatility and having that branch consult it is a
+     **setup-layer change with NO RHS edit**, so it carries no tolerance-audit
+     exposure. That is not what §S10 §8 implies.
+
+   ⚠ **THE GENERAL FORM IS STILL WORTH FIXING, and it is already patterned twice
+   in this codebase.** One boolean answering two questions will bite the moment a
+   volatile lattice appears in a SURFACE reaction. Note that
+   `build_surface_arrays` already receives `decl.solids` and `decl.gases`
+   separately and already builds separate `order_solid`/`order_gas` matrices — it
+   then collapses `nu` into ONE array and lets the RHS re-derive the split from
+   `is_lattice`. **The information is present at setup and thrown away.** So:
+   build `nu_solid`/`nu_gas` there (copies `build_solid_state_arrays`), and split
+   `C_mix` into two one-sided products (**literally S9's move**). Both touch the
+   RHS, so the five existing surface rows must come out bit-identical — the same
+   `p ** 0 == 1.0` argument, and S9's test is the template.
+
+   ⚠⚠ **BUT THE DATA OBJECTIONS SURVIVE THE ENGINE FIX, AND THAT IS THE POINT TO
+   SCOPE ON.** The probe above patches ARRAYS; it does not curate a record, so a
+   green result there does **not** license admitting `[Fe]`. `[Fe]` still fails
+   S4's DISAMBIGUATION test (three solid allotropes, two transitions inside
+   thermite's own range, against zinc's single condensed form) and Alcock
+   tabulates **no sublimation curve** for iron, so the 298 K reference-state
+   identity zinc closed at −0.184 kJ/mol cannot be evaluated at all — **ONE
+   cross-check, not four.** Deciding whether one check is enough for a species
+   with three allotropes is the real work here, and it is a judgement, not a
+   measurement. The mechanism and most of the data are adequate: Alcock's iron
+   equation converts to Antoine by exact algebra (A = 6.352717, B = 19574, C = 0),
+   unanchored Tb 3083.98 K against 3134.15 (**−1.60%**), and boiling thermite's
+   2 mol of iron absorbs **749.5 of the 851.5 kJ it releases, 88.0%**.
+
+   ⚠ **WORTH ZERO ROUTES for iron** — take it for the mechanic and say so.
+   ⚠⚠ **BUT MEASURE `direct-combination` FIRST: it is worth +1 AND it is refused
+   by the SAME `build_surface_arrays` non-lattice check.** `vermilion-route`'s
+   `Hg + S8 -> HgS` is refused because a SOLID participant must be a
+   `mineral_data` lattice and S8 is a molecular solid. If the general fix above
+   reaches it, this item stops being worth zero. ⚠ **Hold that as a HYPOTHESIS,
+   not a finding** — `Hg(l) + S8(s)` is not a gas attacking a crystal, so
+   `SurfaceArrays`' form (extensive in the solid, INTENSIVE in the gas) may be
+   wrong for it whatever the mask says. **Measure it before scoping either.**
+
+   `test_thermite_runs_away_on_its_own_enthalpy_and_nothing_caps_it` pins the
+   limit and names the counts; if you close it, that test SHOULD change. ⚠ Its
+   docstring carries the same overstatement as §S10 §8 and has a correction note
+   pointing here.
 
 2. **⚠⚠ THE 250–450 K FIT WINDOW — 103 CORPUS ROWS WITH A NEGATIVE LIQUID HEAT
    CAPACITY, AND S10 FIXED TWO OF THEM BY HAND.** New, and the largest single
