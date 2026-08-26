@@ -2,39 +2,58 @@ We're building chemsim, an emergent chemistry simulator (game inspired by Nile
 Red) in d:\Claude Code Projects\Chemistry Simulator.
 
 **The plan is `MILESTONES.md`. Read it first — it is the authority on what to
-build and in what order.** **M0–M6, M12, S1, S2, S3, S4 and S5 are DONE.**
+build and in what order.** **M0–M6, M12, S1–S6 are DONE.**
 
-**START WITH: ⚠⚠ TEACH `species-ready` ABOUT `mineral_data`.** Cheap, and it is a
-PUBLISHED number that has been understating itself since M3 by **14 routes**
-(49 → at most 63 of 173). `species-ready` asks the plain
-`ThermochemistryProvider`, which REFUSES A LATTICE BY NAME — correctly, the
-fusion law being 407x wrong for one — but a lattice has had a home since M3, and
-it is what precipitation, `SolidStateArrays` and `SurfaceArrays` all price from.
-Among the 14 are `lime-cycle`, which M6 declared complete end to end and whose
-own example runs, and `haber-bosch`/`methanol-synthesis`, whose only "refused"
-species is **the solid CATALYST S1 curated so it could be put in the flask.**
-It is recorded at the line that computes it, in `validation/catalog_coverage.py`.
+**START WITH: ⚠⚠ THE BURNER.** It is the live fragility and it is the only one
+left with a measured reproduction: **53 s at rtol 1e-8 against 0.8 s at the
+default.** S5 bounded the CRASH and explicitly did not bound the THRASHING. BDF
+is genuinely struggling with a liquid layer holding **1e-29 mol**, which
+`LAYER_REABSORB` drains toward zero without ever reaching it. **The question
+nobody has asked is whether a layer below `LAYER_EPS` should be *merged
+discretely* at a step boundary rather than drained continuously forever.**
+⚠ `merge_phases` already does exactly that at the `run` boundary — so this may be
+a matter of WHEN IT IS CALLED, not of a new mechanic. **Measure the layer-2
+inventory over the failing run before designing anything.**
 
-⚠ **IT REDEFINES A PUBLISHED COLUMN**, so run the standing check first: **predict
-which routes move, then measure**, and do not credit anything until the
-prediction has come out right. ⚠ It is the exact OPPOSITE shape to
-`pyrite-roasting` — that reads template-ready and does NOT run; these read
-species-unready and DO. Two columns, two directions of error, neither an engine
-bug.
-
-⚠⚠ **S5 IS THE PRECEDENT TO READ BEFORE ANY INSTRUMENT JOB.** S5's brief named a
-fix (an honest diagonal on the gas block) and the arithmetic named a different
-one, in a different layer — because the FIRST thing it did was re-run all five
-recorded triggers, and four of them no longer reproduce. **A recorded fragility
-is a claim about a past state of the code.** Then its first bound looked safe on
-a four-run sweep and moved eight of the sixteen examples. Both halves apply here.
+⚠⚠ **S6 IS THE PRECEDENT TO READ BEFORE ANY INSTRUMENT JOB, AND S5 BEFORE ANY
+FRAGILITY JOB.** S6's brief handed it a number (14 routes) and a list; the number
+was wrong (16), the list was missing two, and the list contradicted the prose
+beside it. It only came out because the standing predict-then-measure check was
+run on a number that looked already-measured. **A recorded measurement is a claim
+about a past state of the code, and it can be wrong about its own subject.**
 
 After that, in order:
 
-1. **Pyrite** — one mineral entry from `pyrite-roasting` running. Blocked on the
+1. **⚠ THE BARE-ELEMENT GAP — S6 MEASURED IT AT 15 ROUTES AND IT IS THE CHEAPEST
+   THING ON THIS LIST.** 45 compounds are refused as *a bare element symbol*,
+   correctly — the ideal-gas value for `[C]` is the ATOM at Gf +671 kJ/mol while
+   the charcoal in the flask is 0. `iron`, `copper` and `nickel` escaped only
+   because S1 needed them as solid catalysts. **15 routes are blocked by nothing
+   else**; leverage `cobalt` **+3**, then `carbon-graphite` / `platinum` /
+   `silver` at **+2** each. The generated table is in
+   `data/catalog/COVERAGE_REPORT.md` under *"The next one along"*.
+   ⚠ **IT HAS A LAYERING QUESTION IN FRONT OF IT, SO IT IS NOT A LOOKUP.**
+   `element_data.REFERENCE_STATES` **already carries S0 and the reference state**
+   for Zn(s), Ag(s), C(graphite) — but with **`smiles=None`**, because a SOLID
+   reference state had nowhere to live until the solid block existed. Mercury
+   resolves today precisely because its standard state is a LIQUID and so it got
+   a SMILES. Missing is that binding plus the `Cp_solid`/`Vm_solid` pair
+   `priced_solid` demands. **Whether that belongs in `element_data` or in
+   `mineral_data` is a real decision — a metal is not a mineral** — and it owes
+   its own predict-then-measure pass.
+2. **⚠ S5's SIXTH INSTRUMENT FAULT, STILL OPEN AND STILL CHEAP.**
+   `tolerance_audit.py` reports `QUOTABLE DIGITS MOVE, worst 99.85%` on
+   `oil_of_vitriol`, and **that headline is wrong**: four of its five moved lines
+   are the CREATED-MATTER residual and every one gets SMALLER, on rows
+   `NEXT_SESSION.md` already carries as "NOT AN INVARIANT". **A
+   relative-difference test is meaningless on a column whose converged value is
+   zero.** `REPORT_ABS` exists for this and 2.9e-05 clears it. Reported, not
+   fixed — raising it blunts the test for genuine quantities, so picking the
+   number owes its own predict-then-measure pass.
+3. **Pyrite** — one mineral entry from `pyrite-roasting` running. Blocked on the
    same-database rule (`Hfs` in WEBBOOK, `S0s` in nothing), which is a rule worth
    keeping, so this needs a SOURCE and not a workaround.
-2. **⚠ `hydrolysis` IS GREEDY RANK 4 — AND READ S3's LANDMINE FIRST.** Measured:
+4. **⚠ `hydrolysis` IS GREEDY RANK 4 — AND READ S3's LANDMINE FIRST.** Measured:
    it unlocks **exactly ONE route alone, `vitriol-distillation`**, and that
    route's step 1 reads `-> iron-ii-OXIDE` while the engine makes HEMATITE. The
    whole standalone payoff of the 4th-ranked template is a route carrying a step
@@ -42,24 +61,15 @@ After that, in order:
    with such a row — S3's was the MECHANISM right and the ROW wrong, S4's was the
    ROW right and the mechanism short. Read §S3's "which one is WRONG" check
    before deciding.
-3. **M7 (dissociation as an equilibrium — ⚠ M12 took most of its case away;
+5. **M7 (dissociation as an equilibrium — ⚠ M12 took most of its case away;
    re-scope before scheduling)**, then **M8+ (electrochemistry — ⚠ that one WILL
    break the spectator zeros)** and **M10 (the site balance S1 did not build)**.
-4. **NUCLEATION, now that half of it is modelled.** S3 named the gap; S4 turned
+6. **NUCLEATION, now that half of it is modelled.** S3 named the gap; S4 turned
    the *deposition-needs-a-seed* half into a real bound in
    `SolidStateArrays.units`, which is why the mercury retort does not re-form its
    oxide when cooled 289 K below the oxide's threshold. What is still not
    expressible is a solid appearing from NO solid — `hydride-thermal-deposition`
    (`arsine -> arsenic + hydrogen`) is still a mechanism gap for that reason.
-5. **⚠ THE BURNER IS STILL 53 s AT rtol 1e-8 AGAINST 0.8 s AT THE DEFAULT.** S5
-   bounded the crash, not the thrashing: BDF is genuinely struggling with a
-   liquid layer holding **1e-29 mol**, which `LAYER_REABSORB` drains toward zero
-   without ever reaching it. The question nobody has asked is whether a layer
-   below `LAYER_EPS` should be *merged discretely* at a step boundary rather than
-   drained continuously forever. ⚠ `merge_phases` already does exactly that at
-   the `run` boundary — so this may be a matter of when it is called, not of a
-   new mechanic. **Measure the layer-2 inventory over the failing run before
-   designing anything.**
 
 The project is under **git**. There is no remote. ⚠ The committer identity is the
 machine's global `innovationlabOBS <innovationlab@obsglobal.com>`; set a
@@ -67,32 +77,33 @@ repo-local `user.name`/`user.email` if that should be yours.
 
 Start by reading, in order:
 
-MILESTONES.md — the plan. ⚠ **§S1, §S3, §S4 and §S5 are the ones to read**: S1's
-  brief asked for one mechanism and the arithmetic said two, S3 found the
+MILESTONES.md — the plan. ⚠ **§S1, §S3, §S4, §S5 and §S6 are the ones to read**:
+  S1's brief asked for one mechanism and the arithmetic said two, S3 found the
   instrument's own OUTPUT was not diffable, S4's brief said to reverse a re-label
-  and the arithmetic said keep it, and **S5's brief named the wrong LAYER.**
+  and the arithmetic said keep it, **S5's brief named the wrong LAYER**, and
+  **S6's brief handed it a number that was wrong.**
 HANDOFF.md — what exists, and the ethos to preserve. **85 is S1, 86 is S2, 87 is
-  S3, 88 is S4, 89 is S5.**
+  S3, 88 is S4, 89 is S5, 90 is S6.**
 NEXT_SESSION.md — the invariants table at the bottom is the contract. ⚠ Read the
   two warnings above it before trusting any row.
 GAME_DESIGN.md — the settled design.
 data/catalog/README.md — the reaction-class taxonomy, including **S3's split of
   `thermal-decomposition`** and **S4's decision NOT to un-split
   `roasting-to-metal`**, and `data/catalog/COVERAGE_REPORT.md`.
-the memory files (auto-loaded), especially chemsim-jacobian-bound,
-  chemsim-zero-jacobian-column (⚠ its diagnosis was CORRECTED by S5),
-  chemsim-mercury-retort, chemsim-surface-reactions,
-  chemsim-solid-state-reactions and chemsim-generated-artefacts.
+the memory files (auto-loaded), especially chemsim-species-ready-minerals,
+  chemsim-jacobian-bound, chemsim-zero-jacobian-column (⚠ its diagnosis was
+  CORRECTED by S5), chemsim-element-floor, chemsim-mercury-retort and
+  chemsim-generated-artefacts.
 
 ```bash
+python validation/catalog_coverage.py        # 36/218, 28/173, 65/173 species-ready, ~10 s
+python tools/build_route_index.py            # ⚠ RUN THIS TOO -- it is the artefact nothing reads
 python validation/jacobian_bound.py          # ⚠ S5's standing audit, ~1 min
 python examples/mercury_retort.py            # S4, six panels, ~4 s
 python examples/roasting_and_the_catalyst_gate.py   # S1, five panels, ~11 s
 python examples/lime_cycle.py                # M6, eight panels, ~18 s
 python examples/named_routes.py              # M5's 17 routes, ~24 s
 python validation/rate_ceiling.py            # M12's standing audit + S4's 4th panel, seconds
-python validation/catalog_coverage.py        # 36/218, 28/173, ~10 s
-python tools/build_route_index.py            # ⚠ RUN THIS TOO -- it is the artefact nothing reads
 python validation/tolerance_audit.py         # S2's standing audit, ~8 min
 python -m pytest -q tests/test_jacobian.py   # S5's 11 tests, ~55 s
 python -m pytest -q tests/test_mercury_retort.py   # S4's 14 tests, ~4 s
@@ -106,8 +117,12 @@ establish a baseline and to verify at the end, not after each change. Say what a
 long run will cost before starting one. The tolerance audit is another ~8 minutes
 and **`examples/plate_column.py` alone is 12 minutes.**
 
-✔ **THE SUITE IS GREEN AND THE NUMBER IS MEASURED: 826 passed in 12:32**, at
-the end of S5.
+✔ **THE SUITE WAS GREEN AND MEASURED AT 826 passed in 12:32 at the end of S5.**
+⚠ **S6 DID NOT RE-RUN IT, DELIBERATELY AND WITH THE REASON STATED: it changed no
+file under `src/` or `tests/`, and nothing under either imports
+`validation/catalog_coverage.py`.** The suite is unaffected by construction, not
+by assumption — but that is an argument, and the next session should re-establish
+the baseline for itself before touching the RHS.
 
 STATE: Layers 0–7 complete. The engine is open-ended (no recipes), conserves
 matter, has an element/mineral floor, a still that is a saveable protocol, a plate
@@ -115,119 +130,88 @@ column that reaches its purity target, an ionic lattice that can leave solution,
 solvent mixture that says when it was never modelled, an energy balance it can
 report the way it reports a mass one, 34 templates, a reaction that happens INSIDE
 a crystal, a gas that ATTACKS a crystal, a catalyst you have to actually put in
-the flask, a route that nothing declares, and **a Jacobian that cannot be probed
-outside its own state.** `SAVE_VERSION` is **5**.
+the flask, a route that nothing declares, and a Jacobian that cannot be probed
+outside its own state. `SAVE_VERSION` is **5**.
 Coverage: **28/173 template-ready routes**, **36/218 classes**, **34 templates**
-(unchanged — S5 moved no chemistry).
+(all unchanged — S6 moved no chemistry), **65/173 species-ready** (was 49).
 
 ---
 
-# ⚠⚠ WHAT S5 TURNED OUT TO BE: THE FIX WAS SCHEDULED FOR THE WRONG LAYER
+# ⚠⚠ WHAT S6 TURNED OUT TO BE: THE BRIEF HANDED IT A NUMBER, AND THE NUMBER WAS WRONG
 
-The brief: a `LAYER_REABSORB`-style honest diagonal on the GAS block, to close the
-trap *a species in the network but absent from a sealed flask has an identically
-zero Jacobian column*. What shipped: `src/chemsim/numerics/jacobian.py`, a bound
-on BDF's differencing STEP, at all three `solve_ivp` sites. **The gas block was
-never touched and no chemistry moved.**
+The brief: `species-ready` asks the plain `ThermochemistryProvider`, which refuses
+an ionic lattice by name, while `mineral_data` has priced lattices on the solid
+basis since M3. S4 recorded the gap as **14 routes, 49 → at most 63**.
 
-## ⚠⚠ 1. FOUR OF THE FIVE RECORDED TRIGGERS DO NOT REPRODUCE
+What shipped: `_mineral_fallback` and a `mineral` tier in
+`validation/catalog_coverage.py`. **19 compounds move refused → `mineral`;
+species-ready 49 → 65; fully-sourced 5 → 14. No `src/` file was touched and no
+chemistry moved.**
 
-| trigger | on record | measured now |
-|---|---|---|
-| M6's sealed kiln, 0.05 mol, N2/O2 absent | RAISED, CO2 hit −2.572 mol | clean, `p/K − 1 = −1.56e−04` |
-| ... at 0.1 / 0.4 / 1.0 mol | clean | clean |
-| `fragilities`' `kla=0`, empty headspace | named | never made to fire, then or now |
-| a vessel at rest | short-circuited | short-circuited |
-| **S2's `oil_of_vitriol` at rtol 1e-8** | RAISES after 50.7 s | **RAISES after 52.7 s ✔** |
+| column | before | after |
+|---|---:|---:|
+| routes species-ready | 49 (28.3%) | **65 (37.6%)** |
+| routes fully sourced | 5 (2.9%) | **14 (8.1%)** |
+| compounds resolving | 1118 (70.6%) | **1137 (71.8%)** |
+| formation measured/Benson | 716 (45.2%) | **735 (46.4%)** |
+| refused | 465 (29.4%) | **446 (28.2%)** |
+| UNIFAC-decomposable | 836 | 836 — **unchanged, by design** |
+| routes template-ready | 28/173 | **28/173 — unchanged** |
 
-⚠ The kiln stopped failing because **S4 changed `SolidStateArrays.units`**, not
-because anything was fixed. **A fragility that no longer fires is not one that was
-closed, and the difference is only visible if you re-run it.**
+## ⚠⚠ 1. THE PREDICTION WAS 14 AND THE ANSWER IS 16
 
-## ⚠⚠ 2. THE ONE THAT FIRES IS IN LIQUID LAYER 2, AND `LAYER_REABSORB` IS THE CAUSE
+The recorded 14 was measured with a **RAW string comparison** of the catalog's
+SMILES against the `by_lattice` key, and the catalog spells its salts in a
+different fragment order than the canonical table:
 
-Of 4322 `num_jac` calls in the failing run, **exactly ONE column reaches `inf`**:
-liquid layer 2's SO2, holding **8.21e-29 mol**. Every other column tops out at
-1.49e+3. It is not absent and not flat — it is FROZEN. `LAYER_REABSORB` drains an
-empty layer 2 at `−1.0·drain2·nL2`, **strictly negative**, so `num_jac` takes
-`f_sign = −1` and steps DOWNWARD into the RHS's own `np.maximum(y, 0.0)`:
+    catalog   [Ca+2].[O-]C([O-])=O          [Zn+2].[O-2]
+    table     O=C([O-])[O-].[Ca+2]          [O-2].[Zn+2]
 
-    h            -2.2e-24  -2.2e-19  -2.2e-14  -2.2e-09  -2.2e-04  -2.2e+06
-    max |diff|    8.84e-29  8.84e-29  8.84e-29  8.84e-29  8.84e-29  8.84e-29
+| matching rule | routes moved |
+|---|---:|
+| raw lattice string | 14 ← **the recorded estimate** |
+| raw, or the sorted dissolved-ion tuple | 15 |
+| **canonical lattice — what the engine itself does** | **16** |
 
-**Constant over thirty decades of step size**, against a `scale` of 8.37e-14 taken
-from a different species' row. Twenty-eight consecutive calls at one unchanged
-state climb a decade each; two hundred later the factor reads **2.220e+307**.
+The two missed are `vulcanisation` and **`lime-cycle`** — and `lime-cycle` is the
+route S4's own note names *in prose* as the headline case while its list of
+fourteen ids omits it. **The number, the list and the prose disagreed with each
+other.** Same lesson as S5's four dead triggers in a different costume.
 
-⚠⚠ **The term the brief named as the PRECEDENT to copy is what points the probe at
-the clamp**, and a diagonal on the gas block could not have reached that column.
+## ⚠⚠ 2. THE RULE HAD TO BE A FALLBACK, NEVER AN OVERRIDE
 
-## ⚠⚠ 3. THE FIRST BOUND LOOKED SAFE ON FOUR RUNS AND MOVED EIGHT OF SIXTEEN
+The obvious implementation — *is this compound a mineral?* — is measurably wrong.
+36 catalog compounds sit on a mineral lattice but **17 already resolve as `ion`**:
+`sodium-chloride`'s ions are priced, it genuinely dissolves, and it can also
+precipitate. Labelling it `mineral` would **downgrade a species the engine handles
+in two phases to one it handles in one**, and would have silently cut the
+published UNIFAC count. So the fallback fires only where all three providers have
+already refused — the engine's own precedence, not a new one. Because every
+rescued species was already refused, **UNIFAC does not move by one**, which is the
+honest answer: a lattice cannot enter a liquid mixture, by the same verdict that
+sent it down the branch.
 
-`h = factor · max(atol, |y_j|)`, so the obvious bound is "`factor = 1` moves the
-variable by all of itself". **False where it matters**: when `|y_j| ≤ atol` the
-fraction is of ATOL, so `factor = 149` on an absent species is a 1.5e-7 mol probe
-of a 0.1 mol flask. Swept on four runs: all bit-identical. Run over all sixteen
-examples: **8 moved**, six in a real digit — `roasting` SO2 **0.000201 → 0.000197
-mol**, `fractional_distillation` tail **0.0702 → 0.0711** and **+59% wall clock**,
-`multistep_prep` closure 100.0127% → 100.0017%.
+## ⚠ 3. THE CANONICAL CLAIM WAS VERIFIED, NOT INFERRED
 
-**The bound that survived is the STATE'S OWN EXTENT and has no constant in it:**
+`vessel.py` does a RAW dict lookup on `by_lattice()`, so crediting a spelling the
+engine would refuse is the `pyrite-roasting` failure in reverse. What bridges it
+is `network/builder.py` line 320, which rebuilds every input SMILES through
+`Molecule.from_smiles` before the species list exists. **All 19 rescued minerals
+were charged into a real `Vessel` solid block: 19 of 19 at their full 0.02 mol.**
 
-    |h_j| <= max_i |y_i|    i.e.   factor_j <= max_i |y_i| / max(atol, |y_j|)
+## ⚠ 4. WHAT `species-ready` DOES NOT CLAIM FOR THESE
 
-*A difference quotient is a derivative of THIS system only while the probe stays
-inside it.* Every finite ceiling from 1e2 to 1e14 fixes the crash, so what matters
-is finiteness and the value is free to mean something.
-
-## ⚠⚠ 4. IT BINDS ON A RIG, AND ONLY A CONVERGED RUN CAN JUDGE THAT
-
-`fractional_distillation` wants **3.252e+12** and is clamped in **232 of 1833**
-Jacobians.
-
-| | converged rtol 1e-8 | default UNBOUND | default BOUND |
-|---|---|---|---|
-| forerun | 0.43671495 | 0.43671550 | 0.43671561 |
-| heart | 0.55620830 | 0.55620760 | 0.55620765 |
-| tail | 0.07016219 | 0.07016210 | 0.07016229 |
-| pot T / K | 408.20578700 | 408.20567700 | 408.20573700 |
-
-⚠ At rtol 1e-8 the heart and tail are **BIT-IDENTICAL** bounded and unbounded, so
-the two converge to the same answer. At the default neither is systematically
-nearer, and every difference is **≤ 1e-6 relative, three decades under the 1e-3
-band `tolerance_audit.py` itself calls a quotable digit.** ⚠ And 3.25e+12 against
-`atol = 1e-9` is a **3250-unit probe** on a species holding nothing, in a rig
-whose whole contents are a few mol: the seventh-figure move is the difference
-between two fictions. ⚠ The rig runs ~122 Jacobians per solve against the ~316 an
-overflow needs — **one longer run away from the same crash.**
-
-## ⚠⚠ 5. S2's COVERAGE GAP IS CLOSED — AND THE SWEEP EXPOSED A SIXTH INSTRUMENT FAULT
-
-`KNOWN_REFUSAL` is empty and `oil_of_vitriol` is in `EXPENSIVE`. ⚠ S2's diagnosis
-was **right about the answer and wrong about the column**.
-
-`--only oil_of_vitriol` now **completes in 1061 s tight against 57 s loose
-(18.5x)** — and reports `QUOTABLE DIGITS MOVE, worst 99.85%`. ⚠⚠ **That headline
-is wrong.** Four of its five moved lines are the CREATED-MATTER residual and
-every one gets SMALLER (900 K 4.038e-08 → 6.166e-11; 690 K 2.935e-05 →
-2.728e-07): a residual converging toward zero, and exactly the rows
-`NEXT_SESSION.md` already carries as **"NOT AN INVARIANT"**. The one physical
-number among the five moves **1.5154e-03 → 1.5155e-03, rel 6.6e-05 — three
-decades under the audit's own 1e-3 band.**
-
-⚠⚠ **A RELATIVE-DIFFERENCE TEST IS MEANINGLESS ON A COLUMN WHOSE CONVERGED VALUE
-IS ZERO.** `0.000e+00 → 2.728e-07` reads as "99% moved" and means "a residual got
-smaller". `REPORT_ABS` exists for this and 2.9e-05 clears it. **Reported, not
-fixed** — raising it blunts the test for genuine quantities, and picking the
-number owes its own predict-then-measure pass. **This is a good cheap first job
-if the `species-ready` work stalls.**
+A mineral resolves **as a crystal**. It can be charged, held and reacted; it still
+cannot dissolve, so a step needing one in solution is still not expressible.
+**None of the 16 becomes template-ready, and 28/173 is still the honest headline
+of this project's coverage.**
 
 ---
 
 # ⚠ THE FRAGILITIES
 
-**1. ⚠ THE BURNER IS STILL 53 s AT rtol 1e-8 AGAINST 0.8 s AT THE DEFAULT.** The
-crash is bounded; the thrashing is not. See item 5 above — this is the live one.
+**1. ⚠⚠ THE BURNER IS STILL 53 s AT rtol 1e-8 AGAINST 0.8 s AT THE DEFAULT.** The
+crash is bounded; the thrashing is not. **This is the live one — see START WITH.**
 
 **2. ⚠ A SOLID DECOMPOSITION'S FORWARD CONSTANT CROSSES THE UNIMOLECULAR CEILING
 AT 3710 K, INSIDE THE RHS's 5000 K CLAMP.** New in S4, reported by
@@ -248,7 +232,9 @@ relative — three decades under the audit's own reporting band.
 ⚠ `validation/tolerance_audit.py` is a STANDING audit: run it after touching the
 RHS. It has THREE self-check examples (`lime_cycle`,
 `roasting_and_the_catalyst_gate`, `mercury_retort`) which must come out OUTPUT
-IDENTICAL, and **`oil_of_vitriol` is sweepable for the first time.**
+IDENTICAL, and **`oil_of_vitriol` is sweepable for the first time.** ⚠ Its
+`QUOTABLE DIGITS MOVE` headline on `oil_of_vitriol` is WRONG — see item 2 of the
+task list.
 
 **5. NOT MODELLED: the SITE BALANCE.** First order in the catalyst for ever, so
 ten times the iron is ten times the rate. Right at low coverage, wrong at high.
@@ -267,11 +253,13 @@ and bounded, not hidden — which is exactly what M4 built that flag for.
 
 **8. ⚠ THE FLAT COLUMN IS STILL FLAT, AND THAT IS CORRECT.** A species genuinely
 absent from a sealed flask has an identically zero Jacobian column, and **zero is
-its derivative.** S5 did not change that and should not have: what it changed is
-that `num_jac` stops reading "I measured zero" as "I failed to measure".
-`fragilities`' `kla=0` entry is KEPT rather than deleted, because the
-CONFIGURATION still produces flat columns and the bound was measured on the
-trigger that FIRED rather than on that one.
+its derivative.** What S5 changed is that `num_jac` stops reading "I measured
+zero" as "I failed to measure". `fragilities`' `kla=0` entry is KEPT rather than
+deleted, because the CONFIGURATION still produces flat columns.
+
+**9. ⚠ 45 COMPOUNDS ARE STILL REFUSED AS A BARE ELEMENT, BLOCKING 15 ROUTES.**
+New in S6, generated into `COVERAGE_REPORT.md` so it cannot rot. See task 1 — it
+is a curation job with a layering decision in front of it.
 
 **UNCHANGED: `psi = np.exp(-a / T)` in `activity.activity_coefficients` overflows
 for the PSRK quadratic `H2O <-> N2` pair below 4.28 K**, and the RHS's clamp is
@@ -285,47 +273,61 @@ for the PSRK quadratic `H2O <-> N2` pair below 4.28 K**, and the RHS's clamp is
 TRAPS SPECIFIC TO THIS ARC:
 
 ⚠ BOUND A MECHANISM ARITHMETICALLY AGAINST THE ACTUAL SIMULATED STATE BEFORE
-WRITING CODE. Seventeen times now.
-⚠⚠ **A RECORDED FRAGILITY IS A CLAIM ABOUT A PAST STATE OF THE CODE.** Re-run
-every trigger before designing the fix — S5 found four of five had stopped firing,
-one of them because a DIFFERENT session changed a bound.
+WRITING CODE. Eighteen times now.
+⚠⚠ **A RECORDED MEASUREMENT IS A CLAIM ABOUT A PAST STATE OF THE CODE, AND IT CAN
+BE WRONG ABOUT ITS OWN SUBJECT.** S5 found four of five recorded triggers had
+stopped firing. **S6 was handed a measured number and a list of ids: the number
+was wrong, the list was short by two, and the list contradicted the prose beside
+it.** Re-measure even what looks already-measured.
+⚠⚠ **WHEN A NOTE HANDS YOU A NUMBER *AND* A LIST, CHECK THEY AGREE.** The
+disagreement is the finding.
+⚠⚠ **A NEW CREDIT MUST BE A FALLBACK BEFORE IT IS AN OVERRIDE.** S6's rescue
+would have DOWNGRADED 17 species that already resolved better, and silently cut a
+published column, if it had asked "is this a mineral" instead of "did everything
+else refuse".
 ⚠⚠ **INSTRUMENT WHICH COLUMN/ROW/SPECIES ACTUALLY FAILS.** S2's diagnosis named
 "a species absent from a sealed flask" and the column was liquid layer 2's SO2,
-frozen rather than flat. The diagnosis was right about the ANSWER and wrong about
-the CAUSE, which is the combination that survives review.
+frozen rather than flat.
 ⚠⚠ **A FOUR-RUN SWEEP IS NOT THE EXAMPLE SET.** S5's first bound was bit-identical
 on four runs and moved eight of sixteen examples. For anything in the hot loop,
 diff the WHOLE example set.
 ⚠⚠ **WHEN A NUMERICS CHANGE MOVES A NUMBER, DO NOT COMPARE IT TO THE PREVIOUS
-DEFAULT RUN — COMPARE BOTH TO A CONVERGED ONE.** That is what turned
-`fractional_distillation`'s seventh figure from a regression into solver noise.
+DEFAULT RUN — COMPARE BOTH TO A CONVERGED ONE.**
 ⚠ **A BRIEF'S EXPECTED OUTCOME IS A HYPOTHESIS.** S4's said a re-label would be
 reversed; running it both ways said keep. S1's asked for one mechanism and got
-two. S5's named a layer and the measurement named another. **Run the number for
-the option you are not taking.**
+two. S5's named a layer and the measurement named another. S6's named a size and
+the measurement named another. **Run the number for the option you are not
+taking.**
 ⚠ **PREDICT THE NUMBER BEFORE YOU MEASURE IT.** S3 predicted +2 classes and +0
 routes; S4 predicted +1 class and +1 route. Both came out exactly. ⚠ S5 predicted
-"every example byte-identical" and **was wrong, twice** — which is exactly why the
-prediction is worth writing down.
-⚠ **AN `inf` IS USUALLY THE WRONG BOUND, NOT A BOUND NEEDING SOFTENING.** Ask what
-the finite one MEANS physically before reaching for a clip. Twice now: S4's seed
-crystal, S5's state extent.
-⚠ **A FAILURE CAN HAVE A CHARGE THRESHOLD AS WELL AS A TEMPERATURE ONE**, and the
-small charge is the one an example gets written with.
+"every example byte-identical" and was wrong, twice. ⚠ **S6 predicted 14 and
+measured 16** — which is exactly why the prediction is worth writing down.
+⚠ **VERIFY A CREDIT BY RUNNING IT, NOT BY READING THE CODE THAT WOULD RUN IT.**
+S6 charged all 19 rescued minerals into a real `Vessel` rather than arguing from
+`builder.py` line 320. `pyrite-roasting` is what that check exists to prevent.
+⚠ **AN `inf` IS USUALLY THE WRONG BOUND, NOT A BOUND NEEDING SOFTENING.** Twice:
+S4's seed crystal, S5's state extent.
+⚠ **A RELATIVE-DIFFERENCE TEST IS MEANINGLESS ON A COLUMN WHOSE CONVERGED VALUE
+IS ZERO.** `0.000e+00 -> 2.728e-07` reads as "99% moved" and means "a residual got
+smaller".
 ⚠ **AUDIT THE INSTRUMENT BEFORE THE FINDINGS — AND THEN AUDIT ITS OUTPUT AND ITS
 COVERAGE.** S2's harness invented a finding; S1's coverage audit credited a route
 that cannot run; S3's report could not be diffed; S4's rate-ceiling audit made a
-claim about a table it does not read; **S5's own first audit asserted "every
-clamped must read 0" and a rig refuted it.**
+claim about a table it does not read; S5's own first audit asserted "every clamped
+must read 0" and a rig refuted it; **S6's target column had been understating
+itself since M3 and the note recording that was wrong too.**
 ⚠ **WHEN YOU OVERRIDE THE SOURCE OF A DERIVED QUANTITY, FIND WHAT ELSE WAS
 DERIVED FROM THE OLD ONE.** The curated Antoine would silently have orphaned
-`Hvap`.
+`Hvap`. ⚠ Same shape in an instrument: S6 added a tier and had to route THREE
+hard-coded `measured + benson + ion` sums through one `SOURCED_TIERS` constant, or
+the headline would have silently under-counted.
 ⚠ **A GENERATED FILE NOTHING READS IS THE ONE THAT ROTS.** Regenerate all three
-catalog artefacts, not just the one whose numbers you are quoting. ⚠ The root
-`README.md`'s coverage table had rotted since M5 and S4 corrected it — that one
-is not generated at all, which is worse.
+catalog artefacts. ⚠ The root `README.md`'s coverage table is NOT generated —
+S4 corrected it once and S6 again.
 ⚠ **A PHASE LABEL CARRIES A STANDARD STATE.** Adding one is a thermodynamic
-change, not a naming change.
+change, not a naming change. ⚠ So is a BASIS: a solid-basis Hf is not an
+ideal-gas Hf, which is why S6's `mineral` is its own tier and not part of
+`measured`.
 ⚠ A CLASS IS A MECHANISM CLAIM. Read the rows, not the name — and check which
 ROUTES a credit moves. When a mechanism does not make a row's product, ask which
 of the two is WRONG before deciding the verdict.
@@ -336,17 +338,16 @@ converged-looking number at the default tolerance. Re-measure before quoting.
 CONSUMES the pattern; handing scipy both would silently drop the column groups
 `useful_sparsity` computes.
 ⚠ Windows console is cp1252: a warning glyph inside a `print()` kills a script.
-Docstrings fine, printed text ASCII. (TWENTY sessions running.)
+Docstrings fine, printed text ASCII. (TWENTY-ONE sessions running.)
 ⚠⚠ **`sed -i` REWRITES EVERY LINE ENDING IN A CRLF FILE.** S3 lost a file to it on
-its first edit — 826/826 on a one-line change. This repo is MIXED: markdown and
-`.psv` are CRLF, `element_data.py`/`solid_state.py`/`volatility.py` are CRLF while
-`vessel.py`/`surface.py`/`vessel_integrator.py`/`jacobian.py` are LF. Use a
-binary-mode anchored patcher that reads the anchor and replacement from FILES and
-never decodes. **Check `git diff --stat` after the first edit to any file.**
+its first edit. This repo is MIXED: markdown and `.psv` are CRLF,
+`element_data.py`/`solid_state.py`/`volatility.py`/`catalog_coverage.py` are CRLF
+while `vessel.py`/`surface.py`/`vessel_integrator.py`/`jacobian.py` are LF. Use a
+binary-mode anchored patcher that reads anchor and replacement without decoding.
+**Check `git diff --stat` after the first edit to any file.**
 ⚠ **HEREDOCS EAT ESCAPES:** `\\n` written into a `python - <<'PY'` heredoc arrives
-as `\n` and becomes a real newline inside a Python string. S5 hit this again and
-broke a file's syntax. Use the Write/Edit tools for anything containing a
-backslash.
+as `\n` and becomes a real newline inside a Python string. Use the Write/Edit
+tools for anything containing a backslash.
 ⚠ **A GENERATOR CAN LEAK A `numpy` REPR INTO ITS OUTPUT.** `np.float64(59.444)`
 went into `element_data.py` and made the module unimportable. Cast to `float` at
 the boundary.
@@ -359,6 +360,8 @@ ALSO PRESERVE:
 Strict downward layering; numerics sees ONLY numpy arrays; RDKit stays in matter.
 NO silent approximations. REFUSE loudly rather than return a confident wrong
 number — and a LATENT fragility is a third case: report it, do not refuse it.
+⚠ **AND REFUSING TO *DISSOLVE* A SPECIES IS NOT REFUSING TO *PRICE* IT.** S6's
+whole finding was a column that conflated the two for three milestones.
 The setup/hot-loop split: when adding a physical model, first ask "what uniform
 array form does this collapse to?"
 `World.rig is None` exactly the old per-vessel path; `losses=None` exactly
@@ -385,8 +388,10 @@ never counted in the held-ideal flag; a rate CAP scales BOTH pre-exponentials by
 one factor; a template that moves a hydrogen ATOM must collapse explicit Hs; a
 declared catalyst is a CONSTANT OF THE MOTION — bit for bit, at every charge; the
 tolerance audit's THREE self-check examples come out byte-identical;
-**`COVERAGE_REPORT.md` comes out byte-identical across `PYTHONHASHSEED` values**;
-**`validation/jacobian_bound.py` panel 3 reads 0 clamped columns on every single
-vessel**; **a lattice may REACT and may never DISSOLVE — the fusion law is still
-407x wrong in both directions, and neither M6 nor S1 nor S3 nor S4 nor S5 softened
-that by one digit.**
+**`COVERAGE_REPORT.md` and both `derived/*.psv` come out byte-identical across
+`PYTHONHASHSEED` values**; **the `mineral` tier is a FALLBACK consulted only after
+all three providers refuse, so no species that resolves today is ever re-labelled
+by it**; **`validation/jacobian_bound.py` panel 3 reads 0 clamped columns on every
+single vessel**; **a lattice may REACT and may never DISSOLVE — the fusion law is
+still 407x wrong in both directions, and neither M6 nor S1 nor S3 nor S4 nor S5
+nor S6 softened that by one digit.**
