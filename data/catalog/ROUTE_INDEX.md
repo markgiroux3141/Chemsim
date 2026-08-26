@@ -76,7 +76,7 @@ The same species is routinely a feedstock in one route and an intermediate in an
 
 | # | step | in | out | conditions | class |
 |--:|---|---|---|---|---|
-| 1 | coke combustion | carbon-graphite + oxygen | carbon-dioxide | tuyere, 2200 K | `combustion` |
+| 1 | coke combustion | carbon-graphite + oxygen | carbon-dioxide | tuyere, 2200 K | `carbon-combustion` |
 | 2 | Boudouard reaction | carbon-dioxide + carbon-graphite | carbon-monoxide | 1200 K | `boudouard` |
 | 3 | indirect reduction | iron-iii-oxide + carbon-monoxide | iron-ii-oxide + carbon-dioxide | stack, 900 K | `gas-solid-reduction` |
 | 4 | final reduction | iron-ii-oxide + carbon-monoxide | iron + carbon-dioxide | bosh, 1300 K | `gas-solid-reduction` |
@@ -603,7 +603,7 @@ The same species is routinely a feedstock in one route and an intermediate in an
 
 | # | step | in | out | conditions | class |
 |--:|---|---|---|---|---|
-| 1 | sulfur combustion | sulfur-s8 + oxygen | sulfur-dioxide | burner, 600-1200 K | `combustion` |
+| 1 | sulfur combustion | sulfur-s8 + oxygen | sulfur-dioxide | burner, 600-1200 K | `sulfur-combustion` |
 | 2 | SO2 oxidation by NO2 | sulfur-dioxide + nitrogen-dioxide + water | sulfuric-acid + nitric-oxide | chamber, 330-370 K | `redox-oxygen-transfer` |
 | 3 | carrier regeneration | nitric-oxide + oxygen | nitrogen-dioxide | chamber, cold favoured | `gas-phase-oxidation` |
 | 4 | chamber crystal formation | nitrogen-dioxide + sulfur-dioxide + sulfuric-acid | nitrosylsulfuric-acid + water | water-starved chamber | `nitrosation` |
@@ -793,7 +793,7 @@ The same species is routinely a feedstock in one route and an intermediate in an
 
 | # | step | in | out | conditions | class |
 |--:|---|---|---|---|---|
-| 1 | sulfur combustion | sulfur-s8 + oxygen | sulfur-dioxide | burner | `combustion` |
+| 1 | sulfur combustion | sulfur-s8 + oxygen | sulfur-dioxide | burner | `sulfur-combustion` |
 | 2 | catalytic SO2 oxidation | sulfur-dioxide + oxygen + vanadium-pentoxide | sulfur-trioxide + vanadium-pentoxide | 700-900 K, V2O5 | `catalytic-gas-oxidation` |
 | 3 | absorption into oleum | sulfur-trioxide + sulfuric-acid | disulfuric-acid | absorber, 98% acid | `acid-anhydride-absorption` |
 | 4 | oleum dilution | disulfuric-acid + water | sulfuric-acid | dilution | `hydrolysis` |
@@ -1026,7 +1026,7 @@ The same species is routinely a feedstock in one route and an intermediate in an
 
 | # | step | in | out | conditions | class |
 |--:|---|---|---|---|---|
-| 1 | match head ignition | potassium-chlorate + phosphorus-white | phosphorus-pentoxide + potassium-chloride | friction | `combustion` |
+| 1 | match head ignition | potassium-chlorate + phosphorus-white | phosphorus-pentoxide + potassium-chloride | friction | `chlorate-oxygen-transfer` |
 
 <a id="bayer-process"></a>
 
@@ -2916,7 +2916,7 @@ The same species is routinely a feedstock in one route and an intermediate in an
 
 | # | step | in | out | conditions | class |
 |--:|---|---|---|---|---|
-| 1 | partial combustion of H2S | hydrogen-sulfide + oxygen | sulfur-dioxide + water | thermal stage | `combustion` |
+| 1 | partial combustion of H2S | hydrogen-sulfide + oxygen | sulfur-dioxide + water | thermal stage | `hydrogen-sulfide-combustion` |
 | 2 | Claus reaction | hydrogen-sulfide + sulfur-dioxide | sulfur-s8 + water | catalytic stage, alumina | `comproportionation` |
 
 <a id="haber-bosch"></a>
@@ -3833,7 +3833,7 @@ The same species is routinely a feedstock in one route and an intermediate in an
 | # | step | in | out | conditions | class |
 |--:|---|---|---|---|---|
 | 1 | silver-catalysed epoxidation | ethylene + oxygen + silver | ethylene-oxide + silver | 520 K, 20 bar, Ag on alumina | `catalytic-epoxidation` |
-| 2 | combustion side reaction | ethylene + oxygen | carbon-dioxide + water | same reactor, selectivity loss | `combustion` |
+| 2 | combustion side reaction | ethylene + oxygen | carbon-dioxide + water | same reactor, selectivity loss | `hydrocarbon-combustion` |
 
 <a id="chlorohydrin-route"></a>
 
@@ -5369,7 +5369,6 @@ This is the list a template library has to grow into. `validation/catalog_covera
 |---|---:|---:|
 | proton-transfer | 11 | 9 |
 | hydrolysis | 8 | 8 |
-| combustion | 6 | 6 |
 | glycoside-hydrolysis | 6 | 5 |
 | radical-polymerisation | 6 | 6 |
 | nucleophilic-substitution | 6 | 6 |
@@ -5405,6 +5404,7 @@ This is the list a template library has to grow into. `validation/catalog_covera
 | esterification | 3 | 3 |
 | alkene-hydrogenation | 3 | 3 |
 | isomerisation | 3 | 3 |
+| sulfur-combustion | 2 | 2 |
 | lime-slaking | 2 | 2 |
 | disproportionation-hydrolysis | 2 | 2 |
 | halide-oxidation | 2 | 2 |
@@ -5445,6 +5445,7 @@ This is the list a template library has to grow into. `validation/catalog_covera
 | nitrosation | 1 | 1 |
 | acid-anhydride-absorption | 1 | 1 |
 | sulfate-thermal-decomposition | 1 | 1 |
+| hydrogen-sulfide-combustion | 1 | 1 |
 | comproportionation | 1 | 1 |
 | salt-metathesis | 1 | 1 |
 | dissolution | 1 | 1 |
@@ -5455,7 +5456,9 @@ This is the list a template library has to grow into. `validation/catalog_covera
 | thermal-fixation | 1 | 1 |
 | acid-displacement | 1 | 1 |
 | gas-solid-fixation | 1 | 1 |
+| chlorate-oxygen-transfer | 1 | 1 |
 | amphoteric-dissolution | 1 | 1 |
+| carbon-combustion | 1 | 1 |
 | boudouard | 1 | 1 |
 | slagging | 1 | 1 |
 | roasting-to-metal | 1 | 1 |
@@ -5501,6 +5504,7 @@ This is the list a template library has to grow into. `validation/catalog_covera
 | alkyne-hydration | 1 | 1 |
 | thermal-cracking | 1 | 1 |
 | catalytic-epoxidation | 1 | 1 |
+| hydrocarbon-combustion | 1 | 1 |
 | epoxide-hydrolysis | 1 | 1 |
 | nitrile-hydrogenation | 1 | 1 |
 | halogen-addition | 1 | 1 |

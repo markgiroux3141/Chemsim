@@ -4926,6 +4926,115 @@ the measurements that justify them.
     because its chemistry costs less. Kolbe needs the CARBOXYLATE: glacial
     acetic acid does not electrolyse, and `[O-]` in the SMARTS is what says so.
 
+92. ✔✔ **S7 — THE FOUR INORGANIC GAS PROCESSES, AND THE QUEUE'S TOP TWO ROWS
+    MEASURED ZERO BEFORE A LINE WAS WRITTEN.**
+
+    **+5 classes (38 → 43 of 224), +3 template-ready (31 → 34), +4 RUNNABLE
+    (20 → 24)** — the largest single-session move the intersection has had.
+    Five templates, three bundles, no Layer 3 or Layer 4 code, one refusal
+    widened in Layer 1, two new standing audits. ⚠ All five headline numbers
+    were PREDICTED before the audit was run and all five came out exactly.
+
+    THE FOUR: `water-gas-shift` and `steam-reforming`
+    (`syngas_generation_chemistry`), the Deacon process
+    (`chlorine_recovery_chemistry`) and the Claus process (`claus_chemistry`,
+    two templates). Every equilibrium came out at its textbook value off this
+    project's own tables BEFORE a template existed — dH −41.15 against a book
+    −41.2, +206.2 against +206, −114.4 against −114.5. **What the templates buy
+    is behaviour nobody declared**, and `validation/gas_processes.py` measures
+    it: the shift peaking at 81.3% at 620 K and falling to 55.6% at 900 K
+    because K falls with T; the reformer at 0.01% at 700 K and 36.1% at 1300 K,
+    and 18.6% → 73.5% purely by thinning the flask from 54 bar to 0.63 (two
+    moles in, four out — the one gas equilibrium here that pressure hurts);
+    Deacon's ceiling and rate crossing between 600 and 700 K, which is the whole
+    industrial history of the process; and a Claus flask recovering **100.0%**
+    of its sulfur at exactly the stoichiometric air rate and less on either
+    side, because burning one third of the feed is what leaves the 2:1 ratio the
+    second template wants. Neither Claus template knows the other exists.
+
+    ⚠ **THE CLAUS TEMPLATE HAS TWENTY-FOUR REACTANT SLOTS**, because a graph
+    rewrite cannot write 3/8 of an S8 ring: `16 H2S + 8 SO2 -> 3 S8 + 16 H2O` is
+    the smallest whole multiple. Declared first order in each reagent — the
+    burner's decision — and therefore not reversible, which costs nothing at
+    ln K +232.
+
+    ⚠⚠ **THE QUEUE'S TOP TWO ROWS BY RUNNABLE WERE WORTH ZERO HONEST ROUTES,
+    AND THAT MEASUREMENT IS WHY THESE FOUR WERE THE FOUR.** `isomerisation`
+    (+3/+2) is three rows and three mechanisms, each failing its own way: the
+    `oleic -> elaidic` row **does not balance** (an H2 in, none out) and the pair
+    prices at **dH = dG = 0.000 EXACTLY** because no estimator here tells a cis
+    alkene from a trans one; `glucose -> fructose` prices at **K = 4.8e-08**
+    because the corpus spells one as a pyranose and the other as a furanose; and
+    `ammonium-cyanate -> urea` is not species-ready. `crosslinking` (+2/+2) has
+    two products with no chemistry behind them — one a marker with no graph, one
+    spelled `CC(C)=CC.S1SSSSSSS1`, **its own two reactants side by side**.
+
+    ⚠⚠ **SO `RUNNABLE` HAS THE FAULT `ALONE` HAD.** It asks whether a species
+    RESOLVES. It cannot ask whether the number is RIGHT (not mechanisable — one
+    row prices at zero, another 40 kJ/mol out) nor whether the row's PRODUCT is
+    a graph (mechanisable, and now mechanised: a marker on the product side of
+    any step excludes the route from RUNNABLE, taking `crosslinking` to +0). ⚠ It
+    moves no route in the BOTH column — checked, not assumed.
+
+    ⚠⚠ **`combustion` WAS AN OUTCOME LABEL CREDITED SINCE M1, AND THIS IS THE
+    FIRST SPLIT HERE WHOSE HEADLINE EFFECT IS NEGATIVE.** Six rows, five
+    mechanisms, and `sulfur_combustion`'s SMARTS fires on two of them.
+    `sulfur-combustion` (2 rows, covered), `hydrogen-sulfide-combustion` (built
+    here), `carbon-combustion`, `hydrocarbon-combustion` and
+    `chlorate-oxygen-transfer` — the last being a match head, where **nothing
+    burns in air at all**. `match-chemistry` loses template-ready for it. It was
+    never species-ready, so the intersection does not move, and **a split whose
+    measured effect is negative is a split doing its job.**
+
+    ⚠⚠ **A NEUTRAL MULTI-FRAGMENT SMILES WAS PRICED, AND THE RECORDED REASON FOR
+    ALLOWING IT WAS MEASURED FALSE.** `thermochemistry` refused a dot-separated
+    SMILES only when a fragment carried CHARGE, on the grounds that "nothing in
+    this project produces one, so refusing it would widen the blast radius for no
+    measured gain". The catalog carries **eleven**, and Joback prices
+    `CC(C)=CC.S1SSSSSSS1` at **+273.70 against the +51.59 its own two parts sum
+    to — 222.11 kJ/mol of nothing**, with `nbr-marker` 63.49 out the other way.
+    **In an ideal gas that sum is an IDENTITY**: no intermolecular interactions,
+    so the mixture's record IS the sum. Benson honours it (three of five at
+    +0.00, one at −0.82); Joback has a constant term and does not. The refusal is
+    now on the FRAGMENT COUNT.
+    ⚠ And `catalog_coverage` was disagreeing with the provider it audits — it
+    treated any dot as ionic and priced fragment-by-fragment, so all nine kept
+    resolving after the engine stopped. Right for a salt (the electrolyte path
+    really does hold the two ions), wrong for a neutral mixture. **Cost: 9
+    compounds refused, 2 routes out of species-ready, 0 in the BOTH column.**
+
+    ⚠⚠ **AND NOTHING HAD EVER CHECKED THAT A CATALOG ROW BALANCES.**
+    `tools/catalog.py`'s `validate` checks SMILES, ids and targets; 377 steps had
+    gone past it unchecked. `validation/corpus_balance.py` asks the right
+    question — the corpus carries no coefficients on purpose, so it is "does a
+    strictly POSITIVE coefficient vector exist", an LP feasibility problem over
+    the element-and-charge matrix. **75 of 367 testable rows cannot be balanced
+    by any positive coefficients**, as 17 `spurious` (a reagent consumed on paper
+    — the margarine hydrogen, `perkin-route`'s base), 1 `charge` (an ionic
+    half-row) and 57 `atoms` (mostly deliberate: `anthracene + K2Cr2O7 ->
+    anthraquinone + water` never says what became of the chromium). ⚠⚠ **It
+    touches the headline exactly once**: `perkin-route` step 1 is in the BOTH
+    column and is INERT, because `perkin_condensation`'s SMARTS never mentions
+    the base. `vitriol-distillation`'s landmine in a milder form — the class is
+    credited, the ROW is wrong, and the two do not meet. **Not fixed, on the
+    `diels-alder-route` precedent.**
+
+    ⚠ **AND THE RATE-CEILING AUDIT FOUND A ROW ON ITS FIRST RUN WITH THE NEW
+    TEMPLATES IN IT.** `deacon_oxidation_rev` crosses the bimolecular collision
+    ceiling at **1141 K**, the coldest of the high-order reverse rows (ammonia's
+    is 1335 K). Reported, not guarded, on the policy those already sit under: the
+    cap scales both pre-exponentials, so it moves a CLOCK and not an
+    equilibrium. ⚠ And the crossing temperature is not a physical statement for
+    such a row — a fourth-order constant in L^3/(mol^3 s) against a ceiling in
+    L/(mol s) is M8's unit error. The column ranks; it does not judge.
+
+    ⚠ TWO SMALL THINGS WORTH KEEPING. `deacon_oxidation`'s brief said A = 1e13
+    puts equilibrium "on a scale of minutes at 700 K"; **the run said ten
+    seconds**, and the claim was corrected rather than the number.
+    `synthesis_gas_chemistry`'s docstring still said "there is no catalyst
+    species — the flask will make ammonia with no iron in it", which **S1 made
+    false and nothing caught until S7 read it.**
+
 IMMEDIATE NEXT TASK: see **`MILESTONES.md`**, which is the plan of record as of
 2026-08-22 and supersedes the ordering below. It is derived from `data/catalog`
 (1,583 compounds, 173 routes) plus four measured capability probes, and it

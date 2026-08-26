@@ -443,24 +443,31 @@ python validation/catalog_coverage.py  # the audit
 
 | | |
 |---|---|
-| formation half measured or Benson | **735 / 1583 (46%)** |
+| formation half measured or Benson | **729 / 1583 (46%)** |
 | ... of which priced as a LATTICE, on the solid basis | 19 |
-| formation half falls back to Joback | 402 (25%) |
-| refused | 446 (28%), of which ~166 are charged organics the Born model correctly declines |
-| UNIFAC-decomposable (can enter an LLE) | 836 (53%) |
-| routes species-ready | **65 / 173** (was 49) |
-| reaction classes with a template | **38 / 220** (was 12) |
-| routes template-ready | 31 / 173 (was 7) |
-| ⚠⚠ **routes template-ready AND species-ready — the one to quote** | **20 / 173** |
+| formation half falls back to Joback | 399 (25%) |
+| refused | 455 (29%), of which ~166 are charged organics the Born model correctly declines |
+| UNIFAC-decomposable (can enter an LLE) | 828 (52%) |
+| routes species-ready | **63 / 173** (was 49) |
+| reaction classes with a template | **43 / 224** (was 12) |
+| routes template-ready | 34 / 173 (was 7) |
+| ⚠⚠ **routes template-ready AND species-ready — the one to quote** | **24 / 173** |
 
-⚠⚠ **31 IS NOT WHAT COULD RUN; 20 IS.** The three readiness columns answer
+⚠⚠ **34 IS NOT WHAT COULD RUN; 24 IS.** The three readiness columns answer
 INDEPENDENT questions and the smallest does not bound the others: a route needs a
-template for every step **and** a price for every species. **11 of the 31
+template for every step **and** a price for every species. **10 of the 34
 template-ready routes have a refused species** — `pyrite-roasting`, `tnt-route`,
-`superphosphate` and eight more. Nothing computed the intersection until S6.
-⚠ And 17 is an **upper bound on what runs**, not a measured count: a class is
+`superphosphate` and seven more. Nothing computed the intersection until S6.
+⚠ And 24 is an **upper bound on what runs**, not a measured count: a class is
 credited when a template would fire on the right substrate at all, and
 `pyrite-roasting` is the standing proof that this is not the same as running.
+
+⚠ **THE REFUSED COLUMN WENT UP IN S7 AND THAT WAS THE POINT.** Nine catalog
+compounds are dot-separated NEUTRAL mixtures — a rubber marker, a nylon salt,
+"water gas" — and the guard only refused a multi-fragment SMILES when a fragment
+was CHARGED. Joback prices `CC(C)=CC.S1SSSSSSS1` **222.11 kJ/mol above the sum
+of its own two parts**; in an ideal gas that sum is an identity, not an estimate.
+It cost two species-ready routes and no route in the BOTH column.
 
 ⚠ **`species-ready` moved 49 → 65 in S6 without one new datum being curated**:
 the audit was asking only the three ideal-gas providers, which refuse an ionic
@@ -487,13 +494,35 @@ is worth **+1**. The other +2 came from `electro-organic-coupling`, whose two
 rows are both built. **+3 template-ready and +3 runnable, from a curve that
 promised +3 from one class.**
 
+⚠⚠ **S7 TOOK FOUR INORGANIC GAS PROCESSES — AND MEASURED THE QUEUE'S TOP TWO
+ROWS AT ZERO FIRST.** `water-gas-shift`, `steam-reforming`, the Deacon process
+and the Claus process: five templates, `+4` on the intersection, every one of
+them charged into a real vessel by `validation/gas_processes.py`. What they buy
+is behaviour nobody declared — the shift peaking at 620 K and falling away above
+it, the reformer inert until 900 K, Deacon's ceiling and rate crossing near
+650 K, and a Claus flask recovering 100.0% of its sulfur at exactly the
+stoichiometric air rate because burning a third of the feed is what leaves the
+2:1 ratio the second template wants.
+⚠ They were chosen because the two classes at the top of the RUNNABLE queue
+measured **zero honest routes**: `isomerisation`'s three rows are three
+mechanisms and each fails its own way (a cis/trans pair the estimators price at
+dH = dG = **0.000 exactly**; a glucose/fructose row priced at K = 4.8e-08 because
+the corpus spells one as a pyranose and the other as a furanose; an ionic pair
+that is not species-ready), and both `crosslinking` rows produce something with
+no chemistry behind it. **So RUNNABLE has the fault ALONE had:** it asks whether
+a species resolves, not whether the number is right, nor whether the row's
+product is a graph. The second of those is now mechanised.
+⚠ And S7 split `combustion` — six rows, **five mechanisms**, credited since M1 to
+a template that fires on two of them. It is the first split here whose measured
+effect on the headline is NEGATIVE (`match-chemistry` loses template-ready), and
+that is a split doing its job.
+
 ⚠ The class denominator MOVES, because a class is a mechanism claim and reading
-a class's rows sometimes splits it: 212 -> 220 over M6, S1, S3 and M8. Six of the
-eleven classes gained since M5 are covered by TERMS rather than by templates —
+a class's rows sometimes splits it: 212 -> 224 over M6, S1, S3, M8 and S7. Six of
+the classes gained since M5 are covered by TERMS rather than by templates —
 a reaction inside a crystal, a gas arriving at one, an ionic lattice leaving
 solution — and one of those, `roasting-to-metal`, is covered by **two terms
-that emerge into a route neither of them declares**. The template count has been
-34 since M5.
+that emerge into a route neither of them declares**. The template count is 43.
 
 **The species side is in reasonable shape and the reaction side is still the
 binding one**, but M5 changed the shape of that gap rather than just its size.

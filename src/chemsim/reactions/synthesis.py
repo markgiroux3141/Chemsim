@@ -864,6 +864,248 @@ def methanol_from_carbon_dioxide(
 
 
 # ---------------------------------------------------------------------------
+# S7 -- THE FOUR INORGANIC GAS PROCESSES, AND WHY THEY WERE THE RIGHT FOUR
+# ---------------------------------------------------------------------------
+# ⚠⚠ **CHOSEN OFF THE `RUNNABLE` COLUMN, NOT THE UNLOCK COUNT** -- and then off a
+# THIRD column the instrument does not have. `catalog_coverage`'s work queue is
+# ranked by routes a class unlocks that are also species-ready, and its top two
+# rows are `isomerisation` (+3/+2) and `crosslinking` (+2/+2). S7 measured both
+# before costing either, and **both are worth zero honest routes**:
+#
+#   `isomerisation`   three rows, three mechanisms -- the split M5 refused to do
+#                     blind. And every one of the three fails for its OWN reason:
+#                     `oleic -> elaidic` is priced by Benson at **dH = dG = 0.000
+#                     EXACTLY** because no estimator here can tell a cis alkene
+#                     from a trans one, so the template would report a confident
+#                     50:50 for a real 5:1; `glucose -> fructose` comes out at
+#                     **dG +41.8 kJ/mol, K = 4.8e-08**, because the catalog spells
+#                     glucose as a PYRANOSE and fructose as a FURANOSE and Benson
+#                     charges the ring difference -- an industrial process the
+#                     engine would say cannot happen; and `ammonium-cyanate ->
+#                     urea` is not species-ready at all (a dot-separated ionic
+#                     pair, and cyanate is in no ion table here).
+#   `crosslinking`    two rows, two products with no chemistry behind them.
+#                     `tanned-leather-marker` has no molecular graph. And
+#                     `vulcanised-rubber-marker` is spelled `CC(C)=CC.S1SSSSSSS1`
+#                     -- **its own two reactants written side by side**, so the
+#                     "reaction" is `A + B -> A.B`, which nothing makes. Joback
+#                     priced that mixture **+222.11 kJ/mol above the sum of its
+#                     own parts**, which is the measurement that closed the
+#                     neutral-fragment hole in `thermochemistry`.
+#
+# ⚠ **SO THE `RUNNABLE` COLUMN HAS THE SAME SHAPE OF FAULT `ALONE` HAD.** It
+# asks whether every species RESOLVES. It cannot ask whether the number that
+# comes back is RIGHT, and it cannot ask whether the row's product is a graph at
+# all. Two of the queue's top two rows fail on exactly those two questions.
+#
+# What is below is the four rows that pass all three: an inorganic gas-phase
+# process whose every species is measured, whose product is a real molecule, and
+# whose equilibrium comes out at the textbook value before a line of code is
+# written. The bound, computed against this project's own tables at 298.15 K and
+# at each row's own operating temperature:
+#
+#   water-gas shift   dH -41.15 (book -41.2)   K = 22.0 at 620 K
+#   steam reforming   dH +206.2 (book +206)    K = 1.2e-25 at 298 K, 295 at 1100 K
+#   Deacon            dH -114.4 (book -114.5)  K = 2.0e+13 at 298 K, 46.4 at 700 K
+#   Claus             dH -108.0 per SO2        ln K = 29.0 at 298 K, 11.8 at 500 K
+#
+# ⚠ **THREE OF THE FOUR ARE INTERESTING ONLY BECAUSE THEY ARE REVERSIBLE.** Steam
+# reforming is impossible at room temperature and spontaneous above ~900 K; the
+# shift runs the other way when you heat it; Deacon never went to completion and
+# that is the historical fact that killed it. None of those three behaviours is
+# declared anywhere -- each is `reversible=True` meeting the formation table.
+#
+# ⚠ AND THE FOURTH IS NOT REVERSIBLE, ON THE BURNER'S OWN ARGUMENT. See
+# `claus_comproportionation`.
+#
+# The barriers, each an APPARENT barrier over the named catalyst and each inside
+# a published band:
+#
+#   water-gas shift   Ea 110 kJ/mol  -- Fe/Cr high-temperature shift, band 95-130
+#   steam reforming   Ea 240 kJ/mol  -- Xu & Froment's E1 over Ni, the standard
+#                                       value; it is why the reformer is a furnace
+#   Deacon            Ea 100 kJ/mol  -- Cu-catalysed HCl oxidation, band 85-120
+#   H2S combustion    Ea 100 kJ/mol  -- the burner's own number, same footing:
+#                                       an apparent barrier on a branched chain
+#   Claus             Ea  50 kJ/mol  -- the catalytic stage over alumina, band 40-70
+
+
+def water_gas_shift(
+    A: float = 1.0e8, Ea: float = 110_000.0, catalyst: str | None = "hematite",
+) -> ReactionTemplate:
+    """CO + H2O <=> CO2 + H2. The shift, and the reason it is a SEPARATE reactor.
+
+    ⚠ **THE WHOLE PROCESS IS THE REVERSIBILITY.** dH is -41.15 kJ/mol, so the
+    equilibrium constant FALLS as the reactor heats: 1.0e5 at 298 K, 22 at the
+    620 K high-temperature shift, 9.4 at 700 K. That is exactly why a real
+    ammonia plant runs the shift twice -- hot to get the rate, then cold to get
+    the conversion -- and nothing here declares it. Heat this flask and it
+    unshifts.
+
+    ⚠ The mole count is unchanged on both sides, so pressure does NOT move it,
+    which is the one lever a player will reach for first and the one that does
+    nothing. That falls out of the stoichiometry rather than being stated.
+
+    The catalyst is hematite, which is what the catalog row carries and what the
+    high-temperature shift actually uses (Fe3O4/Cr2O3 in service, magnetite
+    reduced in situ from the hematite charged into it -- this engine holds the
+    charged form, and the reduction is not modelled).
+    """
+    return ReactionTemplate(
+        name="water_gas_shift",
+        smarts="[C-:1]#[O+:2].[OX2H2:3]>>[O+0:2]=[C+0:1]=[O:3].[H][H]",
+        A=_surface_kinetics(A, catalyst), Ea=Ea, phase="gas", reversible=True,
+        solid_catalyst=catalyst,
+    )
+
+
+def steam_reforming(
+    A: float = 1.0e11, Ea: float = 240_000.0, catalyst: str | None = "nickel",
+) -> ReactionTemplate:
+    """CH4 + H2O <=> CO + 3 H2. Where nearly all industrial hydrogen comes from.
+
+    ⚠ **IMPOSSIBLE COLD AND SPONTANEOUS HOT, AND THAT CROSSING IS DERIVED.** dG
+    is +142.2 kJ/mol at 298 K (K = 1.2e-25) and -52.0 at 1100 K (K = 295): the
+    reaction is strongly endothermic and makes two extra moles of gas, so it
+    needs heat twice over -- once for the enthalpy and once for the entropy. The
+    engine finds the crossing near 900 K on its own, from the formation table.
+
+    ⚠ And the mole increase means it is the ONE gas-phase equilibrium in this
+    project that pressure hurts. A real reformer runs at 25 bar anyway, for the
+    downstream synthesis loop, and pays for it in temperature.
+
+    ⚠ **THE PRE-EXPONENTIAL IS LARGE AND THAT IS THE BARRIER'S DOING.** 240
+    kJ/mol at 1100 K is a factor of 4e-12, so a collision-limited A would give a
+    dead reactor; 1e11 L/(mol s) IS the collision limit for a bimolecular gas
+    reaction, and this rate law is bimolecular as written. Both numbers are at
+    their physical ceiling and the reaction is still slow below 900 K, which is
+    what a reformer is like.
+    """
+    return ReactionTemplate(
+        name="steam_reforming",
+        smarts="[C;H4:1].[O;H2:2]>>[C-:1]#[O+:2].[H][H].[H][H].[H][H]",
+        A=_surface_kinetics(A, catalyst), Ea=Ea, phase="gas", reversible=True,
+        solid_catalyst=catalyst,
+    )
+
+
+def deacon_oxidation(
+    A: float = 1.0e13, Ea: float = 100_000.0, catalyst: str | None = "tenorite",
+) -> ReactionTemplate:
+    """4 HCl + O2 <=> 2 Cl2 + 2 H2O. Chlorine back out of spent hydrochloric acid.
+
+    ⚠ **REVERSIBLE, AND THE REVERSE IS WHY THIS PROCESS LOST.** ln K is +30.6 at
+    298 K and +3.84 at the 700 K it has to be run at to go at all, so the
+    conversion ceiling falls as the rate rises and the reactor can never have
+    both. Deacon was displaced by electrolysis for exactly that reason, and the
+    engine reproduces the squeeze without being told: heat it for rate and watch
+    the equilibrium conversion collapse.
+
+    ⚠⚠ **A IS 1e13 AND IT IS NOT A COLLISION FREQUENCY -- THE RATE LAW IS FIFTH
+    ORDER.** ``ammonia_synthesis`` makes the same statement for a fourth-order
+    law and the units are the point (M8's lesson): a fifth-order pre-exponential
+    is in L^4/(mol^4 s) and the collision limit is a number in L/(mol s), so
+    comparing them is a category error. What bounds it instead is the measured
+    behaviour of the real reactor, and ``validation/gas_processes.py`` panel 3
+    is that measurement: at 1e13 the flask is at equilibrium inside TEN SECONDS
+    at 600 K and above, and still climbing after an hour below 500 K. A Deacon
+    converter's contact time is seconds, so the crossing lands where the process
+    actually sat. ⚠ The brief for this template said "on a scale of minutes at
+    700 K" and the run said ten seconds; the number stayed and the claim was
+    corrected, because ten seconds is the defensible one.
+    ⚠ Mass action, not a declared order, because the equilibrium is the
+    whole point and a declared order may never be reversible.
+
+    ⚠ Like Haber-Bosch it wants pressure -- [HCl]^4 at 1 bar is a small number --
+    and unlike Haber-Bosch it gains nothing thermodynamically by it: 5 moles in,
+    4 out, so compressing it helps the rate and the equilibrium alike here.
+    """
+    return ReactionTemplate(
+        name="deacon_oxidation",
+        smarts="[Cl;H1:1].[Cl;H1:2].[Cl;H1:3].[Cl;H1:4].[OX1:5]=[OX1:6]"
+               ">>[Cl;H0:1][Cl;H0:2].[Cl;H0:3][Cl;H0:4].[O;H2:5].[O;H2:6]",
+        A=_surface_kinetics(A, catalyst), Ea=Ea, phase="gas", reversible=True,
+        solid_catalyst=catalyst,
+    )
+
+
+def hydrogen_sulfide_combustion(
+    A: float = 1.0e10, Ea: float = 100_000.0,
+) -> ReactionTemplate:
+    """2 H2S + 3 O2 -> 2 SO2 + 2 H2O. The Claus THERMAL stage.
+
+    The burner's twin, and it takes the burner's two decisions verbatim because
+    it is the same kind of reaction: an apparent barrier on a branched chain, and
+    a DECLARED order rather than the fifth order the stoichiometry would impose.
+    First order in hydrogen sulfide, first order in oxygen. ln K is 227 at 298 K,
+    so nothing is lost by giving up the reverse.
+
+    ⚠ It is deliberately written to burn hydrogen sulfide ALL the way, which is
+    what the catalog row says and what a Claus furnace does to one third of the
+    feed. The other two thirds pass through unburnt to meet this SO2 in the
+    catalytic stage, and that ratio is a FEED decision rather than a chemistry
+    one -- charge two moles of H2S for every one you want burnt and the pair of
+    templates does the rest.
+    """
+    h2s = "[S;H2:1].[S;H2:2]"
+    o2 = ".".join(f"[OX1:{3 + 2 * i}]=[OX1:{4 + 2 * i}]" for i in range(3))
+    out = ("[O:3]=[S;H0:1]=[O:4].[O:5]=[S;H0:2]=[O:6]"
+           ".[O;H2:7].[O;H2:8]")
+    return ReactionTemplate(
+        name="hydrogen_sulfide_combustion",
+        smarts=f"{h2s}.{o2}>>{out}",
+        A=A, Ea=Ea, phase="gas",
+        orders=(1.0, 0.0, 1.0, 0.0, 0.0),
+    )
+
+
+def claus_comproportionation(
+    A: float = 1.0e9, Ea: float = 50_000.0,
+) -> ReactionTemplate:
+    """16 H2S + 8 SO2 -> 3 S8 + 16 H2O. Sulfur out of both of its own oxidation states.
+
+    ⚠ **TWENTY-FOUR REACTANT SLOTS, AND THE REASON IS S8.** The chemistry is
+    ``2 H2S + SO2 -> 3 S + 2 H2O``; this project's sulfur is the S8 crown, and
+    the smallest whole-number multiple that makes crowns out of it is sixteen
+    and eight. A graph rewrite cannot write 3/8 of a ring.
+
+    ⚠ **DECLARED ORDER, AND THEREFORE NOT REVERSIBLE -- the burner's argument,
+    with a bigger number in it.** Mass action on twenty-four slots would put
+    ``[H2S]^16 [SO2]^8`` in the rate law, which at any concentration a flask ever
+    holds is zero to several hundred digits. Declared first order in each of the
+    two reagents, which is the apparent rate law measured over alumina. Giving up
+    the reverse costs nothing: ln K is +232 at 298 K and still +61 at 600 K.
+
+    ⚠ **THE REAL PROCESS'S CONVERSION CEILING IS NOT THERMODYNAMIC HERE, AND THE
+    ENGINE STILL FINDS ONE.** A real Claus train stops near 70% per stage; this
+    equilibrium says 100%. What the vessel does instead is CONDENSE the sulfur --
+    S8 boils at 717.8 K and the catalytic stage runs at 500 K, so the product
+    leaves the gas phase as it forms. That is the sulfur condenser between the
+    stages, and it is the vapour-pressure curve rather than the equilibrium.
+
+    ⚠ No solid catalyst is declared, because the catalog row does not carry one.
+    The alumina is real and its absence is the barrier being apparent; declaring
+    `corundum` would make the row's own reactant list unable to run it.
+    """
+    h2s = ".".join(f"[S;H2:{i + 1}]" for i in range(16))
+    so2 = ".".join(
+        f"[O:{100 + 2 * i}]=[S;H0:{17 + i}]=[O:{101 + 2 * i}]" for i in range(8)
+    )
+    rings = ".".join(
+        "".join([f"[S;H0:{1 + 8 * r}]1"]
+                + [f"[S;H0:{1 + 8 * r + k}]" for k in range(1, 8)]
+                + ["1"])
+        for r in range(3)
+    )
+    waters = ".".join(f"[O;H2:{100 + i}]" for i in range(16))
+    return ReactionTemplate(
+        name="claus_comproportionation",
+        smarts=f"{h2s}.{so2}>>{rings}.{waters}",
+        A=A, Ea=Ea, phase="gas",
+        orders=(1.0,) + (0.0,) * 15 + (1.0,) + (0.0,) * 7,
+    )
+
+# ---------------------------------------------------------------------------
 # bundles
 # ---------------------------------------------------------------------------
 # Small on purpose. ``alcohol_chemistry`` is one bundle because its five templates
@@ -940,14 +1182,53 @@ def hydrogenation_chemistry() -> list[ReactionTemplate]:
 def synthesis_gas_chemistry() -> list[ReactionTemplate]:
     """Ammonia and methanol from synthesis gas. Three reversible gas-phase equilibria.
 
-    ⚠ Run at pressure; see the block comment above. And note there is no catalyst
-    species -- the flask will make ammonia with no iron in it.
+    ⚠ Run at pressure; see the block comment above.
+
+    ⚠ This docstring used to end "and note there is no catalyst species -- the
+    flask will make ammonia with no iron in it", which S1 made false and nothing
+    caught until S7 read it. All three declare a ``solid_catalyst`` and a flask
+    with no metal in it makes nothing.
     """
     return [
         ammonia_synthesis(),
         methanol_from_carbon_monoxide(),
         methanol_from_carbon_dioxide(),
     ]
+
+
+def syngas_generation_chemistry() -> list[ReactionTemplate]:
+    """Where the synthesis gas comes FROM: reforming, then the shift.
+
+    Two reversible equilibria pulling opposite ways on temperature -- the
+    reformer wants 1100 K and the shift wants to be cold -- which is why a real
+    plant is two vessels and not one. Run them in one flask and the hot one wins
+    both ways.
+
+    ⚠ Both declare a solid catalyst: nickel for the reformer, hematite for the
+    shift. A flask with neither in it is inert.
+    """
+    return [steam_reforming(), water_gas_shift()]
+
+
+def claus_chemistry() -> list[ReactionTemplate]:
+    """Sulfur recovery: burn a third of the H2S, comproportionate the rest.
+
+    ⚠ **THE FEED RATIO IS THE PROCESS AND IT IS NOT DECLARED ANYWHERE.** Charge
+    hydrogen sulfide and enough oxygen to burn one third of it, and the two
+    templates make the 2:1 H2S:SO2 the second one wants. Charge too much air and
+    the SO2 runs away with it; too little and the burner starves. Nothing in
+    either template knows that -- it is two rate laws sharing a flask.
+    """
+    return [hydrogen_sulfide_combustion(), claus_comproportionation()]
+
+
+def chlorine_recovery_chemistry() -> list[ReactionTemplate]:
+    """The Deacon process alone. Chlorine back out of by-product hydrochloric acid.
+
+    ⚠ Wants pressure and 700 K, and the two fight each other -- see the
+    template. Needs `tenorite` in the flask.
+    """
+    return [deacon_oxidation()]
 
 
 def bleach_chemistry() -> list[ReactionTemplate]:

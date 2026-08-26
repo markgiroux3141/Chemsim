@@ -151,6 +151,32 @@ def networks() -> dict:
         ["C=C", "CC=C", "O"], [S.alkene_hydration()],
         thermo=THERMO, max_species=40,
     )
+    # S7, on the same standing instruction: all THREE reversible templates it
+    # added are here, and one of them produced a finding on the first run.
+    #
+    # ⚠⚠ ``deacon_oxidation_rev`` CROSSES THE BIMOLECULAR CEILING AT 1141 K --
+    # the COLDEST of the high-order reverse rows, below ammonia's 1335 K and
+    # methanol's 1248 K. REPORTED, NOT GUARDED, and on exactly the policy those
+    # two already sit under: it moves a CLOCK and not an equilibrium, because
+    # the cap scales both pre-exponentials by one factor and K is invariant.
+    # ``validation/gas_processes.py`` runs the process to 900 K.
+    #
+    # ⚠ AND THE CROSSING TEMPERATURE IS NOT A PHYSICAL STATEMENT FOR THESE ROWS,
+    # which is worth saying rather than leaving in the table to be misread. The
+    # reverse of Deacon is ``2 Cl2 + 2 H2O -> 4 HCl + O2``: a FOURTH-order rate
+    # constant, in L^3/(mol^3 s). ``COLLISION_LIMIT`` is a number in L/(mol s).
+    # Comparing them is M8's unit error, and the row is the same shape as
+    # ``detailed_balance``'s catalysed-pre-exponential caveat -- see FRAGILITY 5.
+    # What the column is good for is RANKING: a row that crosses cold is a row
+    # whose reverse pre-exponential is large for its order, and this one is.
+    out["syngas generation"] = build_network(
+        ["C", "O", "[C-]#[O+]", "[H][H]", "O=C=O"],
+        S.syngas_generation_chemistry(), thermo=THERMO, max_species=40,
+    )
+    out["Deacon"] = build_network(
+        ["Cl", "O=O"], S.chlorine_recovery_chemistry(),
+        thermo=THERMO, max_species=40,
+    )
     return out
 
 

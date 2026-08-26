@@ -2,167 +2,196 @@ We're building chemsim, an emergent chemistry simulator (game inspired by Nile
 Red) in d:\Claude Code Projects\Chemistry Simulator.
 
 **The plan is `MILESTONES.md`. Read it first — it is the authority on what to
-build and in what order.** **M0–M6, M8, M12, S1–S6 are DONE.**
+build and in what order.** **M0–M6, M8, M12, S1–S7 are DONE.**
 
-# ⚠⚠ START WITH: RUN THE FULL SUITE. IT IS THE FIRST THING, NOT THE LAST.
+# ⚠ THE BASELINE IS VERIFIED. DO NOT START WITH THE SUITE.
 
-```bash
-python -m pytest -q                          # ~12.5 min. DO THIS FIRST.
-```
-
-**M8 changed five files under `src/` and DID NOT re-run the suite** — the session
-ended on the user's instruction to hand the run forward rather than keep the
-machine busy. So the baseline is genuinely unverified, and unlike S6's deliberate
-skip there is no by-construction argument available: `reactions/thermo.py`,
-`reactions/template.py`, `reactions/reaction.py`, `network/builder.py` and
-`constants.py` were all touched.
-
-What M8 *did* verify, so you know what a failure would mean:
-
-* **all 14 pre-M8 examples byte-identical** (`esterification`, `thermochemistry`,
-  `competing_pathways`, `vessel`, `activity`, `extraction`, `multistep_prep`,
-  `wait_until`, `workshop`, `lime_cycle`, `mercury_retort`,
-  `roasting_and_the_catalyst_gate`, `named_routes`, `oil_of_vitriol`), captured
-  by stashing `src/` and running both ways — apart from RDKit log timestamps and
-  two wall-clock readings;
-* **99 targeted tests green**: `test_reaction_thermo`, `test_detailed_balance`,
-  `test_evans_polanyi`, `test_engine`, `test_competing_templates`,
-  `test_catalysis`, `test_electrochemistry`;
-* **76 more green** on the ion side (`test_born`, `test_solids_and_ions`,
-  `test_precipitation`, `test_solubility_product`), because M8's brief predicted
-  it would break the five pH values and it did not;
-* `ruff` clean across `src tests examples validation tools`.
-
-**Baseline at the end of S5: 826 passed in 12:32.** Expect 826 + 21 = **847**.
-⚠ If it is green, say so and move on — do not re-verify what is already listed
-above. If it is RED, that is the session's first job and the list above tells you
-where NOT to look.
-
-Then, and only then:
+S7 ran the full suite TWICE — once at the top of the session to clear M8's
+unverified changes (**847 passed in 12:20**, exactly the 826 + 21 M8 predicted)
+and once at the end over its own: **866 passed in 12:46**, which is 847 + the
+19 tests S7 added, zero failures. ⚠ **This is the first session in
+several that hands forward a suite number it actually measured.** Take it and
+spend the time on content.
 
 ```bash
-python validation/cell_potentials.py         # M8's standing audit, seconds
-python examples/electrolysis_cell.py         # M8, five panels, ~2 min
-python validation/catalog_coverage.py        # ⚠ READ THE 'BOTH' LINE: 20/173, ~10 s
-python tools/build_route_index.py            # ⚠ the artefact nothing reads
-python validation/jacobian_bound.py          # ⚠ S5's standing audit, ~1 min
-python validation/rate_ceiling.py            # M12's standing audit, seconds
-python validation/tolerance_audit.py         # S2's standing audit, ~8 min
+python validation/gas_processes.py            # ⚠ S7's standing audit, ~1 min
+python validation/corpus_balance.py           # ⚠ S7's other one, ~20 s. READ IT FIRST -- see below
+python validation/catalog_coverage.py         # ⚠ READ THE 'BOTH' LINE: 24/173, ~15 s
+python tools/build_route_index.py             # the artefact nothing reads
+python validation/cell_potentials.py          # M8's standing audit, seconds
+python validation/rate_ceiling.py             # M12's standing audit, seconds
+python validation/jacobian_bound.py           # S5's standing audit, ~1 min
 python -m ruff check src tests examples validation tools
+python -m pytest -q                           # ~12.5 min. ONLY after touching src/
+python validation/tolerance_audit.py          # ~8 min. ONLY after touching the RHS
 ```
 
 ⚠ **THE SUITE AND THE TOLERANCE AUDIT ARE MINUTES OF SATURATED CPU ON THE USER'S
-OWN MACHINE.** Say what a long run will cost before starting one. The tolerance
-audit is another ~8 minutes and **`examples/plate_column.py` alone is 12.**
+OWN MACHINE.** Say what a long run will cost before starting one.
+`examples/plate_column.py` alone is 12 minutes.
 
 ---
 
-# ⚠⚠ THEN: KEEP TAKING CONTENT. M8 IS THE FIRST SESSION IN SEVEN TO MOVE THE NUMBER.
+# ⚠⚠ START HERE: S7 RE-RANKED THE WORK QUEUE, AND THE RANKING IS NOT THE ONE IN THE REPORT
 
-Template-ready went **25 at M5 → 28 through six engine sessions → 31 now**, and
-the intersection — the only column a route can be judged on — went **17 → 20**.
-M8 is +3 on both, which is more than S1+S3+S4+S5 combined. **The lesson held:
-`MILESTONES.md`'s own instruction is that M5 onward is CONTENT.**
+**S7's finding, and it decides the whole next session: `catalog_coverage`'s
+RUNNABLE column has the same shape of fault the `ALONE` column had.** RUNNABLE
+asks whether every species RESOLVES. It cannot ask two more questions, and both
+of them kill entries at the top of its table:
 
-⚠ **AND READ §M8 §2 BEFORE TRUSTING ANY UNLOCK NUMBER IN THE QUEUE BELOW.** M8
-took the greedy curve's **top row since M1** — `electrolysis`, +3 routes — and
-M1's own row check cut it to **+1**: its four rows are three mechanisms, split at
-the cathode. The `RUNNABLE` column was right (+3, predicted exactly) while the
-`ALONE` column was not (+3, not +5). **Two milestones running, the intersection
-is the trustworthy column and the unlock count is the one that lies.**
+1. **is the row's PRODUCT a graph at all?** ⚠ Mechanised by S7 — a marker on the
+   product side now excludes a route from RUNNABLE. `crosslinking` went +2 → +0.
+2. **is the row BALANCEABLE?** ⚠ **NOT in the report at all** — it is in
+   `validation/corpus_balance.py`, a separate script. **75 of 367 testable rows
+   cannot be balanced by any positive coefficient vector**, and six of them are
+   on one-class-away routes the report still lists as runnable.
+3. **is the NUMBER that comes back right?** Not mechanisable, and it is what took
+   `isomerisation` — the table's top row — to zero.
 
-The queue, re-measured after M8 and ranked by RUNNABLE:
+**Here is the queue with all three bars applied.** Every class below is ONE class
+away from a route that is species-ready, produces no marker, and can be
+balanced. ⚠ Each is worth exactly +1 on the intersection; there is no lever, as
+M1 and M5 both measured.
 
-1. **⚠⚠ `isomerisation` — +3 unlocked / +2 RUNNABLE, AND IT IS A SPLIT JOB, NOT A
-   TEMPLATE JOB.** Top of the table, and **M5 explicitly REFUSED it**: its three
-   rows are *"a cis/trans isomerisation on a nickel surface, an aldose-ketose
-   interconversion, and Wohler's ammonium cyanate rearrangement"* — three
-   mechanisms under one label, the `deprotonation` mistake waiting to happen.
-   That refusal still stands and it is now the *reason to take it*, on M8's own
-   precedent: **split first, then credit what is built.** Predict the split
-   before running it. ⚠ And read `hydrogenation-margarine` step 2 closely —
-   `oleic-acid + hydrogen + nickel -> elaidic-acid + nickel` **does not balance**
-   (an H2 goes in and nothing comes out), which is S3's *which one is WRONG*
-   question arriving before you write a line.
-2. **⚠ `crosslinking` — +2 / +2, AND MEASURE WHETHER IT IS CREDITABLE AT ALL
-   BEFORE COSTING IT.** Second on the table, and **both its rows produce
-   MARKERS**: `polyisoprene-unit + S8 + ZnO -> vulcanised-rubber-marker` and
-   `gallic-acid + collagen-marker -> tanned-leather-marker + water`. A marker has
-   no molecular graph. M5 refused `separation` for exactly this — *"crediting it
-   would have moved the headline number by one while making zero routes
-   runnable"* — and `pyrolysis` for half of it. **This may be two routes' worth
-   of headline for zero runnable chemistry, which is the trade M1 exists to
-   refuse.** It is a cheap thing to measure and an expensive thing to assume.
-3. **⚠ THE BARE-ELEMENT GAP — 15 ROUTES, STILL THE CHEAPEST ITEM HERE, AND
-   UNTOUCHED SINCE S6 NAMED IT.** 45 compounds are refused as *a bare element
-   symbol*, correctly — the ideal-gas value for `[C]` is the ATOM at Gf +671
-   kJ/mol while the charcoal in the flask is 0. Leverage: `cobalt` **+3**, then
-   `carbon-graphite` / `platinum` / `silver` at **+2** each. The generated table
-   is in `data/catalog/COVERAGE_REPORT.md` under *"The next one along"*.
-   ⚠⚠ **AND IT LANDS ON THE SAME COLUMN A TEMPLATE DOES** — S6 moved no
-   template-ready route and moved the INTERSECTION 12 → 17.
-   ⚠ **IT HAS A LAYERING QUESTION IN FRONT OF IT, SO IT IS NOT A LOOKUP.**
-   `element_data.REFERENCE_STATES` already carries S0 and the reference state for
-   Zn(s), Ag(s), C(graphite) — but with `smiles=None`, because a SOLID reference
-   state had nowhere to live until the solid block existed. Mercury resolves
-   today precisely because its standard state is a LIQUID and so it got a SMILES.
-   Missing is that binding plus the `Cp_solid`/`Vm_solid` pair `priced_solid`
-   demands. **Whether that belongs in `element_data` or `mineral_data` is a real
-   decision — a metal is not a mineral** — and it owes a predict-then-measure pass.
-   ⚠ It also unblocks two of M8's own leftovers: `downs-cell` and `hall-heroult`
-   are blocked on `sodium` / `aluminium` / `carbon-graphite` **as well as** on
+| class | its route | what it is | notes |
+|---|---|---|---|
+| **`gas-solid-reduction`** | `copper-smelting` | `Cu2S + O2 -> Cu + SO2` over a crystal | ⚠⚠ **TAKE THIS ONE FIRST.** Its OTHER route, `lead-smelting`, is blocked only on the bare element `lead` — so this class plus one curated element is **+2**, the only pairing in the table |
+| **`wacker-oxidation`** | `wacker-process` | `C2H4 + O2 -> acetaldehyde`, Pd/Cu redox couple | the copper(II) ion is already priced and is written on both sides of the row, so it is a HOMOGENEOUS catalyst — `_maybe_catalyse`'s own case |
+| **`oxidative-cleavage`** | `vanillin-lignin` | a C=C cleaved by an oxidant | ⚠ check its second step before costing it |
+| **`skraup-cyclisation`** | `skraup-route` | aniline + acrolein -> quinoline | a 4-species condensation; nitrobenzene is the oxidant AND is regenerated |
+| **`direct-combination`** | `vermilion-route` | `Hg + S8 -> HgS` | ⚠ a LIQUID metal and a SOLID reagent making a LATTICE. It is the surface/solid-state machinery, not a template — read `properties/surface.py` first |
+| `fermentation` | `abe-fermentation` | glucose -> acetone + butanol + ethanol | ⚠ **M5 REFUSED IT** as a metabolic NETWORK, not a transformation. That refusal still stands |
+| `separation` | `coal-tar-distillation` | one marker -> nine compounds | ⚠ **M5 REFUSED IT**: a distillation is not a reaction class, and the feedstock has no graph |
+| `fischer-tropsch` | `fischer-tropsch` | `8 CO + 17 H2 -> octane + 8 H2O` | ⚠ 25 reactant slots. The Claus template proves 24 works, so this is possible — but read M8 §6 on the lump that was refused |
+
+⚠⚠ **AND THE SIX ROWS THE REPORT STILL PROMISES THAT THE BALANCE AUDIT KILLS.**
+Do not start any of these without reading `corpus_balance.py`'s output on it:
+
+| class the report ranks | route | the step that cannot balance |
+|---|---|---|
+| **`isomerisation` (still the report's TOP ROW)** | `hydrogenation-margarine` | step 2 `spurious` — an H2 in and none out |
+| " | `starch-hydrolysis` | step 1 `atoms` |
+| `biological-transformation` | `tyrian-purple-route` | step 1 `atoms` — the product has two BROMINES and there is no bromine on the left |
+| `dissolving-metal-reduction` | `aniline-route` | step 1 `atoms` — the chloride has nowhere to go |
+| `polycondensation` | `pet-route` | step 2 `atoms` |
+| `thermal-cracking` | `steam-cracking` | step 1 `spurious` |
+
+⚠ **`isomerisation` IS DEAD TWICE OVER AND IT IS STILL THE TABLE'S TOP ROW.**
+Besides the balance failures: `oleic -> elaidic` prices at **dH = dG = 0.000
+EXACTLY** (no estimator here tells a cis alkene from a trans one), and
+`glucose -> fructose` at **K = 4.8e-08** because the corpus spells one as a
+pyranose and the other as a furanose. **Do not build it. Read §S7 of
+MILESTONES.md before arguing with that.**
+
+---
+
+# THE REST OF THE QUEUE, RANKED, WITH WHAT S7 LEARNED ABOUT EACH
+
+1. **⚠⚠ THE BARE-ELEMENT GAP — 15 ROUTES, AND S7 MEASURED IT AT +0 ON THE
+   INTERSECTION ALONE.** 45 compounds are refused as *a bare element symbol*,
+   correctly — the ideal-gas value for `[C]` is the ATOM at Gf +671 kJ/mol while
+   the charcoal in the flask is 0. **NEXT_PROMPT has called this "the cheapest
+   item here" for two sessions and S7 checked it: NONE of those 15 routes is
+   template-ready, so curating every one of them moves species-ready 63 → 77 and
+   the intersection by ZERO.**
+   ⚠ **Its value is entirely as a MULTIPLIER on a template that is itself worth
+   0 runnable**, and that makes it a second job rather than a first one:
+   `lead` + `gas-solid-reduction` = **+2**; `cobalt` + `catalytic-air-oxidation`
+   = up to +3; `silver` + `metal-ion-aldehyde-oxidation` = +1; `carbon-graphite`
+   + `zinc` + `carbothermic-reduction` = +1.
+   ⚠ **THE LAYERING QUESTION IN FRONT OF IT IS ALREADY ANSWERED BY PRECEDENT,
+   and S7 read the code rather than the note.** `mineral_data` already holds
+   `iron`, `nickel` and `copper` as METALS — `ions=()`, `lattice='[Fe]'`,
+   `Hf = Gf = 0` on the solid basis, `Cp_solid`/`Vm_solid` from CRC — and
+   `tools/build_mineral_data.py` has a `METALS` list with the whole argument in a
+   block comment above it. **Extending that list is the job.** `element_data` is
+   the WRONG home: its record type is on the IDEAL-GAS basis, which for `[Fe]` is
+   the atom at +416 kJ/mol. The type carries the basis, not the module name.
+   ⚠ The generator enforces `Hf = Gf = 0` as a REFUSAL, so a wrong CAS shows up
+   as a failure rather than a number. Predict-then-measure still owed on
+   graphite, which is a covalent lattice and not a metal.
+   ⚠ It also unblocks two of M8's leftovers: `downs-cell` and `hall-heroult`
+   need `sodium`/`aluminium`/`carbon-graphite` **as well as**
    `molten-salt-electrolysis`.
-4. **⚠ THE CURRENT BUDGET — M8's OWN NAMED GAP, AND IT IS A LAYER 4 TERM.** Two
-   electrode reactions in one cell divide nothing here, so both run at full rate
-   and activation selectivity washes out as the barrier floors at zero:
+
+2. **⚠ THE CIS/TRANS BLIND SPOT — A REAL DATA JOB WITH A REAL TRAP.** Benson (the
+   RMG group set) has no cis correction, so oleic and elaidic acid come back with
+   IDENTICAL Hf and Gf and the engine reports a confident 50:50 for a real ~5:1.
+   ⚠ **The data exists and is not usable as it stands:** WEBBOOK has both liquid
+   enthalpies, −764.8 and −769.0 kJ/mol, and that 4.2 kJ/mol gap agrees with
+   Benson's own historical cis NNI term of 4.18 to 0.4% — **two independent
+   sources**. But neither has an S0, so no Gf can be derived, and grafting
+   Benson's original correction onto RMG-fitted group values **mixes two bases**,
+   which is the trap `chemsim-benson-status` exists to name. ⚠ Worth ZERO routes
+   today (the margarine row cannot balance either) — take it for the honesty, and
+   say which you are doing. `test_the_cis_trans_pair_prices_at_exactly_zero`
+   pins the limit; if you close it, that test SHOULD fail and be rewritten.
+
+3. **⚠ THE CURRENT BUDGET — M8's OWN NAMED GAP, AND IT IS A LAYER 4 TERM.** Two
+   electrode reactions in one cell divide nothing, so both run at full rate and
+   activation selectivity washes out as the barrier floors at zero:
    k(brine)/k(water) is **4.76e+17 at 2.5 V, 5.94 at 3.0, 1.00 at 4.0**. The
-   selective window in this engine is ~2.2–2.7 V where a real chloralkali cell
-   holds 99% at 3 V and above. ⚠ It is worth **ZERO new routes** — chloralkali
-   already runs — so take it for the mechanic, not the scoreboard, and say which
-   you are doing. ⚠ `test_the_activation_selectivity_washes_out_at_high_voltage`
-   pins the gap; if you close it, that test SHOULD fail and be rewritten.
-5. **⚠ S5's SIXTH INSTRUMENT FAULT, STILL OPEN AND STILL CHEAP.**
+   selective window here is ~2.2–2.7 V where a real chloralkali cell holds 99% at
+   3 V and above. ⚠ Worth **ZERO new routes** — chloralkali already runs — so
+   take it for the mechanic and say so.
+   `test_the_activation_selectivity_washes_out_at_high_voltage` pins the gap; if
+   you close it, that test SHOULD fail and be rewritten.
+
+4. **⚠ S5's SIXTH INSTRUMENT FAULT, STILL OPEN AND STILL CHEAP.**
    `tolerance_audit.py` reports `QUOTABLE DIGITS MOVE, worst 99.85%` on
    `oil_of_vitriol`, and **that headline is wrong**: four of its five moved lines
    are the CREATED-MATTER residual and every one gets SMALLER, on rows
    `NEXT_SESSION.md` already carries as "NOT AN INVARIANT". **A
    relative-difference test is meaningless on a column whose converged value is
-   zero.** `REPORT_ABS` exists for this and 2.9e-05 clears it. Reported, not
-   fixed — raising it blunts the test for genuine quantities, so picking the
-   number owes its own predict-then-measure pass.
-6. **Pyrite** — one mineral entry from `pyrite-roasting` running. Blocked on the
-   same-database rule (`Hfs` in WEBBOOK, `S0s` in nothing), which is a rule worth
-   keeping, so this needs a SOURCE and not a workaround. ⚠ It is one of the
-   **11 template-ready routes that cannot run**, so closing it is +1 on the
-   intersection for one curated entry.
-7. **⚠⚠ THE BURNER — THE LIVE FRAGILITY, STILL DEMOTED AND STILL NOT DISMISSED.**
+   zero.** `REPORT_ABS` exists for this and 2.9e-05 clears it. Picking the number
+   owes its own predict-then-measure pass.
+
+5. **Pyrite** — one mineral entry from `pyrite-roasting` running, and it is one of
+   the **10 template-ready routes that cannot run**, so it is +1 on the
+   intersection for one curated entry. Blocked on the same-database rule (`Hfs`
+   in WEBBOOK, `S0s` in nothing), which is a rule worth keeping, so this needs a
+   SOURCE and not a workaround.
+
+6. **⚠⚠ THE BURNER — THE LIVE FRAGILITY, STILL DEMOTED AND STILL NOT DISMISSED.**
    **53 s at rtol 1e-8 against 0.8 s at the default.** S5 bounded the CRASH and
    explicitly did not bound the THRASHING. BDF is struggling with a liquid layer
    holding **1e-29 mol**, which `LAYER_REABSORB` drains toward zero without ever
    reaching it. **The question nobody has asked is whether a layer below
    `LAYER_EPS` should be *merged discretely* at a step boundary rather than
-   drained continuously forever.** ⚠ `merge_phases` already does exactly that at
+   drained continuously for ever.** ⚠ `merge_phases` already does exactly that at
    the `run` boundary — so this may be a matter of WHEN IT IS CALLED, not of a
    new mechanic. **Measure the layer-2 inventory over the failing run before
    designing anything.** It fires only at rtol 1e-8, so nothing a player does
    reaches it.
+
+7. **THE CORPUS BALANCE BACKLOG — 75 ROWS, AND IT IS NOT A TO-DO LIST.** S7 built
+   the check and deliberately fixed nothing, on the `diels-alder-route`
+   precedent: inventing chemistry inside an audit corpus is not allowed. ⚠ But
+   **17 of the 75 are `spurious`** — a reagent written as consumed that is
+   really a catalyst — and those are the cheapest and least inventive to correct,
+   because the fix is to put the species on both sides of the row it is already
+   on one side of. ⚠ Read `corpus_balance.py`'s classification before touching
+   any of them, and note that `tools/catalog.py`'s `validate` still does NOT
+   check balance, so the corpus can grow another one silently.
+
 8. **⚠ `hydrolysis` — AND READ S3's LANDMINE FIRST.** It unlocks **exactly ONE
    route alone, `vitriol-distillation`**, and that route's step 1 reads
    `-> iron-ii-OXIDE` while the engine makes HEMATITE. The whole standalone
    payoff is a route carrying a step whose product the engine does not make.
    ⚠ S3 and S4 disagree about what to do with such a row — read §S3's "which one
    is WRONG" check before deciding.
+
 9. **M7 (dissociation as an equilibrium — ⚠ M12 took most of its case away;
    re-scope before scheduling)**, **M9 (polymers, 12 routes)**, **M10 (the site
-   balance S1 did not build, 8 routes)**, and **`molten-salt-electrolysis`**
-   (a MELT is not a phase this project has — M8's other leftover, and it needs
-   item 3 as well before either route could run).
+   balance S1 did not build, 8 routes)**, **M11 (the unpriceable families, 16
+   routes, and 10 of them need ONE boiling point each)**, and
+   **`molten-salt-electrolysis`** (a MELT is not a phase this project has).
+
 10. **NUCLEATION, now that half of it is modelled.** S3 named the gap; S4 turned
     the *deposition-needs-a-seed* half into a real bound in
-    `SolidStateArrays.units`, which is why the mercury retort does not re-form
-    its oxide when cooled 289 K below the oxide's threshold. What is still not
-    expressible is a solid appearing from NO solid — `hydride-thermal-deposition`
-    (`arsine -> arsenic + hydrogen`) is still a mechanism gap for that reason.
+    `SolidStateArrays.units`. What is still not expressible is a solid appearing
+    from NO solid — `hydride-thermal-deposition` (`arsine -> arsenic + hydrogen`)
+    is still a mechanism gap for that reason.
 
 The project is under **git**. There is no remote. ⚠ The committer identity is the
 machine's global `innovationlabOBS <innovationlab@obsglobal.com>`; set a
@@ -170,178 +199,182 @@ repo-local `user.name`/`user.email` if that should be yours.
 
 Start by reading, in order:
 
-MILESTONES.md — the plan. ⚠ **§M8, §S1, §S3, §S4, §S5 and §S6 are the ones to
-  read**: M8's brief predicted the wrong failure AND named a class that split
-  under its own row check, S1's brief asked for one mechanism and the arithmetic
-  said two, S3 found the instrument's own OUTPUT was not diffable, S4's brief
-  said to reverse a re-label and the arithmetic said keep, **S5's brief named the
-  wrong LAYER**, and **S6's brief handed it a number that was wrong.**
+MILESTONES.md — the plan. ⚠ **§S7, §M8, §S1, §S3, §S4, §S5 and §S6 are the ones
+  to read**: S7 measured the queue's top two rows at ZERO and split a class in a
+  way that LOWERED the headline, M8's brief predicted the wrong failure AND named
+  a class that split under its own row check, S1's brief asked for one mechanism
+  and the arithmetic said two, S3 found the instrument's own OUTPUT was not
+  diffable, S4's brief said to reverse a re-label and the arithmetic said keep,
+  **S5's brief named the wrong LAYER**, and **S6's brief handed it a number that
+  was wrong.**
 HANDOFF.md — what exists, and the ethos to preserve. **85 is S1, 86 is S2, 87 is
-  S3, 88 is S4, 89 is S5, 90 is S6, 91 is M8.**
-NEXT_SESSION.md — the invariants table at the bottom is the contract, and M8
-  added seven rows to it. ⚠ Read the two warnings above it before trusting any row.
+  S3, 88 is S4, 89 is S5, 90 is S6, 91 is M8, 92 is S7.**
+NEXT_SESSION.md — the invariants table at the bottom is the contract, and S7
+  added a block of nine rows to it. ⚠ Read the two warnings above it before
+  trusting any row, and note that one S7 row is a LIMIT to remove rather than an
+  invariant to keep.
 GAME_DESIGN.md — the settled design.
-data/catalog/README.md — the reaction-class taxonomy, including **M8's split of
-  `electrolysis`**, **S3's split of `thermal-decomposition`** and **S4's decision
-  NOT to un-split `roasting-to-metal`**, and `data/catalog/COVERAGE_REPORT.md`.
-the memory files (auto-loaded), especially chemsim-electrochemistry,
-  chemsim-species-ready-minerals, chemsim-jacobian-bound,
-  chemsim-zero-jacobian-column (⚠ its diagnosis was CORRECTED by S5),
-  chemsim-element-floor, chemsim-mercury-retort and chemsim-generated-artefacts.
+data/catalog/README.md — the reaction-class taxonomy, including **S7's split of
+  `combustion`**, M8's of `electrolysis`, S3's of `thermal-decomposition` and
+  S4's decision NOT to un-split `roasting-to-metal`; plus
+  `data/catalog/COVERAGE_REPORT.md`.
+the memory files (auto-loaded), especially chemsim-gas-processes,
+  chemsim-corpus-balance, chemsim-electrochemistry,
+  chemsim-species-ready-minerals, chemsim-coverage-catalog and
+  chemsim-generated-artefacts.
 
 STATE: Layers 0–7 complete. The engine is open-ended (no recipes), conserves
 matter, has an element/mineral floor, a still that is a saveable protocol, a plate
 column that reaches its purity target, an ionic lattice that can leave solution, a
 solvent mixture that says when it was never modelled, an energy balance it can
-report the way it reports a mass one, 38 templates, a reaction that happens INSIDE
+report the way it reports a mass one, 43 templates, a reaction that happens INSIDE
 a crystal, a gas that ATTACKS a crystal, a catalyst you have to actually put in
 the flask, a route that nothing declares, a Jacobian that cannot be probed outside
-its own state, and **a dial that decomposes things in the order their chemistry
-says they should**. `SAVE_VERSION` is **5**.
-Coverage: **38/220 classes**, **38 templates**, **31/173 template-ready**,
-**65/173 species-ready** — and ⚠⚠ **20/173 BOTH, which is the only one of the
+its own state, a dial that decomposes things in the order their chemistry says
+they should, and **four inorganic gas processes whose whole behaviour is their
+reversibility**. `SAVE_VERSION` is **5**.
+Coverage: **43/224 classes**, **43 templates**, **34/173 template-ready**,
+**63/173 species-ready** — and ⚠⚠ **24/173 BOTH, which is the only one of the
 three a route can be judged on.**
 
 ---
 
-# ⚠⚠ WHAT M8 TURNED OUT TO BE: THE MECHANIC WAS FREE AND THE CLASS WAS NOT
+# ⚠⚠ WHAT S7 TURNED OUT TO BE: +4 ON THE INTERSECTION, AND TWO NEW INSTRUMENTS
 
-**+2 classes (36 → 38 of 220), +3 template-ready (28 → 31), +3 RUNNABLE
-(17 → 20).** Four templates, one field on `ReactionTemplate`, one field on
-`ConcreteReaction`, one `if` in `reaction_deltas`, one keyword on
-`build_network`. **No new term in Layer 4, no new phase, no new gate.**
+**+5 classes (38 → 43 of 224), +3 template-ready (31 → 34), +4 RUNNABLE
+(20 → 24)** — the largest single-session move the intersection has had, against
+M8's +3. Five templates, three bundles, **no Layer 3 or Layer 4 code**, one
+refusal widened in Layer 1.
 
-A cell does electrical work `w = n F E`. `electrons` says how many cross the
-external circuit, `cell_potential` says what the supply is set to, and
-`reaction_deltas` subtracts their product from **both** dH and dG. A reaction
-whose chemistry costs less than the cell supplies runs, and the crossing is
-`E_dec = dG_chem / (n F)` — every number in an electrochemical series.
+⚠ **All five coverage numbers were PREDICTED before the audit was run and all
+five came out exactly** (43/224, 43, 34, 24, and species-ready holding at 65
+before the refusal was widened; the refusal's cost was predicted at "≤4 routes
+and 0 in the BOTH column" and measured at 2 and 0).
 
 | what | measured |
 |---|---|
-| water splitting `E_dec` | **1.441 V** (book 1.229) |
-| brine `E_dec` | **2.362 V** (book 2.186) |
-| bromide `E_dec` | **2.061 V** (book 1.894) |
-| brine cell, 1 h, 2.5 V | **0.0177 mol Cl2**, 8.9e-19 mol O2 |
-| brine cell, 1 h, 4.0 V | 0.0169 mol Cl2, **0.53 mol O2** |
-| adiponitrile at 3 V | **65.6% conversion**; nothing at 2 V |
+| water-gas shift, 1 h | 10.4% at 500 K, **81.3% at 620 K**, 73.3% at 700, 55.6% at 900 |
+| steam reforming, 1 h | 0.01% at 700 K, **36.1% at 1300 K** |
+| ... same 1100 K flask, thinned | **18.6% at 54 bar → 73.5% at 0.63 bar** |
+| Deacon, 10 s / 1 h | 14.8/70.7% at 400 K, **90.6/91.2% at 600**, 84.6/84.6% at 700 |
+| Claus, 0.20 mol H2S | 50.0% at 0.05 mol O2, **100.0% at 0.10**, 93.7% at 0.30 |
 
-## ⚠ 1. THE SHIFT GOES ON dH AS WELL AS dG
+## ⚠⚠ 1. THREE OF THE FOUR ARE INTERESTING ONLY BECAUSE THEY ARE REVERSIBLE
 
-E is held fixed by the supply, so `w` does not vary with T, and a T-independent
-shift is an ENTHALPY shift. In dG alone, `reaction_entropy` (`dS = (dH-dG)/T`)
-books the whole cell voltage as reaction entropy and K drifts as `exp(w/RT)`.
-Shifting both leaves dS exactly the chemistry's — **and the energy balance comes
-out right for free**, since `to_arrays` reads the same dH: heat to the flask is
-`w - dH_chem`, zero at the thermoneutral voltage, which is what a real cell does.
+Every equilibrium came out at its textbook value off this project's own tables
+BEFORE a template existed — dH −41.15 against a book −41.2 for the shift, +206.2
+against +206 for the reformer, −114.4 against −114.5 for Deacon. What the
+templates buy is behaviour NOBODY DECLARED: the shift gets worse when heated (two
+reactors, hot then cold); the reformer is impossible until ~900 K and is the one
+gas equilibrium here that PRESSURE HURTS (two moles in, four out); Deacon's
+ceiling and rate move in opposite directions with T and cross between 600 and
+700 K, which is the entire industrial history of the process.
 
-## ⚠⚠ 2. EVANS-POLANYI ON AN ELECTRODE REACTION *IS* BUTLER-VOLMER
+⚠ And the Claus flask recovers **100.0%** at exactly the stoichiometric air rate
+and less on either side, because burning one third of the H2S is what leaves the
+2:1 ratio the second template wants. **Neither Claus template knows the other
+exists.**
 
-An identity, not a resemblance. With the work in dH,
-`Ea + alpha(dH_chem - nFE)` is `Ea - alpha nF eta` up to the entropy term — the
-Tafel slope, with `alpha` at its conventional 0.5. So **`Ea` on an electrode
-template is the ACTIVATION OVERPOTENTIAL in energy units, `n F eta_a`**, and the
-kinetics needed no new field either. Oxygen evolution 0.80 V, chlorine 0.40 V,
-Kolbe 1.20 V — measured quantities with a century of Tafel data behind them, and
-**that gap is why a brine cell makes chlorine rather than the oxygen its
-thermodynamics prefers.**
+## ⚠⚠ 2. THE QUEUE'S TOP TWO ROWS WERE MEASURED AT ZERO BEFORE BEING COSTED
 
-## ⚠⚠ 3. THE BRIEF PREDICTED THE WRONG FAILURE
+See the top of this file. `isomerisation` (+3/+2) is three rows and three
+mechanisms, each failing its own way; `crosslinking` (+2/+2) has two products
+with no chemistry behind them, one of them spelled `CC(C)=CC.S1SSSSSSS1` — **its
+own two reactants written side by side.** That last measurement is what closed a
+Layer 1 hole (§4).
 
-M8's brief budgeted for re-deriving the five pH values: *"a half-cell potential
-is not consumed as a number: it puts the ion back into an equilibrium the kernel
-evaluates."* **Measured: unmoved, 76 tests.** There is no half-cell potential.
-Every template is a WHOLE CELL — electrons cancelled, charge balanced — because a
-half reaction does not conserve charge and `_element_charge_balance` rejects it,
-and because that is what the catalog rows already say. **So no electrode
-potential was ever curated**: dG of a half reaction needs a reference electrode,
-dG of a cell does not.
-⚠ And the brief's `done when` asked that "the current is the control". It is not
-— the VOLTAGE is. See queue item 4.
+## ⚠⚠ 3. `combustion` WAS AN OUTCOME LABEL — AND THE SPLIT LOWERED THE HEADLINE
 
-## ⚠⚠ 4. THE NEW AUDIT FOUND A PRE-EXISTING ERROR ON ITS FIRST RUN
+Six rows, **five mechanisms**, credited to `sulfur_combustion` since M1 while
+that template's SMARTS (`S8 + 8 O2 -> 8 SO2`) fires on two of them. The match-head
+row is not combustion at all: a solid oxidiser hands its oxygen to a solid fuel
+on friction, with no air and no flame until after it goes.
+⚠⚠ **`match-chemistry` loses template-ready for it — the first split in this
+project whose measured headline effect is NEGATIVE.** It was never species-ready,
+so the intersection is untouched, and **a split whose effect is negative is a
+split doing its job.**
 
-`validation/cell_potentials.py` panel 2: the brine cell's dS is out by
-**−591 J/(mol K)** and bromide's by −738, which REVERSES the sign of dE/dT —
-every cell here wants more voltage when heated and every real one wants less.
-This project's ions are derived from measured pKa against its OWN water, and its
-own water is priced on the **ideal-gas** basis (Hf −241.8, not the aqueous
-−285.8). For a reaction that conserves water the offset cancels and nothing has
-noticed since the electrolyte model was built; **every cell reaction consumes
-water and makes hydroxide**, so it does not. **dG survives it and dS does not.**
-Quote E_dec at 298 K; do NOT quote its temperature derivative, and do NOT read a
-cell's HEAT.
+## ⚠⚠ 4. A NEUTRAL MULTI-FRAGMENT SMILES WAS PRICED, AND THE RECORDED REASON WAS FALSE
 
-## ⚠⚠ 5. THE SOLVER SAID THE PRE-EXPONENTIAL WAS THE WRONG KIND OF NUMBER
+`thermochemistry` refused a dot-separated SMILES only when a fragment carried
+CHARGE, on the recorded grounds that *"nothing in this project produces one, so
+refusing it would widen the blast radius for no measured gain."* The catalog
+carries **eleven**, and Joback prices `CC(C)=CC.S1SSSSSSS1` at **+273.70 against
+the +51.59 its own two parts sum to.** ⚠ **In an ideal gas that sum is an
+IDENTITY, not an estimate** — there are no intermolecular interactions. Benson
+honours it (three of five at +0.00); Joback has a constant term and does not.
+⚠ And `catalog_coverage` was disagreeing with the provider it audits: it treated
+any dot as ionic and priced fragment-by-fragment, so all nine kept resolving
+after the engine stopped. Right for a salt, wrong for a neutral mixture.
 
-At `A = 1e10` — an order under `COLLISION_LIMIT`, which is how every other
-pre-exponential here is bounded — a cell at 3.0 V ate 0.2 mol of chloride inside
-a nanosecond and `Vessel.run` died with *required step size is less than spacing
-between numbers* after **4.2e-09 s of 3600 s**. The rate cap had been firing at
-the low end too. Same wrong ceiling from two ends. **An electrode reaction is not
-two molecules meeting** — it happens on a SURFACE, its rate scales with electrode
-AREA and not volume, and 1e10 asserts every chloride is touching the anode. The
-right units are a current density over an area, `5e-8 = j0 * a / (n F)` =
-`1e-3 * 10 / (2*96485)`, and the check that makes it defensible is that **it
-comes back out as an ampere**.
+## ⚠⚠ 5. NOTHING HAD EVER CHECKED THAT A CATALOG ROW BALANCES
 
-## ⚠ 6. THE ADIPONITRILE ROW IS NOT AN ELECTRODE REACTION
+`validation/corpus_balance.py`, and the question is not "does it balance as
+written" — the corpus carries no coefficients on purpose — but **does a strictly
+POSITIVE coefficient vector exist**, an LP over the element-and-charge matrix.
+**75 of 367 testable rows do not:** 17 `spurious`, 1 `charge`, 57 `atoms`. ⚠ It
+touches the headline exactly once — `perkin-route` step 1, INERT because
+`perkin_condensation`'s SMARTS never mentions the base it consumes on paper.
 
-The row reads `AN + water -> ADN + oxygen`, so a fourth electron-carrying
-template was the expected shape. Measured: the CELL is uphill at **+212.7
-kJ/mol** but `2 AN + H2 -> ADN` is **downhill at −171.7**. The voltage buys the
-HYDROGEN, not the carbon–carbon bond. So the route is `water_electrolysis` +
-`alkene_hydrodimerisation` (`electrons=0`) and the row's stoichiometry — oxygen
-included — EMERGES. ⚠ Cost stated: routing electrons through free H2 puts the
-threshold at water's 1.441 V instead of its own 0.551 V, **0.89 V too high**.
-⚠ The lump alternative was measured and refused — 6 slots, FOURTH order in the
-limiting reagent, `sulfur_combustion`'s stall in the case not forgiven.
+## ⚠ 6. AND THE RATE-CEILING AUDIT FOUND A ROW ON ITS FIRST RUN
+
+`deacon_oxidation_rev` crosses the bimolecular ceiling at **1141 K**, the coldest
+of the high-order reverse rows. Reported, not guarded, on the policy ammonia's
+1335 K row already sits under: the cap scales both pre-exponentials, so it moves
+a CLOCK and not an equilibrium. ⚠ And the crossing temperature is not a physical
+statement for such a row — a FOURTH-order constant in L^3/(mol^3 s) against a
+ceiling in L/(mol s) is M8's unit error.
 
 ---
 
 # ⚠ THE FRAGILITIES
 
 **1. ⚠⚠ THE BURNER IS STILL 53 s AT rtol 1e-8 AGAINST 0.8 s AT THE DEFAULT.** The
-crash is bounded; the thrashing is not. **Queue item 7, not the next job.** It
-fires only at rtol 1e-8, so nothing a player does reaches it.
+crash is bounded; the thrashing is not. **Queue item 6.** It fires only at rtol
+1e-8, so nothing a player does reaches it.
 
-**2. ⚠⚠ NEW IN M8: NO CURRENT BUDGET.** Two electrode reactions in one cell
-divide nothing, so every reaction the cell clears runs at its own full rate at
-once. Selectivity washes out above ~2.7 V. Measured, pinned by a test as a LIMIT,
-queue item 4.
+**2. ⚠⚠ NO CURRENT BUDGET (M8).** Two electrode reactions in one cell divide
+nothing, so every reaction the cell clears runs at its own full rate at once.
+Selectivity washes out above ~2.7 V. Measured, pinned by a test as a LIMIT.
 
-**3. ⚠⚠ NEW IN M8, AND PRE-EXISTING: THE ION TABLE'S MIXED BASIS.** dG survives
-it, dS does not. See §4 above. **The first mechanism to depend on it is M8**, and
-it will bite anything else that writes a reaction consuming water and making
-hydroxide.
+**3. ⚠⚠ THE ION TABLE'S MIXED BASIS (M8, pre-existing).** dG survives it, dS does
+not. Quote E_dec at 298 K; do NOT quote its temperature derivative and do NOT
+read a cell's HEAT.
 
-**4. ⚠ A SOLID DECOMPOSITION'S FORWARD CONSTANT CROSSES THE UNIMOLECULAR CEILING
-AT 3710 K**, inside the RHS's 5000 K clamp. New in S4, reported by
-`validation/rate_ceiling.py`'s fourth panel. Not guarded, on the stated policy:
-`A0` divides out of `flux = 0` and moves a CLOCK, not an equilibrium.
+**4. ⚠⚠ NEW IN S7: 75 CATALOG ROWS CANNOT BE BALANCED.** Reported, not fixed.
+One of them is in the BOTH column and is inert. `tools/catalog.py`'s `validate`
+still does not check it, so the corpus can grow another silently.
 
-**5. ⚠ `detailed_balance`'s RATE CAP COMPARES A CATALYSED PRE-EXPONENTIAL AGAINST
+**5. ⚠⚠ NEW IN S7: THE ESTIMATORS CANNOT TELL A CIS ALKENE FROM A TRANS ONE.**
+dH = dG = 0.000 exactly for oleic/elaidic. Any future template on a
+double-bond geometry reports a confident 50:50. Pinned by a test as a LIMIT.
+
+**6. ⚠ `deacon_oxidation_rev` CROSSES THE BIMOLECULAR CEILING AT 1141 K**, the
+coldest such row. Reported on the stated policy: it moves a CLOCK.
+
+**7. ⚠ A SOLID DECOMPOSITION'S FORWARD CONSTANT CROSSES THE UNIMOLECULAR CEILING
+AT 3710 K**, inside the RHS's 5000 K clamp. New in S4.
+
+**8. ⚠ `detailed_balance`'s RATE CAP COMPARES A CATALYSED PRE-EXPONENTIAL AGAINST
 A LIMIT NOT IN ITS UNITS**, so it would fire 10x too eagerly. It does not fire on
-any of the five catalysed templates, pinned by a test.
+any catalysed template, pinned by a test.
 
-**6. THE DEFAULT TOLERANCE, BOUNDED RATHER THAN OPEN.** ⚠ `tolerance_audit.py` is
+**9. THE DEFAULT TOLERANCE, BOUNDED RATHER THAN OPEN.** ⚠ `tolerance_audit.py` is
 a STANDING audit: run it after touching the RHS. Its three self-check examples
 must come out OUTPUT IDENTICAL. ⚠ Its `QUOTABLE DIGITS MOVE` headline on
-`oil_of_vitriol` is WRONG — queue item 5.
+`oil_of_vitriol` is WRONG — queue item 4.
 
-**7. NOT MODELLED: the SITE BALANCE.** First order in the catalyst for ever. M10.
+**10. NOT MODELLED: the SITE BALANCE.** First order in the catalyst for ever. M10.
 
-**8. ⚠ NUCLEATION, HALF modelled.** A solid can only grow where one already is.
-What is still not expressible is a solid appearing from NO solid.
+**11. ⚠ NUCLEATION, HALF modelled.** A solid can only grow where one already is.
 
-**9. ⚠ LIQUID MERCURY IS 99.85% HELD IDEAL.** Named and bounded, not hidden.
+**12. ⚠ LIQUID MERCURY IS 99.85% HELD IDEAL.** Named and bounded, not hidden.
 
-**10. ⚠ THE FLAT COLUMN IS STILL FLAT, AND THAT IS CORRECT.** A species genuinely
-absent from a sealed flask has an identically zero Jacobian column, and **zero is
-its derivative.**
+**13. ⚠ THE FLAT COLUMN IS STILL FLAT, AND THAT IS CORRECT.** A species genuinely
+absent from a sealed flask has an identically zero Jacobian column.
 
-**11. ⚠ 45 COMPOUNDS ARE STILL REFUSED AS A BARE ELEMENT, BLOCKING 15 ROUTES.**
-Queue item 3.
+**14. ⚠ 45 COMPOUNDS ARE STILL REFUSED AS A BARE ELEMENT, BLOCKING 15 ROUTES —
+AND S7 MEASURED THAT AT +0 ON THE INTERSECTION.** Queue item 1.
 
 **UNCHANGED: `psi = np.exp(-a / T)` in `activity.activity_coefficients` overflows
 for the PSRK quadratic `H2O <-> N2` pair below 4.28 K**, and the RHS's clamp is
@@ -355,44 +388,44 @@ for the PSRK quadratic `H2O <-> N2` pair below 4.28 K**, and the RHS's clamp is
 TRAPS SPECIFIC TO THIS ARC:
 
 ⚠ BOUND A MECHANISM ARITHMETICALLY AGAINST THE ACTUAL SIMULATED STATE BEFORE
-WRITING CODE. Nineteen times now. ⚠ **AND M8 ADDS A COROLLARY: THE SOLVER IS PART
-OF THE ARITHMETIC.** M8's dG bound was right and its `A` was three orders wrong,
-and nothing caught that until a vessel actually ran. **An arithmetic bound tells
-you whether a mechanism CAN go; only running it tells you whether it can be
-INTEGRATED.**
-⚠⚠ **A CONSTANT'S UNITS ARE WHAT MAKE ITS VALUE DEFENSIBLE, AND "the units every
-other constant here uses" IS NOT AUTOMATICALLY THE RIGHT UNIT.** Every
-pre-exponential in this project is bounded by a collision frequency; an electrode
-reaction is not a collision, and reusing that ceiling cost a dead solver.
-⚠⚠ **A RECORDED MEASUREMENT IS A CLAIM ABOUT A PAST STATE OF THE CODE, AND IT CAN
-BE WRONG ABOUT ITS OWN SUBJECT.** S5: four of five recorded triggers had stopped
-firing. S6: a measured number and a list of ids, both wrong. **M8: the greedy
-curve's TOP ROW, unchallenged since M1, was worth a third of what it claimed.**
-⚠⚠ **A CLASS IS A MECHANISM CLAIM — AND THE ROW CHECK IS WORTH MOST EXACTLY WHERE
-THE UNLOCK COUNT IS HIGHEST.** It is cheap to apply to a class worth +1. Applied
-to the one at the top of the queue it cost two thirds of the headline, which is
-when it was doing its job.
-⚠⚠ **TWO COLUMNS THAT ANSWER INDEPENDENT QUESTIONS DO NOT BOUND EACH OTHER —
-COMPUTE THE INTERSECTION.** And note which column survived M8's split: RUNNABLE
-was right, ALONE was not, because the rows the split lost were blocked on a
-species anyway.
+WRITING CODE. Twenty times now. ⚠ **AND THE SOLVER IS PART OF THE ARITHMETIC**
+(M8): an arithmetic bound tells you whether a mechanism CAN go; only running it
+tells you whether it can be INTEGRATED.
+⚠⚠ **A COLUMN THAT ANSWERS A QUESTION CANNOT ANSWER THE NEXT ONE.** `ALONE`
+could not ask whether the species price. `RUNNABLE` cannot ask whether the number
+is RIGHT or whether the product is a GRAPH. **S7's two top-of-queue rows failed
+on exactly those, and neither failure was visible in the report.** Every column
+this project adds should be read as "and what can it still not see?"
+⚠⚠ **A RECORDED MEASUREMENT IS A CLAIM ABOUT A PAST STATE OF THE CODE, AND IT
+CAN BE WRONG ABOUT ITS OWN SUBJECT.** S5: four of five recorded triggers had
+stopped firing. S6: a measured number and a list of ids, both wrong. M8: the
+greedy curve's top row was worth a third of its claim. **S7: a docstring's stated
+reason for a carve-out ("nothing in this project produces one") was false about
+its own corpus by eleven, and a bundle's docstring still described behaviour S1
+had removed.** Read the claim, then check it.
+⚠⚠ **A CLASS IS A MECHANISM CLAIM, AND A SPLIT MAY LOWER THE HEADLINE.** S7's
+split of `combustion` cost a template-ready route. That is what a correct split
+looks like when the old credit was false.
 ⚠ **A BRIEF'S EXPECTED OUTCOME IS A HYPOTHESIS.** S4's said a re-label would be
 reversed; running it both ways said keep. S1's asked for one mechanism and got
 two. S5's named a layer and the measurement named another. S6's named a size.
-**M8's named a FAILURE — the five pH values — that never came, and the reason it
-never came (there is no half-cell potential) is the milestone's best finding.**
+M8's named a FAILURE that never came. **S7's said the bare-element gap was the
+cheapest item on the queue, and the measurement said it is worth zero alone.**
 **Run the number for the option you are not taking.**
-⚠ **PREDICT THE NUMBER BEFORE YOU MEASURE IT.** S3 predicted +2/+0; S4 +1/+1;
-S6 predicted 14 and measured 16. **M8 predicted 38/220 classes, 31 template-ready
-and 20 BOTH, and all three came out exactly** — which is what makes the ONE
-prediction it got wrong (the selectivity window) worth reading.
+⚠ **PREDICT THE NUMBER BEFORE YOU MEASURE IT.** S3 +2/+0; S4 +1/+1; S6 predicted
+14 and measured 16; M8 predicted three numbers and got three. **S7 predicted five
+and got five, which is what makes the sixth — the Deacon timescale, predicted at
+minutes and measured at ten seconds — worth reading.**
 ⚠ **VERIFY A CREDIT BY RUNNING IT, NOT BY READING THE CODE THAT WOULD RUN IT.**
-M8 charged every cell into a real `Vessel`; that is how the dead solver was
-found, and `pyrite-roasting` is what the check exists to prevent.
+Every S7 class went into a real `Vessel`; `pyrite-roasting` is what the check
+exists to prevent.
 ⚠ **AND VERIFY A BIT-IDENTICAL CLAIM AGAINST THE EXAMPLE SET, NOT AN ARGUMENT.**
-M8's "no supply is exactly the old engine" is true by construction AND was
-checked by stashing `src/` and running all 14 examples both ways. S5's lesson:
-a four-run sweep is not the example set.
+⚠ **READ THE PRODUCT SMILES OF A NEW TEMPLATE.** S7's water-gas shift first came
+out as `O=C=[O+]`, because the CO's `[O+]` was never neutralised. Second time
+that has been the catch (see `sulfur_dioxide_oxidation`).
+⚠ **A CONSTANT'S UNITS ARE WHAT MAKE ITS VALUE DEFENSIBLE.** A fifth-order
+pre-exponential is not a collision frequency, and neither is a fourth-order rate
+constant comparable to a bimolecular ceiling.
 ⚠ **AN `inf` IS USUALLY THE WRONG BOUND, NOT A BOUND NEEDING SOFTENING.**
 ⚠ **A RELATIVE-DIFFERENCE TEST IS MEANINGLESS ON A COLUMN WHOSE CONVERGED VALUE
 IS ZERO.**
@@ -400,29 +433,34 @@ IS ZERO.**
 ⚠ **AUDIT THE INSTRUMENT BEFORE THE FINDINGS.** S2's harness invented a finding;
 S1's coverage audit credited a route that cannot run; S3's report could not be
 diffed; S4's rate-ceiling audit made a claim about a table it does not read;
-S6's target column had been understating itself since M3. **M8's new audit found
-a pre-existing error in the ion table on its first run** — which is what a
-standing audit is for.
+S6's target column had been understating itself since M3; M8's new audit found a
+pre-existing ion-table error. **S7 found the coverage audit pricing a species the
+engine refuses, and the corpus validator never checking that a row balances.**
 ⚠ AN INVARIANT MEASURED ACROSS A BOUNDARY FLUX IS NOT AN INVARIANT. Seal it first.
 ⚠ A GREEN SUITE IS NOT EVIDENCE THE INVARIANTS TABLE HOLDS.
 ⚠ **A GENERATED FILE NOTHING READS IS THE ONE THAT ROTS.** Regenerate all three
-catalog artefacts. ⚠ The root `README.md`'s coverage table is NOT generated —
-S4 corrected it once, S6 again, M8 again.
+catalog artefacts and check them across `PYTHONHASHSEED`. ⚠ The root `README.md`'s
+coverage table is NOT generated — S4 corrected it, S6 again, M8 again, S7 again.
 ⚠ **A PHASE LABEL CARRIES A STANDARD STATE.** So does a BASIS.
 ⚠ **BDF IGNORES `jac_sparsity` THE MOMENT `jac` IS CALLABLE.**
 ⚠ Windows console is cp1252: **a warning glyph inside a `print()` kills a
-script.** Docstrings fine, printed text ASCII. (TWENTY-TWO sessions running —
-M8 hit it too, in `validation/cell_potentials.py`, on the first run.)
-⚠⚠ **`sed -i` REWRITES EVERY LINE ENDING IN A CRLF FILE.** This repo is MIXED:
-markdown and `.psv` are CRLF, `element_data.py` / `solid_state.py` /
-`volatility.py` / `catalog_coverage.py` / `template.py` / `reaction.py` /
-`synthesis.py` are CRLF while `vessel.py` / `surface.py` / `thermo.py` /
-`builder.py` / `constants.py` / `jacobian.py` are LF. **Read binary, detect
-`\r\n`, restore it on write. Check `git diff --stat` after the first edit to any
-file** — a whole-file rewrite shows up instantly as a huge insertion count.
-⚠ **HEREDOCS EAT ESCAPES**, and M8 also found they choke outright on a large
-block containing quotes. Write the payload to a file with the Write tool and
-splice it with a tiny script.
+script.** Docstrings fine, printed text ASCII. (TWENTY-THREE sessions running —
+S7 caught one in `validation/gas_processes.py` before the first run.)
+⚠⚠ **`sed -i` REWRITES EVERY LINE ENDING IN A CRLF FILE, AND ON THIS MACHINE IT
+ALSO FAILS OUTRIGHT IN THE SCRATCHPAD** ("invalid cross-device link"). This repo
+is MIXED: markdown and `.psv` are CRLF, and so are `element_data.py`,
+`solid_state.py`, `volatility.py`, `catalog_coverage.py`, `template.py`,
+`reaction.py`, `synthesis.py`, `thermochemistry.py`, `rate_ceiling.py`, while
+`vessel.py`, `surface.py`, `thermo.py`, `builder.py`, `constants.py`,
+`jacobian.py` and the newer `validation/*.py` are LF. **Read binary, detect
+`\r\n`, restore it on write, and check `git diff --stat` after the first edit to
+any file** — a whole-file rewrite shows up instantly as a huge insertion count.
+S7 used a 40-line CRLF-preserving splice helper for every edit and it is worth
+rebuilding.
+⚠ **HEREDOCS EAT ESCAPES AND CHOKE ON A LARGE BLOCK CONTAINING QUOTES.** S7 hit
+both: a `\\` in a SMILES became `\` (SyntaxWarning), and a 100-line block with
+apostrophes killed the shell outright. Write the payload with the Write tool and
+splice it.
 ⚠ **A GENERATOR CAN LEAK A `numpy` REPR INTO ITS OUTPUT.** Cast to `float`.
 ⚠ An em dash in a markdown anchor will not match a `--` you typed.
 ⚠ Redirecting a long Python run to a file BLOCK-BUFFERS it. Use `python -u`.
@@ -434,39 +472,37 @@ NO silent approximations. REFUSE loudly rather than return a confident wrong
 number — and a LATENT fragility is a third case: report it, do not refuse it.
 ⚠ **AND REFUSING TO *DISSOLVE* A SPECIES IS NOT REFUSING TO *PRICE* IT.**
 The setup/hot-loop split: when adding a physical model, first ask "what uniform
-array form does this collapse to?" **M8's answer was "none — it collapses to
-different numbers in the arrays that already exist", which is why it cost no
-Layer 4 code.**
+array form does this collapse to?"
 `World.rig is None` exactly the old per-vessel path; `losses=None` exactly
 lossless; `precipitation=False` exactly no ionic lattice; `solid_state=False`
 exactly no crystal reacting; `surface=False` exactly no gas attacking one; an
-all-zero `order_solid` exactly the old kinetics kernel; **`cell_potential=0.0`
-exactly the pre-M8 engine, bit for bit, verified on all 14 examples**;
-**`BoundedJacobian` with its bound lifted exactly BDF's own differencing**; the
-Born term exactly zero in PURE water; the five pH values (**M8 predicted to break
-them and did not**); SAVE_VERSION stores the CONDITION, never the instant; every
+all-zero `order_solid` exactly the old kinetics kernel; `cell_potential=0.0`
+exactly the pre-M8 engine, bit for bit; `BoundedJacobian` with its bound lifted
+exactly BDF's own differencing; the Born term exactly zero in PURE water; the
+five pH values; SAVE_VERSION stores the CONDITION, never the instant; every
 gaseous element reference state Hf = Gf = 0 EXACTLY; **a CONDENSED reference
 state's ideal-gas record is a MEASUREMENT and must not be zero**; every METAL
 Hf = Gf = 0 EXACTLY on the solid basis; a reference state its own database does
 not price at Hf = 0 is REFUSED; no mineral pricing differently under the two
 providers; `ion_data` and `electrolyte` never subtracted from each other; **a
-declared rate order may never be reversible, and an `electrons` count may never
-carry declared orders**; **an electrode template is a WHOLE CELL, charge balanced
-on both sides — a half reaction is refused by the builder and must stay so**;
-**the reverse of an electrode reaction carries MINUS the work, so `dH_rev ==
--dH_fwd` exactly**; a surface row whose `ln K` is under +20 is REFUSED; **a
-solid-state row with no crystal on EITHER side is REFUSED**; **the four pre-S4
-solid-state rows take the raw `units` minimum, bit for bit**; **an element's
-`Hvap` is Clausius-Clapeyron on the vapour-pressure curve `volatility` actually
-evaluates**; the reflux ratio is the ratio of two drain conductances out of one
-condenser; the fragmentation SEARCH runs only after the greedy pass has been
-REFUSED; an ion is never counted in the held-ideal flag; a rate CAP scales BOTH
-pre-exponentials by one factor; a template that moves a hydrogen ATOM must
-collapse explicit Hs; a declared catalyst is a CONSTANT OF THE MOTION; the
-tolerance audit's THREE self-check examples come out byte-identical;
-**`COVERAGE_REPORT.md` and both `derived/*.psv` come out byte-identical across
-`PYTHONHASHSEED` values**; **the `mineral` tier is a FALLBACK consulted only after
-all three providers refuse**; **`validation/jacobian_bound.py` panel 3 reads 0
-clamped columns on every single vessel**; **a lattice may REACT and may never
-DISSOLVE — the fusion law is still 407x wrong in both directions, and neither M6
-nor S1–S6 nor M8 softened that by one digit.**
+declared rate order may NEVER be reversible, and that holds at twenty-four slots
+as well as at nine**; an `electrons` count may never carry declared orders; an
+electrode template is a WHOLE CELL, charge balanced on both sides; the reverse of
+an electrode reaction carries MINUS the work, so `dH_rev == -dH_fwd` exactly; a
+surface row whose `ln K` is under +20 is REFUSED; a solid-state row with no
+crystal on EITHER side is REFUSED; the four pre-S4 solid-state rows take the raw
+`units` minimum, bit for bit; an element's `Hvap` is Clausius-Clapeyron on the
+vapour-pressure curve `volatility` actually evaluates; the reflux ratio is the
+ratio of two drain conductances out of one condenser; the fragmentation SEARCH
+runs only after the greedy pass has been REFUSED; an ion is never counted in the
+held-ideal flag; a rate CAP scales BOTH pre-exponentials by one factor; a
+template that moves a hydrogen ATOM must collapse explicit Hs; a declared
+catalyst is a CONSTANT OF THE MOTION; the tolerance audit's THREE self-check
+examples come out byte-identical; **`COVERAGE_REPORT.md` and both `derived/*.psv`
+come out byte-identical across `PYTHONHASHSEED` values**; the `mineral` tier is a
+FALLBACK consulted only after all three providers refuse; **a dot-separated
+SMILES is a MIXTURE and is refused whether or not a fragment is charged — the
+ideal-gas record for one IS the sum of its fragments', which is an identity**;
+`validation/jacobian_bound.py` panel 3 reads 0 clamped columns on every vessel;
+**a lattice may REACT and may never DISSOLVE — the fusion law is still 407x wrong
+in both directions, and neither M6 nor S1–S7 nor M8 softened that by one digit.**

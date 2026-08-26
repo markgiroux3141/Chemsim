@@ -272,7 +272,7 @@ bis-hydroxyethyl-terephthalate | 1 | 0 | 1 | 0 | 0 | joback
 pet-unit | 1 | 0 | 0 | 1 | 0 | joback
 p-xylene | 1 | 1 | 0 | 0 | 0 | joback
 hexamethylenediamine | 1 | 0 | 1 | 0 | 0 | joback
-nylon-66-salt | 1 | 0 | 1 | 0 | 0 | joback
+nylon-66-salt | 1 | 0 | 1 | 0 | 0 | refused
 nylon-66-unit | 1 | 0 | 0 | 1 | 0 | joback
 nylon-6-unit | 1 | 0 | 0 | 1 | 0 | joback
 cyclohexane | 1 | 1 | 0 | 0 | 0 | joback
@@ -288,7 +288,7 @@ polyethylene-unit | 1 | 0 | 0 | 1 | 0 | joback
 titanium-tetrachloride | 1 | 0 | 0 | 0 | 1 | refused
 triethylaluminium | 1 | 0 | 0 | 0 | 1 | refused
 acetone-cyanohydrin | 1 | 0 | 1 | 0 | 0 | joback
-methacrylamide-sulfate | 1 | 0 | 1 | 0 | 0 | joback
+methacrylamide-sulfate | 1 | 0 | 1 | 0 | 0 | refused
 methyl-methacrylate | 1 | 0 | 1 | 0 | 0 | joback
 ammonium-bisulfate | 1 | 0 | 0 | 1 | 0 | refused
 pmma-unit | 1 | 0 | 0 | 1 | 0 | joback
@@ -313,10 +313,10 @@ octamethylcyclotetrasiloxane | 1 | 0 | 0 | 1 | 0 | refused
 chloroprene | 1 | 0 | 1 | 0 | 0 | joback
 vinylacetylene | 1 | 0 | 1 | 0 | 0 | joback
 polychloroprene-unit | 1 | 0 | 0 | 1 | 0 | joback
-sbr-marker | 1 | 0 | 0 | 1 | 0 | joback
+sbr-marker | 1 | 0 | 0 | 1 | 0 | refused
 magnesium-oxide | 1 | 0 | 0 | 0 | 1 | mineral
 polyisoprene-unit | 1 | 1 | 0 | 0 | 0 | joback
-vulcanised-rubber-marker | 1 | 0 | 0 | 1 | 0 | joback
+vulcanised-rubber-marker | 1 | 0 | 0 | 1 | 0 | refused
 alkali-cellulose-marker | 1 | 0 | 1 | 0 | 0 | marker
 carbon-disulfide | 1 | 0 | 1 | 0 | 0 | measured
 viscose-marker | 1 | 0 | 1 | 0 | 0 | refused

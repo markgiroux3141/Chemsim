@@ -4,18 +4,18 @@
 # A species that appears on BOTH sides of one step is a catalyst for that step.
 # reaction_class is the transformation family; tools/build_catalog.py compares the
 # distinct classes here against the templates in src/chemsim/reactions/library.py.
-lead-chamber | 1 | sulfur combustion | sulfur-s8 + oxygen | sulfur-dioxide | burner, 600-1200 K | combustion
+lead-chamber | 1 | sulfur combustion | sulfur-s8 + oxygen | sulfur-dioxide | burner, 600-1200 K | sulfur-combustion
 lead-chamber | 2 | SO2 oxidation by NO2 | sulfur-dioxide + nitrogen-dioxide + water | sulfuric-acid + nitric-oxide | chamber, 330-370 K | redox-oxygen-transfer
 lead-chamber | 3 | carrier regeneration | nitric-oxide + oxygen | nitrogen-dioxide | chamber, cold favoured | gas-phase-oxidation
 lead-chamber | 4 | chamber crystal formation | nitrogen-dioxide + sulfur-dioxide + sulfuric-acid | nitrosylsulfuric-acid + water | water-starved chamber | nitrosation
-contact-process | 1 | sulfur combustion | sulfur-s8 + oxygen | sulfur-dioxide | burner | combustion
+contact-process | 1 | sulfur combustion | sulfur-s8 + oxygen | sulfur-dioxide | burner | sulfur-combustion
 contact-process | 2 | catalytic SO2 oxidation | sulfur-dioxide + oxygen + vanadium-pentoxide | sulfur-trioxide + vanadium-pentoxide | 700-900 K, V2O5 | catalytic-gas-oxidation
 contact-process | 3 | absorption into oleum | sulfur-trioxide + sulfuric-acid | disulfuric-acid | absorber, 98% acid | acid-anhydride-absorption
 contact-process | 4 | oleum dilution | disulfuric-acid + water | sulfuric-acid | dilution | hydrolysis
 vitriol-distillation | 1 | dehydration of green vitriol | iron-ii-sulfate | iron-ii-oxide + sulfur-trioxide | retort, red heat | sulfate-thermal-decomposition
 vitriol-distillation | 2 | condensation to oil of vitriol | sulfur-trioxide + water | sulfuric-acid | receiver | hydrolysis
 pyrite-roasting | 1 | pyrite roasting | iron-disulfide + oxygen | iron-iii-oxide + sulfur-dioxide | roaster, 1100 K | roasting
-claus-process | 1 | partial combustion of H2S | hydrogen-sulfide + oxygen | sulfur-dioxide + water | thermal stage | combustion
+claus-process | 1 | partial combustion of H2S | hydrogen-sulfide + oxygen | sulfur-dioxide + water | thermal stage | hydrogen-sulfide-combustion
 claus-process | 2 | Claus reaction | hydrogen-sulfide + sulfur-dioxide | sulfur-s8 + water | catalytic stage, alumina | comproportionation
 leblanc-process | 1 | salt cake | sodium-chloride + sulfuric-acid | sodium-sulfate + hydrogen-chloride | 1100 K | salt-metathesis
 leblanc-process | 2 | black ash | sodium-sulfate + carbon-graphite + calcium-carbonate | sodium-carbonate + calcium-sulfide + carbon-dioxide | reverberatory furnace | carbothermic-reduction
@@ -52,12 +52,12 @@ hypochlorite-bleach | 1 | chlorine into caustic | chlorine + sodium-hydroxide | 
 phosphoric-wet | 1 | rock digestion | calcium-phosphate + sulfuric-acid + water | phosphoric-acid + gypsum | 350 K | acid-displacement-precipitating
 superphosphate | 1 | rock acidulation | calcium-phosphate + sulfuric-acid | monocalcium-phosphate + calcium-sulfate | den, ambient | acid-displacement-precipitating
 white-phosphorus | 1 | carbothermic reduction | calcium-phosphate + silicon-dioxide + carbon-graphite | phosphorus-white + carbon-monoxide + calcium-silicate | electric furnace, 1700 K | carbothermic-reduction
-match-chemistry | 1 | match head ignition | potassium-chlorate + phosphorus-white | phosphorus-pentoxide + potassium-chloride | friction | combustion
+match-chemistry | 1 | match head ignition | potassium-chlorate + phosphorus-white | phosphorus-pentoxide + potassium-chloride | friction | chlorate-oxygen-transfer
 bayer-process | 1 | bauxite digestion | aluminium-oxide + sodium-hydroxide + water | sodium-aluminate | 500 K, 5 bar | amphoteric-dissolution
 bayer-process | 2 | precipitation of hydroxide | sodium-aluminate + water | aluminium-hydroxide + sodium-hydroxide | seeded, cooling | precipitation
 bayer-process | 3 | calcination to alumina | aluminium-hydroxide | aluminium-oxide + water | 1300 K | calcination
 hall-heroult | 1 | alumina electrolysis | aluminium-oxide + carbon-graphite + cryolite | aluminium + carbon-dioxide + cryolite | 1250 K, cryolite melt | molten-salt-electrolysis
-blast-furnace | 1 | coke combustion | carbon-graphite + oxygen | carbon-dioxide | tuyere, 2200 K | combustion
+blast-furnace | 1 | coke combustion | carbon-graphite + oxygen | carbon-dioxide | tuyere, 2200 K | carbon-combustion
 blast-furnace | 2 | Boudouard reaction | carbon-dioxide + carbon-graphite | carbon-monoxide | 1200 K | boudouard
 blast-furnace | 3 | indirect reduction | iron-iii-oxide + carbon-monoxide | iron-ii-oxide + carbon-dioxide | stack, 900 K | gas-solid-reduction
 blast-furnace | 4 | final reduction | iron-ii-oxide + carbon-monoxide | iron + carbon-dioxide | bosh, 1300 K | gas-solid-reduction
@@ -176,7 +176,7 @@ calcium-carbide | 1 | carbide furnace | calcium-oxide + carbon-graphite | calciu
 calcium-carbide | 2 | carbide hydrolysis | calcium-carbide + water | acetylene + calcium-hydroxide | ambient, water drip | hydrolysis
 steam-cracking | 1 | thermal cracking | octane + water | ethylene + propylene + 1,3-butadiene + methane + hydrogen | 1100 K, steam diluted, 0.5 s | thermal-cracking
 ethylene-oxide-route | 1 | silver-catalysed epoxidation | ethylene + oxygen + silver | ethylene-oxide + silver | 520 K, 20 bar, Ag on alumina | catalytic-epoxidation
-ethylene-oxide-route | 2 | combustion side reaction | ethylene + oxygen | carbon-dioxide + water | same reactor, selectivity loss | combustion
+ethylene-oxide-route | 2 | combustion side reaction | ethylene + oxygen | carbon-dioxide + water | same reactor, selectivity loss | hydrocarbon-combustion
 chlorohydrin-route | 1 | chlorohydrination | ethylene + chlorine + water | 2-chloroethanol + hydrogen-chloride | 310 K, aqueous | halohydrin-formation
 chlorohydrin-route | 2 | ring closure | 2-chloroethanol + calcium-hydroxide | ethylene-oxide + calcium-chloride + water | lime slurry, 370 K | intramolecular-williamson
 ethylene-glycol-route | 1 | hydration | ethylene-oxide + water | ethylene-glycol | 470 K, 20 bar, excess water | epoxide-hydrolysis

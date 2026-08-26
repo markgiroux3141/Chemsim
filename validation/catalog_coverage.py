@@ -233,12 +233,38 @@ def audit_compound(comp, thermo, vol, ionic, unifac) -> dict:
         "why": "",
     }
     parts = comp.smiles.split(".")
-    ionic_species = len(parts) > 1 or any(c in comp.smiles for c in "+-")
+    # ⚠⚠ S7: A DOT IS NOT ENOUGH TO EARN THE FRAGMENT-WISE ANSWER, AND THIS LINE
+    # USED TO SAY IT WAS. ``ionic_species`` was ``len(parts) > 1 or ...``, so any
+    # dot-separated SMILES was priced FRAGMENT BY FRAGMENT and reported as
+    # resolving. That is right for a salt and wrong for a neutral mixture, and
+    # the difference is what the ENGINE holds:
+    #
+    #   [Na+].[Cl-]            the electrolyte path holds the two IONS, so
+    #                          pricing them one at a time is what the engine does
+    #   CC(C)=CC.S1SSSSSSS1    nothing splits this. ``builder`` canonicalises it
+    #                          into ONE species, and ``thermochemistry`` now
+    #                          refuses it -- Joback prices that mixture 222.11
+    #                          kJ/mol above the sum of its own two parts
+    #
+    # So a neutral multi-fragment SMILES is asked about WHOLE, which is the
+    # question the engine will be asked. Nine catalog compounds move to
+    # ``refused`` for it, and the audit stops disagreeing with the provider it
+    # is auditing. ⚠ It cost no route in the BOTH column, which is the only
+    # reason it could be done in the same session as a credit.
+    charged = []
+    for part in parts:
+        try:
+            if Molecule.from_smiles(part).charge != 0:
+                charged.append(part)
+        except Exception:  # noqa: BLE001, S110
+            pass
+    ionic_species = bool(charged)
     provider = ionic if ionic_species else thermo
+    pieces = parts if ionic_species else [comp.smiles]
 
     t_tiers, v_tiers = [], []
     try:
-        for part in parts:
+        for part in pieces:
             mol = Molecule.from_smiles(part)
             t = provider.get(mol)
             v = vol.get(mol)
@@ -329,7 +355,64 @@ TEMPLATE_CLASSES = {
     "aldehyde-oxidation": "peroxide_over_oxidation",
     "redox-oxygen-transfer": "sulfur_dioxide_oxidation",
     "gas-phase-oxidation": "nitric_oxide_reoxidation",
-    "combustion": "sulfur_combustion",
+    # ---------------------------------------------------------------------
+    # S7 -- ``combustion`` WAS AN OUTCOME LABEL, AND IT HAD BEEN CREDITED SINCE M1
+    # ---------------------------------------------------------------------
+    # One entry used to read ``"combustion": "sulfur_combustion"``. Six rows, and
+    # the burner's SMARTS is ``S8 + 8 O2 -> 8 SO2`` -- so it fires on exactly two
+    # of them and the other four were credited on a template that cannot match
+    # their reactants. The M1 row check, arriving late:
+    #
+    #   lead-chamber 1     S8 + O2 -> SO2               sulfur-combustion    OK
+    #   contact-process 1  S8 + O2 -> SO2               sulfur-combustion    OK
+    #   claus-process 1    H2S + O2 -> SO2 + H2O        hydrogen-sulfide-combustion
+    #   blast-furnace 1    C(gr) + O2 -> CO2            carbon-combustion    gap
+    #   ethylene-oxide 2   C2H4 + O2 -> CO2 + H2O       hydrocarbon-combustion  gap
+    #   match-chemistry 1  KClO3 + P4 -> P2O5 + KCl     chlorate-oxygen-transfer gap
+    #
+    # ⚠ THE LAST ROW IS NOT COMBUSTION AT ALL. Nothing burns in air: a solid
+    # oxidiser hands its oxygen to a solid fuel on friction. Calling it
+    # combustion put it under a template about a sulfur ring.
+    #
+    # ⚠⚠ AND THE SPLIT COSTS A TEMPLATE-READY ROUTE, WHICH IS THE POINT. It is
+    # the first split in this project whose measured effect on the headline is
+    # NEGATIVE: ``match-chemistry`` was template-ready only because of this
+    # credit, and it now is not. It was never species-ready, so the intersection
+    # -- the number to quote -- does not move for it.
+    "sulfur-combustion": "sulfur_combustion",
+    "hydrogen-sulfide-combustion": "hydrogen_sulfide_combustion",
+    # ---------------------------------------------------------------------
+    # S7 -- the four inorganic gas processes. See reactions/synthesis.py, and
+    # validation/gas_processes.py, which RUNS every one of them in a Vessel
+    # rather than crediting them off this table.
+    # ---------------------------------------------------------------------
+    # ⚠ CHOSEN OFF THE ``RUNNABLE`` COLUMN AND THEN OFF A THIRD QUESTION THIS
+    # AUDIT CANNOT ASK. The queue's top two rows by RUNNABLE were
+    # ``isomerisation`` (+3/+2) and ``crosslinking`` (+2/+2), and S7 measured
+    # both before costing either:
+    #
+    #   isomerisation  three rows, three mechanisms, and each fails its own way.
+    #                  ``oleic -> elaidic`` prices at dH = dG = 0.000 EXACTLY --
+    #                  no estimator here tells a cis alkene from a trans one, so
+    #                  the template would report a confident 50:50 for a real
+    #                  5:1. ``glucose -> fructose`` prices at dG +41.8 kJ/mol,
+    #                  K = 4.8e-08, because the catalog spells one as a pyranose
+    #                  and the other as a furanose. ``ammonium-cyanate -> urea``
+    #                  is not species-ready at all.
+    #   crosslinking   both products are unbuildable. ``tanned-leather-marker``
+    #                  has no graph; ``vulcanised-rubber-marker`` is spelled
+    #                  ``CC(C)=CC.S1SSSSSSS1``, its own two reactants side by
+    #                  side, so the "reaction" is A + B -> A.B.
+    #
+    # ⚠⚠ SO ``RUNNABLE`` HAS THE SAME SHAPE OF FAULT ``ALONE`` HAD. It asks
+    # whether every species RESOLVES; it cannot ask whether the number that comes
+    # back is RIGHT, nor whether the row's product is a graph at all. Both of the
+    # top two rows fail on exactly those two questions, and neither failure is
+    # visible in this file's tables. **Read the rows, not the ranking.**
+    "water-gas-shift": "water_gas_shift",
+    "steam-reforming": "steam_reforming",
+    "catalytic-gas-oxidation": "deacon_oxidation",
+    "comproportionation": "claus_comproportionation",
     # the six in properties/electrolyte.py, which this map used not to know about
     "proton-transfer": "electrolyte.dissociation_templates",
     "acid-displacement": "electrolyte.dissociation_templates",
@@ -687,7 +770,7 @@ TEMPLATE_CLASSES = {
 # How many templates that is, counted rather than asserted -- the old text said
 # "10 templates" and ``library.py`` has 8.
 N_LIBRARY_TEMPLATES = 8
-N_SYNTHESIS_TEMPLATES = 20
+N_SYNTHESIS_TEMPLATES = 25
 N_ELECTROLYTE_TEMPLATES = 6
 # ⚠ M8 INCREMENTS THIS WHERE M3 AND M6 DELIBERATELY DID NOT, and the difference
 # is what shape the mechanism has. Precipitation, calcination and roasting are
@@ -773,6 +856,34 @@ def main() -> int:
         species_ok[rid] = all(
             by_id[s]["tier"] != "refused" for s in sp if s in compounds
         )
+
+    # ⚠⚠ S7 -- THE THIRD BAR, AND `RUNNABLE` HAD BEEN CLEARING ONLY TWO OF THEM.
+    # A step whose PRODUCT is a marker can never be a template, whatever its
+    # class says and whatever its other species cost: a marker has no molecular
+    # graph, so there is nothing for a SMARTS to write. `species-ready`
+    # deliberately skips markers -- that is right, because a marker REACTANT is
+    # usually a stand-in for a feedstock nobody needs priced -- but the RUNNABLE
+    # column then inherited the exemption on the product side too, and started
+    # promising routes that cannot exist.
+    #
+    # Measured on the queue this file publishes: `crosslinking` was ranked
+    # second at +2 unlocked / +2 runnable, and BOTH of its rows produce a
+    # product with no chemistry behind it -- `tanned-leather-marker` has no
+    # graph, and `vulcanised-rubber-marker` is spelled `CC(C)=CC.S1SSSSSSS1`,
+    # its own two reactants written side by side. `oxidative-complexation`
+    # (+1/+1, `iron-gall-ink`) is the other one this catches.
+    #
+    # ⚠ It does NOT touch the headline: no route in the BOTH column produces a
+    # marker, checked rather than assumed. What it changes is the WORK QUEUE,
+    # which is what the column is read for.
+    makes_marker: dict[str, bool] = {}
+    for rid in routes:
+        makes_marker[rid] = any(
+            cat.is_marker(p, compounds)
+            for s in steps if s.route == rid
+            for p in s.products
+        )
+    runnable_ok = {r: species_ok[r] and not makes_marker[r] for r in routes}
 
     n = len(rows)
     tiers = Counter(r["tier"] for r in rows)
@@ -1008,12 +1119,12 @@ def main() -> int:
     w("|---|---:|---:|---:|---|")
     for cls, rids in sorted(
         one_away.items(),
-        key=lambda kv: (-sum(species_ok[r] for r in kv[1]), -len(kv[1]), kv[0]),
+        key=lambda kv: (-sum(runnable_ok[r] for r in kv[1]), -len(kv[1]), kv[0]),
     )[:20]:
         names = ", ".join(f"`{r}`" for r in sorted(rids)[:4])
         if len(rids) > 4:
             names += f", +{len(rids) - 4} more"
-        run = sum(species_ok[r] for r in rids)
+        run = sum(runnable_ok[r] for r in rids)
         w(f"| {cls} | {len(rids)} | **{run}** | {step_classes[cls]} | {names} |")
     w("")
     w("#### The greedy set-cover curve")
@@ -1030,7 +1141,7 @@ def main() -> int:
         w(f"| {added} | {cls} | +{gain} | {total} |")
     w("")
     top3 = [
-        (cls, gain, sum(species_ok[r] for r in one_away.get(cls, ())))
+        (cls, gain, sum(runnable_ok[r] for r in one_away.get(cls, ())))
         for cls, gain in chosen[:3]
     ]
     w(

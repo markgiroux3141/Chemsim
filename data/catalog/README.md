@@ -404,6 +404,116 @@ not the carbon–carbon bond. The cost of decomposing it that way is stated wher
 it can be found: the route cannot start until water splits at 1.441 V, where the
 real cell reduces acrylonitrile at its own cathode from 0.551 V.
 
+### ⚠⚠ S7 SPLIT `combustion` — AND IT IS THE FIRST SPLIT THAT COST A ROUTE
+
+Six rows under one label, credited to `sulfur_combustion` since M1. That
+template's SMARTS is `S8 + 8 O2 -> 8 SO2`, so it fires on **two** of the six and
+the other four were credited on a template that cannot match their reactants.
+The M1 row check, arriving eight milestones late:
+
+| route | step | became | what it is | covered? |
+|---|---|---|---|---|
+| `lead-chamber` 1 | `S8 + O2 -> SO2` | `sulfur-combustion` | the burner, unchanged | ✔ `sulfur_combustion` |
+| `contact-process` 1 | `S8 + O2 -> SO2` | `sulfur-combustion` | the same burner | ✔ `sulfur_combustion` |
+| `claus-process` 1 | `H2S + O2 -> SO2 + H2O` | `hydrogen-sulfide-combustion` | a HYDRIDE burning; it makes water | ✔ **built by S7** |
+| `blast-furnace` 1 | `C(gr) + O2 -> CO2` | `carbon-combustion` | a solid lattice burning | ✘ named gap |
+| `ethylene-oxide-route` 2 | `C2H4 + O2 -> CO2 + H2O` | `hydrocarbon-combustion` | total combustion of an organic | ✘ named gap |
+| `match-chemistry` 1 | `KClO3 + P4 -> P2O5 + KCl` | `chlorate-oxygen-transfer` | **nothing burns in air** | ✘ named gap |
+
+⚠ **THE LAST ROW IS NOT COMBUSTION AT ALL, AND THAT IS THE CLEAREST SIGN THE
+LABEL WAS AN OUTCOME.** A match head is a solid oxidiser handing its oxygen to a
+solid fuel on friction. There is no air in it and no flame until after it goes.
+Calling it combustion filed it under a template about a sulfur ring.
+
+⚠⚠ **AND THE SPLIT COSTS A TEMPLATE-READY ROUTE. THAT IS NEW.** Every previous
+split here (`roasting`, `thermal-decomposition`, `electrolysis`) either held the
+headline or moved it up. This one moves it DOWN: `match-chemistry` was
+template-ready only because of this credit, and it now is not. It was never
+species-ready, so the intersection — the only column a route can be judged on —
+does not move for it. **A split whose measured effect is negative is a split
+doing its job, and this is the first one to prove it.**
+
+### S7 BUILT FOUR INORGANIC GAS PROCESSES — AND CHOSE THEM OFF A THIRD COLUMN
+
+| route | step | class | what covers it |
+|---|---|---|---|
+| `water-gas-shift` 1 | `CO + H2O <=> CO2 + H2` | `water-gas-shift` | `water_gas_shift`, over hematite |
+| `steam-reforming` 1 | `CH4 + H2O <=> CO + 3 H2` | `steam-reforming` | `steam_reforming`, over nickel |
+| `deacon-process` 1 | `4 HCl + O2 <=> 2 Cl2 + 2 H2O` | `catalytic-gas-oxidation` | `deacon_oxidation`, over tenorite |
+| `claus-process` 1,2 | `H2S + O2`, then `2 H2S + SO2` | two classes | `hydrogen_sulfide_combustion` + `claus_comproportionation` |
+
+**Every one of the four was charged into a real `Vessel` and integrated** —
+`validation/gas_processes.py`, which is a standing audit. What it measures is the
+part nothing declares:
+
+* the **shift** peaks at 620 K (81.3%) and falls to 55.6% at 900 K, because dH is
+  −41.15 kJ/mol and K falls with T. Below 620 K it is the barrier that limits it,
+  above it the equilibrium. That is why a real ammonia plant shifts twice;
+* the **reformer** is 0.01% converted at 700 K and 36.1% at 1300 K, and thinning
+  the same 1100 K flask from 54 bar to 0.63 bar takes it from 18.6% to 73.5% —
+  the one gas equilibrium in this project that pressure *hurts*;
+* **Deacon**'s ceiling and rate cross between 600 and 700 K: 90.6% in ten seconds
+  at 600 K rising to 91.2% in an hour, against 84.6% at 700 K reached in ten
+  seconds and never bettered. The whole industrial history of the process;
+* **Claus** recovers 100.0% of its sulfur at exactly the stoichiometric air rate
+  and less on either side, because burning one third of the H2S is what leaves
+  the 2:1 H2S:SO2 the second template wants. **Neither template knows the other
+  exists.**
+
+⚠⚠ **THE TWO CLASSES AT THE TOP OF THE `RUNNABLE` QUEUE WERE MEASURED FIRST AND
+BOTH ARE WORTH ZERO HONEST ROUTES.** That measurement is why the four above are
+the four:
+
+| class | queue said | measured |
+|---|---|---|
+| `isomerisation` | +3 / **+2 runnable** | **three rows, three mechanisms, three separate failures** |
+| `crosslinking` | +2 / **+2 runnable** | **both products are unbuildable** |
+
+`isomerisation`, row by row — the split M5 refused to do blind, done:
+
+* `hydrogenation-margarine` 2, `oleic + H2 + Ni -> elaidic + Ni`. **The row does
+  not balance** (an H2 goes in and nothing comes out) — and behind that, the
+  engine prices oleic and elaidic acid at **dH = dG = 0.000 EXACTLY**, because no
+  estimator here can tell a cis alkene from a trans one. A template would report
+  a confident 50:50 for a real ~5:1. ⚠ The data to fix it EXISTS and is not
+  usable as it stands: WEBBOOK has both liquid enthalpies, −764.8 and −769.0
+  kJ/mol, a 4.2 kJ/mol difference that agrees with Benson's own historical cis
+  correction of 4.18 — but neither has an S0, so no Gf can be derived, and
+  grafting Benson's old NNI term onto RMG-fitted group values mixes two bases;
+* `starch-hydrolysis` 3, `glucose -> fructose`. Priced at **dG +41.8 kJ/mol,
+  K = 4.8e-08** — the engine would say high-fructose corn syrup is impossible.
+  The cause is in the corpus rather than the engine: glucose is spelled as a
+  **pyranose** and fructose as a **furanose**, and Benson charges the ring-size
+  difference. Two independent problems, one row;
+* `wohler-urea` 2, `ammonium-cyanate -> urea`. Not species-ready at all —
+  `[NH4+].[O-]C#N` is a dot-separated ionic pair and cyanate is in no ion table
+  here.
+
+`crosslinking`, both rows:
+
+* `tanning-route` 2 makes `tanned-leather-marker`, which has no molecular graph;
+* `vulcanisation` 1 makes `vulcanised-rubber-marker`, spelled
+  `CC(C)=CC.S1SSSSSSS1` — **its own two reactants written side by side.** The
+  "reaction" is `A + B -> A.B`, which nothing makes. Joback priced that mixture
+  at **+222.11 kJ/mol above the sum of its own two parts**, and that measurement
+  is what closed the neutral-fragment hole in `properties/thermochemistry.py`.
+
+⚠⚠ **SO `RUNNABLE` HAS THE SAME SHAPE OF FAULT `ALONE` HAD, AND IT IS WORTH
+STATING AS A RULE.** `ALONE` counts a template's routes and cannot ask whether
+the species are priced. `RUNNABLE` adds that bar and cannot ask two more:
+
+1. **is the number that comes back RIGHT?** Both `isomerisation` rows that price
+   price *wrongly* — one at exactly zero, one by 40 kJ/mol. No column can see it;
+   only pricing the row and reading the answer can.
+2. **is the row's PRODUCT a graph at all?** This one *can* be mechanised, and S7
+   did: a route with a marker on the product side of any step is now excluded
+   from the RUNNABLE column, which takes `crosslinking` to **+0** and
+   `oxidative-complexation` off the top twenty. ⚠ It moves no route in the BOTH
+   column — checked, not assumed.
+
+**Read the rows, not the ranking.** Three milestones running, the ranking has
+been wrong about its own top entry.
+
 ### ⚠ S3 SPLIT `thermal-decomposition` — AND CHECKED WHICH ROUTES THE NUMBER MOVED
 
 M6 read this class, recorded "four rows and they are **four mechanisms**", and

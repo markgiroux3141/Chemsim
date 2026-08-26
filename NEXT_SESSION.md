@@ -605,6 +605,57 @@ a nanosecond and `Vessel.run` died after 4.2e-09 s of 3600. `5e-8 = j0 * a /
 (n F)` comes back out as 1e-2 A at unit concentrations. The test pins the ORDER
 of magnitude (`1e-9 < A < 1e-6`), not the digits.
 
+## S7 — the four inorganic gas processes, and the corpus checks that found them
+
+⚠ **EVERY ROW BELOW CAME OUT OF A REAL `Vessel`**, not off a table:
+`validation/gas_processes.py` is the standing audit and
+`tests/test_gas_processes.py` (19 tests) is the pin.
+
+| row | value | how it is pinned |
+|---|---|---|
+| **water-gas shift, 1 h, 0.10 mol CO** | **10.4% at 500 K, 81.3% at 620 K, 73.3% at 700, 55.6% at 900** | `gas_processes.py` panel 1; the test asserts the SHAPE (rate-limited cold, ceiling-limited hot), not the digits |
+| **steam reforming, 1 h, 0.25 mol CH4** | **0.01% at 700 K, 6.3% at 900, 18.6% at 1100, 36.1% at 1300** | panel 2; test asserts `>0.2499 mol` left at 700 K and `<0.17` at 1300 |
+| ⚠ ... and the SAME 1100 K flask, thinned | **18.6% at 54 bar -> 73.5% at 0.63 bar** | panel 2; two moles in and four out, the one gas equilibrium here that pressure HURTS |
+| **Deacon, 0.40 mol HCl** | 10 s / 1 h: **14.8/70.7% at 400 K, 90.6/91.2% at 600, 84.6/84.6% at 700** | panel 3. The two columns agreeing from 700 K up is the pin, not the value |
+| **Claus, 0.20 mol H2S at 1100 K** | **50.0% at 0.05 mol O2, 100.0% at 0.10, 98.2% at 0.15, 93.7% at 0.30** | panel 4; the peak at the stoichiometric rate is the assertion |
+| ⚠ ... and the Claus sulfur closure | **0.200000017 mol against 0.2** on the oxygen-starved row only — 8.5e-08 relative at rtol 1e-08 | the projection residual times a stoichiometry that moves SIXTEEN H2S per event. Named, bounded; test asserts `rel=1e-6` |
+| **the cis/trans pair** | **oleic and elaidic acid price IDENTICALLY** — dH and dG equal to the last bit | `test_the_cis_trans_pair_prices_at_exactly_zero`. ⚠ **NOT an invariant to preserve — a LIMIT to remove.** The day a cis correction lands, that test SHOULD fail and be rewritten |
+| **`deacon_oxidation_rev` crossing** | **1141 K**, coldest of the high-order reverse rows (ammonia's 1335) | `validation/rate_ceiling.py`. Reported, not guarded: it moves a CLOCK, not an equilibrium |
+| the whole suite | **866 passed in 12:46** — 847 + S7's 19, zero failures | run at the top of the session (847, clearing M8's unverified changes) and again at the end |
+
+⚠ **THE FIVE COVERAGE NUMBERS, AND ALL FIVE WERE PREDICTED BEFORE MEASURING.**
+43/224 classes, 43 templates, 34 template-ready, 24 BOTH, and species-ready
+65 -> **63** (the fragment refusal's cost, predicted at "≤4 and 0 in the BOTH
+column", measured at 2 and 0).
+
+⚠⚠ **`RUNNABLE` CANNOT ASK WHETHER THE NUMBER IS RIGHT, AND TWO ROWS PROVE IT.**
+The queue's top two entries by RUNNABLE were `isomerisation` (+3/+2) and
+`crosslinking` (+2/+2), and both are worth zero honest routes — a cis/trans pair
+priced at exactly zero, a glucose/fructose row priced at K = 4.8e-08 because the
+corpus spells one as a pyranose and the other as a furanose, an ionic pair that
+is not species-ready, and two products with no chemistry behind them. **The
+marker half is now mechanised** (a marker on the product side excludes the route
+from RUNNABLE); the "is the number right" half cannot be. **Read the rows.**
+
+⚠ **AND `combustion` WAS AN OUTCOME LABEL.** Six rows, five mechanisms, credited
+to the sulfur burner since M1. Split, and `match-chemistry` LOSES template-ready
+for it — **the first split here whose measured headline effect is negative**, and
+the intersection is untouched because that route was never species-ready.
+
+⚠⚠ **TWO NEW CORPUS FACTS THAT ARE NOT FIXED AND MUST NOT BE FORGOTTEN:**
+
+* **75 of 367 testable catalog rows cannot be balanced by any positive
+  coefficient vector** (`validation/corpus_balance.py`): 17 `spurious`, 1
+  `charge`, 57 `atoms`. Exactly ONE of them is in the BOTH column —
+  `perkin-route` step 1, whose sodium acetate is the base — and it is INERT
+  because `perkin_condensation`'s SMARTS never mentions a base. **Left alone on
+  the `diels-alder-route` precedent: this is a third readiness bar, reported so
+  it cannot rot, not a to-do list.**
+* **`tools/catalog.py`'s `validate` still does not check balance.** The audit is
+  a separate script on purpose — it needs `numpy`/`scipy` and 15 s — but that
+  means the corpus can grow an unbalanceable row without anything failing. ⚠ A
+  session that adds catalog rows should run it.
+
 # Still open
 
 - ✔ ~~**THE DRYOUT BAND.**~~ CLOSED 2026-08-23, HANDOFF 72. Was the last live member of the

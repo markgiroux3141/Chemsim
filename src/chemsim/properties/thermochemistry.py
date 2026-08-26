@@ -616,13 +616,44 @@ class ThermochemistryProvider:
 
         ⚠ And net charge alone is NOT ENOUGH, which is a hole worth naming: a
         salt pair such as ``[Na+].[Cl-]`` sums to zero. It is caught by the
-        FRAGMENT test below instead -- a dot-separated SMILES carrying a charged
-        fragment is a mixture of ions, not a molecule, and group additivity is
-        defined for a molecule. A neutral multi-fragment SMILES (a hydrate, a
+        FRAGMENT test below instead -- a dot-separated SMILES is a MIXTURE of
+        molecules, not a molecule, and group additivity is defined for a
+        molecule.
+
+        ⚠⚠ **THE FRAGMENT TEST USED TO ASK WHETHER A FRAGMENT WAS CHARGED, AND
+        THE NEUTRAL CASE WAS LEFT ALONE ON AN ARGUMENT THAT S7 MEASURED FALSE.**
+        The recorded reason was: *"a neutral multi-fragment SMILES (a hydrate, a
         co-crystal) is deliberately left alone: nothing in this project produces
-        one, so refusing it would widen the blast radius for no measured gain.
+        one, so refusing it would widen the blast radius for no measured gain."*
+        Both halves are wrong. ``data/catalog`` carries **eleven** neutral
+        multi-fragment SMILES, and the gain is measurable:
+
+            vulcanised-rubber-marker  ``CC(C)=CC.S1SSSSSSS1``
+                whole, by Joback   Hf = +273.70 kJ/mol
+                its two fragments  -48.83 + 100.42 = +51.59
+                                   **+222.11 kJ/mol of nothing**
+            nbr-marker                ``CC(C#N).CC=CC``
+                whole, by Joback   Hf =  -17.33      fragments +46.16
+                                   **-63.49 kJ/mol**
+
+        In an IDEAL GAS there are no intermolecular interactions, so the
+        ideal-gas enthalpy of a collection of fragments is the SUM of theirs
+        exactly -- an identity, not an estimate. Benson satisfies it because it
+        is additive over groups (three of the five that priced came out at
+        +0.00, the fourth at -0.82). **Joback does not**: its correlation has a
+        constant term and non-linear terms, so applied to two disconnected
+        fragments it double-counts the constant and mixes the sums.
+
+        ⚠ So the refusal is now on the FRAGMENT COUNT rather than on the charge,
+        and the charge only decides which message is printed. That is a wider
+        blast radius, deliberately: it takes five catalog species out of the
+        priced set (three rubber markers, the nylon salt, and the vulcanisation
+        product), and every one of them was a mixture of two molecules wearing
+        one species' name. ⚠ A CURATED entry is unaffected -- ``get`` returns it
+        before this guard runs -- so a genuine hydrate with measured data can
+        still be priced by curating it, which is the right way in.
         """
-        # ---- a salt pair, or any charged mixture -------------------------
+        # ---- a mixture of molecules, charged or not ----------------------
         fragments = mol.smiles.split(".")
         if len(fragments) > 1:
             charged = [
@@ -664,6 +695,21 @@ class ThermochemistryProvider:
                     f"Charge each ion separately, with a network built by "
                     f"electrolyte_provider() (or Scenario(electrolyte=True))."
                 )
+            raise ValueError(
+                f"refusing to price {mol.smiles!r} as one species: it is a "
+                f"dot-separated SMILES with {len(fragments)} NEUTRAL fragments "
+                f"({fragments}), i.e. a mixture of molecules rather than a "
+                f"molecule, and group additivity is defined for a molecule. In "
+                f"an ideal gas there are no intermolecular interactions, so the "
+                f"record for the mixture is the SUM of the fragments' -- an "
+                f"identity, not an estimate. Benson honours it and JOBACK DOES "
+                f"NOT: it prices 'CC(C)=CC.S1SSSSSSS1' 222.11 kJ/mol above the "
+                f"sum of its own two parts, which is ~1e39 in any K. Charge "
+                f"each fragment as its own species, or curate the mixture by "
+                f"name in properties/formation_data.py if it is a real compound "
+                f"with measured data (a curated entry is returned before this "
+                f"guard runs)."
+            )
 
         element = element_of(mol)
         if element is not None:
