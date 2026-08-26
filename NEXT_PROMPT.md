@@ -111,7 +111,7 @@ arguing with that.
    halves of the argument.
    ⚠ **The bare-element gap that used to be item 1 here is DONE (S8)** — nine
    element solids curated, species-ready 63 → 77, intersection +0 exactly as
-   predicted. What is left of it is 36 compounds still refused as bare elements,
+   predicted. What is left of it is 33 compounds still refused as bare elements,
    none of which blocks a route on its own.
 
 2. **⚠ THE CIS/TRANS BLIND SPOT — A REAL DATA JOB WITH A REAL TRAP.** Benson (the
@@ -467,8 +467,12 @@ absent from a sealed flask has an identically zero Jacobian column.
 **14. ⚠ THE ELEMENT FLOOR'S SOLID HALF IS CURATED AND ITS GAS HALF IS STILL
 REFUSED, WHICH IS THE SAME STATEMENT TWICE.** S8 curated nine element solids into
 `mineral_data`; `thermo.get("[C]")` still refuses, because the ideal-gas record
-for `[C]` is the carbon ATOM at Gf +671 kJ/mol. 36 compounds remain refused as
-bare elements and none of them blocks a route on its own.
+for `[C]` is the carbon ATOM at Gf +671 kJ/mol. 33 compounds remain refused as
+bare elements and none of them blocks a route on its own. ⚠ The one row the
+report still lists (`gunpowder`) is there because `gunpowder-marker` is a
+four-fragment COMPOSITION whose `[C]` fragment refuses — the `mineral` fallback
+is consulted per whole species and not per fragment. A real inconsistency, and
+inert, because that route's step 2 cannot be balanced either.
 
 **15. ⚠⚠ NEW IN S8: `gas-solid-reduction` CANNOT BE EXPRESSED.** Two
 species-ready routes (`copper-smelting`, `lead-smelting`) wait on a REVERSIBLE
@@ -543,7 +547,14 @@ engine refuses, and the corpus validator never checking that a row balances.**
 ⚠ AN INVARIANT MEASURED ACROSS A BOUNDARY FLUX IS NOT AN INVARIANT. Seal it first.
 ⚠ A GREEN SUITE IS NOT EVIDENCE THE INVARIANTS TABLE HOLDS.
 ⚠ **A GENERATED FILE NOTHING READS IS THE ONE THAT ROTS.** Regenerate all three
-catalog artefacts and check them across `PYTHONHASHSEED`. ⚠ The root `README.md`'s
+catalog artefacts and check them across `PYTHONHASHSEED`.
+⚠⚠ **AND A GENERATED FILE'S PROSE ROTS EXACTLY LIKE A HAND-WRITTEN ONE.** S8
+closed the bare-element gap and `COVERAGE_REPORT.md` then read "33 compounds are
+still refused ... **it is not closed**" over a table with ONE row in it, still
+naming Zn(s), Ag(s) and C(graphite) as the examples of what was missing — all
+three curated an hour earlier. The NUMBER regenerated; the sentence around it was
+hardcoded in `catalog_coverage.py`. **Read the generated prose after
+regenerating, not just the generated numbers.** ⚠ The root `README.md`'s
 coverage table is NOT generated — S4 corrected it, S6 again, M8 again, S7 again.
 ⚠ **A PHASE LABEL CARRIES A STANDARD STATE.** So does a BASIS.
 ⚠ **BDF IGNORES `jac_sparsity` THE MOMENT `jac` IS CALLABLE.**
