@@ -397,9 +397,18 @@ def test_every_mineral_records_the_ions_it_dissolves_into_unless_it_is_a_METAL()
             continue
         for ion in rec.ions:
             assert Molecule.from_smiles(ion).smiles == ion, f"{name}: {ion}"
-    # And the exemption is not empty -- the metals that carry it are the
-    # heterogeneous catalysts the templates declare.
-    assert set(ion_less) == {"iron", "nickel", "copper"}, ion_less
+    # And the exemption is not empty, and it is spelled out so that WIDENING it
+    # is a deliberate edit rather than a side effect. ⚠ S8 widened it from the
+    # three S1 heterogeneous catalysts to twelve, and renamed the concept:
+    # `carbon-graphite` is a COVALENT lattice, not a metallic one, and every
+    # property this test checks is about the representation rather than the
+    # bonding. See ``tools/build_mineral_data.ELEMENT_SOLIDS``.
+    assert set(ion_less) == {
+        "iron", "nickel", "copper",                       # S1, the catalysts
+        "cobalt", "silver", "platinum", "palladium",      # S8, and each of the
+        "lead", "aluminium", "sodium", "zinc",            # nine is named by the
+        "carbon-graphite",                                # coverage audit
+    }, ion_less
 
 
 def test_a_mineral_resolves_ION_BY_ION_under_the_electrolyte_provider():

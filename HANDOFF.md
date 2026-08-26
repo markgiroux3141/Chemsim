@@ -5035,6 +5035,82 @@ the measurements that justify them.
     species — the flask will make ammonia with no iron in it", which **S1 made
     false and nothing caught until S7 read it.**
 
+93. ✔✔ **S8 — THE BARE-ELEMENT GAP CLOSED, AND THE +2 IT WAS FOR IS REFUSED.
+    BOTH WERE PREDICTED.**
+
+    **+14 species-ready (63 → 77), +0 on the intersection (24), and the second
+    number is the milestone.** Nine element solids curated, two reference
+    entropies added to `element_data`, no new templates, and
+    `gas-solid-reduction` — the only +2 on the whole work queue — measured and
+    refused.
+
+    ⚠⚠ **NEXT_PROMPT CALLED THE ELEMENT GAP "THE CHEAPEST ITEM HERE" FOR TWO
+    SESSIONS. S7 predicted +0 on the intersection by reading two of the report's
+    lists against each other; S8 did the work and measured +0.** None of the 15
+    routes blocked only by a bare element is template-ready, so curating every
+    one of them moves the column a route is judged on by nothing. **What it buys
+    is a MULTIPLIER:** `gas-solid-reduction` went 1 → 2 runnable,
+    `catalytic-air-oxidation`, `carbothermic-reduction`,
+    `metal-ion-aldehyde-oxidation`, `molten-salt-electrolysis` and `pyrolysis`
+    each went 0 → 1, and `disproportionation-hydrolysis` (`ostwald-process`),
+    `hydroformylation` (`oxo-process`) and `metallothermic-reduction`
+    (`thermite`) appeared in the table for the first time. **+0 today and +9
+    opportunities that did not exist before, and the ordering lesson is that
+    species work should FOLLOW the template it enables rather than lead it.**
+
+    THE CURATION. `cobalt`, `silver`, `platinum`, `palladium`, `lead`,
+    `aluminium`, `sodium`, `zinc` and `carbon-graphite`, in `mineral_data` on the
+    SOLID basis with `ions=()` and `Hf = Gf = 0` by definition. No new
+    machinery: S1 had already built the shape for iron, nickel and copper.
+
+    ⚠ **THE LAYERING QUESTION S6 RAISED HAS AN ANSWER AND IT IS IN THE TYPE, NOT
+    THE MODULE NAME.** `element_data`'s record is on the IDEAL-GAS basis and the
+    ideal-gas record for `[Fe]` is the ATOM at +416 kJ/mol, so a solid-basis zero
+    belongs in the solid-basis module. `element_data.REFERENCE_STATES` still
+    carries the S0 the Gf derivation consumes, and **two were missing — Pt and
+    Pd** — so platinum and palladium could not have been derived without touching
+    that file. Both regenerations are purely additive (+10 and +144 lines,
+    nothing existing moved).
+
+    ⚠ **THE LIST WAS CALLED `METALS` AND THE NAME WAS WRONG BY ONE ROW.**
+    `carbon-graphite` is a COVALENT lattice; every property the entry needs is
+    about the REPRESENTATION and not the bonding, so it is `ELEMENT_SOLIDS` now.
+    Renaming was cheaper than an exception and an exception was the alternative.
+    ⚠ And the definitional-zero check FIRED: tin is absent because CRC's row for
+    7440-31-5 is GREY tin at Hfs = −2.1 kJ/mol against a white-tin reference
+    state.
+
+    ⚠ **VERIFIED BY RUNNING** — all nine charged into a real `Vessel` at 800 K
+    under air, held to twelve figures over 600 s, `conservation_report` empty.
+    And **the ideal-gas refusal is not softened by one digit**: `thermo.get("[C]")`
+    still refuses and `game_gates` still reports graphite/Na/K/Ca/Fe/Cu/Zn as
+    REFUSED on that basis. Curating the solid basis and refusing the gas basis
+    are the same statement made twice.
+
+    ⚠⚠ **AND `gas-solid-reduction` IS REFUSED BY `surface.LN_K_IRREVERSIBLE` ON
+    ALL FOUR OF ITS ROWS.** It looked like four rows of table and no code — the
+    same shape as a roast, `MO(s) + CO(g) -> M(s) + CO2(g)`. Priced against this
+    project's own tables at each row's own furnace temperature: tenorite ln K
+    **10.90** at 1500 K, litharge **7.24** at 1400, hematite **4.20** at 1300,
+    zincite **−4.10** at 1400, against a bar of 20.
+    ⚠⚠ **The bound is not the problem — the chemistry is.** A blast furnace's top
+    gas still contains CO because these reductions really are reversible; the
+    CO/CO2 ratio over an oxide is the equilibrium a furnace is designed around.
+    The zinc row is not even downhill, and a real zinc retort works because the
+    zinc BOILS OFF at 1180 K — product removal, not a favourable equilibrium, and
+    `mineral_data` holds zinc as a lattice with no vapour pressure so that escape
+    is not expressible either. **Softening the bar would admit a real reverse
+    flux into a term integrated forward only, which is M6's `p/K = n_A/n_B`
+    measurement.** So it is a NAMED ENGINE GAP needing a REVERSIBLE solid-gas
+    term — the second of that shape after NUCLEATION, and the first with **two
+    species-ready routes waiting on it.**
+
+    ⚠ **NO TEMPLATE WAS WRITTEN, AND THAT IS THE RIGHT ANSWER.** The queue's only
+    +2 needs engine work and every alternative is +1. S7's lesson is that the
+    ranking lies, so the session spent itself measuring which +1s are real
+    instead of taking one at random. The queue is now ranked against THREE bars
+    (species, product-is-a-graph, balanceable) instead of one.
+
 IMMEDIATE NEXT TASK: see **`MILESTONES.md`**, which is the plan of record as of
 2026-08-22 and supersedes the ordering below. It is derived from `data/catalog`
 (1,583 compounds, 173 routes) plus four measured capability probes, and it

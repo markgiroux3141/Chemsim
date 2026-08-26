@@ -443,12 +443,12 @@ python validation/catalog_coverage.py  # the audit
 
 | | |
 |---|---|
-| formation half measured or Benson | **729 / 1583 (46%)** |
-| ... of which priced as a LATTICE, on the solid basis | 19 |
+| formation half measured or Benson | **740 / 1583 (47%)** |
+| ... of which priced as a LATTICE, on the solid basis | 30 |
 | formation half falls back to Joback | 399 (25%) |
-| refused | 455 (29%), of which ~166 are charged organics the Born model correctly declines |
+| refused | 444 (28%), of which ~166 are charged organics the Born model correctly declines |
 | UNIFAC-decomposable (can enter an LLE) | 828 (52%) |
-| routes species-ready | **63 / 173** (was 49) |
+| routes species-ready | **77 / 173** (was 49) |
 | reaction classes with a template | **43 / 224** (was 12) |
 | routes template-ready | 34 / 173 (was 7) |
 | ⚠⚠ **routes template-ready AND species-ready — the one to quote** | **24 / 173** |
@@ -468,6 +468,18 @@ compounds are dot-separated NEUTRAL mixtures — a rubber marker, a nylon salt,
 was CHARGED. Joback prices `CC(C)=CC.S1SSSSSSS1` **222.11 kJ/mol above the sum
 of its own two parts**; in an ideal gas that sum is an identity, not an estimate.
 It cost two species-ready routes and no route in the BOTH column.
+
+⚠⚠ **AND `species-ready` MOVED 63 → 77 IN S8 FOR ZERO MOVEMENT ON THE
+INTERSECTION, WHICH WAS PREDICTED BEFORE IT WAS DONE.** 15 routes were blocked
+only by a bare element symbol — the refusal being right, since the ideal-gas
+record for `[C]` is the carbon ATOM at Gf +671 kJ/mol while the charcoal in the
+flask is 0. Nine element solids were curated into `mineral_data` on the SOLID
+basis, exactly as S1 did for iron, nickel and copper, and **not one of the 15 is
+template-ready**, so the number a route is judged on did not move at all. ⚠ What
+it did move is the SHAPE of the queue: six classes went from 0 runnable routes to
+1 and one went from 1 to 2, so the element work is a **multiplier on template
+work** rather than a headline of its own. That is the whole finding, and
+NEXT_PROMPT had called it "the cheapest item here" for two sessions.
 
 ⚠ **`species-ready` moved 49 → 65 in S6 without one new datum being curated**:
 the audit was asking only the three ideal-gas providers, which refuse an ionic

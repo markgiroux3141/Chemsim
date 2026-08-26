@@ -222,17 +222,17 @@ CANDIDATES: list[tuple[str, str, str, dict, str]] = [
 ]
 
 # ---------------------------------------------------------------------------
-# METALS -- the same table, and NOT the same kind of entry
+# ELEMENT SOLIDS -- the same table, and NOT the same kind of entry
 # ---------------------------------------------------------------------------
-# A METAL IS A LATTICE WITH NO DISSOLVED FORM, AND THAT IS WHY IT NEEDS ITS OWN
-# LIST RATHER THAN A ROW ABOVE. Every candidate above is written as its IONS and
-# gets its ``lattice`` by joining them; a metal has none. Iron does not dissolve
-# to Fe atoms, and writing ``ions=('[Fe]',)`` to make the machinery run would
-# claim that it does -- and would then offer iron filings to
+# AN ELEMENT SOLID IS A LATTICE WITH NO DISSOLVED FORM, AND THAT IS WHY IT NEEDS
+# ITS OWN LIST RATHER THAN A ROW ABOVE. Every candidate above is written as its
+# IONS and gets its ``lattice`` by joining them; one of these has none. Iron does
+# not dissolve to Fe atoms, and writing ``ions=('[Fe]',)`` to make the machinery
+# run would claim that it does -- and would then offer iron filings to
 # ``build_precipitation_arrays`` as a lattice whose only ion is itself. So
 # ``ions`` is EMPTY here, and that emptiness is the statement.
 #
-# AND THE ENTRY IS CHECKED AGAINST A FREE, EXACT NUMBER. A metal in its
+# AND THE ENTRY IS CHECKED AGAINST A FREE, EXACT NUMBER. An element in its
 # reference state has ``Hf = Gf = 0`` BY DEFINITION on the solid basis, exactly
 # as ``element_data``'s gases do on the ideal-gas basis. Both halves are derived
 # here by the same arithmetic every other row uses -- ``Hfs`` from CRC and ``Gf``
@@ -240,23 +240,74 @@ CANDIDATES: list[tuple[str, str, str, dict, str]] = [
 # non-zero result would prove the CAS names a different allotrope from the
 # reference state. That is the tin/Br2/I2 lesson (see ``reference_entropies``)
 # arriving on the solid basis, and it is enforced as a REFUSAL below rather than
-# left to a test.
+# left to a test. ⚠ It fires: TIN is not in this list because CRC's row for it is
+# GREY tin at Hfs = -2.1 kJ/mol against a white-tin reference state.
 #
-# WHY THESE THREE. They are the heterogeneous catalysts the five templates in
+# ⚠⚠ THE LIST WAS CALLED ``METALS`` UNTIL S8 AND THE NAME WAS WRONG BY ONE ROW.
+# ``carbon-graphite`` is a COVALENT lattice, not a metallic one, and every
+# statement above is about the REPRESENTATION rather than the bonding: it has no
+# dissolved form, its reference state is a crystal, its formation pair is zero by
+# definition, and the solid block holds it exactly as it holds iron. Renaming the
+# list was cheaper than an exception, and an exception would have been the only
+# alternative.
+#
+# ⚠ AND ``element_data`` IS THE WRONG HOME FOR ALL OF THEM, which is a real
+# decision and not an accident of history. That module's record type is on the
+# IDEAL-GAS basis, and the ideal-gas record for ``[Fe]`` is the ATOM at
+# +416 kJ/mol -- a real number that is not iron filings. **The TYPE carries the
+# basis, not the module name**, so a solid-basis zero belongs in the solid-basis
+# module. ``element_data.REFERENCE_STATES`` still carries each one's S0, and that
+# is what the Gf derivation above consumes.
+#
+# WHY THESE TWELVE. Three are the heterogeneous catalysts the five templates in
 # ``reactions/library`` and ``reactions/synthesis`` fold into an apparent
 # barrier: promoted IRON for Haber-Bosch, and NICKEL or COPPER for the two
 # hydrogenations. Cu/ZnO's oxide half is already here as ``zincite``. A catalyst
 # never enters an equilibrium -- its stoichiometry is zero on both sides -- so
-# what these rows are actually FOR is ``Cp_solid`` and ``Vm_solid``: a species in
+# what those rows are actually FOR is ``Cp_solid`` and ``Vm_solid``: a species in
 # the solid block occupies volume and holds heat, and Layer 4 asks every species
 # for both.
-METALS: list[tuple[str, str, str, dict, str]] = [
+#
+# ⚠ The other nine are the S8 additions, and they are there for a MEASURED
+# reason rather than a plausible one. `data/catalog` has **15 routes blocked only
+# by a bare element symbol**, and `validation/catalog_coverage.py` reports which
+# element each waits on: cobalt (3 routes), carbon-graphite, platinum and silver
+# (2 each), aluminium, lead, palladium and sodium (1 each), plus zinc which
+# `zinc-smelting` needs alongside graphite. ⚠⚠ **S7 measured what that is worth
+# and the answer is +14 species-ready routes and ZERO on the intersection**, because
+# not one of the 15 is template-ready. So these rows are a MULTIPLIER on template
+# work and not a headline in themselves -- `lead` plus `gas-solid-reduction` is
+# the pairing S8 took, and it is the only +2 in the queue.
+ELEMENT_SOLIDS: list[tuple[str, str, str, dict, str]] = [
     ("iron", "7439-89-6", "[Fe]", {"Fe": 1},
      "Fe -- promoted iron, the Haber-Bosch catalyst, and the gate on it"),
     ("nickel", "7440-02-0", "[Ni]", {"Ni": 1},
      "Ni -- the hydrogenation catalyst: hardening a fat, and nitro -> amine"),
     ("copper", "7440-50-8", "[Cu]", {"Cu": 1},
      "Cu -- the other hydrogenation metal, and Cu/ZnO's metal half"),
+    # S8. Each of these is named by the coverage audit as the ONLY thing a route
+    # is waiting on; the route is in the comment so the row cannot drift from
+    # its reason.
+    ("cobalt", "7440-48-4", "[Co]", {"Co": 1},
+     "Co -- `oxo-process`, `adipic-acid-route` and `p-xylene-oxidation`"),
+    ("silver", "7440-22-4", "[Ag]", {"Ag": 1},
+     "Ag -- `ethylene-oxide-route`'s catalyst, and `tollens-test`'s mirror"),
+    ("platinum", "7440-06-4", "[Pt]", {"Pt": 1},
+     "Pt -- `ostwald-process`'s gauze, and `paracetamol-route`"),
+    ("palladium", "7440-05-3", "[Pd]", {"Pd": 1},
+     "Pd -- `furfural-route`'s hydrogenation catalyst"),
+    ("lead", "7439-92-1", "[Pb]", {"Pb": 1},
+     "Pb -- what `lead-smelting`'s blast furnace makes, and what the lead "
+     "chamber's own vessel is built out of"),
+    ("aluminium", "7429-90-5", "[Al]", {"Al": 1},
+     "Al -- `thermite`'s reducing agent, and `hall-heroult`'s product"),
+    ("sodium", "7440-23-5", "[Na]", {"Na": 1},
+     "Na -- `downs-cell`'s product, and the reagent a Birch reduction needs"),
+    ("zinc", "7440-66-6", "[Zn]", {"Zn": 1},
+     "Zn -- what `zinc-smelting`'s retort makes"),
+    ("carbon-graphite", "7782-42-5", "[C]", {"C": 1},
+     "C(graphite) -- COKE: the reducing agent and the fuel, and the one row in "
+     "this list that is a covalent lattice rather than a metallic one"),
 ]
 
 # Measured aqueous solubility at 298 K, mol/L, for the FUSION-LAW BOUND. Hand
@@ -334,10 +385,11 @@ def collect():
     notes: list[str] = []
     report: list[str] = []
 
-    # A metal's row is the same arithmetic on an EMPTY ion tuple -- see METALS.
+    # An element solid's row is the same arithmetic on an EMPTY ion tuple -- see
+    # ELEMENT_SOLIDS.
     # ``metal`` is carried through so the zero check below can fire only where
     # the definitional zero exists.
-    rows = [(c, False) for c in CANDIDATES] + [(m, True) for m in METALS]
+    rows = [(c, False) for c in CANDIDATES] + [(m, True) for m in ELEMENT_SOLIDS]
 
     for (name, cas, smiles, comp, purpose), metal in rows:
         # The ion-by-ion SMILES is the identity the game uses; check every

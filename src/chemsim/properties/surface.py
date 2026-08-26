@@ -170,6 +170,41 @@ cinnabar that is still sitting in the solid block as montroydite:
 ⚠ Nothing gates on temperature anywhere in either term. That column is two
 Arrhenius factors with different exponents, and the exponents were written in
 different modules one milestone apart.
+
+## ⚠⚠ WHAT THIS TERM CANNOT HOLD: `gas-solid-reduction`, AND THE BAR SAID SO
+
+S8 came here to build the catalog's `gas-solid-reduction` class -- **the only +2
+on the whole work queue**, `copper-smelting` and `lead-smelting`, both of them
+species-ready and one class away. Its four rows are the same shape as a roast
+(``MO(s) + CO(g) -> M(s) + CO2(g)``: a gas arrives, takes a lattice oxygen and
+leaves as a different gas), so it looked like four rows of table and no code.
+
+**It is refused, by ``LN_K_IRREVERSIBLE``, on all four rows.** Priced against
+this project's own tables at each row's own furnace temperature:
+
+    tenorite + CO  -> copper  + CO2    dG -127.72 kJ/mol   ln K  10.90 @ 1500 K
+    litharge + CO  -> lead    + CO2    dG  -68.31          ln K   7.24 @ 1400 K
+    hematite + 3CO -> 2 iron  + 3CO2   dG  -29.48          ln K   4.20 @ 1300 K
+    zincite  + CO  -> zinc    + CO2    dG  +63.31          ln K  -4.10 @ 1400 K
+
+⚠ **AND THE REFUSAL IS THE CHEMISTRY, NOT THE BOUND.** A blast furnace's top gas
+still contains carbon monoxide, and it does because these reductions ARE
+reversible -- the CO/CO2 ratio over an oxide is the classic equilibrium a
+furnace's whole design is built around. The zinc row is not even downhill: ZnO
+plus CO is endothermic and unfavourable at every temperature, and a real zinc
+retort works because the zinc leaves as VAPOUR at 1180 K, which pulls a reaction
+sitting at ln K = -4 to completion by removing its product. **Softening the bar
+to admit these rows would be admitting a reverse flux into a term that is
+integrated forward only**, and the refusal message already says why that cannot
+be traded away: mass action written on a solid AMOUNT settles at
+``p/K = n_A/n_B`` rather than at unit activity, so a reversible declaration here
+reaches a wrong equilibrium while looking like one that does not (M6's
+measurement).
+
+⚠ So `gas-solid-reduction` is a **NAMED ENGINE GAP** and not a data job: it needs
+a REVERSIBLE solid-gas term, which is the thing M6 measured wrong and refused to
+build. It is the second gap of that shape after NUCLEATION, and unlike nucleation
+it has two species-ready routes waiting on it.
 """
 
 from __future__ import annotations

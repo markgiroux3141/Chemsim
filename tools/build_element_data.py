@@ -240,6 +240,13 @@ REFERENCE_STATES: dict[str, tuple[str, int, str, str]] = {
     "Ni": ("7440-02-0", 1, "s", "Ni(s)"),
     "Cd": ("7440-43-9", 1, "s", "Cd(s)"),
     "Tl": ("7440-28-0", 1, "s", "Tl(s)"),
+    # Added by S8 for the two catalyst metals `mineral_data` now carries on the
+    # SOLID basis. Same use as the M3 block above and nothing more: a solid-basis
+    # entry's Gf is derived as ``Hfs - T dS`` against these entropies, and for an
+    # element in its own reference state that subtraction is identically zero --
+    # which is exactly what makes the definitional-zero check able to fire.
+    "Pt": ("7440-06-4", 1, "s", "Pt(s)"),
+    "Pd": ("7440-05-3", 1, "s", "Pd(s)"),
     # ⚠ LEFT IN DELIBERATELY SO THE REFUSAL IS VISIBLE. CRC's row for this CAS
     # is GREY tin (Hf = -2100 J/mol, S0 = 44.1); the reference state is WHITE
     # tin (S0 = 51.18, WEBBOOK). ``reference_entropies`` refuses it on the

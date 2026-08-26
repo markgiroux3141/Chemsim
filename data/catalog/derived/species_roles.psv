@@ -16,7 +16,7 @@ chlorine | 13 | 7 | 1 | 5 | 0 | measured
 glucose | 13 | 6 | 2 | 5 | 0 | joback
 ethanol | 11 | 4 | 1 | 5 | 1 | measured
 acetone | 11 | 7 | 1 | 3 | 0 | measured
-carbon-graphite | 10 | 7 | 1 | 2 | 0 | refused
+carbon-graphite | 10 | 7 | 1 | 2 | 0 | mineral
 acetaldehyde | 10 | 5 | 2 | 3 | 0 | joback
 sulfur-dioxide | 9 | 0 | 3 | 6 | 0 | measured
 calcium-hydroxide | 9 | 5 | 2 | 2 | 0 | ion
@@ -55,7 +55,7 @@ sodium-acetate | 4 | 2 | 0 | 2 | 0 | ion
 nitrogen-dioxide | 3 | 0 | 3 | 0 | 0 | measured
 vanadium-pentoxide | 3 | 0 | 0 | 0 | 3 | refused
 sodium-sulfate | 3 | 0 | 1 | 2 | 0 | ion
-platinum | 3 | 0 | 0 | 0 | 3 | refused
+platinum | 3 | 0 | 0 | 0 | 3 | mineral
 calcium-phosphate | 3 | 3 | 0 | 0 | 0 | refused
 phosphoric-acid | 3 | 0 | 0 | 1 | 2 | nonvolatile
 aluminium-oxide | 3 | 1 | 1 | 1 | 0 | mineral
@@ -72,8 +72,8 @@ copper-ii-ion | 3 | 1 | 0 | 0 | 2 | ion
 acetylene | 3 | 2 | 0 | 1 | 0 | joback
 1,3-butadiene | 3 | 1 | 1 | 1 | 0 | joback
 ethylene-oxide | 3 | 1 | 0 | 2 | 0 | joback
-silver | 3 | 0 | 0 | 2 | 1 | refused
-cobalt | 3 | 0 | 0 | 0 | 3 | refused
+silver | 3 | 0 | 0 | 2 | 1 | mineral
+cobalt | 3 | 0 | 0 | 0 | 3 | mineral
 cyclohexanone | 3 | 2 | 1 | 0 | 0 | joback
 benzoyl-peroxide | 3 | 3 | 0 | 0 | 0 | joback
 styrene | 3 | 1 | 1 | 1 | 0 | joback
@@ -100,10 +100,10 @@ silicon-dioxide | 2 | 2 | 0 | 0 | 0 | refused
 calcium-silicate | 2 | 0 | 0 | 2 | 0 | refused
 phosphorus-white | 2 | 1 | 0 | 1 | 0 | refused
 potassium-chloride | 2 | 0 | 0 | 2 | 0 | ion
-aluminium | 2 | 1 | 0 | 1 | 0 | refused
-lead | 2 | 1 | 0 | 1 | 0 | refused
+aluminium | 2 | 1 | 0 | 1 | 0 | mineral
+lead | 2 | 1 | 0 | 1 | 0 | mineral
 zinc-oxide | 2 | 0 | 1 | 0 | 1 | mineral
-zinc | 2 | 1 | 0 | 1 | 0 | refused
+zinc | 2 | 1 | 0 | 1 | 0 | mineral
 mercury-sulfide | 2 | 1 | 0 | 1 | 0 | mineral
 nitrocellulose-unit | 2 | 1 | 0 | 1 | 0 | refused
 2,4-dinitrotoluene | 2 | 0 | 2 | 0 | 0 | joback
@@ -154,7 +154,7 @@ butane | 2 | 1 | 0 | 1 | 0 | joback
 maleic-anhydride | 2 | 1 | 0 | 1 | 0 | benson
 tristearin | 2 | 1 | 0 | 1 | 0 | nonvolatile
 triolein | 2 | 2 | 0 | 0 | 0 | nonvolatile
-palladium | 2 | 0 | 0 | 0 | 2 | refused
+palladium | 2 | 0 | 0 | 0 | 2 | mineral
 zinc-chloride | 2 | 0 | 0 | 0 | 2 | refused
 indican | 2 | 2 | 0 | 0 | 0 | joback
 tannic-acid-core | 2 | 2 | 0 | 0 | 0 | joback
@@ -188,7 +188,7 @@ lead-sulfide | 1 | 1 | 0 | 0 | 0 | mineral
 lead-ii-oxide | 1 | 0 | 1 | 0 | 0 | mineral
 copper-sulfide | 1 | 1 | 0 | 0 | 0 | mineral
 zinc-sulfide | 1 | 1 | 0 | 0 | 0 | mineral
-sodium | 1 | 0 | 0 | 1 | 0 | refused
+sodium | 1 | 0 | 0 | 1 | 0 | mineral
 sodium-amalgam-marker | 1 | 0 | 1 | 0 | 0 | marker
 gunpowder-marker | 1 | 0 | 1 | 0 | 0 | refused
 nitroglycerin | 1 | 0 | 0 | 0 | 1 | refused

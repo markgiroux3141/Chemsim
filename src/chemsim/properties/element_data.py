@@ -300,6 +300,16 @@ REFERENCE_STATES: dict[str, ReferenceState] = {
         S0=64.2, atoms_per_unit=1,
         source='CRC via chemicals 1.5.2',
     ),
+    'Pt': ReferenceState(
+        species='Pt(s)', smiles=None, phase='s',
+        S0=41.6, atoms_per_unit=1,
+        source='CRC via chemicals 1.5.2',
+    ),
+    'Pd': ReferenceState(
+        species='Pd(s)', smiles=None, phase='s',
+        S0=37.6, atoms_per_unit=1,
+        source='CRC via chemicals 1.5.2',
+    ),
 }
 
 

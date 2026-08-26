@@ -656,6 +656,37 @@ the intersection is untouched because that route was never species-ready.
   means the corpus can grow an unbalanceable row without anything failing. ⚠ A
   session that adds catalog rows should run it.
 
+## S8 — the nine element solids, and the reduction this engine cannot hold
+
+| row | value | how it is pinned |
+|---|---|---|
+| **every element solid's formation pair** | **Hf = Gf = 0.0 EXACTLY** on the solid basis, DERIVED not copied | `tests/test_element_solids.py`. ⚠ A non-zero result proves the CAS names a different allotrope — which is why TIN is absent (CRC's row is GREY tin at −2.1 kJ/mol) |
+| **the ion-less exemption in `mineral_data`** | exactly **12** rows: iron, nickel, copper (S1) + the nine S8 added | `test_every_mineral_records_the_ions_it_dissolves_into_unless_it_is_a_METAL`. Spelled out so widening it is a deliberate edit |
+| **all nine in one flask** | 0.01 mol each at 800 K under air, held to **twelve figures** over 600 s, `conservation_report` empty | `test_all_nine_charge_into_a_real_vessel_and_stay`. S6's precedent: reading `priced_solid` is a different claim from charging it |
+| ⚠ **the ideal-gas refusal** | `thermo.get("[C]")` STILL REFUSES, and `game_gates` still lists graphite/Na/K/Ca/Fe/Cu/Zn as REFUSED there | curating the solid basis and refusing the gas basis are the same statement twice. Not softened by one digit |
+| **`gas-solid-reduction`, all four rows** | ln K **10.90** (tenorite, 1500 K), **7.24** (litharge, 1400), **4.20** (hematite, 1300), **−4.10** (zincite, 1400), against a bar of **20** | `test_a_gas_solid_reduction_cannot_clear_the_irreversibility_bar`, which asserts the values AND that `surface.price` refuses the declaration |
+| **the roasting family, for contrast** | every declared row is **above ln K 60** at its own temperature | same file. The bar is not unreachable, which is what makes the four refusals a statement about chemistry |
+| **species-ready** | **63 → 77**, and BOTH unchanged at **24** | predicted at +0 on the intersection before the work was done, and measured at +0 |
+| the whole suite | **904 passed in 13:02** — 866 + S8's 38, zero failures | third full run of the session |
+
+⚠⚠ **THE ELEMENT GAP'S VALUE IS A MULTIPLIER, NOT A HEADLINE, AND THE QUEUE IS
+WHERE IT SHOWS.** `gas-solid-reduction` went 1 → 2 runnable;
+`catalytic-air-oxidation`, `carbothermic-reduction`,
+`metal-ion-aldehyde-oxidation`, `molten-salt-electrolysis` and `pyrolysis` each
+went 0 → 1; and `disproportionation-hydrolysis` (`ostwald-process`),
+`hydroformylation` (`oxo-process`) and `metallothermic-reduction` (`thermite`)
+appeared for the first time. **+0 today, +9 opportunities that did not exist
+before. Species work should FOLLOW the template it enables, not lead it.**
+
+⚠⚠ **AND `gas-solid-reduction` IS NOW A NAMED ENGINE GAP, WITH TWO
+SPECIES-READY ROUTES WAITING ON IT** — `copper-smelting` and `lead-smelting`. It
+needs a REVERSIBLE solid-gas term, which is M6's `p/K = n_A/n_B` measurement and
+the reason `SurfaceArrays` is forward-only. **Do not close it by lowering
+`LN_K_IRREVERSIBLE`**: a blast furnace's top gas contains CO because the reaction
+really is reversible, and the zinc row is uphill at every temperature (a real
+retort boils the zinc off at 1180 K, which is product removal). It is the second
+gap of that shape after NUCLEATION and the more valuable of the two.
+
 # Still open
 
 - ✔ ~~**THE DRYOUT BAND.**~~ CLOSED 2026-08-23, HANDOFF 72. Was the last live member of the
