@@ -20,7 +20,7 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass
 
-from chemsim.constants import C_STD_M, P_STD_BAR, R, R_L_BAR
+from chemsim.constants import C_STD_M, FARADAY, P_STD_BAR, R, R_L_BAR
 from chemsim.properties import ThermochemistryProvider
 from chemsim.properties import standard_state
 from chemsim.properties.volatility import VolatilityProvider
@@ -77,6 +77,41 @@ def reaction_deltas(
 
     Omitting ``volatility`` reproduces the uncorrected ideal-gas result, which is
     what a network built without a volatility model gets.
+
+    ⚠ **AND FOR AN ELECTRODE REACTION THIS RETURNS THE DRIVING FORCE, NOT THE
+    FORMATION SUM.** ``reaction.electrical_work`` is subtracted from BOTH, which
+    is M8's entire mechanic and is worth stating precisely because the two words
+    are not interchangeable:
+
+      * **why it lands on dG.** An electrolysis cell does electrical work on the
+        reaction, ``w = n F E``. Adding that to the system lowers the Gibbs
+        energy the reaction has to climb by exactly ``w``, so the reaction is
+        spontaneous when ``dG_chem < n F E`` -- i.e. above the DECOMPOSITION
+        POTENTIAL ``E_dec = dG_chem / (n F)``. That is not an analogy for
+        electrolysis, it is the definition of it, and it is why no new gate had
+        to be invented: below ``E_dec`` the equilibrium constant is tiny and the
+        reaction sits, above it the constant is huge and it runs.
+
+      * **why it lands on dH TOO, and by the same amount.** The supply holds E
+        fixed, so ``w`` does not vary with temperature. A shift that is constant
+        in T is an ENTHALPY shift: put it in dG alone and ``reaction_entropy``,
+        which reads ``dS = (dH - dG)/T``, would book the whole cell voltage as
+        reaction entropy and K would then drift as ``exp(w/RT)`` -- wrong at
+        every temperature but the reference one. Shifting both leaves dS exactly
+        the chemistry's, which is what it is.
+
+      * **and the energy balance comes out right for free.** ``to_arrays`` takes
+        its reaction enthalpy from this function, so the heat the flask sees per
+        mole of reaction is ``-(dH_chem - w) = w - dH_chem``: zero at the
+        thermoneutral voltage ``E_tn = dH_chem/(n F)``, heating above it, cooling
+        below. A real cell does exactly that, and nothing in Layer 4 had to learn
+        the word "electrode" for it to.
+
+    ⚠ The honest cost is that a boundary flux has entered through a reaction
+    enthalpy: ``conservation_report`` sees the heat and not the wire it came
+    down, so an electrolysing flask gains energy it cannot attribute. That is the
+    same blind spot ``chemsim-numerics-conservation`` already records for an
+    insulated flask, in a new costume -- reported, not hidden.
     """
     dH = dG = 0.0
     for smi in reaction.products:
@@ -94,6 +129,14 @@ def reaction_deltas(
         )
         dH += shift_H
         dG += shift_G
+
+    # The cell's electrical work, kJ/mol. Identically zero for every reaction
+    # that is not an electrode reaction, so this line is exactly the old return
+    # for everything built before M8 -- bit for bit, not approximately.
+    if reaction.electrical_work:
+        w = reaction.electrical_work / 1000.0   # J/mol -> kJ/mol
+        dH -= w
+        dG -= w
     return dH, dG
 
 
@@ -143,6 +186,52 @@ def equilibrium_constant(
     """
     dG_T = gibbs_at(reaction, provider, T, volatility) * 1000.0  # kJ/mol -> J/mol
     return math.exp(-dG_T / (R * T))
+
+
+def decomposition_potential(
+    reaction: ConcreteReaction,
+    provider: ThermochemistryProvider,
+    electrons: int,
+    T: float = T_REF,
+    volatility: VolatilityProvider | None = None,
+) -> float:
+    """The cell voltage at which this reaction breaks even, in volts.
+
+        E_dec = dG_chem(T) / (n F)
+
+    The single number M8's mechanic turns on: a cell below it does nothing and a
+    cell above it runs. 1.229 V for splitting water, 2.19 V for brine -- these
+    are the electrochemical series, arrived at from formation data rather than
+    from a curated table of electrode potentials, which is the point.
+
+    ⚠ **``reaction`` MUST BE THE CHEMISTRY, NOT THE DRIVEN REACTION.** ``dG_chem``
+    is what the cell has to pay for, so this divides the UNDRIVEN Gibbs energy by
+    ``n F``. Hand it a reaction that already carries ``electrical_work`` and it
+    returns ``E_dec - E``, which is the overpotential and not the answer -- so it
+    refuses that rather than returning a number that looks like a voltage.
+
+    ⚠ And ``electrons`` is passed rather than read off the reaction, because a
+    ``ConcreteReaction`` records the WORK and not the count: the two are the same
+    information only while a cell potential is non-zero, and this function's whole
+    job is to be askable at zero.
+    """
+    if reaction.electrical_work:
+        raise ValueError(
+            f"decomposition_potential was given a reaction already carrying "
+            f"electrical_work={reaction.electrical_work:.4g} J/mol. E_dec is the "
+            f"voltage the CHEMISTRY costs, so dG here must be the undriven one; "
+            f"driven, this would return E_dec - E, which is the overpotential "
+            f"wearing the units of an answer. Rebuild the reaction with "
+            f"electrical_work=0.0, or build the network with cell_potential=0.0"
+        )
+    if electrons <= 0:
+        raise ValueError(
+            f"decomposition_potential needs a positive electron count, got "
+            f"{electrons}. A reaction that passes no electrons has no "
+            f"decomposition potential -- not an infinite one"
+        )
+    dG_T = gibbs_at(reaction, provider, T, volatility) * 1000.0  # kJ -> J/mol
+    return dG_T / (electrons * FARADAY)
 
 
 def equilibrium_constant_c(

@@ -359,6 +359,51 @@ it is the `calcination-dehydration` row forwards and the
 block. `lime-slaking` is the dehydration row's own reverse. **Two declarations,
 three credited classes**, and `lime-cycle` becomes the 26th template-ready route.
 
+### ⚠⚠ M8 SPLIT `electrolysis` — AND IT WAS THE GREEDY CURVE'S TOP ROW
+
+The set-cover curve has ranked `electrolysis` first since M1: **+3 routes, more
+than any other single class.** M8 built the mechanism and the row check took two
+of the three away, which is the fourth time this standard has cost a headline
+number and the first time it has cost the number at the very top of the queue.
+
+Four rows, and they are **three mechanisms** — the `catalytic-hydrogenation`
+shape again, and the distinction is at the CATHODE:
+
+| route | step | became | what it is | covered? |
+|---|---|---|---|---|
+| `chloralkali` 1 | `NaCl + H2O -> NaOH + Cl2 + H2` | `aqueous-electrolysis` | ions in water; the cathode reduces **water** | ✔ built, **runs** — `halide_electrolysis` |
+| `downs-cell` 1 | `NaCl -> Na + Cl2` | `molten-salt-electrolysis` | a **melt**, which is not a phase this project has | ✘ named gap |
+| `hall-heroult` 1 | `Al2O3 + C -> Al + CO2` | `molten-salt-electrolysis` | a melt, and a **consumable** carbon anode | ✘ named gap |
+| `castner-kellner` 1 | `NaCl + Hg -> Na/Hg + Cl2` | `amalgam-electrolysis` | a mercury cathode reduces the **sodium** instead | ✘ marker, no graph |
+
+⚠ **THE CATHODE IS THE WHOLE DIFFERENCE AND IT IS NOT A DETAIL.** Chloralkali
+and Castner-Kellner take the same feed and give the same chlorine; one makes
+caustic soda and the other makes sodium metal, and the reason is which species
+the cathode reduces. Calling both "electrolysis" and crediting the class on one
+of them would have claimed a route to sodium metal that this engine cannot make
+— the `roasting-to-metal` false credit in a new costume.
+
+⚠ **AND THE MELT ROWS COST NOTHING TODAY.** Both `downs-cell` and `hall-heroult`
+are blocked on a bare element as well (`sodium`, `aluminium`, `carbon-graphite`),
+so they were never one class away from running. The split moves them from
+"blocked on one thing we could build" to "blocked on two things, honestly named".
+
+`electro-organic-coupling` was NOT split, on the `ester-hydrolysis` precedent:
+its two rows are two mechanisms and **both are built**, which is exactly when a
+class with several mechanisms in it may be credited.
+
+| route | step | what covers it |
+|---|---|---|
+| `kolbe-electrolysis` 1 | `2 AcO- -> C2H6 + 2 CO2` | `kolbe_electrolysis`, and it generalises — acetate + propanoate gives ethane, propane **and** butane |
+| `adiponitrile-route` 1 | `AN + H2O -> ADN + O2` | `water_electrolysis` + `alkene_hydrodimerisation`, and the row's stoichiometry EMERGES from the pair |
+
+⚠ The second of those pays no electrons, and that is a measurement rather than an
+omission: the whole cell `4 AN + 2 H2O -> 2 ADN + O2` is uphill at +212.7 kJ/mol,
+while `2 AN + H2 -> ADN` is **downhill** at −171.7. The voltage buys the hydrogen,
+not the carbon–carbon bond. The cost of decomposing it that way is stated where
+it can be found: the route cannot start until water splits at 1.441 V, where the
+real cell reduces acrylonitrile at its own cathode from 0.551 V.
+
 ### ⚠ S3 SPLIT `thermal-decomposition` — AND CHECKED WHICH ROUTES THE NUMBER MOVED
 
 M6 read this class, recorded "four rows and they are **four mechanisms**", and

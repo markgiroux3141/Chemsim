@@ -466,6 +466,55 @@ TEMPLATE_CLASSES = {
         "vessel_integrator.SurfaceArrays (a TERM; mass action, first order in "
         "the arriving gas and gated on the solid being present)"
     ),
+    # ---------------------------------------------------------------------
+    # M8 -- reactions/electrochemistry.py. Electricity as a reagent.
+    # ---------------------------------------------------------------------
+    # The covering mechanism is not a template but a DRIVING FORCE:
+    # ``ReactionTemplate.electrons`` times ``build_network(cell_potential=...)``
+    # gives ``n F E`` joules, ``thermo.reaction_deltas`` subtracts it from dG,
+    # and a reaction whose chemistry costs less than the cell supplies runs. The
+    # threshold is the decomposition potential and nothing declares it.
+    #
+    # ⚠⚠ AND ``electrolysis`` IS NOT CREDITED, BECAUSE ITS FOUR ROWS ARE THREE
+    # MECHANISMS. This is M1's standard applied to the class the greedy curve
+    # ranks FIRST, and it costs two of the three routes that curve promised:
+    #
+    #   aqueous-electrolysis     chloralkali. Ions in water, the cathode reduces
+    #                            WATER. BUILT -- ``halide_electrolysis``.
+    #   molten-salt-electrolysis downs-cell, hall-heroult. A MELT is not a phase
+    #                            this project has; Hall-Heroult also consumes its
+    #                            carbon anode. Named gap, and both routes are
+    #                            blocked on a bare element anyway.
+    #   amalgam-electrolysis     castner-kellner. A mercury cathode reduces the
+    #                            SODIUM instead of the water, which is the whole
+    #                            difference from chloralkali, and the product is
+    #                            a marker with no molecular graph. Named gap on
+    #                            M5's ``separation`` precedent.
+    #
+    # ⚠ SO THE GREEDY CURVE'S TOP ROW IS WORTH +1 ROUTE, NOT +3. It ranked an
+    # unsplit label, exactly as it ranked ``catalytic-air-oxidation`` third for
+    # zero runnable routes. A class is a MECHANISM claim; read the rows.
+    "aqueous-electrolysis": "halide_electrolysis",
+    # ⚠ TWO ROWS, THREE TEMPLATES, AND BOTH ROWS VERIFIED BY RUNNING THEM. On
+    # the ``ester-hydrolysis`` precedent: the class holds two mechanisms and
+    # crediting it on one would be the ``deprotonation`` mistake.
+    #
+    #   kolbe-electrolysis   anodic decarboxylation. ``kolbe_electrolysis``, and
+    #                        it generalises -- acetate plus propanoate gives
+    #                        ethane, propane AND butane, nobody having written
+    #                        the cross-coupling down.
+    #   adiponitrile-route   ``water_electrolysis`` + ``alkene_hydrodimerisation``.
+    #                        ⚠ The SECOND passes no electrons, and that is a
+    #                        measurement: the cell 4 AN + 2 H2O -> 2 ADN + O2 is
+    #                        uphill at +212.7 kJ/mol, while 2 AN + H2 -> ADN is
+    #                        DOWNHILL at -171.7. The voltage buys the hydrogen,
+    #                        not the carbon-carbon bond. The row's overall
+    #                        stoichiometry, oxygen included, EMERGES from the
+    #                        pair -- measured in ``examples/electrolysis_cell.py``
+    #                        panel 5 at 65.6% conversion at 3 V and nothing at 2.
+    "electro-organic-coupling": (
+        "kolbe_electrolysis + water_electrolysis/alkene_hydrodimerisation"
+    ),
     # ⚠ AND TWO MORE CLASSES WERE SPLIT RATHER THAN REFUSED, on the
     # ``catalytic-hydrogenation`` precedent from M5 -- because like that class
     # and unlike ``fermentation``, every row here IS a clean mechanism.
@@ -640,7 +689,16 @@ TEMPLATE_CLASSES = {
 N_LIBRARY_TEMPLATES = 8
 N_SYNTHESIS_TEMPLATES = 20
 N_ELECTROLYTE_TEMPLATES = 6
-N_TEMPLATES = N_LIBRARY_TEMPLATES + N_SYNTHESIS_TEMPLATES + N_ELECTROLYTE_TEMPLATES
+# ⚠ M8 INCREMENTS THIS WHERE M3 AND M6 DELIBERATELY DID NOT, and the difference
+# is what shape the mechanism has. Precipitation, calcination and roasting are
+# TERMS in the integrator -- there is no template to count. These four are
+# ordinary ``ReactionTemplate``s that happen to carry an electron count, so they
+# are templates by the same rule as the other 34.
+N_ELECTROCHEMISTRY_TEMPLATES = 4
+N_TEMPLATES = (
+    N_LIBRARY_TEMPLATES + N_SYNTHESIS_TEMPLATES + N_ELECTROLYTE_TEMPLATES
+    + N_ELECTROCHEMISTRY_TEMPLATES
+)
 
 
 def marginal_unlock(steps, routes):

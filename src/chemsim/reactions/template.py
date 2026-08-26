@@ -61,6 +61,12 @@ class ReactionTemplate:
             field that lets a template's rate law differ from its stoichiometry.
         solid_catalyst: the ``mineral_data`` name of a CRYSTAL that must be
             present for this reaction to go, or None. See below.
+        electrons: how many electrons cross the EXTERNAL CIRCUIT per reaction as
+            written, or 0 (the default) for the ordinary chemistry that is
+            everything else in this project. Non-zero makes this an ELECTRODE
+            reaction: ``build_network``'s ``cell_potential`` multiplies it into
+            ``n F E`` joules of electrical work, and that work is what drives the
+            reaction. See below, and ``thermo.reaction_deltas``.
 
     THE GATE A SOLID CATALYST IS, AND WHY IT IS NOT A PHASE
 
@@ -148,6 +154,64 @@ class ReactionTemplate:
     gate ``SOLID_GATE_TIME`` exists to flatten. Nothing here refuses it; declare
     one knowing that is what you are asking the solver for.
 
+    THE VOLTAGE GATE, AND WHY IT IS A MECHANISM RATHER THAN A FLAG
+
+    ``electrons`` is the one field that makes electrolysis expressible, and it
+    buys the whole of M8 without a single new term in Layer 4. An electrolysis
+    cell does electrical work ``w = n F E`` on the reaction; the reaction is
+    spontaneous once that work covers what the chemistry costs, which is the
+    DECOMPOSITION POTENTIAL
+
+        E_dec = dG_chem / (n F)
+
+    -- 1.23 V for water, 2.19 V for brine, and every number in an electrochemical
+    series. So the gate is not "is the power on": it is a comparison between two
+    energies, both of which this project already computes. Below ``E_dec`` the
+    equilibrium constant is minute and the cell sits there doing nothing; above
+    it the constant is enormous and the cell runs. **Turn the voltage up and
+    things decompose in the order their chemistry says they should**, which is
+    the emergent behaviour the mechanic exists for.
+
+    ⚠ **AND THE DEFAULT IS EXACTLY THE OLD ENGINE.** ``electrons=0`` gives
+    ``w = 0``; ``build_network`` with no ``cell_potential`` gives ``E = 0``.
+    Either way ``ConcreteReaction.electrical_work`` is 0.0 and
+    ``reaction_deltas`` skips the subtraction entirely -- so a flask with no
+    power supply is not "electrolysis at zero volts", it is the same arithmetic
+    the project ran before M8, bit for bit.
+
+    ⚠⚠ **EVANS-POLANYI ON AN ELECTRODE REACTION IS THE BUTLER-VOLMER EQUATION,
+    AND ``alpha`` IS THE TRANSFER COEFFICIENT.** This is an identity, not a
+    resemblance, and it is why an electrode reaction's KINETICS needed no new
+    field either. With the work in dH, the barrier this class already computes is
+
+        Ea_i = Ea + alpha * (dH_chem - n F E)
+
+    and since ``dH_chem - n F E = -n F eta + T dS`` for an overpotential
+    ``eta = E - E_dec``, that is ``Ea - alpha n F eta`` up to the entropy term:
+    the Tafel slope, with ``alpha`` in the role it has carried in electrochemistry
+    since 1930 and with the same conventional value of 0.5. **So ``Ea`` on an
+    electrode template is the ACTIVATION OVERPOTENTIAL in energy units,
+    ``n F eta_a``** -- the reason a cell needs more than its decomposition
+    potential to pass any current, and the reason a brine cell evolves chlorine
+    rather than the oxygen its thermodynamics prefers.
+
+    ⚠ ``barrier`` floors that at zero, and the floor is reached. Far above
+    ``E_dec`` every electrode reaction runs out of barrier and its rate becomes
+    its bare ``A`` -- which is a real regime (a cell at its limiting current is
+    not barrier-limited, it is transport-limited) reached for the wrong reason,
+    since nothing here models transport. **The measured consequence is that
+    activation selectivity WASHES OUT at high voltage**, and it is reported by
+    ``validation/cell_potentials.py`` rather than tuned away.
+
+    ⚠ **WHAT IS NOT MODELLED, AND IT IS THE SAME SHAPE AS THE SITE BALANCE.**
+    Two electrode reactions in one cell do not compete for CURRENT here. A real
+    supply delivers a fixed number of electrons per second and the electrode
+    reactions divide them; these divide nothing, so every reaction whose
+    decomposition potential the cell clears runs at its own full rate,
+    simultaneously. A cell is therefore a source of unlimited current in this
+    engine, and the yields it reports are ratios of rate constants rather than
+    of currents.
+
     WHY ALPHA MATTERS. Everything else in this project derives thermodynamics from
     structure -- equilibrium constants, reverse rates, phase behaviour. Rates were
     the exception: one template handed the same barrier to every substrate it
@@ -172,6 +236,7 @@ class ReactionTemplate:
     alpha: float = 0.0
     orders: tuple[float, ...] | None = None
     solid_catalyst: str | None = None
+    electrons: int = 0
     _rxn: AllChem.ChemicalReaction = field(default=None, repr=False, compare=False)
 
     # The phases a CONCRETE reaction may run in. "any" is not one of them: it is
@@ -200,6 +265,38 @@ class ReactionTemplate:
             self._check_orders()
         if self.solid_catalyst is not None:
             self._check_solid_catalyst()
+        if self.electrons:
+            self._check_electrons()
+
+    def _check_electrons(self) -> None:
+        """Validate an electrode reaction. See ``THE VOLTAGE GATE`` below."""
+        if self.electrons < 0:
+            raise ValueError(
+                f"template {self.name!r}: electrons={self.electrons} is "
+                f"negative. A template is written in the direction the CELL "
+                f"drives it, so its electron count is positive; the reverse "
+                f"reaction gets the negative automatically, because running the "
+                f"cell backwards drives the current the other way round the "
+                f"circuit. A reaction that is spontaneous and DELIVERS work -- a "
+                f"galvanic cell, a battery -- is the same equation with the "
+                f"supply's sign reversed, and this project has no apparatus for "
+                f"one; declare the potential negative if that is what you mean"
+            )
+        if self.orders is not None:
+            raise ValueError(
+                f"template {self.name!r} declares BOTH electrons="
+                f"{self.electrons} and orders={self.orders}. An electrode "
+                f"reaction is driven through its equilibrium constant -- the "
+                f"cell's work enters dG and the reaction goes when dG_chem < "
+                f"n F E -- and ``_check_orders`` already refuses a declared "
+                f"order on a reversible template because detailed balance needs "
+                f"the exponents to BE the stoichiometry. An irreversible "
+                f"electrode reaction would keep the electron count and throw "
+                f"away the only thing it does: below the decomposition "
+                f"potential it would still run. Write the cell reaction as it "
+                f"balances, or drop the electrons and declare an ordinary "
+                f"irreversible step"
+            )
 
     def _check_solid_catalyst(self) -> None:
         """Validate a declared solid catalyst. See the class docstring."""

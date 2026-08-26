@@ -4800,6 +4800,132 @@ the measurements that justify them.
     `COVERAGE_REPORT.md` stays byte-identical across `PYTHONHASHSEED`
     (12345 / 999 / 4242), as do both `derived/*.psv`.
 
+91. ✔✔ **M8 — ELECTRICITY IS A REAGENT, AND THE CLASS THE MILESTONE WAS NAMED
+    FOR DID NOT SURVIVE ITS OWN ROW CHECK.**
+
+    **+2 classes (36 → 38 of 220), +3 template-ready (28 → 31), +3 RUNNABLE
+    (17 → 20).** Four templates, one field on `ReactionTemplate`, one field on
+    `ConcreteReaction` and one `if` in `reaction_deltas`. **No new term in
+    Layer 4, no new phase, no new gate**, and all 14 pre-M8 examples come out
+    byte-identical apart from RDKit log timestamps.
+
+    THE MECHANIC. A cell does electrical work `w = n F E`. `electrons` says how
+    many cross the external circuit, `build_network(cell_potential=...)` says
+    what the supply is set to, and `reaction_deltas` subtracts their product
+    from **both** dH and dG. A reaction whose chemistry costs less than the cell
+    supplies runs, and the crossing is the DECOMPOSITION POTENTIAL
+    `E_dec = dG_chem / (n F)` — every number in an electrochemical series.
+    **The gate is a comparison of two energies this project already computed.**
+
+    ⚠ **BOTH, NOT JUST dG.** E is held fixed by the supply, so `w` does not vary
+    with T, and a T-independent shift is an ENTHALPY shift. In dG alone,
+    `reaction_entropy` (`dS = (dH-dG)/T`) books the whole cell voltage as
+    reaction entropy and K drifts as `exp(w/RT)`. Shifting both leaves dS the
+    chemistry's — and the energy balance then comes out right for free, since
+    `to_arrays` reads the same dH: heat to the flask is `w - dH_chem`, zero at
+    the thermoneutral voltage, which is what a real cell does.
+
+    ⚠⚠ **EVANS-POLANYI ON AN ELECTRODE REACTION *IS* BUTLER-VOLMER, AND `alpha`
+    IS THE TRANSFER COEFFICIENT.** An identity: with the work in dH,
+    `Ea + alpha(dH_chem - nFE)` is `Ea - alpha nF eta` up to the entropy term —
+    the Tafel slope, alpha at its conventional 0.5. So **`Ea` on an electrode
+    template is the ACTIVATION OVERPOTENTIAL in energy units, `n F eta_a`**, and
+    the kinetics needed no new field either.
+
+    ⚠⚠ **THE GREEDY CURVE'S TOP ROW SINCE M1 IS WORTH +1, NOT +3.**
+    `electrolysis`'s four rows are THREE mechanisms, split at the CATHODE:
+    `aqueous-electrolysis` (chloralkali — reduces WATER, built),
+    `molten-salt-electrolysis` (downs-cell, hall-heroult — a melt is not a phase
+    here) and `amalgam-electrolysis` (castner-kellner — reduces the SODIUM, and
+    the product is a marker). Chloralkali and Castner-Kellner take the same feed
+    and give the same chlorine; one makes caustic soda and the other makes
+    sodium metal. Crediting them together would have claimed a route to sodium
+    metal this engine cannot make — `roasting-to-metal`'s false credit again.
+    ⚠ The two melt rows cost nothing: both are ALSO blocked on a bare element.
+    **`electro-organic-coupling` was NOT split — two mechanisms, both built,
+    which is the `ester-hydrolysis` precedent.**
+
+    ⚠⚠ **ITEM 90's SCOPING QUESTION IS ANSWERED, AND THE RUNNABLE HALF WAS RIGHT
+    WHILE THE UNLOCKED HALF WAS NOT.** One mechanism does cover both classes, so
+    the milestone took both: **+3 runnable exactly as predicted, on +3 unlocked
+    rather than +5.** The column that counts what can actually RUN was
+    insensitive to the very error that halved the other one. Second milestone
+    running that the intersection is the trustworthy column.
+
+    ⚠⚠ **THE BRIEF SAID THIS WOULD BREAK THE SPECTATOR ZEROS. IT DID NOT.**
+    M8's brief budgeted for re-deriving the five pH values, on the argument that
+    a half-cell potential "puts the ion back into an equilibrium the kernel
+    evaluates". Measured: unmoved, 76 tests. **There is no half-cell potential.**
+    Every template is a WHOLE CELL — electrons cancelled, charge balanced —
+    because a half reaction does not conserve charge and
+    `_element_charge_balance` rejects it, and because that is what the catalog
+    rows already say. So dG comes from the same dGf table as everything else and
+    **no electrode potential was ever curated.** Derived: water 1.441 V (book
+    1.229), brine 2.362 (2.186), bromide 2.061 (1.894).
+
+    ⚠ **AND THE `done when` WAS MET IN THE OTHER VARIABLE.** The brief asked
+    that "the current is the control". It is not — the VOLTAGE is. Voltage is
+    what makes the gate thermodynamic and therefore derivable; a current budget
+    is a Layer 4 term and a second milestone.
+
+    ⚠⚠ **THE NEW AUDIT FOUND A PRE-EXISTING ERROR ON ITS FIRST RUN: dG SURVIVES
+    THE ION TABLE'S MIXED BASIS AND dS DOES NOT.** `validation/cell_potentials.py`
+    reports the brine cell's dS out by **−591 J/(mol K)** and bromide's by −738,
+    which REVERSES the sign of dE/dT — every cell here wants more voltage when
+    heated and every real one wants less. This project's ions are derived from
+    measured pKa against its OWN water, and its own water is priced on the
+    **ideal-gas** basis (Hf −241.8, not the aqueous −285.8). For a reaction that
+    conserves water the offset cancels and nothing has noticed since the
+    electrolyte model was built; **every cell reaction consumes water and makes
+    hydroxide**, so it does not. **Quote E_dec at 298 K; do NOT quote its
+    temperature derivative, and do NOT read a cell's HEAT.**
+
+    ⚠⚠ **THE SOLVER SAID THE PRE-EXPONENTIAL WAS THE WRONG KIND OF NUMBER.**
+    At `A = 1e10` — an order under `COLLISION_LIMIT`, which is how every other
+    pre-exponential here is bounded — a cell at 3.0 V ate 0.2 mol of chloride
+    inside a nanosecond and `Vessel.run` died with *required step size is less
+    than spacing between numbers* after **4.2e-09 s of 3600 s**; the rate cap
+    had been firing at the low end too, scaling a pair by 4.031e-14. Same wrong
+    ceiling from two ends. **An electrode reaction is not two molecules
+    meeting** — it happens on a SURFACE, its rate scales with electrode AREA and
+    not volume, and 1e10 asserts every chloride is touching the anode. The right
+    units are a current density over an area,
+    `rate = j0 * a / (n F)` → `5e-8 = 1e-3 * 10 / (2*96485)`, and the check that
+    makes it defensible is that **it comes back out as an ampere**: 1e-2 A at
+    unit concentrations, and the cells draw between a milliamp and a couple of
+    amps.
+
+    ⚠ **NOT MODELLED: THERE IS NO CURRENT BUDGET**, and it is measured rather
+    than asserted. Two electrode reactions in one cell divide nothing, so every
+    reaction the cell clears runs at its own full rate at once. Activation
+    selectivity therefore washes out as `barrier` floors at zero: k(brine)/
+    k(water) is **4.76e+17 at 2.5 V, 5.94 at 3.0 V, 1.00 at 4.0 V**, and one
+    flask of brine gives 0.0177 mol Cl2 / 8.9e-19 mol O2 at 2.5 V against
+    0.0169 / 0.53 at 4.0. **The selective window here is ~2.2–2.7 V where a real
+    cell holds 99% at 3 V and above.** Same shape as the site balance. Pinned by
+    a test as a LIMIT.
+
+    ⚠ **THE ADIPONITRILE ROW IS NOT AN ELECTRODE REACTION, AND THAT IS
+    ARITHMETIC.** The row reads `AN + water -> ADN + oxygen`, so a fourth
+    electron-carrying template was the expected shape. Measured: the CELL
+    `4 AN + 2 H2O -> 2 ADN + O2` is uphill at **+212.7 kJ/mol**, but
+    `2 AN + H2 -> ADN` is **downhill at −171.7**. The voltage buys the HYDROGEN,
+    not the carbon–carbon bond. So the route is `water_electrolysis` +
+    `alkene_hydrodimerisation` (`electrons=0`) and the row's stoichiometry —
+    oxygen included — EMERGES: 65.6% conversion at 3 V, nothing at 2 V.
+    ⚠ Cost stated: routing electrons through free H2 puts the threshold at
+    water's 1.441 V instead of its own 0.551 V, **0.89 V too high**. ⚠ The lump
+    alternative was measured and refused — 6 slots, FOURTH order in the limiting
+    reagent, which is `sulfur_combustion`'s stall in the case not forgiven.
+
+    EMERGENT: acetate + propanoate gives ethane, propane **and** butane, nobody
+    having written the cross-coupling down (⚠ read 1.49:0.98:0.57 as three rate
+    constants Evans-Polanyi set, not as a selectivity prediction — the
+    statistical factor of 2 on the cross is not in this engine's mass action).
+    One halide template covers Cl/Br/I and bromide goes at a lower voltage
+    because its chemistry costs less. Kolbe needs the CARBOXYLATE: glacial
+    acetic acid does not electrolyse, and `[O-]` in the SMARTS is what says so.
+
 IMMEDIATE NEXT TASK: see **`MILESTONES.md`**, which is the plan of record as of
 2026-08-22 and supersedes the ordering below. It is derived from `data/catalog`
 (1,583 compounds, 173 routes) plus four measured capability probes, and it

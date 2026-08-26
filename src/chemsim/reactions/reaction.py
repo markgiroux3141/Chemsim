@@ -41,6 +41,25 @@ class ConcreteReaction:
     # different basis (an amount, not a concentration). So it is declared, and
     # the one thing the kernel gains is a second exponent matrix.
     solid_catalyst: str | None = None
+    # ELECTRICAL WORK the cell supplies to this reaction as written, J/mol,
+    # POSITIVE when supplied. Zero for every reaction that is not an electrode
+    # reaction, which is every reaction this project had before M8.
+    #
+    # ⚠ WHY IT IS AN ENERGY AND NOT A VOLTAGE. A voltage is a property of the
+    # CELL and the electron count is a property of the REACTION; only their
+    # product is a property of this reaction, and it is the product that every
+    # consumer downstream wants. Folding them at build time -- ``n * F * E`` --
+    # is the same bargain ``solid_catalyst`` strikes one field up: Layer 2
+    # declares the physical thing (how many electrons cross the circuit), the
+    # builder resolves it against the apparatus (what the supply is set to), and
+    # what reaches the numerics is one number in the units the algebra needs.
+    #
+    # ⚠ AND THE REVERSE REACTION CARRIES THE NEGATIVE OF IT. Running the cell
+    # reaction backwards drives current the other way round the circuit, so the
+    # work it does against the supply is the same magnitude with the other sign.
+    # ``builder._concrete`` writes ``-work`` onto the reverse, which is what
+    # keeps ``dH_rev = -dH_fwd`` exact and detailed balance with it.
+    electrical_work: float = 0.0
 
     def key(self) -> tuple:
         """Identity for de-duplication: same template + same multisets."""

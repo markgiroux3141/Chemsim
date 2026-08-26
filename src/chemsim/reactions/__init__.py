@@ -12,6 +12,13 @@ from chemsim.reactions.library import (
     sulfur_combustion,
     sulfur_dioxide_oxidation,
 )
+from chemsim.reactions.electrochemistry import (
+    alkene_hydrodimerisation,
+    electrochemistry,
+    halide_electrolysis,
+    kolbe_electrolysis,
+    water_electrolysis,
+)
 from chemsim.reactions.reaction import ConcreteReaction
 from chemsim.reactions.synthesis import (
     addition_chemistry,
@@ -46,6 +53,7 @@ from chemsim.reactions.synthesis import (
 from chemsim.reactions.template import ReactionTemplate
 from chemsim.reactions.thermo import (
     DetailedBalance,
+    decomposition_potential,
     delta_n,
     detailed_balance,
     equilibrium_constant,
@@ -97,6 +105,13 @@ __all__ = [
     "hydrogenation_chemistry",
     "synthesis_gas_chemistry",
     "bleach_chemistry",
+    # M8 -- the electrode templates, see reactions/electrochemistry.py
+    "water_electrolysis",
+    "halide_electrolysis",
+    "kolbe_electrolysis",
+    "alkene_hydrodimerisation",
+    "electrochemistry",
+    "decomposition_potential",
     "reaction_deltas",
     "reaction_entropy",
     "delta_n",

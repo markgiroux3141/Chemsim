@@ -34,7 +34,7 @@ from chemsim.reactions import (
     detailed_balance,
     reaction_deltas,
 )
-from chemsim.reactions.thermo import COLLISION_LIMIT, T_REF
+from chemsim.reactions.thermo import COLLISION_LIMIT, FARADAY, T_REF
 
 # Reaction phase -> the index Layer 4 splits on. Explicit and total: an
 # unrecognised phase RAISES rather than falling through to the liquid block.
@@ -272,6 +272,7 @@ def build_network(
     max_molar_mass: float | None = None,
     volatility: VolatilityProvider | None = None,
     liquid_standard_state: bool = True,
+    cell_potential: float = 0.0,
 ) -> ReactionNetwork:
     """Discover the reaction network reachable from the initial species.
 
@@ -300,6 +301,24 @@ def build_network(
             basis, which is what every result before this correction existed
             used. Wrong for a reaction in solution, and kept only so the
             difference can be measured; see ``properties.standard_state``.
+        cell_potential: the APPARATUS -- what the power supply across this flask
+            is set to, in volts. Default 0.0 is no supply, and it is not a
+            special case: a template's ``electrons`` is multiplied by ``F * E``
+            to give the electrical work its reaction is driven by, so at 0 V the
+            work is exactly 0.0 and ``reaction_deltas`` skips the term. **A
+            network built without this argument is bit-for-bit the network this
+            project built before M8.** ⚠ It is declared HERE and not on the
+            vessel because the work enters through ``dG``, and ``dG`` is what
+            detailed balance turns into a reverse rate constant at build time --
+            the same setup/hot-loop split every other physical model in this
+            project takes. A supply whose voltage varies during a run would have
+            to be a Layer 4 term instead, and is not modelled.
+
+    ⚠ A NETWORK CARRIES ONE CELL POTENTIAL, WHICH IS THE PHYSICAL CLAIM THAT ONE
+    FLASK HAS ONE PAIR OF ELECTRODES IN IT. Every electrode reaction discovered
+    from these templates is driven by the same E, and which of them actually goes
+    is then decided by their own decomposition potentials and barriers -- which
+    is the whole mechanic. Two cells at two voltages are two networks.
     """
     if thermo is None and any(t.uses_thermochemistry for t in templates):
         names = sorted(t.name for t in templates if t.uses_thermochemistry)
@@ -360,7 +379,7 @@ def build_network(
         rounds += 1
         frontier = _expand_once(
             molecules, reactions, templates, thermo, volatility, T_ref,
-            notices, state, frontier,
+            notices, state, frontier, cell_potential,
         )
 
     for msg in notices.values():
@@ -408,6 +427,7 @@ def _expand_once(
     notices: dict[tuple, str],
     state: _ExpansionState,
     frontier: list[Molecule],
+    cell_potential: float = 0.0,
 ) -> list[Molecule]:
     """Apply every template one generation outward; return the species added.
 
@@ -441,7 +461,8 @@ def _expand_once(
                     continue                  # reject malformed / unbalanced rewrites
 
                 new_rxns = _concrete_reactions(
-                    tmpl, combo, products, thermo, volatility, T_ref, notices
+                    tmpl, combo, products, thermo, volatility, T_ref, notices,
+                    cell_potential,
                 )
                 if all(r.is_null() for r in new_rxns):
                     continue
@@ -480,6 +501,7 @@ def _concrete_reactions(
     volatility: VolatilityProvider | None,
     T_ref: float,
     notices: dict[tuple, str],
+    cell_potential: float = 0.0,
 ) -> list[ConcreteReaction]:
     """Instantiate the forward reaction, plus a thermodynamically-derived reverse.
 
@@ -495,7 +517,8 @@ def _concrete_reactions(
     for phase in tmpl.phases:
         out.extend(
             _concrete_in_phase(
-                tmpl, phase, reactants, products, thermo, volatility, T_ref, notices
+                tmpl, phase, reactants, products, thermo, volatility, T_ref,
+                notices, cell_potential,
             )
         )
     return out
@@ -510,13 +533,21 @@ def _concrete_in_phase(
     volatility: VolatilityProvider | None,
     T_ref: float,
     notices: dict[tuple, str],
+    cell_potential: float = 0.0,
 ) -> list[ConcreteReaction]:
     """One template, one phase -> the forward reaction and its derived reverse."""
     r_smiles = tuple(m.smiles for m in reactants)
     p_smiles = tuple(m.smiles for m in products)
     cat = _catalyst_lattice(tmpl)
+    # THE APPARATUS MEETS THE REACTION. ``electrons`` is how many cross the
+    # circuit per reaction as written; ``cell_potential`` is what the supply is
+    # set to; only their product is a property of this reaction, and it is the
+    # product Layer 2's algebra wants. Exactly 0.0 whenever either is zero, which
+    # is what makes every pre-M8 network bit-identical rather than nearly so.
+    work = tmpl.electrons * FARADAY * cell_potential
     fwd = ConcreteReaction(tmpl.name, r_smiles, p_smiles, tmpl.A, tmpl.Ea, phase,
-                           orders=tmpl.orders, solid_catalyst=cat)
+                           orders=tmpl.orders, solid_catalyst=cat,
+                           electrical_work=work)
 
     # ⚠ A LIQUID-PHASE REACTION WHOSE SPECIES ARE NOT ALL ON THE SAME BASIS.
     # ``standard_state.mixed_basis`` explains the failure and what measured it;
@@ -544,7 +575,8 @@ def _concrete_in_phase(
         dH = reaction_deltas(fwd, thermo, volatility)[0] * 1000.0   # kJ -> J/mol
         Ea = tmpl.barrier(dH)
         fwd = ConcreteReaction(tmpl.name, r_smiles, p_smiles, tmpl.A, Ea, phase,
-                               orders=tmpl.orders, solid_catalyst=cat)
+                               orders=tmpl.orders, solid_catalyst=cat,
+                               electrical_work=work)
 
     if not tmpl.reversible:
         return [fwd]
@@ -591,11 +623,19 @@ def _concrete_in_phase(
     return [
         ConcreteReaction(
             tmpl.name, r_smiles, p_smiles, db.A_fwd, db.Ea_fwd, phase, db.n_fwd,
-            solid_catalyst=cat,
+            solid_catalyst=cat, electrical_work=work,
         ),
+        # ⚠ MINUS THE WORK, AND IT IS NOT A SIGN CONVENTION. Running the cell
+        # reaction backwards pushes current the other way round the circuit, so
+        # the same magnitude of electrical work now opposes it. Without the sign
+        # flip ``reaction_deltas`` would hand this reaction ``-dH_chem - w``
+        # while the forward got ``dH_chem - w``, the two would not be negatives
+        # of each other, and the pair detailed balance just made consistent would
+        # arrive at Layer 4 inconsistent -- an energy balance that creates
+        # ``2 n F E`` per round trip.
         ConcreteReaction(
             f"{tmpl.name}_rev", p_smiles, r_smiles, db.A_rev, db.Ea_rev,
-            phase, db.n_rev, solid_catalyst=cat,
+            phase, db.n_rev, solid_catalyst=cat, electrical_work=-work,
         ),
     ]
 

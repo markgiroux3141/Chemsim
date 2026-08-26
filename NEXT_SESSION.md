@@ -560,6 +560,51 @@ unmoved: reflux plateau **352.892 K at 1.01336 bar**, steam distillation
 they run on `equilibrium_pressures`, whose own `wet` ramp deliberately SURVIVED
 this session (its docstring says why, and why it must not be "fixed" to match).
 
+## ⚠⚠ M8 ADDED SEVEN ROWS, AND THE FIRST IS THE ONE THAT PROTECTS EVERY OTHER ROW ABOVE
+
+**A network built without `cell_potential` is BIT-IDENTICAL to the one this
+project built before M8.** Not close — identical, because `reaction_deltas`
+skips the term on a falsy `electrical_work` and every non-electrode template
+leaves it at exactly `0.0`. Verified against the EXAMPLE SET rather than argued:
+all 14 of `esterification`, `thermochemistry`, `competing_pathways`, `vessel`,
+`activity`, `extraction`, `multistep_prep`, `wait_until`, `workshop`,
+`lime_cycle`, `mercury_retort`, `roasting_and_the_catalyst_gate`, `named_routes`
+and `oil_of_vitriol` come out byte-identical apart from RDKit log timestamps and
+two wall-clock readings. ⚠ S5's lesson is why the check was run this way: a
+four-run sweep is not the example set.
+
+| row | value | how it is pinned |
+|---|---|---|
+| **water splitting E_dec** | **1.441 V** (book 1.229) | `validation/cell_potentials.py` panel 1; `tests/test_electrochemistry.py` at `abs < 0.25` |
+| **brine E_dec** | **2.362 V** (book 2.186) | same. ⚠ Always HIGHER than the book, every cell, and the test asserts the sign |
+| **bromide E_dec** | **2.061 V** (book 1.894) | same |
+| **the coupling `2 AN + H2 -> ADN`** | **−171.7 kJ/mol** | downhill, which is why it carries `electrons=0` |
+| **the whole ADN cell** | **+212.7 kJ/mol**, E_dec 0.551 V | `cell_potentials.py` panel 4 |
+| **k(brine)/k(water)** | **4.76e+17 at 2.5 V, 5.94 at 3.0, 1.00 at 4.0** | pinned as a LIMIT, not a target |
+| **brine cell, 1 h, 0.20 mol NaCl** | 2.5 V: **0.0177 mol Cl2 / 8.9e-19 O2**; 4.0 V: 0.0169 / **0.53** | `examples/electrolysis_cell.py` panel 2 |
+
+⚠ **THE dS COLUMN IS NOT AN INVARIANT AND MUST NOT BE QUOTED.** `cell_potentials.py`
+panel 2 reports the brine cell's dS out by **−591 J/(mol K)** and bromide's by
+−738 against the aqueous convention, which REVERSES the sign of dE/dT. The cause
+is pre-existing and is named there: this project's ions are derived from pKa
+against its own water, and its own water is priced on the ideal-gas basis, so the
+offset cancels for a reaction that conserves water and every cell reaction here
+does not. **E_dec at 298 K is quotable. Its temperature derivative is not, and
+neither is a cell's HEAT** — `to_arrays` takes its enthalpy from the same dH.
+
+⚠ **AND THE SELECTIVITY ROW IS A LIMIT, NOT AN ACHIEVEMENT.** It records that
+this engine has NO CURRENT BUDGET: two electrode reactions in one cell divide
+nothing, so both run at full rate and activation selectivity washes out as the
+barrier floors at zero. If a later milestone makes the 4.0 V ratio hold,
+`test_the_activation_selectivity_washes_out_at_high_voltage` SHOULD fail — and
+should then be rewritten, not deleted.
+
+⚠ **`A` FOR AN ELECTRODE TEMPLATE IS A CURRENT, NOT A COLLISION FREQUENCY**, and
+the solver is what said so: at `1e10` a cell at 3.0 V ate 0.2 mol of chloride in
+a nanosecond and `Vessel.run` died after 4.2e-09 s of 3600. `5e-8 = j0 * a /
+(n F)` comes back out as 1e-2 A at unit concentrations. The test pins the ORDER
+of magnitude (`1e-9 < A < 1e-6`), not the digits.
+
 # Still open
 
 - ✔ ~~**THE DRYOUT BAND.**~~ CLOSED 2026-08-23, HANDOFF 72. Was the last live member of the

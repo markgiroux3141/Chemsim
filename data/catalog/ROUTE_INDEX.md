@@ -890,7 +890,7 @@ The same species is routinely a feedstock in one route and an intermediate in an
 
 | # | step | in | out | conditions | class |
 |--:|---|---|---|---|---|
-| 1 | brine electrolysis | sodium-chloride + water | sodium-hydroxide + chlorine + hydrogen | membrane cell, 3 V | `electrolysis` |
+| 1 | brine electrolysis | sodium-chloride + water | sodium-hydroxide + chlorine + hydrogen | membrane cell, 3 V | `aqueous-electrolysis` |
 
 <a id="deacon-process"></a>
 
@@ -1086,7 +1086,7 @@ The same species is routinely a feedstock in one route and an intermediate in an
 
 | # | step | in | out | conditions | class |
 |--:|---|---|---|---|---|
-| 1 | alumina electrolysis | aluminium-oxide + carbon-graphite + cryolite | aluminium + carbon-dioxide + cryolite | 1250 K, cryolite melt | `electrolysis` |
+| 1 | alumina electrolysis | aluminium-oxide + carbon-graphite + cryolite | aluminium + carbon-dioxide + cryolite | 1250 K, cryolite melt | `molten-salt-electrolysis` |
 
 <a id="thermite"></a>
 
@@ -1140,7 +1140,7 @@ The same species is routinely a feedstock in one route and an intermediate in an
 
 | # | step | in | out | conditions | class |
 |--:|---|---|---|---|---|
-| 1 | amalgam formation | sodium-chloride + mercury | sodium-amalgam-marker + chlorine | mercury cathode | `electrolysis` |
+| 1 | amalgam formation | sodium-chloride + mercury | sodium-amalgam-marker + chlorine | mercury cathode | `amalgam-electrolysis` |
 | 2 | amalgam decomposition | sodium-amalgam-marker + water | sodium-hydroxide + hydrogen + mercury | denuder | `hydrolysis` |
 
 <a id="nitroglycerin-route"></a>
@@ -3150,7 +3150,7 @@ The same species is routinely a feedstock in one route and an intermediate in an
 
 | # | step | in | out | conditions | class |
 |--:|---|---|---|---|---|
-| 1 | molten salt electrolysis | sodium-chloride | sodium + chlorine | 900 K melt, CaCl2 flux | `electrolysis` |
+| 1 | molten salt electrolysis | sodium-chloride | sodium + chlorine | 900 K melt, CaCl2 flux | `molten-salt-electrolysis` |
 
 <a id="tnt-route"></a>
 
@@ -5381,7 +5381,6 @@ This is the list a template library has to grow into. `validation/catalog_covera
 | ester-hydrolysis | 5 | 5 |
 | carbanion-generation | 5 | 5 |
 | roasting | 4 | 4 |
-| electrolysis | 4 | 4 |
 | ammoxidation | 4 | 2 |
 | gas-solid-reduction | 4 | 3 |
 | electrophilic-aromatic-sulfonation | 4 | 4 |
@@ -5412,6 +5411,7 @@ This is the list a template library has to grow into. `validation/catalog_covera
 | oxidative-dissolution | 2 | 2 |
 | disproportionation | 2 | 2 |
 | precipitation | 2 | 2 |
+| molten-salt-electrolysis | 2 | 2 |
 | condensation | 2 | 2 |
 | dissolving-metal-reduction | 2 | 2 |
 | oxidative-dimerisation | 2 | 2 |
@@ -5450,6 +5450,7 @@ This is the list a template library has to grow into. `validation/catalog_covera
 | dissolution | 1 | 1 |
 | carbonate-equilibrium | 1 | 1 |
 | bicarbonate-thermal-decomposition | 1 | 1 |
+| aqueous-electrolysis | 1 | 1 |
 | solid-carbonation | 1 | 1 |
 | thermal-fixation | 1 | 1 |
 | acid-displacement | 1 | 1 |
@@ -5459,6 +5460,7 @@ This is the list a template library has to grow into. `validation/catalog_covera
 | slagging | 1 | 1 |
 | roasting-to-metal | 1 | 1 |
 | metallothermic-reduction | 1 | 1 |
+| amalgam-electrolysis | 1 | 1 |
 | deflagration | 1 | 1 |
 | ipso-nitrodesulfonation | 1 | 1 |
 | nitrolysis | 1 | 1 |

@@ -449,13 +449,13 @@ python validation/catalog_coverage.py  # the audit
 | refused | 446 (28%), of which ~166 are charged organics the Born model correctly declines |
 | UNIFAC-decomposable (can enter an LLE) | 836 (53%) |
 | routes species-ready | **65 / 173** (was 49) |
-| reaction classes with a template | **36 / 218** (was 12) |
-| routes template-ready | 28 / 173 (was 7) |
-| ⚠⚠ **routes template-ready AND species-ready — the one to quote** | **17 / 173** |
+| reaction classes with a template | **38 / 220** (was 12) |
+| routes template-ready | 31 / 173 (was 7) |
+| ⚠⚠ **routes template-ready AND species-ready — the one to quote** | **20 / 173** |
 
-⚠⚠ **28 IS NOT WHAT COULD RUN; 17 IS.** The three readiness columns answer
+⚠⚠ **31 IS NOT WHAT COULD RUN; 20 IS.** The three readiness columns answer
 INDEPENDENT questions and the smallest does not bound the others: a route needs a
-template for every step **and** a price for every species. **11 of the 28
+template for every step **and** a price for every species. **11 of the 31
 template-ready routes have a refused species** — `pyrite-roasting`, `tnt-route`,
 `superphosphate` and eight more. Nothing computed the intersection until S6.
 ⚠ And 17 is an **upper bound on what runs**, not a measured count: a class is
@@ -473,8 +473,22 @@ in *both* directions. But refusing to **dissolve** a species is not refusing to
 `template-ready` is untouched — but it moved the INTERSECTION from 12 to 17, which
 is where curating a species pays and where the template count cannot reach.
 
+⚠⚠ **M8 ADDED ELECTRICITY AS A REAGENT, AND ITS OWN HEADLINE CLASS DID NOT
+SURVIVE THE ROW CHECK.** A template declares how many electrons cross the
+external circuit; `build_network(cell_potential=...)` says what the supply is
+set to; `n F E` joules come off the reaction's Gibbs energy, and a reaction whose
+chemistry costs less than the cell supplies runs. The threshold is the
+**decomposition potential** and nothing declares it — 1.441 V for water against
+a book 1.229, 2.362 V for brine against 2.186, out of formation data alone.
+⚠ But `electrolysis` is the greedy curve's top row at +3 routes, and its four
+rows are THREE mechanisms: aqueous (built), molten-salt (a melt is not a phase
+here) and amalgam (a marker with no graph). Split on M1's standard, the top row
+is worth **+1**. The other +2 came from `electro-organic-coupling`, whose two
+rows are both built. **+3 template-ready and +3 runnable, from a curve that
+promised +3 from one class.**
+
 ⚠ The class denominator MOVES, because a class is a mechanism claim and reading
-a class's rows sometimes splits it: 212 -> 218 over M6, S1 and S3. Six of the
+a class's rows sometimes splits it: 212 -> 220 over M6, S1, S3 and M8. Six of the
 eleven classes gained since M5 are covered by TERMS rather than by templates —
 a reaction inside a crystal, a gas arriving at one, an ionic lattice leaving
 solution — and one of those, `roasting-to-metal`, is covered by **two terms

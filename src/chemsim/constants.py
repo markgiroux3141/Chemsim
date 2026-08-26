@@ -24,3 +24,12 @@ R_L_BAR = R / 100.0
 # Standard states for that conversion.
 P_STD_BAR = 1.0   # bar   -- reference pressure of the thermochemical data
 C_STD_M = 1.0     # mol/L -- reference concentration of the kinetic state vector
+
+# Faraday constant, C/mol -- the charge on a mole of electrons. Exact, since the
+# 2019 SI redefinition fixed both the elementary charge and the Avogadro number.
+#
+# It is here rather than in an electrochemistry module because of what it is used
+# for: ``n * FARADAY * E`` converts a VOLTAGE, which is an apparatus setting, into
+# JOULES PER MOLE, which is the only unit Layer 2's algebra speaks. That is a unit
+# conversion at a domain boundary, which is exactly what this module is for.
+FARADAY = 96485.33212  # C/mol

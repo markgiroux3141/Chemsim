@@ -27,7 +27,7 @@ solvay-process | 3 | bicarbonate calcination | sodium-bicarbonate | sodium-carbo
 solvay-process | 4 | ammonia recovery | ammonium-chloride + calcium-hydroxide | ammonia + calcium-chloride + water | still | proton-transfer
 solvay-process | 5 | lime kiln for CO2 | calcium-carbonate | calcium-oxide + carbon-dioxide | kiln, 1200 K | calcination
 solvay-process | 6 | lime slaking | calcium-oxide + water | calcium-hydroxide | slaker | lime-slaking
-chloralkali | 1 | brine electrolysis | sodium-chloride + water | sodium-hydroxide + chlorine + hydrogen | membrane cell, 3 V | electrolysis
+chloralkali | 1 | brine electrolysis | sodium-chloride + water | sodium-hydroxide + chlorine + hydrogen | membrane cell, 3 V | aqueous-electrolysis
 lime-cycle | 1 | calcination | calcium-carbonate | calcium-oxide + carbon-dioxide | kiln, 1200 K | calcination
 lime-cycle | 2 | slaking | calcium-oxide + water | calcium-hydroxide | exothermic | lime-slaking
 lime-cycle | 3 | carbonation of mortar | calcium-hydroxide + carbon-dioxide | calcium-carbonate + water | months, ambient | solid-carbonation
@@ -56,7 +56,7 @@ match-chemistry | 1 | match head ignition | potassium-chlorate + phosphorus-whit
 bayer-process | 1 | bauxite digestion | aluminium-oxide + sodium-hydroxide + water | sodium-aluminate | 500 K, 5 bar | amphoteric-dissolution
 bayer-process | 2 | precipitation of hydroxide | sodium-aluminate + water | aluminium-hydroxide + sodium-hydroxide | seeded, cooling | precipitation
 bayer-process | 3 | calcination to alumina | aluminium-hydroxide | aluminium-oxide + water | 1300 K | calcination
-hall-heroult | 1 | alumina electrolysis | aluminium-oxide + carbon-graphite + cryolite | aluminium + carbon-dioxide + cryolite | 1250 K, cryolite melt | electrolysis
+hall-heroult | 1 | alumina electrolysis | aluminium-oxide + carbon-graphite + cryolite | aluminium + carbon-dioxide + cryolite | 1250 K, cryolite melt | molten-salt-electrolysis
 blast-furnace | 1 | coke combustion | carbon-graphite + oxygen | carbon-dioxide | tuyere, 2200 K | combustion
 blast-furnace | 2 | Boudouard reaction | carbon-dioxide + carbon-graphite | carbon-monoxide | 1200 K | boudouard
 blast-furnace | 3 | indirect reduction | iron-iii-oxide + carbon-monoxide | iron-ii-oxide + carbon-dioxide | stack, 900 K | gas-solid-reduction
@@ -70,8 +70,8 @@ zinc-smelting | 1 | sphalerite roasting | zinc-sulfide + oxygen | zinc-oxide + s
 zinc-smelting | 2 | retort reduction | zinc-oxide + carbon-graphite | zinc + carbon-monoxide | retort, 1400 K | carbothermic-reduction
 mercury-from-cinnabar | 1 | cinnabar roasting | mercury-sulfide + oxygen | mercury + sulfur-dioxide | retort, 900 K | roasting-to-metal
 thermite | 1 | aluminothermic reduction | iron-iii-oxide + aluminium | iron + aluminium-oxide | ignition, 3000 K | metallothermic-reduction
-downs-cell | 1 | molten salt electrolysis | sodium-chloride | sodium + chlorine | 900 K melt, CaCl2 flux | electrolysis
-castner-kellner | 1 | amalgam formation | sodium-chloride + mercury | sodium-amalgam-marker + chlorine | mercury cathode | electrolysis
+downs-cell | 1 | molten salt electrolysis | sodium-chloride | sodium + chlorine | 900 K melt, CaCl2 flux | molten-salt-electrolysis
+castner-kellner | 1 | amalgam formation | sodium-chloride + mercury | sodium-amalgam-marker + chlorine | mercury cathode | amalgam-electrolysis
 castner-kellner | 2 | amalgam decomposition | sodium-amalgam-marker + water | sodium-hydroxide + hydrogen + mercury | denuder | hydrolysis
 gunpowder | 1 | incorporation | potassium-nitrate + sulfur-s8 + carbon-graphite | gunpowder-marker | wet-milled 75:10:15, corned and dried | formulation
 gunpowder | 2 | deflagration | gunpowder-marker | potassium-sulfate + nitrogen + carbon-dioxide + carbon-monoxide | ignition, self-oxidising | deflagration
