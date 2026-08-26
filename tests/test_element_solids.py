@@ -34,10 +34,16 @@ from chemsim.properties import surface as sf
 from chemsim.properties.element_data import REFERENCE_STATES
 from chemsim.vessel import Vessel
 
-# The nine S8 added, and the three S1 added before them.
+# The EIGHT of S8's nine that are still lattices, and the three S1 added before
+# them. ⚠⚠ S10 REMOVED "zinc" FROM THIS TUPLE, and that is a milestone rather
+# than a correction: S8's curation of zinc-as-a-lattice was right for what it was
+# for, and S10 found that zinc also has a monatomic vapour, one condensed form
+# and a measured sublimation curve -- so it belongs in ``element_data`` with
+# mercury and iodine, where it can BOIL. A lattice may react and may never boil;
+# that was the sentence blocking the retort, and it was about the entry.
 S8_SOLIDS = (
     "cobalt", "silver", "platinum", "palladium", "lead", "aluminium",
-    "sodium", "zinc", "carbon-graphite",
+    "sodium", "carbon-graphite",
 )
 S1_SOLIDS = ("iron", "nickel", "copper")
 
@@ -92,7 +98,9 @@ def test_it_can_actually_sit_in_a_flask(name):
     assert rec.Vm_solid > 0.0
 
 
-def test_all_nine_charge_into_a_real_vessel_and_stay(thermo, volatility):
+def test_all_the_element_solids_charge_into_a_real_vessel_and_stay(
+    thermo, volatility
+):
     """Verified by RUNNING, on S6's precedent -- reading `priced_solid` is not
     the same claim. Nothing reacts, which is correct: no template and no term
     mentions any of them, so each is a constant of the motion."""
@@ -124,21 +132,27 @@ def test_a_bare_element_is_still_refused_on_the_ideal_gas_basis(thermo):
 # the +2 that is not available, and why the bound is not the problem
 # ---------------------------------------------------------------------------
 
-# (oxide, metal, moles of CO per formula unit, T_run, expected ln K)
+# (oxide, metal, moles of CO per formula unit, T_run, expected ln K, refusal)
+# ⚠ S10 -- THE LAST COLUMN IS NEW, because the zinc row is now refused for a
+# SECOND and independent reason. Three of these are lattices whose ln K is under
+# the irreversibility bar; zinc is not a lattice at all any more, so a term
+# priced on the SOLID basis cannot reach it -- which is a stronger statement of
+# the same conclusion, not a weaker one. Both refusals are real and the row is
+# still not a surface reaction.
 REDUCTIONS = [
-    ("tenorite", "copper", 1, 1500.0, 10.90),
-    ("litharge", "lead", 1, 1400.0, 7.24),
-    ("hematite", "iron", 3, 1300.0, 4.20),
-    ("zincite", "zinc", 1, 1400.0, -4.10),
+    ("tenorite", "copper", 1, 1500.0, 10.90, "below the bar"),
+    ("litharge", "lead", 1, 1400.0, 7.24, "below the bar"),
+    ("hematite", "iron", 3, 1300.0, 4.20, "below the bar"),
+    ("zincite", "zinc", 1, 1400.0, -4.10, "no mineral called 'zinc'"),
 ]
 
 
 @pytest.mark.parametrize(
-    "oxide,metal,n_co,T_run,expected", REDUCTIONS,
+    "oxide,metal,n_co,T_run,expected,refusal", REDUCTIONS,
     ids=[r[0] for r in REDUCTIONS],
 )
 def test_a_gas_solid_reduction_cannot_clear_the_irreversibility_bar(
-    oxide, metal, n_co, T_run, expected, thermo,
+    oxide, metal, n_co, T_run, expected, refusal, thermo,
 ):
     """`gas-solid-reduction` was the only +2 on the work queue and every one of
     its rows fails `LN_K_IRREVERSIBLE`. The bound is not the problem: a blast
@@ -156,11 +170,19 @@ def test_a_gas_solid_reduction_cannot_clear_the_irreversibility_bar(
     `SOLID_STATE_REACTIONS` now. See `tests/test_smelting.py`. **The reading to
     keep is "the reverse is a real flux"; the reading to drop is "so it cannot
     be expressed".**"""
-    o, m = md.MINERALS[oxide], md.MINERALS[metal]
+    o = md.MINERALS[oxide]
     co, co2 = thermo.get("[C-]#[O+]"), thermo.get("O=C=O")
     n_m = next(v for k, v in o.formula.items() if k != "O")
-    dH = (n_m * m.Hf_solid + n_co * co2.Hf) - (o.Hf_solid + n_co * co.Hf)
-    dG = (n_m * m.Gf_solid + n_co * co2.Gf) - (o.Gf_solid + n_co * co.Gf)
+    # ⚠ S10 -- THE METAL'S SOLID-BASIS PAIR IS THE DEFINITIONAL ZERO, not a
+    # lookup. Every metal in REDUCTIONS is its element's reference state, so
+    # Hf = Gf = 0 exactly -- which is why this arithmetic survives zinc leaving
+    # ``mineral_data`` unchanged to the digit. The equivalence is asserted rather
+    # than assumed for the three that are still lattices.
+    if metal in md.MINERALS:
+        assert md.MINERALS[metal].Hf_solid == 0.0
+        assert md.MINERALS[metal].Gf_solid == 0.0
+    dH = (n_co * co2.Hf) - (o.Hf_solid + n_co * co.Hf)
+    dG = (n_co * co2.Gf) - (o.Gf_solid + n_co * co.Gf)
     dS = (dH - dG) * 1000.0 / 298.15
     ln_K = -(dH * 1000.0 - T_run * dS) / (R * T_run)
     assert ln_K == pytest.approx(expected, abs=0.05)
@@ -174,7 +196,7 @@ def test_a_gas_solid_reduction_cannot_clear_the_irreversibility_bar(
         T_run=T_run,
         note="S8 measured this and it is refused; see the module docstring",
     )
-    with pytest.raises(sf.UnpricedSurfaceReaction, match="below the bar"):
+    with pytest.raises(sf.UnpricedSurfaceReaction, match=refusal):
         sf.price(decl, thermo)
 
 
@@ -202,20 +224,37 @@ def test_the_roasting_family_still_clears_it(thermo):
 
 
 def test_the_zinc_retort_is_a_product_removal_problem_not_an_equilibrium(thermo):
-    """Worth its own assertion because it is the one row that is UPHILL, and the
-    reason a zinc retort works anyway is not in this engine: zinc boils at
-    1180 K and leaves. `mineral_data` holds zinc as a lattice with no vapour
-    pressure, so that escape is not expressible here either.
+    """Worth its own assertion because it is the one row that is UPHILL: the CO
+    route, `ZnO + CO -> Zn + CO2`, is +63.31 kJ/mol and no bound on a rate law
+    fixes that.
 
     ⚠⚠ S9 -- AND THIS IS NOT THE CATALOG'S ROW. `zinc-smelting` step 2 reads
     `zinc-oxide + carbon-graphite -> zinc + carbon-monoxide`, i.e. the CARBON
-    route, where the entropy of making a mole of CO carries it: dG = 0 at
-    1264.3 K, and the retort runs. What is measured below is the CO route, which
-    nothing in the corpus asks for. **The arithmetic here is right and it was
-    about the wrong reaction** -- so this test is kept as the measurement it is
-    and the +63.31 must not be read as "the class is blocked" again."""
-    zincite, zinc = md.MINERALS["zincite"], md.MINERALS["zinc"]
+    route, where the entropy of making a mole of CO carries it. What is measured
+    below is the CO route, which nothing in the corpus asks for. **The arithmetic
+    here is right and it was about the wrong reaction** -- so this test is kept
+    as the measurement it is and the +63.31 must not be read as "the class is
+    blocked" again.
+
+    ⚠⚠ S10 -- AND THE PRODUCT REMOVAL IN THE TITLE IS EXPRESSIBLE NOW, which
+    is the third sentence in this file to come apart the same way. This test used
+    to end "zinc boils at 1180 K and leaves; `mineral_data` holds zinc as a
+    lattice with no vapour pressure, so that escape is not expressible here
+    either." Both clauses were true and the conclusion did not follow: the
+    lattice entry was the obstacle, not the metal. `[Zn]` is an elemental species
+    with a boiling point now, and `tests/test_smelting.py` measures the retort
+    distilling and the vented flask losing its product up the chimney.
+
+    ⚠ What is UNCHANGED is the number below. Zinc's solid basis is its element
+    reference state either way, so Hf = Gf = 0 exactly, and +63.31 does not move
+    by a digit -- which is the point worth pinning here.
+    """
+    zincite = md.MINERALS["zincite"]
     co, co2 = thermo.get("[C-]#[O+]"), thermo.get("O=C=O")
-    dG = (zinc.Gf_solid + co2.Gf) - (zincite.Gf_solid + co.Gf)
+    assert "zinc" not in md.MINERALS               # S10 -- it is an element now
+    assert REFERENCE_STATES["Zn"].smiles == "[Zn]"
+    assert REFERENCE_STATES["Zn"].phase == "s"     # ...and a SOLID one
+    # Gf_solid(Zn) is 0 BY DEFINITION and is written as such
+    dG = (0.0 + co2.Gf) - (zincite.Gf_solid + co.Gf)
     assert dG > 0.0
     assert math.isclose(dG, 63.31, abs_tol=0.05)

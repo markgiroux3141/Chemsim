@@ -265,6 +265,27 @@ REFERENCE_SMILES: dict[str, str] = {
     # vapour is the atom itself. See the module docstring for why that makes it
     # the one exception to the monatomic refusal rather than a hole in it.
     "Hg": "[Hg]",
+    # S10. The SECOND metal, and it arrives on IODINE's precedent rather than on
+    # mercury's. S4 admitted mercury on three tests; all three pass for zinc:
+    #
+    #   * THE ATOM IS THE VAPOUR. Zinc boils at 1180.15 K monatomic -- it is a
+    #     group 12 metal with a closed d10 s2 shell, so there is no Zn2 to be
+    #     wrong about, exactly as for Hg and Cd. [Zn]'s ideal-gas record is
+    #     what is in the retort.
+    #   * THERE IS NOTHING TO DISAMBIGUATE. Zinc has ONE condensed form. That is
+    #     what fails for [S] (rhombic/monoclinic), [C] (graphite/diamond)
+    #     and [Fe] (alpha/gamma/delta ferrite).
+    #   * AND ITS REFERENCE STATE IS EXPRESSIBLE -- a SOLID with a melting point
+    #     and a sublimation curve. ⚠ This is the test mercury passed on the
+    #     liquid block; zinc passes it on the SOLID block, which this table
+    #     already relies on twice for I2 and S8. A solid reference state is not
+    #     a new thing here.
+    #
+    # What made it look inexpressible was mineral_data holding zinc as a
+    # lattice, and a lattice in this engine may react and may never boil. That
+    # is a statement about the ENTRY, not about the metal -- the same shape as
+    # S4's LATTICE_ELEMENTS note below.
+    "Zn": "[Zn]",
 }
 
 LATTICE_ELEMENTS = {
@@ -273,7 +294,11 @@ LATTICE_ELEMENTS = {
          "canonicalises to aromatic phosphorus",
     "Na": "a metallic lattice", "K": "a metallic lattice",
     "Ca": "a metallic lattice", "Fe": "a metallic lattice",
-    "Cu": "a metallic lattice", "Zn": "a metallic lattice",
+    "Cu": "a metallic lattice",
+    # ⚠ "Zn" USED TO BE HERE TOO, and it left for exactly S4's reason: this
+    # table is about whether a reference state is EXPRESSIBLE, and zinc's is a
+    # solid with a melting point and a measured sublimation curve. Removed in
+    # S10; REFERENCE_SMILES above carries it and the argument.
     # ⚠ "Hg" USED TO BE HERE, reading "liquid mercury -- a metal, not a
     # molecule". True of the bonding and false of the REPRESENTATION, which is
     # what this table is about: a lattice element is one whose reference state
@@ -302,6 +327,13 @@ CANDIDATES: list[tuple[str, str, str, bool]] = [
     # the module docstring carries the argument for why the monatomic refusal
     # does not reach it.
     ("mercury", "[Hg]", "7439-97-6", True),
+    # S10 -- the SECOND metal and the first with a SOLID reference state. Its
+    # ideal-gas record is the SUBLIMATION energy (+130.4 kJ/mol), which is
+    # iodine's case rather than bromine's. See REFERENCE_SMILES for the three
+    # tests it passes, and properties/volatility.py for the vapour-pressure
+    # curve -- Lee-Kesler is no better over liquid zinc than it was over liquid
+    # mercury, so this entry's Hvap is Clausius-Clapeyron on a CURATED curve.
+    ("zinc", "[Zn]", "7440-66-6", True),
     # --- elemental but NOT a reference state: real measured values, and
     #     pinning them to zero would be the same error in the other direction
     ("ozone", "[O-][O+]=O", "10028-15-6", False),

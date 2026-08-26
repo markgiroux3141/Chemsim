@@ -1418,6 +1418,21 @@ def main() -> int:
     )
     w("")
     w(
+        "⚠⚠ **AND S10 TOOK ONE OF THE NINE BACK OUT, WHICH IS NOT A CORRECTION "
+        "OF S8.** `zinc` is no longer a `mineral_data` lattice: it has a "
+        "monatomic vapour, ONE condensed form and a measured sublimation curve, "
+        "so it passes every test S4 admitted mercury on and it belongs in "
+        "`element_data` -- where, unlike a lattice, it can BOIL. S8's curation "
+        "was right for what it was for; what changed is that *a lattice may "
+        "react and may never boil* turned out to be a statement about the ENTRY "
+        "and not about the metal. `zinc-smelting`'s retort evolves zinc VAPOUR "
+        "now and condenses it in a cool receiver, which is a real Belgian "
+        "retort's actual mechanic -- for **+0 on all four columns here**, "
+        "predicted before it was measured. Eight of the nine remain. See "
+        "MILESTONES.md §S10."
+    )
+    w("")
+    w(
         "> ⚠ THE LAYERING QUESTION IS ANSWERED AND IT IS IN THE TYPE, NOT THE "
         "MODULE NAME. `element_data`'s record is on the IDEAL-GAS basis, and the "
         "ideal-gas record for `[Fe]` is the ATOM at +416 kJ/mol -- a real number "

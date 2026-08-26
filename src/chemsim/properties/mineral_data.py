@@ -865,22 +865,6 @@ MINERALS: dict[str, MineralRecord] = {
         Cp_solid=28.2, Vm_solid=0.023701,
         condensed_source='Cps from the same CRC row as Hfs/S0s; Vm from the CRC inorganic solid-density table, via chemicals 1.5.2',
     ),
-    # Zn -- what `zinc-smelting`'s retort makes
-    'zinc': MineralRecord(
-        name='zinc', cas='7440-66-6',
-        ions=(),
-        lattice='[Zn]',
-        formula={'Zn': 1},
-        purpose="Zn -- what `zinc-smelting`'s retort makes",
-        Hf_solid=0.0, Gf_solid=0.0, S0_solid=41.6,
-        Tm=692.68, Hfus=7.068,
-        source='Hfs and S0s both from CRC via chemicals 1.5.2; Gf DERIVED against the CRC element reference states',
-        physical_source='Tm=CRC_INORG; Hfus=CRC',
-        fusion_law_bound=None,
-        solubility_note=None,
-        Cp_solid=25.4, Vm_solid=0.009165,
-        condensed_source='Cps from the same CRC row as Hfs/S0s; Vm from the CRC inorganic solid-density table, via chemicals 1.5.2',
-    ),
     # C(graphite) -- COKE: the reducing agent and the fuel, and the one row in this list that is a covalent lattice rather than a metallic one
     'carbon-graphite': MineralRecord(
         name='carbon-graphite', cas='7782-42-5',

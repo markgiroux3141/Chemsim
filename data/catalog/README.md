@@ -440,7 +440,7 @@ the left. S9 built the OXIDE one and split the rest out rather than credit them:
 
 | route | step | became | what it is | covered? |
 |---|---|---|---|---|
-| `zinc-smelting` 2 | `ZnO + C -> Zn + CO` | `carbothermic-oxide-reduction` | carbon takes the oxygen and leaves as CO; the metal is freed | ✔ **built by S9** |
+| `zinc-smelting` 2 | `ZnO + C -> Zn(g) + CO` | `carbothermic-oxide-reduction` | carbon takes the oxygen and leaves as CO; the metal is freed **as a VAPOUR that condenses in a cool receiver** | ✔ **built by S9, and S10 made the zinc a gas** — dG = 0 moved 1264.2 → **1197.8 K**, toward the literature |
 | `frank-caro` 1 | `CaO + C -> CaC2 + CO` | `carbide-formation` | ⚠ **the carbon ends up IN the product** as well as leaving | ✘ named gap |
 | `calcium-carbide` 1 | `CaO + C -> CaC2 + CO` | `carbide-formation` | the same furnace | ✘ named gap |
 | `white-phosphorus` 1 | `Ca3(PO4)2 + SiO2 + C -> P4 + CO + CaSiO3` | `carbothermic-phosphate-reduction` | needs a SLAG FORMER to displace the phosphate first | ✘ named gap |

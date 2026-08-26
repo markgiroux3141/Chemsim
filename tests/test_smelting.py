@@ -50,8 +50,11 @@ COVELLITE, TENORITE, COPPER = (M["covellite"].lattice, M["tenorite"].lattice,
                                M["copper"].lattice)
 GALENA, LITHARGE, LEAD = (M["galena"].lattice, M["litharge"].lattice,
                           M["lead"].lattice)
-SPHALERITE, ZINCITE, ZINC = (M["sphalerite"].lattice, M["zincite"].lattice,
-                             M["zinc"].lattice)
+SPHALERITE, ZINCITE = M["sphalerite"].lattice, M["zincite"].lattice
+# ⚠⚠ S10 -- ZINC IS NOT A LATTICE ANY MORE, and that is this milestone. It used
+# to be ``M["zinc"].lattice``; it is an ordinary elemental species with a
+# melting point and a boiling point, so the retort evolves it as a VAPOUR.
+ZINC = "[Zn]"
 GRAPHITE = M["carbon-graphite"].lattice
 HEMATITE, IRON = M["hematite"].lattice, M["iron"].lattice
 CORUNDUM, ALUMINIUM = M["corundum"].lattice, M["aluminium"].lattice
@@ -95,6 +98,17 @@ def gas(v, s):
     return float(v.state().n_gas.get(s, 0.0))
 
 
+def metal_total(v, s):
+    """⚠ S10 -- the metal WHEREVER IT IS. Copper and lead land in the solid
+    block; zinc comes off as a vapour above 1180 K and condenses to a liquid
+    below it, so a smelter test that reads only ``n_solid`` measures the
+    thermometer rather than the yield.
+    """
+    st = v.state()
+    return float(st.n_solid.get(s, 0.0) + st.n_liquid.get(s, 0.0)
+                 + st.n_liquid2.get(s, 0.0) + st.n_gas.get(s, 0.0))
+
+
 # ==========================================================================
 # THE DECLARATIONS
 # ==========================================================================
@@ -107,7 +121,9 @@ def test_the_five_new_rows_price_off_this_projects_own_tables(thermo):
     expect = {
         REDUCTION: (-125.68, 6.84),
         "litharge-carbon-monoxide-reduction": (-63.98, 14.52),
-        RETORT: (239.97, 189.80),
+        # S10 -- was (239.97, 189.80) with a SOLID zinc product; the vapour
+        # carries its sublimation energy and entropy into the row
+        RETORT: (370.37, 309.20),
         BOUDOUARD: (172.45, 175.68),
         THERMITE: (-851.50, -38.50),
     }
@@ -299,7 +315,7 @@ def test_a_smelter_takes_ore_coke_and_AIR_to_metal(
     # the ore is gone, the metal is there, and the sulfur left as SO2
     assert solid(v, ore) < 1.0e-9
     assert gas(v, SO2) == pytest.approx(sulfide_charge, rel=1.0e-6)
-    assert solid(v, metal) > 0.5 * sulfide_charge
+    assert metal_total(v, metal) > 0.5 * sulfide_charge
 
 
 def test_the_air_is_the_control_which_is_what_a_smelter_adjusts(
@@ -323,46 +339,184 @@ def test_the_air_is_the_control_which_is_what_a_smelter_adjusts(
 
 
 def test_the_zinc_retort_is_a_THRESHOLD_at_its_own_dG_zero(thermo, volatility):
-    """⚠ ``ZnO + C -> Zn + CO`` is endothermic with a big positive dS, so its dG
-    changes sign -- at **1264.3 K** off this project's own tables, against a real
-    Belgian retort's 1200-1300. Nothing was fitted to get that, and nothing
-    gates on temperature anywhere: it is one Arrhenius factor and one van 't
-    Hoff K.
+    """⚠ ``ZnO + C -> Zn(g) + CO`` is endothermic with a big positive dS, so its
+    dG changes sign -- at **1197.8 K** off this project's own tables, against a
+    real Belgian retort's 1200-1300 and a literature threshold of ~1200 K.
+    Nothing was fitted to get that, and nothing gates on temperature anywhere:
+    it is one Arrhenius factor and one van 't Hoff K.
+
+    ⚠⚠ S10 MOVED THIS NUMBER, AND TOWARD THE LITERATURE. S9 declared the zinc as
+    a SOLID product and got 1264.3 K. Carrying it as the VAPOUR a retort actually
+    makes adds the sublimation energy (+130.4 kJ/mol) and the entropy of a mole
+    of metal gas (+119.4 J/(mol K)) to the row, and the entropy wins: the
+    threshold comes DOWN by 66 K.
+
+    ⚠ AND THE BARRIER WENT UP BY THE SAME 130.4 kJ/mol, because M6 derives it as
+    ``max(dH, 0)``. So the reaction is simultaneously more favourable and SLOWER
+    at a given temperature -- 370.4 kJ/mol is inside the 300-400 range reported
+    for apparent activation energies of carbothermic zinc reduction, so the
+    derived barrier is defensible rather than merely arithmetic.
+
+    ⚠⚠ THE FLASK IS SEALED HERE ON PURPOSE. Now that the product is a gas, a
+    VENTED retort loses it up the chimney, so total zinc in the flask stops being
+    the conversion -- see the two tests below.
     """
     p = ss.price(_decl(RETORT), thermo)
-    assert p.dH / p.dS == pytest.approx(1264.3, abs=1.0)
+    assert p.dH / p.dS == pytest.approx(1197.8, abs=1.0)
+    assert p.dH / 1000.0 == pytest.approx(370.4, abs=0.5)
+    assert p.dS == pytest.approx(309.2, abs=0.5)
+    assert p.Ea == pytest.approx(p.dH)          # M6's derived pair, unchanged
 
-    n = _net([ZINCITE, ZINC, GRAPHITE, CO, N2], thermo, volatility)
+    n = _net([ZINCITE, ZINC, GRAPHITE, CO, CO2], thermo, volatility)
     got = {}
-    for T in (1100.0, 1200.0, 1264.0, 1400.0):
+    for T in (1000.0, 1100.0, 1198.0, 1250.0, 1300.0):
+        v = Vessel(n, volume=1.0, T=T, T_env=T, UA=1.0e4, k_vent=0.0)
+        v.charge({ZINCITE: 0.04, GRAPHITE: 0.20}, phase="solid")
+        v.run(20000.0, **TIGHT)
+        assert not v.conservation_report()
+        got[T] = metal_total(v, ZINC) / 0.04
+    assert list(got.values()) == sorted(got.values())
+    assert got[1000.0] < 0.01                      # cold: essentially nothing
+    assert 0.20 < got[1198.0] < 0.35               # at dG = 0, part way over
+    assert got[1300.0] == pytest.approx(1.0, rel=1.0e-6)   # done
+
+
+def test_a_VENTED_retort_blows_its_own_product_up_the_chimney(
+    thermo, volatility
+):
+    """⚠⚠ NOBODY DECLARED THIS, AND IT IS WHY A REAL RETORT HAS A CONDENSER.
+
+    Once the zinc is a vapour, the vent that pulls the reaction over also carries
+    the metal away. So the two things a smelter cares about come apart, and they
+    move in OPPOSITE directions with temperature:
+
+      * ore CONSUMED rises to completion -- that is the thermodynamics;
+      * metal RETAINED falls, because zinc's partial pressure rises with T and
+        the vent is indifferent to which gas it is venting.
+
+    ⚠ Measured, this is not a small effect: at 1200 K the ore is 99.9% gone and
+    barely half the metal is still in the flask. A test that read total zinc in a
+    vented flask would therefore be measuring the chimney, not the reaction --
+    and ⚠ ``conservation_report`` is silent throughout, correctly, because the
+    vent is a declared boundary flux and not a leak. "An invariant measured
+    across a boundary flux is not an invariant."
+    """
+    n = _net([ZINCITE, ZINC, GRAPHITE, CO, CO2], thermo, volatility)
+    consumed, retained = {}, {}
+    for T in (1200.0, 1300.0, 1400.0):
         v = Vessel(n, volume=10.0, T=T, T_env=T, UA=1.0e4, k_vent=1.0e3,
                    atmosphere={})
         v.charge({ZINCITE: 0.10, GRAPHITE: 0.10}, phase="solid")
         v.run(20000.0, **TIGHT)
         assert not v.conservation_report()
-        got[T] = solid(v, ZINC)
-    assert got[1100.0] < 0.01
-    assert got[1264.0] > 0.8 * 0.10
-    assert got[1400.0] == pytest.approx(0.10, rel=1.0e-6)
-    assert list(got.values()) == sorted(got.values())
+        consumed[T] = (0.10 - solid(v, ZINCITE)) / 0.10
+        retained[T] = metal_total(v, ZINC) / 0.10
+
+    # the reaction finishes, and more completely the hotter it gets
+    assert consumed[1200.0] > 0.99
+    assert consumed[1400.0] == pytest.approx(1.0, abs=1.0e-6)
+    # ...while what is left in the flask goes the OTHER way
+    assert retained[1200.0] < 0.55
+    assert retained[1400.0] < retained[1300.0] < retained[1200.0]
+    # and the gap is the metal that left as vapour
+    assert consumed[1400.0] - retained[1400.0] > 0.5
 
 
-def test_the_zinc_stays_a_SOLID_and_that_is_a_stated_limitation(thermo):
-    """⚠ A real retort DISTILS the zinc off at 1180 K, and that product removal
-    is what pulls the reaction over. Not expressible here, and said out loud
-    rather than worked around: ``mineral_data`` holds zinc as a lattice, and a
-    lattice in this engine may react and may never boil.
+def test_the_zinc_DISTILS_and_neither_Tb_nor_Tm_is_written_anywhere(
+    thermo, volatility
+):
+    """⚠⚠ S10 -- THIS TEST IS THE INVERSE OF THE ONE IT REPLACED.
 
-    If this test ever fails it is because ``[Zn]`` became a priceable gas, and
-    then the row should be rewritten to evolve it.
+    Its predecessor was ``test_the_zinc_stays_a_SOLID_and_that_is_a_stated_
+    limitation``, and it pinned the limitation deliberately, ending "if this test
+    ever fails it is because ``[Zn]`` became a priceable gas, and then the row
+    should be rewritten to evolve it." That is what happened, and the reason is
+    worth keeping: BOTH halves of the recorded refusal were about the ENTRY
+    rather than about the metal. ``mineral_data`` held zinc as a lattice, and a
+    lattice may react and may never boil -- but zinc passes every test S4
+    admitted mercury on (a monatomic vapour, one condensed form, an expressible
+    reference state), so it belongs in ``element_data``, and once it is there no
+    engine change is needed at all.
+
+    What this measures is that the retort's product goes gas -> liquid -> solid
+    on the way out, at zinc's OWN transition temperatures, with neither of them
+    appearing in the declaration or in this file's arithmetic.
     """
-    with pytest.raises(Exception, match="bare element"):
-        thermo.get("[Zn]")
-    assert MINERALS["zinc"].lattice == "[Zn]"
-    # ...and the row does not need the escape: it is downhill at 1400 K anyway
-    p = ss.price(_decl(RETORT), thermo)
-    ln_K = -(p.dH - 1400.0 * p.dS) / (R * 1400.0)
-    assert ln_K == pytest.approx(2.21, abs=0.01)
+    # it prices now, and on the SOLID reference basis: Hf is the sublimation
+    # energy, exactly as bromine's and iodine's are the vaporisation ones
+    t = thermo.get("[Zn]")
+    assert t.Hf == pytest.approx(130.4, abs=0.1)
+    assert t.Tb == pytest.approx(1180.15, abs=0.1)
+    assert t.Tm == pytest.approx(692.68, abs=0.1)
+    assert "zinc" not in MINERALS          # the lattice row is gone
+
+    n = _net([ZINCITE, ZINC, GRAPHITE, CO, CO2], thermo, volatility)
+    v = Vessel(n, volume=1.0, T=1400.0, T_env=1400.0, UA=1.0e4, k_vent=0.0)
+    v.charge({ZINCITE: 0.04, GRAPHITE: 0.20}, phase="solid")
+    v.run(20000.0, **TIGHT)
+    st = v.state()
+    # at 1400 K, 220 K above Tb, every atom of it is in the headspace
+    assert st.n_gas[ZINC] == pytest.approx(0.04, rel=1.0e-6)
+    assert st.n_solid[ZINC] == 0.0
+    assert st.n_liquid[ZINC] == 0.0
+
+    # now cool the receiver. The vapour condenses, then it freezes.
+    seen = {}
+    for T in (900.0, 600.0):
+        v.set_environment(T_env=T)
+        v.T = T
+        v.run(20000.0, **TIGHT)
+        st = v.state()
+        seen[T] = (st.n_gas[ZINC], st.n_liquid[ZINC], st.n_solid[ZINC])
+        assert not v.conservation_report()
+    # 900 K is between Tm and Tb: a LIQUID metal in the receiver
+    assert seen[900.0][1] > 0.99 * 0.04
+    assert seen[900.0][2] == 0.0
+    # 600 K is below Tm: it has frozen
+    # 99.9996% of it, not all: zinc has a small but real vapour pressure at
+    # 600 K and the melting range has a finite width. Both are the engine's
+    # own terms rather than a fudge, so the residue is asserted, not hidden.
+    assert seen[600.0][2] == pytest.approx(0.04, rel=1.0e-4)
+    assert seen[600.0][2] / 0.04 > 0.9999
+    assert seen[600.0][1] < 1.0e-9
+
+
+def test_the_vent_does_NOTHING_until_the_retort_beats_the_room(
+    thermo, volatility
+):
+    """⚠⚠ PRODUCT REMOVAL IS THE RETORT'S MECHANIC, and it switches on at a
+    temperature nothing declares.
+
+    ``solid_state_report`` computes that this row needs **1156 K** for its two
+    evolved gases to reach one bar between them. Below that a retort vented to
+    atmosphere vents nothing, because its own pressure never beats the room --
+    so sealed and vented agree to every digit. Above it, venting takes the
+    reaction from a stalled equilibrium to completion. The 1156 K is derived from
+    a van 't Hoff K; the crossover below is measured by running the flask, and
+    the two agree.
+    """
+    n = _net([ZINCITE, ZINC, GRAPHITE, CO, CO2], thermo, volatility)
+
+    def run(T, *, vented):
+        v = Vessel(n, volume=1.0, T=T, T_env=T, UA=1.0e4,
+                   k_vent=1.0e3 if vented else 0.0)
+        v.charge({ZINCITE: 0.04, GRAPHITE: 0.20}, phase="solid")
+        v.run(20000.0, **TIGHT)
+        assert not v.conservation_report()
+        return (0.04 - solid(v, ZINCITE)) / 0.04, v.pressure
+
+    # 1150 K: the sealed flask sits UNDER one bar, so the vent is inert
+    lo_sealed, p_lo = run(1150.0, vented=False)
+    lo_vented, _ = run(1150.0, vented=True)
+    assert p_lo < 1.013
+    assert lo_vented == pytest.approx(lo_sealed, rel=1.0e-6)
+
+    # 1198 K: over the bar, and now removing the product finishes the job
+    hi_sealed, p_hi = run(1198.0, vented=False)
+    hi_vented, _ = run(1198.0, vented=True)
+    assert p_hi > 1.013
+    assert hi_sealed < 0.35
+    assert hi_vented > 0.99
 
 
 # ==========================================================================
@@ -525,10 +679,32 @@ def test_thermite_runs_away_on_its_own_enthalpy_and_nothing_caps_it(
     there, and 851.5 kJ/mol into a few J/K is a runaway nobody declared.
 
     ⚠ **STATED LIMITATION**: nothing caps the temperature. A real thermite stops
-    near 3135 K because the IRON BOILS, and a lattice in this engine may react
-    and may never boil -- the same statement the zinc retort makes. The RHS
-    clamps T at 5000 K for RATE evaluation only, so a low-heat-capacity flask
-    can report a state above it.
+    near 3135 K because the IRON BOILS. The RHS clamps T at 5000 K for RATE
+    evaluation only, so a low-heat-capacity flask can report a state above it.
+
+    ⚠⚠ S10 -- AND THIS IS NO LONGER "THE SAME STATEMENT THE ZINC RETORT MAKES",
+    which is what that pairing cost. S9 filed both under one sentence -- *a
+    lattice may react and may never boil* -- and half of it was a DATA job that
+    needed no engine change at all (see the zinc tests above). Separating them
+    LOCATED the real gap, and it is smaller than the one S9 handed forward:
+
+    **iron cannot leave ``mineral_data`` the way zinc did.** It is a declared
+    ``solid_catalyst`` -- ``ammonia_synthesis(catalyst="iron")``, resolved
+    through ``MINERALS["iron"].lattice`` -- as well as this row's own solid
+    product. So iron would have to be BOTH a ``mineral_data`` lattice and a
+    ``thermochemistry`` gas, and ``PhaseArrays.lattice`` is one boolean picking
+    both a species' basis and its destination block. Zinc never needed that:
+    nothing else referenced its lattice entry.
+
+    ⚠ The data is nearly there and the mechanism would work -- Alcock's liquid
+    equation converts to Antoine exactly (A = 6.352717, B = 19574, C = 0) and
+    unanchored puts Tb at 3083.98 K against 3134.15 measured, and boiling the
+    2 mol of iron a mole of thermite makes would absorb 88.0% of the 851.5 kJ it
+    releases. Two things still say no: ``[Fe]`` fails S4's DISAMBIGUATION test
+    (three solid allotropes, two transitions inside this reaction's own range,
+    against zinc's single condensed form), and Alcock tabulates no SUBLIMATION
+    curve for iron, so the 298 K reference-state identity zinc closed at
+    -0.184 kJ/mol cannot be evaluated at all -- ONE cross-check, not four.
     """
     n = _net([HEMATITE, ALUMINIUM, IRON, CORUNDUM, N2], thermo, volatility)
     # cold and insulated: still nothing
@@ -551,3 +727,8 @@ def test_thermite_runs_away_on_its_own_enthalpy_and_nothing_caps_it(
         assert rise == pytest.approx(0.02 * 851_500.0 / (Cp_products + hc),
                                      rel=0.05)
         assert solid(v, IRON) > 0.039
+    # ⚠ and the refusal above is pinned, so it cannot quietly become an
+    # acceptance: iron is still a lattice, and still a declared catalyst.
+    assert "iron" in MINERALS
+    with pytest.raises(ValueError, match="bare element symbol"):
+        thermo.get("[Fe]")

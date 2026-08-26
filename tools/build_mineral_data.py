@@ -303,8 +303,20 @@ ELEMENT_SOLIDS: list[tuple[str, str, str, dict, str]] = [
      "Al -- `thermite`'s reducing agent, and `hall-heroult`'s product"),
     ("sodium", "7440-23-5", "[Na]", {"Na": 1},
      "Na -- `downs-cell`'s product, and the reagent a Birch reduction needs"),
-    ("zinc", "7440-66-6", "[Zn]", {"Zn": 1},
-     "Zn -- what `zinc-smelting`'s retort makes"),
+    # ⚠⚠ S10 -- "zinc" USED TO BE HERE, AND REMOVING IT IS THE WHOLE MILESTONE.
+    # A lattice in this engine may REACT and may never dissolve, boil or melt --
+    # one boolean, PhaseArrays.lattice, picks both a species' basis and its
+    # destination block. So while zinc was a row here, zinc-smelting's
+    # retort made SOLID zinc and the product removal that pulls a real Belgian
+    # retort over was not expressible.
+    #
+    # It did not need a new phase or a sublimation term. Zinc has a MEASURED
+    # sublimation curve, a monatomic vapour and one condensed form, so it belongs
+    # in element_data beside mercury and iodine -- and once it is there the
+    # existing solid/liquid/gas machinery melts it at 692.7 K and boils it at
+    # 1180.2 K with no engine change at all. The retort row now evolves
+    # [Zn] as a GAS, which is what a retort actually makes.
+    # See element_data.REFERENCE_SMILES for the three tests it passes.
     ("carbon-graphite", "7782-42-5", "[C]", {"C": 1},
      "C(graphite) -- COKE: the reducing agent and the fuel, and the one row in "
      "this list that is a covalent lattice rather than a metallic one"),

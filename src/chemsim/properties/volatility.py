@@ -136,6 +136,49 @@ _CURATED_ANTOINE: dict[str, tuple[float, float, float, float, float]] = {
     # within 2% from 315 K to 629 K, five decades of pressure.
     # (Huber, Laesecke & Friend 2006, as tabulated by the WebBook.)
     "[Hg]":      (4.85767, 3007.129,  -10.001, 298.14, 749.99),  # mercury
+    # ⚠⚠ S10 -- ZINC, and this entry is ALGEBRA rather than a fit. Alcock, Itkin
+    # & Horrigan (1984), "Vapour Pressure Equations for the Metallic Elements:
+    # 298-2500K" -- the standard compilation for exactly this problem -- publish
+    # the liquid range as a two-constant equation,
+    #
+    #     log10(p / atm) = 5.378 - 6286 / T          692.677-1180 K
+    #
+    # and chemicals 1.5.2 ships it (as ln p/Pa: A = 23.9093910816185,
+    # B = -14474.0498945606, C = D = 0). With C = D = 0 that IS Antoine form with
+    # C = 0, so the conversion is a change of base and of pressure unit and
+    # NOTHING IS FITTED -- A = A_ln/ln(10) - 5, B = -B_ln/ln(10), and the round
+    # trip reproduces Alcock's own published 5.378 / 6286 to four figures. A test
+    # pins the two forms agreeing to 1e-14 over 700-3000 K.
+    #
+    # ⚠ Lee-Kesler is refused here for mercury's reason, not a new one: it has no
+    # domain over a liquid metal. And zinc's curve gets a cross-check mercury's
+    # could not have -- Alcock's fit was made over 692.7-750 K and is NOT
+    # anchored at Tb, so where it puts the boiling point is genuinely
+    # independent: 1168.84 K against 1180.15 measured, -0.96%. Contrast the trap
+    # in chemsim-physical-data-sourcing: a Lee-Kesler curve can NEVER fail
+    # that test, because omega is inverted at Tb to make it pass.
+    #
+    # ⚠ T_max is Alcock's own liquid-range limit and the engine does not clamp to
+    # it -- see Volatility.T_min/T_max, which are provenance and not a
+    # gate. A retort runs at 1400 K, 650 K above the fitted window, and the two
+    # checks above are what make that extrapolation quotable rather than
+    # hopeful.
+    "[Zn]":      (5.383717, 6286.000,    0.000, 692.677, 750.0),  # zinc
+}
+
+# ⚠ S10 -- WHERE AN ENTRY ABOVE DID NOT COME FROM THE WEBBOOK. Every curated
+# Antoine row used to be stamped _NIST by the loader, which was true of all
+# nine of them and stopped being true the moment a tenth came from a different
+# compilation. A shared provenance string is the shape S9's false citation had:
+# correct when written, silently wrong after the next addition. The default
+# stays, and an entry that disagrees says so HERE rather than in a comment.
+_CURATED_SOURCE: dict[str, str] = {
+    "[Zn]": (
+        "experimental Antoine, converted EXACTLY from the two-constant liquid "
+        "equation of Alcock, Itkin & Horrigan (1984) via chemicals 1.5.2 "
+        "(log10(p/atm) = 5.378 - 6286/T, 692.677-1180 K); change of base and "
+        "of pressure unit only, nothing fitted"
+    ),
 }
 
 # Henry's law constants for permanent gases IN WATER, as H(T_ref) in bar per unit
@@ -267,7 +310,8 @@ class VolatilityProvider:
         for smi, (A, B, C, tmin, tmax) in _CURATED_ANTOINE.items():
             key = Molecule.from_smiles(smi).smiles
             self._curated[key] = Volatility(
-                A, B, C, _NIST, "vapor_pressure", T_min=tmin, T_max=tmax
+                A, B, C, _CURATED_SOURCE.get(smi, _NIST), "vapor_pressure",
+                T_min=tmin, T_max=tmax,
             )
         for smi, (H_ref, C_vh) in _CURATED_HENRY.items():
             key = Molecule.from_smiles(smi).smiles

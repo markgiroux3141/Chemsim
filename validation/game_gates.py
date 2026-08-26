@@ -346,9 +346,56 @@ def panel_reference_check() -> None:
         dgfus = 0.0
         if rec.reference_phase == "s" and rec.Hfus and rec.Tm:
             dgfus = rec.Hfus * max(0.0, 1.0 - 298.15 / rec.Tm)
+        # ⚠⚠ S10 -- THIS PANEL USED TO PRINT A RESIDUAL WHETHER OR NOT THE SHIFT
+        # IT DIFFERENCES HAD BEEN APPLIED, and the first species to expose that
+        # was zinc: ``standard_state.shift`` REFUSES a shift whose vapour
+        # pressure at 298 K is under ``PSAT_FLOOR_BAR`` = 1e-12 bar, because the
+        # correlation is then extrapolated far past its data, and it returns
+        # dGf = 0.0 with a reason attached. Differencing that zero printed
+        # "residual +90.78 kJ/mol" for a species whose formation pair is fine --
+        # an INSTRUMENT-GENERATED FINDING, which is S2's fault in a new place.
+        # Every other row here has an applied shift, so the omission was
+        # unreachable until a solid with a 2e-16 bar vapour pressure arrived.
+        if not s.applied:
+            print(f"   {rec.name:10s} {rec.reference_phase:6s} {d.Gf:8.2f} "
+                  f"{'REFUSED':>9s} {dgfus:7.2f} {'--':>9s}  {psat:.3e}")
+            print(f"              ^ {s.reason.split(': ', 1)[-1]}")
+            continue
         res = d.Gf + s.dGf - dgfus
         print(f"   {rec.name:10s} {rec.reference_phase:6s} {d.Gf:8.2f} "
               f"{s.dGf:9.2f} {dgfus:7.2f} {res:9.2f}  {psat:.3e}")
+
+    # ⚠ S10 -- AND ZINC GETS THE CHECK ANYWAY, FROM A BETTER CURVE THAN THE ONE
+    # THE FLOOR REFUSED. The route above goes gas -> liquid -> solid and needs a
+    # LIQUID vapour pressure at 298 K, where zinc has been solid for 400 K; that
+    # is what the floor is objecting to, correctly. But Alcock, Itkin & Horrigan
+    # publish a SUBLIMATION equation for zinc whose validity window is
+    # 298-692.677 K, i.e. real measured data at exactly this temperature, and it
+    # goes gas -> solid in one step with no Hfus term at all:
+    #
+    #     Gf(g) + R T ln(Psub/P_std)  ==  0
+    #
+    # ⚠ The coefficients below are used for NOTHING ELSE. They build no record
+    # and no engine behaviour reads them -- they are here only so that this
+    # verdict is a measurement, which is the same standing as
+    # ``build_mineral_data``'s hand-entered solubility table.
+    ZN_PSUB = (30.9483937109013, -15940.7965987978, -0.7523)   # ln(P/Pa)
+    T0 = 298.15
+    psub_pa = math.exp(ZN_PSUB[0] + ZN_PSUB[1] / T0
+                       + ZN_PSUB[2] * math.log(T0))
+    gf_zn = ELEMENTAL["[Zn]"].Gf
+    res_zn = gf_zn + R * T0 * math.log(psub_pa / 1.0e5) / 1000.0
+    # and the same curve's SLOPE is an independent read on the same enthalpy
+    hsub = -R * (ZN_PSUB[1] - ZN_PSUB[2] * T0) / 1000.0
+    print()
+    print("   ZINC, on its SUBLIMATION curve instead -- gas -> solid directly,")
+    print("   from a fit whose window IS 298-692.677 K (Alcock 1984):")
+    print(f"      Psub(298.15 K)          = {psub_pa:.4e} Pa")
+    print(f"      Gf(g) + RT ln(Psub/P0)  = {res_zn:+.3f} kJ/mol   (0 wanted)")
+    print(f"      and that curve's slope  = {hsub:.3f} kJ/mol against CRC's")
+    print(f"      Hf(g) of {ELEMENTAL['[Zn]'].Hf:.3f}"
+          f"           ({(hsub - ELEMENTAL['[Zn]'].Hf) / ELEMENTAL['[Zn]'].Hf * 100:+.2f}%)")
+    print("   Two checks, and CRC never meets Alcock in either of them.")
     print()
     print("   Bromine and iodine close to 0.05 / 0.14 kJ/mol, which is what")
     print("   makes their ideal-gas values measurements rather than claims --")

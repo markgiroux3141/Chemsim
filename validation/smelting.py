@@ -58,8 +58,10 @@ COVELLITE, TENORITE, COPPER = (M["covellite"].lattice, M["tenorite"].lattice,
                                M["copper"].lattice)
 GALENA, LITHARGE, LEAD = (M["galena"].lattice, M["litharge"].lattice,
                           M["lead"].lattice)
-SPHALERITE, ZINCITE, ZINC = (M["sphalerite"].lattice, M["zincite"].lattice,
-                             M["zinc"].lattice)
+SPHALERITE, ZINCITE = M["sphalerite"].lattice, M["zincite"].lattice
+# !! S10 -- ZINC IS NOT A LATTICE ANY MORE. It is an ordinary elemental species
+# with a melting point and a boiling point, so the retort evolves it as a VAPOUR.
+ZINC = "[Zn]"
 GRAPHITE = M["carbon-graphite"].lattice
 HEMATITE, IRON = M["hematite"].lattice, M["iron"].lattice
 CORUNDUM, ALUMINIUM = M["corundum"].lattice, M["aluminium"].lattice
@@ -273,45 +275,147 @@ for label, n_, ore, oxide, metal, T in (
         v.charge({ore: 0.04, GRAPHITE: 0.20}, phase="solid")
         v.charge({O2: o2, N2: o2 * 79.0 / 21.0}, phase="gas")
         v.run(40000.0, **TIGHT)
-        print(f"  {label:16s} {T:6.0f} {o2:7.2f} {solid(v, metal):10.6f} "
+        st = v.state()
+        # !! S10 -- the metal WHEREVER IT IS. Copper and lead land in the solid
+        # block; zinc comes off as a vapour above 1180 K, so reading only
+        # n_solid here would measure the thermometer and not the yield.
+        made = (st.n_solid[metal] + st.n_liquid[metal] + st.n_liquid2[metal]
+                + st.n_gas[metal])
+        print(f"  {label:16s} {T:6.0f} {o2:7.2f} {made:10.6f} "
               f"{solid(v, ore):10.6f} {solid(v, oxide):10.6f} "
               f"{solid(v, GRAPHITE):9.5f} {gas(v, SO2):9.6f}")
 print()
 print("  the AIR is the control, which is what a smelter actually adjusts: too")
 print("  little and the sulfide never roasts.")
 print()
-print("  ! AND READ THE ZINC ROW AT 0.20 mol O2, WHICH NOBODY DECLARED EITHER:")
-print("    it goes DOWN, to 0.0255 mol of metal with 0.0145 mol of zincite left,")
-print("    because the coke is gone. The carbothermic reduction and the tuyere")
-print("    COMPETE for the same carbon, and a blast rich enough to burn all of")
-print("    it leaves nothing to reduce the oxide with. The copper and lead rows")
-print("    do not do this -- their reductant is the CO the carbon made, and")
-print("    Boudouard keeps handing it back. Overblowing a zinc retort really")
-print("    does waste the charge, and no line in this project says so.")
+print("  !! S10 -- AND S9's OVERBLOWING FINDING IS GONE FROM THIS TABLE. IT WAS")
+print("     A RATE ARTEFACT AND IT WAS PRESENTED AS PHYSICS.")
+print("     S9 measured the zinc row going DOWN at 0.20 mol O2 -- 0.032476 mol")
+print("     of metal at 0.06 against 0.025515 at 0.20, with zincite left and the")
+print("     coke gone -- and wrote: 'Overblowing a zinc retort really does waste")
+print("     the charge.' The competition it identified is real: the carbothermic")
+print("     reduction and the tuyere DO want the same carbon, and copper and lead")
+print("     do not, because their reductant is the CO the carbon made and")
+print("     Boudouard hands it back.")
+print("     What decided the race was two DERIVED pre-exponentials, and making")
+print("     the zinc a vapour moved one of them: tau at 1400 K is 10.92 s where")
+print("     it was 256.9 s (dS carries exp(dS/R) into A -- see")
+print("     tests/test_solid_state.py). The reduction is now 24x faster, so it")
+print("     takes the zincite before the blast can burn the coke, and the yield")
+print("     is monotone and saturating. Swept finely at 1400 K:")
+print()
+print("        O2/mol   0.02    0.04    0.06    0.10    0.14    0.20    0.50")
+print("        Zn/mol  .0117   .0229   .0328   .0400   .0400   .0400   .0400")
+print()
+print("     !! THE LESSON IS THE SIGN OF THE EFFECT DEPENDED ON A CLOCK. A real")
+print("     furnace does waste an overblown charge, for transport reasons this")
+print("     engine does not model, so the old panel read like a prediction and")
+print("     was a coincidence of two rate constants. Thermodynamic conclusions")
+print("     here survive a phase change in a product; kinetic ones need not.")
 
 print()
 print("  --- and the zinc retort is a THRESHOLD, because its dG changes sign ---")
-print(f"  {'T/K':>7s} {'Zn/mol':>10s} {'ZnO left':>10s} {'conversion':>11s}")
-n_zr = net([ZINCITE, ZINC, GRAPHITE, CO, N2])
-for T in (1100.0, 1200.0, 1264.0, 1300.0, 1400.0, 1500.0):
-    v = Vessel(n_zr, volume=10.0, T=T, T_env=T, UA=1.0e4, k_vent=1.0e3,
-               atmosphere={})
-    v.charge({ZINCITE: 0.10, GRAPHITE: 0.10}, phase="solid")
+print("  SEALED, 1 L, 0.04 mol zincite + 0.20 mol coke. Sealed on purpose: the")
+print("  product is a GAS now, so a vented flask loses it -- see below.")
+print(f"  {'T/K':>7s} {'Zn(g)':>10s} {'Zn(l)':>10s} {'Zn(s)':>10s} "
+      f"{'ZnO left':>10s} {'converted':>10s}")
+n_zr = net([ZINCITE, ZINC, GRAPHITE, CO, CO2])
+for T in (1000.0, 1100.0, 1150.0, 1198.0, 1250.0, 1300.0, 1400.0):
+    v = Vessel(n_zr, volume=1.0, T=T, T_env=T, UA=1.0e4, k_vent=0.0)
+    v.charge({ZINCITE: 0.04, GRAPHITE: 0.20}, phase="solid")
     v.run(20000.0, **TIGHT)
-    print(f"  {T:7.0f} {solid(v, ZINC):10.6f} {solid(v, ZINCITE):10.6f} "
-          f"{solid(v, ZINC)/0.10*100:10.2f}%")
+    st = v.state()
+    tot = st.n_gas[ZINC] + st.n_liquid[ZINC] + st.n_solid[ZINC]
+    print(f"  {T:7.0f} {st.n_gas[ZINC]:10.6f} {st.n_liquid[ZINC]:10.6f} "
+          f"{st.n_solid[ZINC]:10.6f} {solid(v, ZINCITE):10.6f} "
+          f"{tot / 0.04 * 100:9.2f}%")
 for decl in ss.SOLID_STATE_REACTIONS:
     if decl.name == "zincite-carbothermic-reduction":
         p = ss.price(decl, thermo)
         print(f"  dG = 0 at {p.dH/p.dS:.1f} K, against a real Belgian retort's")
-        print("  1200-1300. Nothing was fitted: it is a mineral-data lattice")
-        print("  against two curated gases.")
-print("  ! STATED LIMITATION: the zinc is a SOLID here. A real retort distils")
-print("    it off at 1180 K, which is product removal, and mineral_data holds")
-print("    zinc as a lattice -- which in this engine may react and may never")
-print("    boil. thermo.get('[Zn]') refuses the monatomic vapour as a bare")
-print("    element. What is kept is the reaction's own thermodynamics, which")
-print("    do not need the escape: ln K is already +2.21 at 1400 K.")
+        print("  1200-1300 and a literature threshold of ~1200 K. Nothing was")
+        print("  fitted: it is TWO mineral-data lattices (zincite and graphite)")
+        print("  against TWO curated gases (zinc vapour and CO). !! S9's version")
+        print("  of this line said 'a lattice against three curated gases', which")
+        print("  described a row with a solid zinc product and one gas.")
+print()
+print("  !! S10 MOVED THIS, AND TOWARD THE LITERATURE. S9 declared the zinc as a")
+print("     SOLID product and got 1264.3 K. A retort makes VAPOUR, and carrying")
+print("     it as one adds the sublimation energy (+130.4 kJ/mol) and the entropy")
+print("     of a mole of metal gas (+119.4 J/(mol K)); the entropy wins and the")
+print("     threshold comes DOWN by 66 K. dH +240.0 -> +370.4, dS +189.8 -> +309.2.")
+
+# ---------------------------------------------------------------------------
+rule("6b. THE ZINC DISTILS, AND NEITHER Tb NOR Tm IS WRITTEN ANYWHERE")
+# ---------------------------------------------------------------------------
+print("  !! THIS PANEL IS S10, AND IT IS THE LIMITATION PANEL 6 USED TO CARRY.")
+print("  S9 recorded: 'the zinc is a SOLID here. A real retort distils it off at")
+print("  1180 K, which is product removal, and mineral_data holds zinc as a")
+print("  lattice -- which in this engine may react and may never boil.'")
+print()
+print("  Both clauses were true and the conclusion did not follow. The LATTICE")
+print("  ENTRY was the obstacle, not the metal: zinc has a monatomic vapour, one")
+print("  condensed form and a measured sublimation curve, so it passes every")
+print("  test S4 admitted mercury on. It is an element_data species now, the")
+print("  lattice row is gone, and NO ENGINE CODE CHANGED -- the existing")
+print("  evaporation and melt terms do all of the work below.")
+print()
+print("  Charge the retort at 1400 K, then cool the receiver:")
+v = Vessel(n_zr, volume=1.0, T=1400.0, T_env=1400.0, UA=1.0e4, k_vent=0.0)
+v.charge({ZINCITE: 0.04, GRAPHITE: 0.20}, phase="solid")
+v.run(20000.0, **TIGHT)
+st = v.state()
+print(f"  {'T/K':>8s} {'Zn(g)':>13s} {'Zn(l)':>13s} {'Zn(s)':>13s}")
+print(f"  {1400.0:8.1f} {st.n_gas[ZINC]:13.6f} {st.n_liquid[ZINC]:13.6f} "
+      f"{st.n_solid[ZINC]:13.6f}   <- the burn")
+for T in (1180.0, 1100.0, 900.0, 700.0, 600.0, 400.0):
+    v.set_environment(T_env=T)
+    v.T = T
+    v.run(20000.0, **TIGHT)
+    st = v.state()
+    print(f"  {T:8.1f} {st.n_gas[ZINC]:13.6f} {st.n_liquid[ZINC]:13.6f} "
+          f"{st.n_solid[ZINC]:13.6f}")
+print("  Tb = 1180.15 K and Tm = 692.68 K. Neither appears in the declaration")
+print("  or in this file: the metal condenses where its own vapour-pressure")
+print("  curve crosses its own partial pressure, and freezes at its own Tm.")
+print()
+print("  --- PRODUCT REMOVAL, and it switches on where the gas beats the room ---")
+print("  solid_state_report computes 1156 K for this row's two evolved gases to")
+print("  reach one bar between them. Below that a vented retort vents NOTHING.")
+print(f"  {'T/K':>7s} {'sealed':>9s} {'vented':>9s} {'p sealed/bar':>13s}")
+for T in (1140.0, 1150.0, 1156.0, 1160.0, 1170.0, 1198.0):
+    out, p_sealed = [], None
+    for vented in (False, True):
+        v = Vessel(n_zr, volume=1.0, T=T, T_env=T, UA=1.0e4,
+                   k_vent=1.0e3 if vented else 0.0)
+        v.charge({ZINCITE: 0.04, GRAPHITE: 0.20}, phase="solid")
+        v.run(20000.0, **TIGHT)
+        out.append((0.04 - solid(v, ZINCITE)) / 0.04 * 100.0)
+        if not vented:
+            p_sealed = v.pressure
+    print(f"  {T:7.0f} {out[0]:8.2f}% {out[1]:8.2f}% {p_sealed:13.4f}")
+print("  The 1156 K is derived from a van 't Hoff K; the crossover above is")
+print("  measured by running the flask. They agree to the degree.")
+print()
+print("  !! AND A VENTED RETORT BLOWS ITS OWN PRODUCT UP THE CHIMNEY, WHICH")
+print("     NOBODY DECLARED EITHER. The vent that pulls the reaction over is")
+print("     indifferent to which gas it vents, so the two numbers a smelter")
+print("     cares about come apart and move in OPPOSITE directions with heat:")
+print(f"  {'T/K':>7s} {'ore consumed':>13s} {'metal kept':>11s} {'up the flue':>12s}")
+for T in (1200.0, 1300.0, 1400.0):
+    v = Vessel(n_zr, volume=10.0, T=T, T_env=T, UA=1.0e4, k_vent=1.0e3,
+               atmosphere={})
+    v.charge({ZINCITE: 0.10, GRAPHITE: 0.10}, phase="solid")
+    v.run(20000.0, **TIGHT)
+    st = v.state()
+    kept = st.n_gas[ZINC] + st.n_liquid[ZINC] + st.n_solid[ZINC]
+    used = 0.10 - solid(v, ZINCITE)
+    print(f"  {T:7.0f} {used / 0.10 * 100:12.2f}% {kept / 0.10 * 100:10.2f}% "
+          f"{(used - kept) / 0.10 * 100:11.2f}%")
+print("  That is why a real Belgian retort has a condenser hanging off it, and")
+print("  it is why panel 6 above is run SEALED. conservation_report is silent")
+print("  throughout, correctly: the vent is a declared boundary flux, not a")
+print("  leak, and an invariant measured across one is not an invariant.")
 
 # ---------------------------------------------------------------------------
 rule("7. THE CARRIER-FREE FURNACE IS INERT, AT FOUR TOLERANCE RUNGS")
@@ -390,10 +494,41 @@ for hc in (1.0, 50.0, 500.0):
               f"{solid(v, IRON):9.6f}")
 print()
 print("  ! STATED LIMITATION: nothing caps the temperature. A real thermite")
-print("    stops near 3135 K because the IRON BOILS, and a lattice in this")
-print("    engine may react and may never boil -- the same statement the zinc")
-print("    retort makes. The RHS clamps T at 5000 K for RATE evaluation only,")
-print("    so a small-heat-capacity flask can report a state above it.")
+print("    stops near 3135 K because the IRON BOILS. The RHS clamps T at 5000 K")
+print("    for RATE evaluation only, so a small-heat-capacity flask can report a")
+print("    state above it.")
+print()
+print("  !! S10 -- AND THIS IS NO LONGER 'THE SAME STATEMENT THE ZINC RETORT")
+print("     MAKES'. S9 paired these two as one gap, on the shared sentence 'a")
+print("     lattice may react and may never boil'. Half of that gap was a DATA")
+print("     job and is closed (panel 6b); the half left is a real engine")
+print("     question, and pulling them apart is what located it.")
+print()
+print("     The DATA for iron is nearly there. Alcock's liquid equation converts")
+print("     to Antoine exactly, as zinc's did -- A = 6.352717, B = 19574, C = 0 --")
+print("     and unanchored it puts Tb at 3083.98 K against 3134.15 measured,")
+print("     -1.60%. That curve's slope gives Hvap = 374.7 kJ/mol, so boiling the")
+print("     2 mol of iron a mole of thermite makes would absorb 749.5 kJ of the")
+print("     851.5 kJ released -- 88.0%. THE MECHANISM WOULD CAP IT.")
+print()
+print("     It is refused on three counts, measured rather than assumed:")
+print("     1. !! IRON CANNOT LEAVE mineral_data THE WAY ZINC DID. It is a")
+print("        declared solid_catalyst -- ammonia_synthesis(catalyst='iron'),")
+print("        resolved through MINERALS['iron'].lattice -- and thermite's own")
+print("        solid product. So iron has to be BOTH a mineral_data lattice and")
+print("        a thermochemistry gas, which PhaseArrays.lattice, a single")
+print("        boolean picking both a basis and a destination block, cannot say.")
+print("        Zinc never needed that: nothing else referenced its lattice.")
+print("        **This is the engine gap, and it is smaller and sharper than the")
+print("        one S9 handed forward.**")
+print("     2. [Fe] fails S4's DISAMBIGUATION test, which [Zn] passes. Zinc has")
+print("        one condensed form; iron has three solid allotropes, with two")
+print("        transitions inside thermite's own temperature range, and dCp = 0")
+print("        with a single Tm/Hfus cannot represent them. element_data's own")
+print("        refusal list already names [Fe] beside [C] and [S] for this.")
+print("     3. ONE cross-check, not four. Alcock tabulates no SUBLIMATION curve")
+print("        for iron, so the 298 K reference-state identity that zinc closed")
+print("        at -0.184 kJ/mol cannot be evaluated at all.")
 
 print()
 print("=" * 74)

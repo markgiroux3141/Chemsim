@@ -216,7 +216,7 @@ REFERENCE_STATES: dict[str, ReferenceState] = {
         source='CRC via chemicals 1.5.2',
     ),
     'Zn': ReferenceState(
-        species='Zn(s)', smiles=None, phase='s',
+        species='Zn(s)', smiles='[Zn]', phase='s',
         S0=41.6, atoms_per_unit=1,
         source='CRC via chemicals 1.5.2',
     ),
@@ -425,6 +425,18 @@ ELEMENTAL: dict[str, ElementalRecord] = {
         physical_source='Tb=CRC_INORG; Tm=CRC_INORG; Hfus=CRC; Tc=MATTHEWS; Pc=MATTHEWS; Vc=YAWS; Hvap by Clausius-Clapeyron on the CURATED Antoine curve volatility.py actually evaluates, NOT on Lee-Kesler',
         cp_source='JANAF, sampled 273-600 K and fitted (worst residual 0.04%)',
     ),
+    # zinc  (CAS 7440-66-6; reference state, condensed -- the gas record is real data)
+    '[Zn]': ElementalRecord(
+        name='zinc', cas='7440-66-6', element='Zn', n_atoms=1,
+        reference_state=True, reference_phase='s',
+        Hf=130.4, Gf=94.801,
+        Cp_coeffs=(20.974500008804, -0.001267479195, 2.779137e-06, -1.991e-09),
+        Tb=1180.15, Tc=3170.0, Pc=2904.0, Vc=33.0,
+        Hvap=120.344, Tm=692.68, Hfus=7.068,
+        formation_source='Hf and S0 both from CRC via chemicals 1.5.2; Gf DERIVED against the CRC element reference states',
+        physical_source='Tb=CRC_INORG; Tm=CRC_INORG; Hfus=CRC; Tc=YAWS; Pc=YAWS; Vc=YAWS; Hvap by Clausius-Clapeyron on the CURATED Antoine curve volatility.py actually evaluates, NOT on Lee-Kesler',
+        cp_source='JANAF, sampled 273-600 K and fitted (worst residual 0.04%)',
+    ),
     # ozone  (CAS 10028-15-6; elemental, NOT a reference state)
     'O=[O+][O-]': ElementalRecord(
         name='ozone', cas='10028-15-6', element='O', n_atoms=3,
@@ -446,7 +458,7 @@ ELEMENTAL: dict[str, ElementalRecord] = {
 # Kept as data rather than dropped, so the REFUSAL can name the reason. A
 # refusal that says "no data" where the truth is "your representation cannot
 # express this" is a worse answer than no answer.
-LATTICE_ELEMENTS: dict[str, str] = {'C': 'graphite -- a covalent lattice', 'P': 'white phosphorus -- a molecular solid whose P4 SMILES RDKit canonicalises to aromatic phosphorus', 'Na': 'a metallic lattice', 'K': 'a metallic lattice', 'Ca': 'a metallic lattice', 'Fe': 'a metallic lattice', 'Cu': 'a metallic lattice', 'Zn': 'a metallic lattice'}
+LATTICE_ELEMENTS: dict[str, str] = {'C': 'graphite -- a covalent lattice', 'P': 'white phosphorus -- a molecular solid whose P4 SMILES RDKit canonicalises to aromatic phosphorus', 'Na': 'a metallic lattice', 'K': 'a metallic lattice', 'Ca': 'a metallic lattice', 'Fe': 'a metallic lattice', 'Cu': 'a metallic lattice'}
 
 
 def element_of(molecule) -> str | None:

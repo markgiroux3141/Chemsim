@@ -114,6 +114,32 @@ _CURATED_CP_LIQUID: dict[str, float] = {
     "CCOC(C)=O": 170.7,   # ethyl acetate
     "COC(C)=O": 141.9,    # methyl acetate
     "CC(C)=O": 125.5,     # acetone
+    # ⚠⚠ S10 -- THE TWO METALS, AND THE ESTIMATOR WAS NOT MERELY IMPRECISE HERE:
+    # IT RETURNED A NEGATIVE HEAT CAPACITY. get's fit window is the
+    # HARDCODED 250-450 K below and every caller takes the default, which is an
+    # organic-solvent range. Rowlinson-Bondi is a LIQUID correlation, so for a
+    # metal it was being evaluated where there is no liquid and then extrapolated
+    # into the range where there is one. Measured, before these two entries:
+    #
+    #     mercury (liquid 234-630 K)   -25.26 at Tm, -12.62 at 298 K,
+    #                                  +22.45 at Tb   against a real 27.98
+    #     zinc    (liquid 693-1180 K)  +34.84 at Tm, +462.51 at Tb (15x)
+    #                                  against a real 31.38
+    #
+    # Mercury's has been in the engine since S4 and a NEGATIVE Cp is not an
+    # accuracy problem -- adding heat to that liquid LOWERS its temperature. Both
+    # are replaced by measurement, and both measurements are unusually clean:
+    #   * mercury: CRCSTD 28.000, thermo's "Fit 2023" 27.976 and VDI_TABULAR
+    #     28.031 at 298 K -- THREE sources inside 0.2%.
+    #   * zinc: the WebBook Shomate liquid curve, whose validity window is
+    #     692.73-1180.17 K, i.e. EXACTLY zinc's liquid range, and which is flat
+    #     at 31.380 across the whole of it -- so "constant" is this table's
+    #     approximation only in name for this row.
+    # ⚠ The general fault is NOT fixed: any species whose liquid range falls
+    # outside 250-450 K and has no row here is still extrapolated. See
+    # get's signature.
+    "[Hg]": 27.98,        # mercury -- CRC/VDI/Fit-2023 agree to 0.2%
+    "[Zn]": 31.38,        # zinc -- WebBook Shomate, flat over 693-1180 K
 }
 
 # Curated liquid molar volumes, L/mol at 298 K (from density and molar mass).
@@ -125,6 +151,30 @@ _CURATED_V_LIQUID: dict[str, float] = {
     "CC(=O)O": 0.05748,   # acetic acid
     "CCOC(C)=O": 0.09849,  # ethyl acetate
     "CC(C)=O": 0.07395,   # acetone
+    # S10 -- the two metals. ⚠ NOT at 298 K for zinc, which is a SOLID there:
+    # the value is CRC_INORG_L at 700 K, just above the melting point, because a
+    # constant taken outside the liquid range is not this table's convention
+    # applied, it is the convention broken. Rackett reads 0.012341 against CRC's
+    # 0.009341 at 298 K (+32%) and diverges further over the real liquid range.
+    "[Hg]": 0.014822,     # mercury, CRC at 298 K (Rackett was 3% low)
+    "[Zn]": 0.009968,     # zinc, CRC at 700 K -- see above
+}
+
+# ⚠ S10 -- WHERE A ROW ABOVE IS NOT AT 298 K, OR NOT FROM CRC. The two strings
+# above were true of all seven rows in each table and stopped being true when a
+# metal arrived: zinc is a SOLID at 298 K, so neither of its constants can be a
+# 298 K liquid measurement. Same shape as the shared Antoine stamp
+# volatility._CURATED_SOURCE exists to fix -- a provenance string that is
+# correct when written and silently wrong after the next addition.
+_CURATED_CP_SOURCE: dict[str, str] = {
+    "[Hg]": "experimental liquid Cp, CRC 28.000 / VDI 28.031 / thermo Fit-2023 "
+            "27.976 at 298 K -- three sources inside 0.2%",
+    "[Zn]": "experimental liquid Cp, WebBook Shomate over its OWN validity "
+            "window 692.73-1180.17 K, flat at 31.380 across all of it",
+}
+_CURATED_V_SOURCE: dict[str, str] = {
+    "[Zn]": "experimental liquid molar volume, CRC_INORG_L at 700 K -- NOT at "
+            "298 K, where zinc is a solid",
 }
 
 # A dissolved permanent gas has no liquid state at all -- it is above its critical
@@ -200,6 +250,13 @@ class CondensedProvider:
         self._dissolved_v = {
             Molecule.from_smiles(s).smiles: v for s, v in _DISSOLVED_GAS_V.items()
         }
+        self._curated_cp_source = {
+            Molecule.from_smiles(s).smiles: v
+            for s, v in _CURATED_CP_SOURCE.items()
+        }
+        self._curated_v_source = {
+            Molecule.from_smiles(s).smiles: v for s, v in _CURATED_V_SOURCE.items()
+        }
         self._cache: dict[str, CondensedData] = {}
 
     def get(
@@ -237,7 +294,7 @@ class CondensedProvider:
             )
         elif smi in self._curated_v:
             v_coeffs = (self._curated_v[smi], 0.0, 0.0, 0.0)
-            v_source = _CURATED_V
+            v_source = self._curated_v_source.get(smi, _CURATED_V)
         elif None not in (t.Tc, t.Pc, t.Vc):
             vals = np.array(
                 [rackett_molar_volume(T, t.Tc, t.Pc, t.Vc) / 1000.0 for T in Ts]
@@ -265,7 +322,7 @@ class CondensedProvider:
             Cp_source = "ideal-gas Cp (dissolved gas, no liquid state)"
         elif smi in self._curated_cp:
             Cp_coeffs = (self._curated_cp[smi], 0.0, 0.0, 0.0)
-            Cp_source = _CURATED_CP
+            Cp_source = self._curated_cp_source.get(smi, _CURATED_CP)
         elif t.Cp_coeffs is not None and t.Tc is not None and t.Tb is not None and t.Pc is not None:
             from chemsim.properties.volatility import acentric_factor
 

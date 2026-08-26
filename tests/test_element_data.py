@@ -266,6 +266,103 @@ def _reference_residual(smi, rec, thermo, volatility):
     return data.Gf + shift.dGf - dgfus
 
 
+
+# ---------------------------------------------------------------------------
+# S10 -- zinc, the second metal, and the first entry whose cross-check the
+# liquid route could not give
+# ---------------------------------------------------------------------------
+
+# Alcock, Itkin & Horrigan (1984), the SUBLIMATION equation for zinc, as
+# ``chemicals`` 1.5.2 ships it: ln(P/Pa) = A + B/T + C ln T, window 298-692.677 K.
+# ⚠ These build no record and no engine behaviour reads them. They are here only
+# so the verdict below is a MEASUREMENT -- the same standing as
+# ``build_mineral_data``'s hand-entered solubility table.
+_ZN_PSUB = (30.9483937109013, -15940.7965987978, -0.7523)
+
+
+def test_zinc_prices_and_its_reference_state_is_the_SOLID_not_zero(thermo):
+    """⚠⚠ S10. Zinc arrives on IODINE's precedent, not mercury's: its reference
+    state is a SOLID, which this table already carries twice (I2 and S8).
+
+    It was refused twice over before -- once as a metal, once as a bare
+    monatomic symbol -- and, exactly as for mercury, both refusals were about a
+    REPRESENTATION rather than about the chemistry. Zinc boils monatomic at
+    1180.15 K (group 12, closed d10 s2, so there is no Zn2 to be wrong about)
+    and has ONE condensed form, so ``[Zn]`` names it without ambiguity.
+    """
+    rec = ELEMENTAL["[Zn]"]
+    assert rec.reference_state and rec.reference_phase == "s"
+    # the ideal-gas record is the SUBLIMATION energy, and pinning it to zero
+    # would be the I2 bug again
+    assert rec.Hf == pytest.approx(130.4, abs=0.05)
+    assert rec.Gf == pytest.approx(94.80, abs=0.05)
+    assert rec.Gf != 0.0
+    # and it is priceable through the provider, which is what the retort needs
+    t = thermo.get("[Zn]")
+    assert t.Tb == pytest.approx(1180.15, abs=0.05)
+    assert t.Tm == pytest.approx(692.68, abs=0.05)
+    # a monatomic ideal gas is 5R/2 = 20.786 at every temperature -- the second
+    # free exact number in this table after the gaseous zeros, and JANAF returns
+    # it to four figures, exactly as for mercury
+    cp = sum(a * 298.15 ** i for i, a in enumerate(rec.Cp_coeffs))
+    assert cp == pytest.approx(2.5 * R, rel=2.0e-3)
+
+
+def test_zincs_cross_check_needs_the_SUBLIMATION_curve_and_the_liquid_one_REFUSES(
+    volatility,
+):
+    """⚠⚠ THE FIRST REFERENCE STATE WHOSE CHECK THE STANDARD ROUTE CANNOT GIVE,
+    AND THE REFUSAL IS CORRECT.
+
+    ``_reference_residual`` goes gas -> liquid -> solid and so needs a LIQUID
+    vapour pressure at 298.15 K. Zinc has been solid for 394 K by then, and its
+    liquid Antoine curve extrapolated down there reads 2.0e-16 bar --
+    ``standard_state.shift`` refuses anything under ``PSAT_FLOOR_BAR`` = 1e-12
+    and says why, which is the right answer to the wrong question.
+
+    ⚠ ``validation/game_gates.py`` used to print a residual regardless of
+    whether the shift had been applied, so this species made it report
+    "+90.78 kJ/mol" for a formation pair that is fine. That was an
+    INSTRUMENT-generated finding and the panel is fixed; every other row there
+    has an applied shift, which is why the hole was unreachable until a solid
+    with a 2e-16 bar vapour pressure arrived.
+    """
+    shift = standard_state.shift("[Zn]", volatility, T_REF)
+    assert not shift.applied
+    assert "below the 1e-12 bar floor" in shift.reason
+
+
+def test_zinc_closes_TWO_independent_cross_checks_against_Alcock():
+    """⚠ And CRC never meets Alcock in either of them, which is what makes these
+    checks rather than restatements.
+
+    (a) the reference-state identity, in ONE step because a sublimation curve
+        goes gas -> solid directly and needs no Hfus term:
+            Gf(g) + R T ln(Psub/P_std) == 0        ->  -0.184 kJ/mol
+        against bromine -0.053, mercury +0.012, iodine +0.139, sulfur +3.052.
+
+    (b) the same curve's SLOPE against the formation enthalpy:
+            Hsub = -R (B - C T)  ==  Hf(g)          ->  +0.21%
+
+    A third and a fourth are pinned in ``tests/test_volatility``-adjacent
+    territory and in this file's neighbours: Alcock's LIQUID fit was made over
+    692.7-750 K and is NOT anchored at Tb, so where it puts the boiling point is
+    independent too (-0.96%), and the sublimation and liquid fits agree at the
+    triple point to +0.103%.
+    """
+    A, B, C = _ZN_PSUB
+    psub = math.exp(A + B / T_REF + C * math.log(T_REF))
+    rec = ELEMENTAL["[Zn]"]
+
+    residual = rec.Gf + R * T_REF * math.log(psub / 1.0e5) / 1000.0
+    assert residual == pytest.approx(-0.184, abs=0.01)
+    # better than iodine's and sulfur's, which are the other two solid rows
+    assert abs(residual) < 0.2
+
+    h_sub = -R * (B - C * T_REF) / 1000.0
+    assert h_sub == pytest.approx(130.674, abs=0.01)
+    assert abs(h_sub - rec.Hf) / rec.Hf < 0.0025
+
 def test_bromine_and_iodine_close_their_own_cross_check(thermo, volatility):
     """The check that would have caught the values this repo used to carry.
 
@@ -403,12 +500,19 @@ def test_every_mineral_records_the_ions_it_dissolves_into_unless_it_is_a_METAL()
     # `carbon-graphite` is a COVALENT lattice, not a metallic one, and every
     # property this test checks is about the representation rather than the
     # bonding. See ``tools/build_mineral_data.ELEMENT_SOLIDS``.
+    # ⚠⚠ S10 -- "zinc" LEFT THIS SET, and it is the only entry ever to leave it.
+    # S8's nine were curated as lattices because a metal had no molecular
+    # reference state this engine could hold. Zinc turned out to have one -- a
+    # SOLID with a melting point, a monatomic vapour and a measured sublimation
+    # curve -- so it moved to ``element_data`` where it can boil, and the retort
+    # distils. Twelve became eleven. See ``element_data.REFERENCE_SMILES``.
     assert set(ion_less) == {
         "iron", "nickel", "copper",                       # S1, the catalysts
         "cobalt", "silver", "platinum", "palladium",      # S8, and each of the
-        "lead", "aluminium", "sodium", "zinc",            # nine is named by the
+        "lead", "aluminium", "sodium",                     # nine is named by the
         "carbon-graphite",                                # coverage audit
     }, ion_less
+    assert "zinc" not in ion_less
 
 
 def test_a_mineral_resolves_ION_BY_ION_under_the_electrolyte_provider():

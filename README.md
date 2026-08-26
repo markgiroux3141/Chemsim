@@ -492,6 +492,17 @@ it did move is the SHAPE of the queue: six classes went from 0 runnable routes t
 work** rather than a headline of its own. That is the whole finding, and
 NEXT_PROMPT had called it "the cheapest item here" for two sessions.
 
+⚠⚠ **AND S10 TOOK ONE OF THE NINE BACK OUT, FOR +0 ON ALL FOUR COLUMNS — ALSO
+PREDICTED.** `zinc` is no longer a `mineral_data` lattice. It has a monatomic
+vapour, ONE condensed form and a measured sublimation curve, so it passes every
+test S4 admitted mercury on and belongs in `element_data` — where, unlike a
+lattice, **it can boil**. S8's curation was right for what it was for; what
+changed is that *a lattice may react and may never boil* turned out to be a
+statement about the ENTRY and not about the metal. `zinc-smelting`'s retort
+evolves zinc VAPOUR now and condenses it in a cool receiver at 1180.15 K, which
+is a real Belgian retort's actual mechanic — and **no engine code changed at
+all.** Eight of the nine remain. See MILESTONES.md §S10.
+
 ⚠ **`species-ready` moved 49 → 65 in S6 without one new datum being curated**:
 the audit was asking only the three ideal-gas providers, which refuse an ionic
 lattice by name — correctly, since the fusion law is the engine's only route

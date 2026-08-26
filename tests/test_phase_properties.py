@@ -214,3 +214,72 @@ def test_every_value_carries_provenance(vol, cond):
         assert vol.get(smi).source
         d = cond.get(smi)
         assert d.v_source and d.Cp_source
+
+
+# ---------------------------------------------------------------------------
+# S10 -- the liquid heat capacity of a METAL, and the fit window that broke it
+# ---------------------------------------------------------------------------
+
+
+def test_a_liquid_metals_heat_capacity_is_curated_and_POSITIVE():
+    """⚠⚠ THE ESTIMATOR RETURNED A NEGATIVE HEAT CAPACITY HERE, AND MERCURY HAD
+    CARRIED IT SINCE S4.
+
+    ``CondensedProvider.get`` fits Rowlinson-Bondi over a HARDCODED 250-450 K
+    and every caller takes the default -- an organic-solvent window. For a metal
+    that means a LIQUID correlation evaluated where there is no liquid, then
+    extrapolated into the range where there is one. Measured, before the curated
+    rows:
+
+        mercury (liquid 234-630 K)   -25.26 at Tm, -12.62 at 298 K, +22.45 at Tb
+        zinc    (liquid 693-1180 K)  +34.84 at Tm, +462.51 at Tb  (15x)
+
+    A negative Cp is not an accuracy problem: adding heat to that liquid LOWERS
+    its temperature. ⚠ And it was REACHABLE -- the glassware is 50 J/K by
+    default, so a flask holding more than 50/12.62 = 3.96 mol of liquid mercury
+    (795 g, 59 mL, an entirely ordinary amount) had a NEGATIVE TOTAL thermal
+    mass. Pinned here so the curation cannot quietly be dropped.
+    """
+    thermo = ThermochemistryProvider()
+    condensed = CondensedProvider(thermo)
+    for smi, low, high, expect in (("[Hg]", 234.32, 629.77, 27.98),
+                                   ("[Zn]", 692.68, 1180.15, 31.38)):
+        c = condensed.get(smi)
+        assert "experimental" in c.Cp_source
+        for T in (low, 0.5 * (low + high), high):
+            cp = sum(a * T ** i for i, a in enumerate(c.Cp_coeffs))
+            assert cp == pytest.approx(expect, abs=0.01), (smi, T)
+            assert cp > 0.0
+
+
+def test_the_250_450_K_FIT_WINDOW_IS_STILL_THE_GENERAL_FAULT():
+    """⚠ S10 fixed two species, NOT the mechanism, and says so rather than
+    implying otherwise.
+
+    ``get``'s window is a default argument and no caller overrides it. Swept
+    over ``data/catalog``, 103 compound rows still return a negative liquid Cp
+    somewhere inside their OWN liquid range and 41 more swing over 5x across it
+    -- worst, carminic acid at -21482 J/(mol K). ⚠ Most of those have a
+    JOBACK-estimated Tm/Tb that is itself meaningless (carminic acid "melts" at
+    1398 K and really decomposes), which is what made the two metals the clean
+    cases: their transition temperatures are MEASURED and the Cp was still
+    wrong.
+
+    ⚠ And the fault bites at BOTH ends of the window, not just the top:
+    ethylene's fitted curve reads ~1574 J/(mol K) at its 113.9 K melting point.
+    Nothing runs a flask there today, so this is a LATENT fragility -- reported,
+    not refused, and not silently fixed either.
+    """
+    thermo = ThermochemistryProvider()
+    condensed = CondensedProvider(thermo)
+    # the default window is unchanged and is what every caller gets
+    import inspect
+    sig = inspect.signature(condensed.get)
+    assert sig.parameters["T_lo"].default == 250.0
+    assert sig.parameters["T_hi"].default == 450.0
+
+    # and a species whose liquid range is far outside it is still wrong
+    c = condensed.get("C=C")                       # ethylene, liquid 114-235 K
+    cp_at_tm = sum(a * 113.9 ** i for i, a in enumerate(c.Cp_coeffs))
+    assert cp_at_tm > 1000.0                       # ~1574; real is ~68
+    assert "Rowlinson" in c.Cp_source              # i.e. not curated away

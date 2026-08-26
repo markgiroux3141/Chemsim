@@ -647,18 +647,35 @@ SOLID_STATE_REACTIONS: tuple[SolidStateReaction, ...] = (
     # reverse -- CO landing on hot zinc -- is the barrierless event
     # ``RECOMBINATION_A`` was calibrated as.
     #
-    # ⚠ AND THE ZINC IS A SOLID HERE WHILE A REAL RETORT DISTILS IT OFF AT
-    # 1180 K. That is a STATED limitation and not a hidden one: ``mineral_data``
-    # holds zinc as a lattice, ``thermo.get("[Zn]")`` refuses the monatomic
-    # vapour as a bare element, and a lattice in this engine may react and may
-    # never boil. What is lost is the product removal that pulls the reaction
-    # over; what is kept is the reaction's own thermodynamics, which do not need
-    # it -- dG = 0 at 1264 K against a real retort's 1200-1300, and ln K is
-    # +2.21 at 1400 K, so it runs against one bar of its own CO without help.
+    # ⚠⚠ S10 -- AND THE ZINC IS A **GAS** NOW, WHICH IS WHAT A RETORT MAKES.
+    # S9 wrote this row with ``("zinc", +1)`` in ``solids`` and recorded the
+    # limitation honestly: a lattice may react and may never boil, so the product
+    # removal that pulls a real Belgian retort over was not expressible. ⚠ BOTH
+    # halves of the reason it gave were about the ENTRY rather than the metal --
+    # ``mineral_data`` held zinc as a lattice, and ``thermo.get("[Zn]")``
+    # refused it as a bare element -- and zinc met every test S4 admitted mercury
+    # on. It is in ``element_data`` now and the lattice row is gone, so this is
+    # one edit to a tuple and NO engine change: the existing evaporation and melt
+    # terms condense the vapour at 1180.2 K and freeze it at 692.7 K.
+    #
+    # ⚠ THE THERMODYNAMICS MOVE, and toward the literature. Carrying the zinc as
+    # a gas adds its sublimation energy (+130.4 kJ/mol) and its entropy
+    # (161.0 - 41.6 = +119.4 J/(mol K)) to the row:
+    #
+    #     Zn(s) product, S9   dH +240.0 kJ/mol   dS +189.8   dG = 0 at 1264.2 K
+    #     Zn(g) product, S10  dH +370.4 kJ/mol   dS +309.2   dG = 0 at 1197.8 K
+    #
+    # and the literature threshold for carbothermic zinc is ~1200 K. The entropy
+    # of making a mole of METAL VAPOUR beside a mole of CO is what carries it.
+    #
+    # ⚠ Still ENDOTHERMIC, so still on M6's derived pair -- and now the product
+    # side has NO SOLID AT ALL, which is S4's montroydite case: ``units``
+    # bounds the reverse on the REACTANT crystal, so an exhausted charge stops in
+    # both directions and zinc vapour cannot re-make an oxide that is gone.
     SolidStateReaction(
         name="zincite-carbothermic-reduction",
-        solids=(("zincite", -1), ("carbon-graphite", -1), ("zinc", +1)),
-        gases=(("[C-]#[O+]", +1),),
+        solids=(("zincite", -1), ("carbon-graphite", -1)),
+        gases=(("[Zn]", +1), ("[C-]#[O+]", +1)),
         mechanism="carbothermic-oxide-reduction",
         note=(
             "`zinc-smelting` step 2 -- the Belgian retort, and the third "
@@ -666,7 +683,9 @@ SOLID_STATE_REACTIONS: tuple[SolidStateReaction, ...] = (
             "⚠ It needs no gas REACTANT and no declared kinetics: it is an "
             "ordinary row of this table that nobody had written, and the only "
             "reason it was blocked is that the queue priced the CO route "
-            "(uphill at +63.3 kJ/mol) instead of the catalog's own carbon one"
+            "(uphill at +63.3 kJ/mol) instead of the catalog's own carbon one. "
+            "⚠ S10 -- its zinc is now a VAPOUR that condenses in a cool "
+            "receiver, which is the retort's actual mechanic"
         ),
     ),
     # ⚠⚠ THE ROW THAT MAKES THE OTHER TWO INTO A FURNACE, and it is here for the

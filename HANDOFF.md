@@ -5202,6 +5202,11 @@ the measurements that justify them.
     burn all of it leaves nothing to reduce the oxide with. Copper and lead do
     not do this — their reductant is the CO the carbon made, and Boudouard keeps
     handing it back. **Overblowing a zinc retort really does waste the charge.**
+    ⚠⚠ **WITHDRAWN BY S10 — A RATE ARTEFACT.** The competition is real; which
+    side won was decided by two DERIVED pre-exponentials, and making the zinc a
+    vapour moved one by 24x. The yield is monotone and saturating now. **The
+    sign of the effect depended on a clock**, and it was written up as physics.
+    See 95.
 
     ⚠⚠ **THE CARRIER-FREE FURNACE IS EXACTLY INERT AND THAT IS THE LEAD
     CHAMBER'S FAILURE MODE NOT HAPPENING.** Ore + coke with no gas at all: 0.0
@@ -5258,6 +5263,121 @@ the measurements that justify them.
     **`blast-furnace`** gains three of its five classes and is now **one class
     (`slagging`) and one mineral (`iron-ii-oxide`) away** — the closest any
     five-step route has been.
+
+95. ✔✔ **S10 — "A LATTICE MAY REACT AND MAY NEVER BOIL" WAS A STATEMENT ABOUT AN
+    ENTRY, AND SEPARATING S9's ONE GAP INTO TWO IS WHAT LOCATED THE ENGINE GAP.**
+
+    **+0 classes, +0 template-ready, +0 species-ready, +0 RUNNABLE — all four
+    predicted before the audit ran and all four came out.** Taken as an honesty
+    and mechanic milestone and said so up front. ⚠ **NO ENGINE CODE CHANGED**:
+    not one line of `numerics/` or `vessel/`.
+
+    S9 handed forward its top engine item as ONE gap with two symptoms — the zinc
+    retort makes solid zinc, and nothing caps thermite's temperature — both
+    citing the same sentence. **They are not one gap.** Zinc's half was a DATA
+    job: `mineral_data` held zinc as a lattice, and that is a property of the
+    ENTRY. Measured against S4's own three tests for admitting mercury, zinc
+    passes all three — the atom IS the vapour (monatomic at 1180.15 K, group 12,
+    no Zn2 to be wrong about), there is nothing to disambiguate (ONE condensed
+    form, unlike `[S]`, `[C]`, `[Fe]`), and the reference state is expressible.
+    ⚠ Mercury passed the third on the LIQUID block; **zinc passes it on the SOLID
+    block, which this table already relied on twice for I2 and S8.**
+
+    **THE CURVE IS ALGEBRA, NOT A FIT.** Lee-Kesler has no domain over a liquid
+    metal (S4 measured it 3.8x high for mercury), so zinc needed a curated
+    Antoine for mercury's reason. Alcock, Itkin & Horrigan (1984) publish the
+    liquid range as TWO constants, `log10(p/atm) = 5.378 - 6286/T`, and with
+    C = D = 0 that IS Antoine with C = 0 — a change of base and of pressure unit,
+    nothing fitted, and the round trip reproduces Alcock's own published numbers
+    to four figures. The two forms agree to 4e-15 over 700-3000 K.
+
+    ⚠⚠ **AND ALCOCK'S FIT IS NOT ANCHORED AT Tb, SO THE BOILING POINT IS A REAL
+    CHECK HERE** — the same trap `chemsim-physical-data-sourcing` names, read
+    from the other side. Four checks, and CRC never meets Alcock in any:
+    `Gf(g) + RT ln(Psub/P0)` = **-0.184 kJ/mol** at 298 K on the SUBLIMATION
+    curve (Br2 -0.053, Hg +0.012, I2 +0.139, S8 +3.052); that curve's slope
+    **130.674 against CRC's Hf(g) 130.400, +0.21%**; the unanchored Tb at
+    **1168.84 K vs 1180.15, -0.96%**; and the sublimation and liquid fits meeting
+    at the triple point to **+0.103%**.
+
+    **THE THRESHOLD MOVED 66 K TOWARD THE LITERATURE:** dH +240.0 → +370.4,
+    dS +189.8 → +309.2, dG = 0 at **1264.2 → 1197.8 K**, against a literature
+    ~1200 K. ⚠⚠ **AND THE ROW IS FASTER DESPITE A HIGHER BARRIER**, because an
+    Arrhenius pair is not separable: `Ea = max(dH,0)` rose by 130.4 kJ/mol but
+    the derived `A` carries `exp(dS/R)`, and at 1400 K 1.7e6 beats 1.4e-5 by
+    ~24x. **tau 256.9 s → 10.9 s**, equilibrium untouched, still under the
+    collision ceiling.
+
+    **THE DISTILLATION.** A sealed 1 L retort at 1400 K puts **0.040000 mol of
+    zinc entirely in the headspace**; cooling the receiver gives 0.0284 liquid at
+    1180 K, 0.0397 liquid at 900 K, and 0.040000 SOLID at 600 K. **Tb = 1180.15
+    and Tm = 692.68 appear in no declaration and in no script.**
+    ⚠⚠ **THE VENT DOES NOTHING UNTIL THE RETORT BEATS THE ROOM**:
+    `solid_state_report` derives 1156 K, and sealed-vs-vented measures 12.29% /
+    12.29% at 1150 K (0.9325 bar) against 13.52% / 18.63% at 1156 K (1.0312 bar).
+    A derived van 't Hoff number and a flask that was run, agreeing to the degree.
+    ⚠⚠ **AND A VENTED RETORT BLOWS ITS PRODUCT UP THE CHIMNEY** — ore consumed
+    99.91% → 100% while metal KEPT falls 51.04% → 43.53% as it heats. **That is
+    why a real Belgian retort has a condenser on it.** `conservation_report` is
+    silent: the vent is a declared boundary flux.
+
+    ⚠⚠ **AND S9's OVERBLOWING FINDING IS GONE — IT WAS A RATE ARTEFACT PRESENTED
+    AS PHYSICS.** The competition it found is real, but which side won was decided
+    by two DERIVED pre-exponentials, and the 24x above moved one. The yield is
+    monotone and saturating now (0.0117 / 0.0229 / 0.0328 / 0.0400 / flat to
+    0.50 mol O2). **THE SIGN OF THE EFFECT DEPENDED ON A CLOCK. Thermodynamic
+    conclusions here survive a phase change in a product; kinetic ones need not.**
+
+    ⚠⚠ **THE ESTIMATOR WAS RETURNING A NEGATIVE HEAT CAPACITY, AND MERCURY HAD
+    CARRIED IT SINCE S4.** `CondensedProvider.get` fits Rowlinson-Bondi over a
+    hardcoded **250-450 K** and every caller takes the default — an organic
+    window, so for a metal it is a LIQUID correlation evaluated where there is no
+    liquid and then extrapolated in. Mercury read **-25.26 at Tm, -12.62 at
+    298 K** against a real 27.98; zinc **+462.51 at Tb** against 31.38. ⚠ **And
+    it was REACHABLE**: with 50 J/K glassware, a flask holding over **3.96 mol of
+    liquid mercury (795 g, 59 mL) had a NEGATIVE TOTAL thermal mass** — measured
+    -12.808 J/K at 5 mol, i.e. heating it cooled it. Both curated from
+    measurement (mercury: CRC 28.000 / VDI 28.031 / Fit-2023 27.976, three
+    sources inside 0.2%; zinc: WebBook Shomate over its OWN 692.73-1180.17 K
+    window, flat at 31.380). ⚠⚠ **THE GENERAL FAULT IS REPORTED AND NOT FIXED:
+    103 corpus rows still go negative inside their own liquid range** (worst,
+    carminic acid at -21482) and 41 more swing over 5x — mostly on Joback Tm/Tb
+    that is itself meaningless, which is what made the metals the clean cases.
+    It bites at BOTH ends: ethylene reads ~1574 at its 113.9 K melting point.
+    ⚠ Cost on the pinned example: `mercury_retort` moves **one digit in the ninth
+    decimal**, 1 part in 1e8.
+
+    ⚠⚠ **TWO MORE INSTRUMENTS WERE WRONG AND ONE INVENTED A 90 kJ/mol FINDING.**
+    `validation/game_gates.py` printed a residual whether or not the shift it
+    differences had been APPLIED — `standard_state.shift` correctly refuses one
+    whose 298 K vapour pressure is under `PSAT_FLOOR_BAR` = 1e-12 and returns
+    0.0 with a reason, and differencing that zero printed **"zinc, residual
+    +90.78 kJ/mol"** for a formation pair that is fine. Every other row has an
+    applied shift, so the hole was unreachable until a solid with a 2e-16 bar
+    vapour pressure arrived. And `volatility._CURATED_ANTOINE` stamped every
+    entry `NIST WebBook` — true of all nine and false the moment a tenth came
+    from Alcock, **which is exactly the shape S9's false citation had.**
+    Per-entry overrides in `volatility` and `condensed` now.
+
+    REFUSED, MEASURED: **IRON, AND THE REFUSAL IS WHERE THE ENGINE GAP IS.**
+    The data is nearly there and the mechanism would work — Alcock's iron
+    equation also converts exactly (A = 6.352717, B = 19574, C = 0), unanchored
+    Tb 3083.98 vs 3134.15 (**-1.60%**), and boiling the 2 mol of iron a mole of
+    thermite makes would absorb **749.5 of the 851.5 kJ released, 88.0%.** Three
+    counts against: ⚠⚠ **iron cannot LEAVE `mineral_data`** — it is a declared
+    `solid_catalyst` (`ammonia_synthesis(catalyst="iron")`) as well as thermite's
+    solid product, so it must be BOTH a lattice and a `thermochemistry` gas, and
+    `PhaseArrays.lattice` is one boolean picking both a basis and a destination
+    block. **Zinc never needed that; nothing else referenced its lattice.** Plus
+    `[Fe]` fails S4's disambiguation test (three solid allotropes, two
+    transitions inside thermite's own range) and Alcock tabulates **no
+    sublimation curve** for iron, so zinc's best check cannot be run at all.
+
+    ⚠ Three pieces of prose rotted inside this session's own edits — the audit's
+    overblowing paragraph, its "a lattice against three curated gases" (two of
+    each now) and its "the same statement the zinc retort makes". **An audit's
+    prose rots exactly like a generated file's.** ⚠ And `validation/smelting.py`
+    is **CRLF**, contrary to the handoff's note about newer `validation/*.py`.
 
 IMMEDIATE NEXT TASK: see **`MILESTONES.md`**, which is the plan of record as of
 2026-08-22 and supersedes the ordering below. It is derived from `data/catalog`

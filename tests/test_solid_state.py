@@ -366,11 +366,24 @@ def test_the_four_rows_land_on_four_real_timescales(thermo):
         # 1400 K is what fixes ``REDUCTION_A``) and so is thermite (1 s at its
         # 1200 K ignition temperature). The zinc retort at 257 s and the
         # Boudouard reaction at 13 s come out of ``RECOMBINATION_A`` -- a
-        # constant pinned on a LIME KILN -- and land on a Belgian retort's own
-        # few minutes and on a gasifier's own seconds.
+        # constant pinned on a LIME KILN -- and land on a gasifier's own seconds.
+        #
+        # ⚠⚠ S10 MOVED THE RETORT FROM 256.9 s TO 10.9 s, and BOTH halves of its
+        # Arrhenius pair moved because an Arrhenius pair is not separable. Making
+        # the zinc a VAPOUR added +130.4 kJ/mol to dH -- and therefore to the
+        # derived Ea -- and +119.4 J/(mol K) to dS, and the derived A carries
+        # exp(dS/R). At 1400 K the entropy term wins by about 24x:
+        #
+        #     exp(+119.4/R)                       = 1.7e+06   (in A)
+        #     exp(-130400/(R*1400))               = 1.4e-05   (in the barrier)
+        #
+        # so the retort is FASTER despite a higher barrier. ⚠ The equilibrium is
+        # untouched by this -- both directions scale by the same factor, which is
+        # what detailed balance means -- and ``validation/rate_ceiling.py`` is
+        # what says the new A is still under the collision limit.
         "tenorite-carbon-monoxide-reduction": (1400.0, 600.1),
         "litharge-carbon-monoxide-reduction": (1400.0, 600.1),
-        "zincite-carbothermic-reduction": (1400.0, 256.9),
+        "zincite-carbothermic-reduction": (1400.0, 10.92),
         "boudouard-gasification": (1300.0, 13.28),
         "metallothermic-reduction": (1200.0, 1.000),
     }

@@ -2,31 +2,31 @@ We're building chemsim, an emergent chemistry simulator (game inspired by Nile
 Red) in d:\Claude Code Projects\Chemistry Simulator.
 
 **The plan is `MILESTONES.md`. Read it first — it is the authority on what to
-build and in what order.** **M0–M6, M8, M12, S1–S9 are DONE.**
+build and in what order.** **M0–M6, M8, M12, S1–S10 are DONE.**
 
-# ⚠ THE BASELINE IS VERIFIED. DO NOT START WITH THE SUITE.
+# ⚠ THE BASELINE IS MEASURED. DO NOT START WITH THE SUITE.
 
-**THE SUITE IS 928 TESTS AND S9 MEASURED 927 PASSED / 1 FAILED IN 14:32.** The
-one failure was **S8's own row-count test**, `test_the_roasting_family_still_
-clears_it`, which asserted `len(SURFACE_REACTIONS) == 4` and `ln K > 60` on every
-row — `carbon-combustion` is a fifth row at +21.87. **Rewritten and re-run green
-(`tests/test_element_solids.py`, 38 passed.)** ⚠ Every `src/` change made after
-that suite run was **comment-or-docstring only**, and the five most-affected test
-files were re-run together at **145 passed**.
-⚠ **So the clean 928 has not been measured as one run.** Take the arithmetic
-(904 from S8 + 20 in `test_smelting.py` + 4 in `test_solid_state.py` = 928) or
-measure it once — but do not start the session with it either way.
+**S10 RAN THE WHOLE SUITE AT THE END AND MEASURED 932 PASSED / 0 FAILED IN
+13:20.** Take that number and spend the time on content. ⚠ **It was run AFTER
+every `src/` edit, so it is a real baseline and not arithmetic** — the first time
+in four sessions that is true. (928 at S9, net +4: eight tests added across
+`test_smelting.py`, `test_element_data.py` and `test_phase_properties.py`, four
+absorbed into rewrites of tests that pinned limitations S10 removed.)
 
-**AND `validation/tolerance_audit.py` IS CLEAN: "NO example prints a quotable
-digit that moves."** 12 examples; five move below 0.1% and every one is listed;
-and ⚠ **the three solid-phase examples — `lime_cycle`,
-`roasting_and_the_catalyst_gate`, `mercury_retort` — are OUTPUT IDENTICAL**, which
-is the strongest single check on S9's engine change. ⚠ It skips three expensive
-examples without `--all`, and `oil_of_vitriol` (engine queue item 5) is one of
-them, so its wrong headline is UNCHANGED and still open.
+⚠ **S10 DID NOT TOUCH THE RHS**, so `validation/tolerance_audit.py` was NOT
+re-run and its last reading still stands from S9: *"NO example prints a quotable
+digit that moves."* ⚠ What S10 did change is `properties/condensed.py`, which
+feeds every example's energy balance — and the one example that could move was
+measured directly instead: **`examples/mercury_retort.py` shifts by ONE DIGIT IN
+THE NINTH DECIMAL** (0.012636665 → 0.012636666, 1 part in 1e8). Nothing else in
+the example set holds liquid mercury or zinc. ⚠ `oil_of_vitriol`'s wrong headline
+is UNCHANGED and still open — engine queue item 6.
 
-⚠ **Three sessions running that hand forward a suite number they actually
-measured.** Take it and spend the time on content.
+⚠ **AND THE STANDING AUDITS ARE ALL CLEAN**, re-run this session:
+`smelting.py`, `game_gates.py` (fixed — see below), `catalog_coverage.py`,
+`corpus_balance.py` (292 balance / 75 cannot, unchanged), `rate_ceiling.py`,
+`cell_potentials.py`, `gas_processes.py`, `jacobian_bound.py`, and all three
+catalog artefacts byte-identical across `PYTHONHASHSEED` 0 / 1 / 12345.
 
 ```bash
 python validation/smelting.py                 # ⚠⚠ S9's standing audit, ~1 min. RUN IT FIRST
@@ -107,32 +107,64 @@ under that check rather than under a build.**
 
 # ⚠⚠ THE ENGINE AND HONESTY QUEUE — AND IT NOW OUTRANKS THE TABLE ABOVE
 
-1. **⚠⚠ A LATTICE THAT CAN LEAVE — S9's NAMED GAP, AND IT IS TWO SESSIONS'
-   LIMITATIONS TURNING OUT TO BE ONE.** *"A lattice may react and may never
-   dissolve, boil or melt"* is load-bearing (it is the one boolean that picks
-   both a species' basis and its destination block), and S9 paid for it twice in
-   one session:
-   * **the zinc retort makes SOLID zinc.** A real Belgian retort DISTILS it off
-     at 1180 K, and that product removal is the mechanic. `thermo.get("[Zn]")`
-     refuses the monatomic vapour as a bare element, correctly — the ideal-gas
-     record for `[Zn]` is a real +130.4 kJ/mol sublimation number, unlike `[C]`'s
-     +671 atom.
-   * **nothing caps thermite's temperature.** A real one stops near 3135 K
-     because the IRON BOILS. A 1 J/K flask here reports **5469 K**, above the
-     RHS's own `T_MAX` clamp of 5000 (which bounds RATE evaluation, not the
-     state).
-   ⚠ **These are the same gap: a metal that vaporises.** And `mercury` is the
-   existence proof that it can be done — S4 curated it as a LIQUID element with a
-   real ideal-gas record, and `oxide-thermal-decomposition` evolves `[Hg]` as a
-   gas. **So the question is whether a species can be BOTH a `mineral_data`
-   lattice and a `thermochemistry` gas**, which today it cannot, because
-   `PhaseArrays.lattice` is a single boolean. ⚠⚠ **MEASURE THE HEADLINE BEFORE
-   SCOPING IT**: `zinc-smelting` already runs, so this may be worth ZERO routes
-   and be an honesty item. Take it for the mechanic and say so.
-   `test_the_zinc_stays_a_SOLID_and_that_is_a_stated_limitation` pins the limit;
-   if you close it, that test SHOULD fail and be rewritten.
+1. **⚠⚠ A SPECIES THAT IS BOTH A LATTICE AND A GAS — S10 CUT S9's ITEM 1 IN HALF
+   AND THIS IS THE HALF THAT IS REAL.** S9 filed one gap with two symptoms, on the
+   shared sentence *"a lattice may react and may never boil"*. **The zinc half was
+   a DATA job and is CLOSED** (the retort distils, no engine code changed — §S10).
+   What is left is exactly one thing, and it is sharper than the old version:
+   * **`PhaseArrays.lattice` is a single boolean picking BOTH a species' basis and
+     its destination block**, so a species cannot be a `mineral_data` lattice and
+     a `thermochemistry` gas at once.
+   * **The live case is IRON, and it cannot dodge the way zinc did.** Iron is a
+     declared `solid_catalyst` — `ammonia_synthesis(catalyst="iron")` resolved
+     through `MINERALS["iron"].lattice` — **and** thermite's own solid product, so
+     it cannot simply move to `element_data`. Zinc never needed this: nothing else
+     referenced its lattice entry.
+   * ⚠ **The mechanism and most of the data are already measured as ADEQUATE.**
+     Alcock's iron equation converts to Antoine by exact algebra (A = 6.352717,
+     B = 19574, C = 0) and unanchored puts Tb at 3083.98 K against 3134.15
+     (**−1.60%**); boiling the 2 mol of iron a mole of thermite makes would absorb
+     **749.5 of the 851.5 kJ it releases, 88.0%.** So the cap would work.
+   * ⚠ **Two things still say no even with the engine fixed**, and they are the
+     reason to scope this carefully rather than eagerly: `[Fe]` fails S4's
+     DISAMBIGUATION test (three solid allotropes, two transitions inside
+     thermite's own range, against zinc's single condensed form), and Alcock
+     tabulates **no sublimation curve** for iron, so the 298 K reference-state
+     identity zinc closed at −0.184 kJ/mol cannot be evaluated at all — **ONE
+     cross-check, not four.**
+   ⚠⚠ **WORTH ZERO ROUTES, like S10.** Take it for the mechanic — a thermite that
+   stops where the iron boils — and say so. `test_thermite_runs_away_on_its_own_
+   enthalpy_and_nothing_caps_it` pins the limit and names all three counts; if you
+   close it, that test SHOULD change.
 
-2. **⚠ `slagging` + ONE MINERAL WOULD MAKE `blast-furnace` RUN — THE CLOSEST ANY
+2. **⚠⚠ THE 250–450 K FIT WINDOW — 103 CORPUS ROWS WITH A NEGATIVE LIQUID HEAT
+   CAPACITY, AND S10 FIXED TWO OF THEM BY HAND.** New, and the largest single
+   honesty item on this list. `CondensedProvider.get(mol, T_lo=250.0, T_hi=450.0)`
+   is an organic-solvent window and **every caller in the repo takes the default**,
+   so Rowlinson-Bondi is fitted where a species may not be liquid and then
+   extrapolated into the range where it is. Measured over `data/catalog`:
+   **103 compounds return a NEGATIVE liquid Cp somewhere inside their own liquid
+   range** (worst carminic acid at **−21482 J/(mol K)**) and 41 more swing over 5x.
+   ⚠ **It bites at BOTH ends** — ethylene reads ~1574 J/(mol K) at its 113.9 K
+   melting point, and ethylene is a curated-Antoine species and a real reagent.
+   * ⚠ **A negative Cp is not an accuracy problem: adding heat LOWERS the
+     temperature.** S10 measured it reachable — with 50 J/K glassware a flask
+     holding over **3.96 mol of liquid mercury (795 g, 59 mL) had a NEGATIVE TOTAL
+     thermal mass**, −12.808 J/K at 5 mol — and mercury had carried it since S4.
+   * ⚠⚠ **BUT DO NOT JUST WIDEN THE WINDOW.** Most of the 103 have a JOBACK
+     Tm/Tb that is itself meaningless (carminic acid "melts" at 1398 K and really
+     decomposes), so there the bad Cp is downstream of a bad transition
+     temperature and fitting over it would be fitting to nonsense. **Separate the
+     wrong output from the wrong input first.** The two metals were the clean
+     cases precisely because their Tm/Tb are MEASURED and the Cp was still wrong.
+   * ⚠ Fitting over each species' OWN liquid range is the obvious fix and it moves
+     **every** example's energy balance, so it needs the tolerance audit and a
+     stated cost. `test_the_250_450_K_FIT_WINDOW_IS_STILL_THE_GENERAL_FAULT` pins
+     the gap as it stands.
+   ⚠ Worth ZERO routes. Measured inert on every example today — a LATENT
+   fragility, reported and not refused.
+
+3. **⚠ `slagging` + ONE MINERAL WOULD MAKE `blast-furnace` RUN — THE CLOSEST ANY
    FIVE-STEP ROUTE HAS BEEN.** S9 gave it three of its five classes
    (`carbon-combustion`, `boudouard`, `gas-solid-reduction` ×2). What is left:
    * **`slagging`** (`CaO + SiO2 -> CaSiO3`) — one row, one class, and it is a
@@ -144,7 +176,7 @@ under that check rather than under a build.**
    ⚠ Worth **+1** and it is a five-step ore-to-metal chain with a real slag. Two
    curated minerals and one declaration if the FeO Cp can be sourced honestly.
 
-3. **⚠ THE CIS/TRANS BLIND SPOT — A REAL DATA JOB WITH A REAL TRAP.** Benson (the
+4. **⚠ THE CIS/TRANS BLIND SPOT — A REAL DATA JOB WITH A REAL TRAP.** Benson (the
    RMG group set) has no cis correction, so oleic and elaidic acid come back with
    IDENTICAL Hf and Gf and the engine reports a confident 50:50 for a real ~5:1.
    ⚠ **The data exists and is not usable as it stands:** WEBBOOK has both liquid
@@ -156,7 +188,7 @@ under that check rather than under a build.**
    today (the margarine row cannot balance either) — take it for the honesty.
    `test_the_cis_trans_pair_prices_at_exactly_zero` pins the limit.
 
-4. **⚠ THE CURRENT BUDGET — M8's OWN NAMED GAP, AND IT IS A LAYER 4 TERM.** Two
+5. **⚠ THE CURRENT BUDGET — M8's OWN NAMED GAP, AND IT IS A LAYER 4 TERM.** Two
    electrode reactions in one cell divide nothing, so both run at full rate and
    activation selectivity washes out as the barrier floors at zero:
    k(brine)/k(water) is **4.76e+17 at 2.5 V, 5.94 at 3.0, 1.00 at 4.0**. The
@@ -165,7 +197,7 @@ under that check rather than under a build.**
    take it for the mechanic and say so.
    `test_the_activation_selectivity_washes_out_at_high_voltage` pins the gap.
 
-5. **⚠ S5's SIXTH INSTRUMENT FAULT, STILL OPEN AND STILL CHEAP.**
+6. **⚠ S5's SIXTH INSTRUMENT FAULT, STILL OPEN AND STILL CHEAP.**
    `tolerance_audit.py` reports `QUOTABLE DIGITS MOVE, worst 99.85%` on
    `oil_of_vitriol`, and **that headline is wrong**: four of its five moved lines
    are the CREATED-MATTER residual and every one gets SMALLER, on rows
@@ -174,14 +206,14 @@ under that check rather than under a build.**
    zero.** `REPORT_ABS` exists for this and 2.9e-05 clears it. Picking the number
    owes its own predict-then-measure pass.
 
-6. **Pyrite** — one mineral entry from `pyrite-roasting` running, and it is one of
+7. **Pyrite** — one mineral entry from `pyrite-roasting` running, and it is one of
    the **10 template-ready routes that cannot run**, so it is +1 on the
    intersection for one curated entry. Blocked on the same-database rule (`Hfs`
    in WEBBOOK, `S0s` in nothing), which is a rule worth keeping, so this needs a
    SOURCE and not a workaround. ⚠ **Same shape as item 2's FeO** — a session that
    finds one source may find both.
 
-7. **⚠⚠ THE BURNER — THE LIVE FRAGILITY, STILL DEMOTED AND STILL NOT DISMISSED.**
+8. **⚠⚠ THE BURNER — THE LIVE FRAGILITY, STILL DEMOTED AND STILL NOT DISMISSED.**
    **~50 s at rtol 1e-8 against 0.8 s at the default.** S5 bounded the CRASH and
    explicitly did not bound the THRASHING. BDF is struggling with a liquid layer
    holding **1e-29 mol**, which `LAYER_REABSORB` drains toward zero without ever
@@ -193,7 +225,7 @@ under that check rather than under a build.**
    designing anything.** It fires only at rtol 1e-8, so nothing a player does
    reaches it.
 
-8. **THE CORPUS BALANCE BACKLOG — 75 ROWS, AND IT IS NOT A TO-DO LIST.** S7 built
+9. **THE CORPUS BALANCE BACKLOG — 75 ROWS, AND IT IS NOT A TO-DO LIST.** S7 built
    the check and deliberately fixed nothing, on the `diels-alder-route`
    precedent: inventing chemistry inside an audit corpus is not allowed. ⚠ But
    **17 of the 75 are `spurious`** — a reagent written as consumed that is
@@ -202,18 +234,18 @@ under that check rather than under a build.**
    on one side of. ⚠ `tools/catalog.py`'s `validate` still does NOT check
    balance, so the corpus can grow another one silently.
 
-9. **⚠ `hydrolysis` — AND READ S3's LANDMINE FIRST.** It unlocks **exactly ONE
+10. **⚠ `hydrolysis` — AND READ S3's LANDMINE FIRST.** It unlocks **exactly ONE
    route alone, `vitriol-distillation`**, and that route's step 1 reads
    `-> iron-ii-OXIDE` while the engine makes HEMATITE. ⚠ **That is item 2's
    mineral again, from the other side.** S3 and S4 disagree about what to do with
    such a row — read §S3's "which one is WRONG" check before deciding.
 
-10. **M7 (dissociation as an equilibrium — ⚠ M12 took most of its case away;
+11. **M7 (dissociation as an equilibrium — ⚠ M12 took most of its case away;
     re-scope before scheduling)**, **M9 (polymers, 12 routes)**, **M10 (the site
     balance S1 did not build, 8 routes)**, **M11 (the unpriceable families, 16
     routes, and 10 of them need ONE boiling point each)**.
 
-11. **NUCLEATION, now that half of it is modelled.** S3 named the gap; S4 turned
+12. **NUCLEATION, now that half of it is modelled.** S3 named the gap; S4 turned
     the *deposition-needs-a-seed* half into a real bound in
     `SolidStateArrays.units`. What is still not expressible is a solid appearing
     from NO solid — `hydride-thermal-deposition` (`arsine -> arsenic + hydrogen`)
@@ -227,8 +259,13 @@ repo-local `user.name`/`user.email` if that should be yours.
 
 Start by reading, in order:
 
-MILESTONES.md — the plan. ⚠ **§S9, §S8, §S7, §M8, §S1, §S3, §S4, §S5 and §S6 are
-  the ones to read**: **S9 found that the engine gap S8 called "the most valuable
+MILESTONES.md — the plan. ⚠ **§S10, §S9, §S8, §S7, §M8, §S1, §S3, §S4, §S5 and §S6 are
+  the ones to read**: **S10 found that S9's top engine item was HALF A DATA JOB —
+  the sentence it rested on was about a `mineral_data` ENTRY, not about the metal —
+  that splitting it in two is what LOCATED the engine gap, that a NEGATIVE liquid
+  heat capacity had been in the engine since S4 with 103 corpus rows still carrying
+  one, and that S9's own overblowing finding was a RATE ARTEFACT written up as
+  physics**; S9 found that the engine gap S8 called "the most valuable
   unscoped item in the plan" was ONE ALGEBRAIC REARRANGEMENT, that half the
   reason recorded beside the refusal was about a form the term never used, and
   that S8's own zinc measurement had priced a reaction the catalog does not
@@ -241,9 +278,12 @@ MILESTONES.md — the plan. ⚠ **§S9, §S8, §S7, §M8, §S1, §S3, §S4, §S5
   re-label and the arithmetic said keep; **S5's brief named the wrong LAYER**;
   and **S6's brief handed it a number that was wrong.**
 HANDOFF.md — what exists, and the ethos to preserve. **85 is S1, 86 is S2, 87 is
-  S3, 88 is S4, 89 is S5, 90 is S6, 91 is M8, 92 is S7, 93 is S8, 94 is S9.**
-NEXT_SESSION.md — the invariants table at the bottom is the contract, and S7, S8
-  and S9 each added a block to it. ⚠ Read the two warnings above it before
+  S3, 88 is S4, 89 is S5, 90 is S6, 91 is M8, 92 is S7, 93 is S8, 94 is S9,
+  95 is S10.**
+NEXT_SESSION.md — the invariants table at the bottom is the contract, and S7, S8,
+  S9 and S10 each added a block to it. ⚠⚠ **S10 also WITHDREW a row** (the zinc
+  flask going down at 0.20 mol O2) and MOVED another (the retort's threshold, 1264.2
+  → 1197.8 K) — the first withdrawal that table has had. ⚠ Read the two warnings above it before
   trusting any row, and note that TWO rows are LIMITS to remove rather than
   invariants to keep.
 GAME_DESIGN.md — the settled design.
@@ -252,7 +292,8 @@ data/catalog/README.md — the reaction-class taxonomy, including **S9's two spl
   `combustion`, M8's of `electrolysis`, S3's of `thermal-decomposition` and S4's
   decision NOT to un-split `roasting-to-metal`; plus
   `data/catalog/COVERAGE_REPORT.md`.
-the memory files (auto-loaded), especially chemsim-reversible-solid-gas,
+the memory files (auto-loaded), especially chemsim-vaporising-metal,
+  chemsim-physical-data-sourcing, chemsim-reversible-solid-gas,
   chemsim-solid-state-reactions, chemsim-surface-reactions,
   chemsim-solid-gate-fix, chemsim-element-solids, chemsim-coverage-catalog,
   chemsim-corpus-balance and chemsim-generated-artefacts.
@@ -266,15 +307,189 @@ a crystal, a gas that ATTACKS a crystal, a catalyst you have to actually put in
 the flask, a route that nothing declares, a Jacobian that cannot be probed outside
 its own state, a dial that decomposes things in the order their chemistry says
 they should, four inorganic gas processes whose whole behaviour is their
-reversibility, and **three smelters that take ore, coke and air to metal through
-four declarations that do not know about each other**. `SAVE_VERSION` is **5**.
+reversibility, three smelters that take ore, coke and air to metal through
+four declarations that do not know about each other, and **a retort that DISTILS
+its metal off and condenses it in a cool receiver, at a boiling point nothing
+typed**. `SAVE_VERSION` is **5**.
 Coverage: **48/229 classes**, **43 templates**, **38/173 template-ready**,
 **77/173 species-ready** — and ⚠⚠ **28/173 BOTH, which is the only one of the
 three a route can be judged on.**
 
 ---
 
-# ⚠⚠ WHAT S9 TURNED OUT TO BE: +4 ON THE INTERSECTION FOR ~15 LINES OF ENGINE
+# ⚠⚠ WHAT S10 TURNED OUT TO BE: +0 ROUTES, AND THAT WAS THE PREDICTION
+
+**+0 classes, +0 template-ready, +0 species-ready, +0 RUNNABLE — all four
+predicted before the audit ran and all four came out.** An honesty and mechanic
+milestone, taken as one and said so up front. ⚠ **NO ENGINE CODE CHANGED**: not
+one line of `numerics/` or `vessel/`. Coverage stays **48/229 classes, 38/173
+template-ready, 77/173 species-ready, 28/173 BOTH**.
+
+## ⚠⚠ 1. S9's TOP ENGINE ITEM WAS HALF A DATA JOB, AND SPLITTING IT LOCATED THE REST
+
+S9 handed forward ONE gap with two symptoms — the zinc retort makes solid zinc,
+nothing caps thermite's temperature — both citing *"a lattice may react and may
+never dissolve, boil or melt"*. **They are not one gap, and the pairing is what
+hid the real one.** That sentence is true of `PhaseArrays.lattice`; what put zinc
+under it was a `mineral_data` ROW. Against S4's own three tests for admitting
+mercury, zinc passes all three — a monatomic vapour at 1180.15 K (group 12, no Zn2
+to be wrong about), ONE condensed form, and an expressible reference state.
+⚠ Mercury passed the third on the LIQUID block; **zinc passes it on the SOLID
+block, which the table already relied on twice for I2 and S8.**
+
+So `[Zn]` moved into `element_data` and out of `mineral_data`, and the row became
+`ZnO + C -> Zn(g) + CO`. **One edit to a tuple.**
+
+## ⚠⚠ 2. THE VAPOUR PRESSURE IS ALGEBRA, AND AN UNANCHORED FIT MAKES Tb A REAL CHECK
+
+Lee-Kesler has no domain over a liquid metal (S4 measured it 3.8x high for
+mercury), so zinc needed a curated Antoine for mercury's reason. Alcock, Itkin &
+Horrigan (1984) publish the liquid range as **two constants**,
+`log10(p/atm) = 5.378 - 6286/T`, and with C = D = 0 that IS Antoine with C = 0 —
+a change of base and of pressure unit, **nothing fitted**, agreeing to 4e-15 over
+700–3000 K, and the round trip reproduces Alcock's published numbers to four
+figures.
+
+⚠⚠ **`chemsim-physical-data-sourcing` says boils-at-1-atm is NOT independent,
+because Lee-Kesler's ω is inverted at Tb to make it pass. THE CONVERSE IS WORTH AS
+MUCH.** Alcock's fit was made over 692.7–750 K and never saw Tb, so where it lands
+the boiling point is real evidence. **Ask what a fit was ANCHORED ON.** Four
+checks, and CRC never meets Alcock in any:
+
+| check | result |
+|---|---|
+| `Gf(g) + RT ln(Psub/P0) = 0`, sublimation curve at 298 K | **−0.184 kJ/mol** (Br2 −0.053, Hg +0.012, I2 +0.139, S8 +3.052) |
+| that curve's SLOPE vs CRC's Hf(g) = 130.400 | **130.674, +0.21%** |
+| the unanchored boiling point | **1168.84 K vs 1180.15, −0.96%** |
+| sublimation and liquid fits at the triple point | **+0.103%** |
+
+⚠ `chemicals` ships Alcock for the metals and no accessor advertises it usefully —
+`thermo.VaporPressure` reports `T_limits=(692.677, 750.0)` for zinc, which is the
+TABLE's window and not a hole in the data. Raw files:
+`chemicals/Vapor Pressure/Alcock_Itkin_Horrigan_metalic_elements{,_sublimation}.tsv`.
+⚠ Tc/Pc/Vc are YAWS only (**compilation** tier) and stamped as such.
+⚠ And the price of deriving Hvap from the curve the engine evaluates is that
+Alcock's fit measures the latent heat near the MELTING point: **120.344 against
+CRC's 115.3 at Tb, +4.4%.** Taking CRC's would mix two tabulations. Stated.
+
+## ⚠⚠ 3. THE THRESHOLD MOVED 66 K TOWARD THE LITERATURE, AND THE ROW GOT FASTER
+
+    Zn(s) product, S9    dH +240.0 kJ/mol   dS +189.8   dG = 0 at 1264.2 K
+    Zn(g) product, S10   dH +370.4 kJ/mol   dS +309.2   dG = 0 at 1197.8 K
+
+against a real Belgian retort's 1200–1300 and a literature ~1200 K. ⚠ The barrier
+rose by the same 130.4 kJ/mol (`Ea = max(dH,0)`) — inside the 300–400 kJ/mol range
+reported for carbothermic zinc, so it is defensible rather than merely arithmetic.
+⚠⚠ **AND THE ROW IS 24x FASTER ANYWAY**, because an Arrhenius pair is not
+separable: the derived `A` carries `exp(dS/R)`, and at 1400 K `exp(119.4/R)` =
+1.7e6 beats `exp(−130400/RT)` = 1.4e-5. **tau 256.9 s → 10.9 s**, equilibrium
+untouched, still under the collision ceiling.
+
+## ⚠⚠ 4. THE DISTILLATION, AND TWO MECHANICS NOBODY DECLARED
+
+Sealed 1 L at 1400 K: **0.040000 mol of zinc, every atom in the headspace.** Cool
+the receiver and it comes back — 0.028404 liquid at 1180 K, 0.039665 at 900 K,
+**0.040000 SOLID at 600 K.** ⚠ **Tb = 1180.15 and Tm = 692.68 appear in no
+declaration and in no script.**
+
+⚠⚠ **THE VENT DOES NOTHING UNTIL THE RETORT BEATS THE ROOM.**
+`solid_state_report` DERIVES 1156 K for the row's two evolved gases to reach one
+bar between them. Measured: **12.29% sealed / 12.29% vented at 1150 K** (0.9325
+bar) against **13.52% / 18.63% at 1156 K** (1.0312 bar), rising to 25.67% / 99.84%
+at 1198 K. A van 't Hoff number and a flask that was actually run, agreeing to the
+degree.
+
+⚠⚠ **AND A VENTED RETORT BLOWS ITS PRODUCT UP THE CHIMNEY.** Ore consumed
+99.91% → 100% while metal KEPT falls **51.04% → 46.93% → 43.53%** at
+1200/1300/1400 K, because the vent is indifferent to which gas it vents. **That is
+why a real Belgian retort has a condenser on it**, and why the threshold panel is
+run SEALED. ⚠ `conservation_report` is silent throughout, correctly.
+
+## ⚠⚠ 5. AND S9's OVERBLOWING FINDING IS WITHDRAWN — A RATE ARTEFACT WRITTEN UP AS PHYSICS
+
+S9 measured the zinc smelter's yield going DOWN at 0.20 mol O2 and concluded
+*"Overblowing a zinc retort really does waste the charge."* The competition is
+real. **But which side won was decided by two DERIVED pre-exponentials**, and §3
+moved one by 24x: the reduction now takes the zincite before the blast can burn
+the coke, and the yield is monotone and saturating (.0117 / .0229 / .0328 / .0400,
+flat to 0.50 mol O2).
+
+⚠⚠ **THE SIGN OF THE EFFECT DEPENDED ON A CLOCK.** A real furnace does waste an
+overblown charge, for transport reasons this engine does not model. **Thermodynamic
+conclusions here survive a phase change in a product; kinetic ones need not.** New
+rule, and the sharpest thing in the session.
+
+## ⚠⚠ 6. A NEGATIVE HEAT CAPACITY HAD BEEN IN THE ENGINE SINCE S4, AND 103 ROWS STILL HAVE ONE
+
+`CondensedProvider.get` fits Rowlinson-Bondi over a **hardcoded 250–450 K** and
+every caller takes the default. For a metal that is a LIQUID correlation evaluated
+where there is no liquid, then extrapolated in: **mercury −25.26 at Tm, −12.62 at
+298 K** against a real 27.98; **zinc +462.51 at Tb** against 31.38.
+
+⚠⚠ **AND IT WAS REACHABLE**: with 50 J/K glassware, a flask holding over
+**3.96 mol of liquid mercury (795 g, 59 mL) had a NEGATIVE TOTAL thermal mass** —
+−12.808 J/K at 5 mol, i.e. heating it cooled it. Both curated from measurement
+(mercury CRC 28.000 / VDI 28.031 / Fit-2023 27.976, three sources inside 0.2%;
+zinc from the WebBook Shomate curve over its OWN 692.73–1180.17 K window, flat at
+31.380). Cost on the pinned example: **one digit in the ninth decimal.**
+
+⚠⚠ **THE GENERAL FAULT IS ENGINE QUEUE ITEM 2 AND IT IS LARGE: 103 corpus rows,
+worst −21482, plus 41 swinging over 5x, and it bites at BOTH ends** (ethylene
+~1574 at its 113.9 K melting point). ⚠ Mostly on Joback Tm/Tb that is itself
+meaningless — **separate the wrong output from the wrong input before fixing it.**
+
+## ⚠⚠ 7. TWO INSTRUMENTS WERE WRONG AND ONE INVENTED A 90 kJ/mol FINDING
+
+* **`validation/game_gates.py` printed a residual whether or not the shift it
+  differences had been APPLIED.** `standard_state.shift` correctly refuses one
+  whose 298 K vapour pressure is under `PSAT_FLOOR_BAR` = 1e-12 and returns 0.0
+  with a reason; differencing that zero read **"zinc, residual +90.78 kJ/mol"**
+  for a formation pair that is fine. **Every other row has an applied shift, so
+  the hole was unreachable until a solid with a 2e-16 bar vapour pressure
+  arrived.** The panel says REFUSED with the reason now, and gives zinc the check
+  it CAN have.
+* **`volatility._CURATED_ANTOINE` stamped every entry `NIST WebBook`** — true of
+  all nine and false the moment a tenth came from Alcock. ⚠⚠ **That is exactly the
+  shape S9's false citation had: correct when written, silently wrong after the
+  next addition.** Per-entry overrides in `volatility` and in `condensed`, whose
+  strings claimed "at 298 K" for a zinc liquid volume taken at 700 K.
+
+## 8. IRON IS REFUSED, MEASURED RATHER THAN ASSUMED — AND IT IS ENGINE QUEUE ITEM 1
+
+The mechanism would work (88.0% of thermite's enthalpy could go into boiling the
+iron) and the curve converts exactly (−1.60% on an unanchored Tb). Three counts
+against: **iron cannot leave `mineral_data`** (a declared `solid_catalyst` via
+`ammonia_synthesis` AND thermite's solid product, so it must be BOTH a lattice and
+a gas); `[Fe]` fails S4's disambiguation test (three solid allotropes, two
+transitions inside thermite's own range); and **no sublimation curve exists**, so
+zinc's best check cannot be run at all.
+
+## 9. THE PRE-EXISTING THING ZINC JOINED RATHER THAN CREATED
+
+`solidifies = True` exposes zinc to the ideal fusion law and zinc has no UNIFAC
+groups, so x_sat = **0.197** at 298 K, 89 g/100 mL against a real ~1e-8. ⚠
+**Measured before accepting it:** iodine is over by **1.5e4x** and sulfur by
+**1.1e8x** on the same law, and zinc's mole fraction is SMALLER than iodine's
+(0.238), sulfur's (0.275) or naphthalene's (0.302). Reachable only by putting
+metal in water, which no route does. **Check whether a new wrongness is a new
+CLASS or a new member before pricing it.**
+
+## 10. THE SMALL THINGS
+
+* `species_roles.psv` moves zinc from the `mineral` provenance tier to
+  **`measured`** — an upgrade in the audit's own terms.
+* ⚠ **Three pieces of prose rotted inside this session's own edits**: the audit's
+  overblowing paragraph, its "a lattice against three curated gases" (two of each
+  now), and its "the same statement the zinc retort makes". **An audit's prose
+  rots exactly like a generated file's.**
+* ⚠ `validation/smelting.py` is **CRLF**, contrary to the note that the newer
+  `validation/*.py` are LF. Check, do not assume.
+
+---
+
+# WHAT S9 TURNED OUT TO BE: +4 ON THE INTERSECTION FOR ~15 LINES OF ENGINE
+*(kept for the record. ⚠ Its §4 overblowing paragraph is WITHDRAWN and its §7
+zinc-retort limitation is CLOSED — see S10 above.)*
 
 **+5 classes (43 → 48 of 229 after two splits), +4 template-ready (34 → 38), +4
 RUNNABLE (24 → 28)** — tying S7's record. Six declarations, no new term, no new
@@ -414,13 +629,19 @@ collision limit outright.
 
 # ⚠ THE FRAGILITIES
 
-**1. ⚠⚠ A LATTICE MAY REACT AND MAY NEVER BOIL, AND S9 PAID FOR IT TWICE.** The
-zinc retort makes SOLID zinc (a real one distils it at 1180 K) and nothing caps
-thermite's temperature (a 1 J/K flask reports 5469 K, above `T_MAX` = 5000, which
-bounds RATE evaluation and not the state). **Same gap. Engine queue item 1.**
+**1. ⚠⚠ A LATTICE MAY REACT AND MAY NEVER BOIL — HALF CLOSED BY S10, AND THE
+HALF LEFT IS NOW ONE SENTENCE.** S9 recorded this as one gap with two symptoms.
+**The zinc retort DISTILS now** (0.040000 mol of vapour at 1400 K, condensing to
+liquid at 1180.15 K and freezing at 692.68 K, neither temperature written
+anywhere) because the sentence was about a `mineral_data` ENTRY, not about the
+metal — and no engine code changed. What remains is thermite: **nothing caps the
+temperature** (a 1 J/K flask reports 5469 K, above `T_MAX` = 5000, which bounds
+RATE evaluation and not the state), and iron cannot make zinc's move because it is
+a declared `solid_catalyst` AND thermite's solid product, so it would have to be
+BOTH a lattice and a gas. **Engine queue item 1**, and it is worth ZERO routes.
 
 **2. ⚠⚠ THE BURNER IS STILL ~50 s AT rtol 1e-8 AGAINST 0.8 s AT THE DEFAULT.** The
-crash is bounded; the thrashing is not. **Engine queue item 7.** It fires only at
+crash is bounded; the thrashing is not. **Engine queue item 8.** It fires only at
 rtol 1e-8, so nothing a player does reaches it.
 
 **3. ⚠⚠ NO CURRENT BUDGET (M8).** Two electrode reactions in one cell divide
@@ -451,9 +672,19 @@ any catalysed template, pinned by a test.
 **10. THE DEFAULT TOLERANCE, BOUNDED RATHER THAN OPEN.** ⚠ `tolerance_audit.py`
 is a STANDING audit: run it after touching the RHS. Its three self-check examples
 must come out OUTPUT IDENTICAL. ⚠ Its `QUOTABLE DIGITS MOVE` headline on
-`oil_of_vitriol` is WRONG — engine queue item 5.
+`oil_of_vitriol` is WRONG — engine queue item 6.
 
 **11. NOT MODELLED: the SITE BALANCE.** First order in the catalyst for ever. M10.
+
+**11b. ⚠⚠ 103 CORPUS ROWS HAVE A NEGATIVE LIQUID HEAT CAPACITY (S10).** The
+`CondensedProvider` fit window is a hardcoded 250–450 K and every caller takes
+the default, so a species whose liquid range falls outside it is extrapolated —
+worst carminic acid at **−21482 J/(mol K)**, plus 41 more swinging over 5x, and
+it bites at BOTH ends (ethylene ~1574 at its 113.9 K melting point). ⚠ **A
+negative Cp means heating the liquid COOLS it**, and S10 measured it reachable:
+over 3.96 mol of liquid mercury gave a NEGATIVE TOTAL thermal mass, and mercury
+had carried it since S4. **Two species curated by hand; the mechanism is
+UNFIXED.** Measured inert on every example today. **Engine queue item 2.**
 
 **12. ⚠ NUCLEATION, HALF modelled.** A solid can only grow where one already is.
 ⚠ **S9 leaned on the modelled half deliberately**: an exhausted furnace stops in
@@ -473,7 +704,7 @@ whole species and not per fragment. A real inconsistency, and inert.
 
 **16. ⚠ `iron-ii-oxide` AND `pyrite` ARE BOTH ONE SOURCE AWAY, AND EACH IS WORTH
 +1.** FeO has no crystal Cp in CRC; pyrite has `Hfs` in WEBBOOK and `S0s` in
-nothing. Both refusals follow rules worth keeping. Engine queue items 2 and 6.
+nothing. Both refusals follow rules worth keeping. Engine queue items 3 and 7.
 
 **UNCHANGED: `psi = np.exp(-a / T)` in `activity.activity_coefficients` overflows
 for the PSRK quadratic `H2O <-> N2` pair below 4.28 K**, and the RHS's clamp is
@@ -490,6 +721,35 @@ TRAPS SPECIFIC TO THIS ARC:
 WRITING CODE. Twenty-one times now. ⚠ **AND THE SOLVER IS PART OF THE ARITHMETIC**
 (M8): an arithmetic bound tells you whether a mechanism CAN go; only running it
 tells you whether it can be INTEGRATED.
+⚠⚠ **A REFUSAL'S SENTENCE IS A CLAIM ABOUT A NAMED THING — CHECK WHICH THING.**
+S10's whole zinc half is one sentence, *a lattice may react and may never boil*,
+turning out to be about a `mineral_data` ROW rather than about a metal. Two
+sessions read it as physics. **This is the trap below, one level down.**
+⚠⚠ **AND TWO SYMPTOMS CITING ONE SENTENCE ARE NOT NECESSARILY ONE GAP.** S9
+paired the zinc retort with thermite's missing temperature cap. Splitting them cost
+nothing and LOCATED the engine gap; keeping them together had hidden it for a
+session, because the pair looked too big to scope.
+⚠⚠ **THERMODYNAMIC CONCLUSIONS SURVIVE A PHASE CHANGE IN A PRODUCT; KINETIC ONES
+NEED NOT.** S9's overblowing finding was written up as physics and was two derived
+pre-exponentials racing; making the product a vapour moved one by 24x and the
+effect reversed. **Ask what a claim rests on before quoting it as behaviour.**
+⚠⚠ **ASK WHAT A FIT WAS ANCHORED ON, NOT WHETHER THE CHECK LOOKS FAMILIAR.**
+"Boils at 1 atm" is NOT independent for Lee-Kesler, because omega is inverted at Tb
+to make it pass — and IS independent for Alcock, whose fit was made 430 K below Tb
+and never saw it. The same check, worthless one way and load-bearing the other.
+⚠⚠ **A CORRELATION'S FIT WINDOW IS A DEFAULT ARGUMENT NOBODY OVERRIDES.**
+`CondensedProvider.get(mol, T_lo=250.0, T_hi=450.0)` — and a LIQUID correlation
+evaluated where there is no liquid returned a NEGATIVE heat capacity for four
+sessions. ⚠ **But separate the wrong OUTPUT from the wrong INPUT before fixing
+it**: 103 rows are negative and most of them have a Joback Tm/Tb that is itself
+meaningless.
+⚠⚠ **A SHARED PROVENANCE STRING GOES SILENTLY WRONG ON THE NEXT ADDITION.** Nine
+curated Antoine rows stamped `NIST WebBook`; correct until a tenth came from
+Alcock. **Same shape as S9's false citation**, and the fix is a per-entry override
+with the default retained.
+⚠ **CHECK WHETHER A NEW WRONGNESS IS A NEW CLASS OR A NEW MEMBER.** Zinc's
+20 mol% aqueous solubility looks alarming until iodine (1.5e4x over) and sulfur
+(1.1e8x) are measured on the same law. It JOINED a reported fragility.
 ⚠⚠ **A RECORDED REFUSAL CAN BE RIGHT ABOUT ITS MEASUREMENT AND WRONG ABOUT ITS
 SCOPE.** S9's whole engine change is one rearrangement of an expression a refusal
 had been standing in front of for five milestones — and half the reason recorded
@@ -521,7 +781,9 @@ cheapest item on the queue. **S9's brief said the reversible solid-gas term was
 the plan's most valuable unscoped item and might be worth +4 — the +4 was right
 and "unscoped" was worth about fifteen lines.**
 ⚠ **PREDICT THE NUMBER BEFORE YOU MEASURE IT.** S3 +2/+0; S4 +1/+1; S6 predicted
-14 and measured 16; M8 three for three; S7 five for five; **S9 four for four.**
+14 and measured 16; M8 three for three; S7 five for five; S9 four for four;
+**S10 four for four, and all four were ZERO — which is the harder prediction to
+make and the one worth making out loud.**
 ⚠ **VERIFY A CREDIT BY RUNNING IT, NOT BY READING THE CODE THAT WOULD RUN IT.**
 Every S9 class went into a real `Vessel`; `pyrite-roasting` is what the check
 exists to prevent.
@@ -544,8 +806,10 @@ S1's coverage audit credited a route that cannot run; S3's report could not be
 diffed; S4's rate-ceiling audit made a claim about a table it does not read; S6's
 target column had been understating itself since M3; M8's new audit found a
 pre-existing ion-table error; S7 found the coverage audit pricing a species the
-engine refuses. **S9 found a source comment CITING an audit check that had never
-existed, and the citation is why nobody looked.**
+engine refuses. S9 found a source comment CITING an audit check that had never
+existed, and the citation is why nobody looked; **and S10's `game_gates` panel
+INVENTED a 90 kJ/mol error by differencing a shift the engine had correctly
+REFUSED, which no row before zinc could trigger.**
 ⚠ AN INVARIANT MEASURED ACROSS A BOUNDARY FLUX IS NOT AN INVARIANT. Seal it first.
 ⚠ A GREEN SUITE IS NOT EVIDENCE THE INVARIANTS TABLE HOLDS.
 ⚠ **A GENERATED FILE NOTHING READS IS THE ONE THAT ROTS.** Regenerate all three
@@ -628,5 +892,12 @@ self-check examples come out byte-identical; **`COVERAGE_REPORT.md` and both
 dot-separated SMILES is a MIXTURE and is refused whether or not a fragment is
 charged; `validation/jacobian_bound.py` panel 3 reads 0 clamped columns on every
 vessel; **a lattice may REACT and may never DISSOLVE, BOIL or MELT — the fusion
-law is still 407x wrong in both directions, and neither M6 nor S1–S9 nor M8
-softened that by one digit.**
+law is still 407x wrong in both directions, and neither M6 nor S1–S10 nor M8
+softened that by one digit** (⚠⚠ S10 did NOT weaken this: it moved ZINC out of the
+lattice table, which is a statement about one entry. The rule over lattices is
+untouched, and iron is the case that would need it changed — engine queue item 1);
+`_CURATED_SOURCE.get(smi, _NIST)` is exactly the old shared stamp for all nine
+pre-S10 Antoine rows; zinc's Antoine pair reproduces **Alcock's own published
+log10 coefficients to four figures**, which is what says the conversion is
+algebra; and **a curated liquid Cp must be POSITIVE across the species' whole
+liquid range** — the check that had never been made.
