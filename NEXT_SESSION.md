@@ -687,6 +687,73 @@ really is reversible, and the zinc row is uphill at every temperature (a real
 retort boils the zinc off at 1180 K, which is product removal). It is the second
 gap of that shape after NUCLEATION and the more valuable of the two.
 
+## S9 — the reversible solid-gas term, and the three smelters
+
+| row | value | how it is pinned |
+|---|---|---|
+| ⚠⚠ **the five pre-S9 solid-state rows** | **BIT-IDENTICAL.** `P_react` is an empty product of exactly 1.0 and `P_prod` IS the old `Q` element for element, at p = 0 as well as at p = 55 bar | `test_the_pre_S9_rows_are_BIT_IDENTICAL_not_merely_close`, and `examples/lime_cycle.py` + `examples/mercury_retort.py` come out **byte-identical** |
+| **the bound that replaced the refusal** | at p_CO → 0 the old `k_r Q` reads 1.5e-2, 1.5e+22, `inf`; the new `net` is **bounded by `k_r` = 1.4973e-08** at 1400 K | `test_the_reverse_flux_is_BOUNDED_where_the_quotient_form_diverged`. No clip, no floor, no epsilon |
+| ⚠⚠ **the equilibrium, over a 50x charge range** | **Q/K = 1.0000, 1.0000, 1.0000** — `units` is a common factor chosen by the sign of the affinity | `test_the_equilibrium_is_Q_over_K_whatever_the_charge_weighs`. **This was ALREADY true before S9** and is half of what the old refusal wrongly claimed to be about |
+| **every row's barrier vs its enthalpy** | `Ea >= max(dH, 0)` on all ten rows, and `max(Ea - dH, 0)` never clips | a declared `Ea` under `dH` would leave `k_f/k_r != K` silently. Refused by name |
+| **the exothermic derived pair, measured not asserted** | thermite `A = 4.15e-6 1/s` (a **2.8-day** reaction) and the CO reduction 9.70e-4 1/(bar s) — **at EVERY temperature, because `Ea = 0` leaves no exponential** | `test_an_exothermic_row_may_not_take_the_derived_pair`. The finding is the missing exponential, not the size |
+| **the three smelters, from ore + coke + AIR** | 0.04 mol ore → **0.040000 mol metal and 0.040000 mol SO2**, no ore and no coke left, `conservation_report` empty | `test_a_smelter_takes_ore_coke_and_AIR_to_metal`, three parametrised cases. **Nothing declares the route** |
+| **the air is the control** (copper) | 0.02 mol O2 → **29.01%**, 0.06 → **80.41%**, 0.10 → **99.89%**, 0.20 → **100.00%** | monotone and saturating; `test_the_air_is_the_control_which_is_what_a_smelter_adjusts` |
+| ⚠⚠ **and the ZINC flask goes DOWN at 0.20 mol** | **0.032476 mol of metal at 0.06 against 0.025515 at 0.20**, with 0.014485 zincite left and the coke gone | `validation/smelting.py` panel 6. The carbothermic reduction and the tuyere **compete for the same carbon**; copper and lead do not, because their reductant is the CO the carbon made and Boudouard hands it back. **Overblowing a zinc retort wastes the charge, and no line in this project says so** |
+| ⚠⚠ **the carrier-free furnace** | **EXACTLY zero** copper, CO and CO2 at the default rung, rtol 1e-6, 1e-8 and 1e-10 | `test_a_carrier_free_furnace_is_EXACTLY_inert_at_four_tolerances`. The lead chamber's round-off-seeded cycle CANNOT happen here, and the reason is the form (`p ** 1`, no denominator) and not a guard |
+| ⚠ **and the carrier MULTIPLIES once seeded** | **1e-12 mol of CO2** — one part in 1e11 — reduces the whole 0.10 mol of oxide; the carbon is what is consumed | `test_the_carrier_MULTIPLIES_once_it_is_seeded`. Real chemistry: Boudouard makes 2 CO from 1 CO2 and the reduction hands one back |
+| **the zinc retort's threshold** | 3.61% at 1100 K, 29.44% at 1200, **87.05% at 1264**, 99.96% at 1300, 100% at 1400 — and **dG = 0 at 1264.3 K** off this project's own tables | `test_the_zinc_retort_is_a_THRESHOLD_at_its_own_dG_zero`. A real Belgian retort is 1200–1300 and nothing was fitted |
+| **thermite's barrier column** | 0.0000% at 298.15 K, 3.1e-10 mol at 600, 0.2171% at 800, **36.95% at 933** (aluminium's melting point), 98.16% at 1000, 100% at 1200 | `test_thermite_is_INERT_cold_and_total_hot`, from ONE pin on the reported 1200 K ignition temperature |
+| **thermite's self-ignition** | insulated at 298.15 K it stays there to six figures; lit at 1000 K it goes to 100% and rises **+322.45 K** against +323.86 predicted (50 J/K flask) | `test_thermite_runs_away_on_its_own_enthalpy_and_nothing_caps_it` |
+| **`carbon-combustion`'s irreversibility margin** | **ln K +21.87 at 2200 K** against a bar of +20 — the tightest row in `SURFACE_REACTIONS` by 46 nats | `test_carbon_combustion_is_a_declared_pair_and_not_the_sulfide_one`. Not a marginal constant: above ~1000 K CO2 over carbon goes to CO, which is the row declared next door |
+| **the declared pre-exponentials, in their own units** | `REDUCTION_A` = 1.609 1/(bar s) is **9.6e-4 of the HERTZ-KNUDSEN arrival rate** (2209 mol/(m2 s) over 0.756 m2/mol); `THERMITE_A` = 7.62e10 1/s is under 1e14 | `test_a_declared_pre_exponential_is_under_its_own_arrival_ceiling`. ⚠ `Vm_solid` is in **L/mol** — the /1000 is the point of that test |
+| **`rate_ceiling` reads the SURFACE table now** | every pre-exponential there is **below the collision limit outright**, so no row crosses at any temperature | `validation/rate_ceiling.surface_panel`. ⚠ Against the BIMOLECULAR ceiling — a surface rate is order 1 in one gas |
+| the whole suite | **927 passed / 1 failed in 14:32**, 928 tests; the failure was S8's own `len(SURFACE_REACTIONS) == 4` row-count test, rewritten and re-run green | run once at the end of the session. ⚠ The clean 928 was NOT measured as one run — see NEXT_PROMPT |
+| **the tolerance audit** | **"NO example prints a quotable digit that moves"**, and `lime_cycle` / `roasting_and_the_catalyst_gate` / `mercury_retort` are all **OUTPUT IDENTICAL** | `validation/tolerance_audit.py`, 12 examples. ⚠ The strongest single check on the engine change, because those three are the solid-phase ones. `oil_of_vitriol` is skipped without `--all` |
+
+⚠⚠ **THE FOUR COVERAGE NUMBERS, ALL PREDICTED BEFORE MEASURING.** 48 classes,
+38 template-ready, **28 BOTH**, and species-ready holding at 77. ⚠ The class
+DENOMINATOR moved 224 → **229**, because S9 made TWO splits and only one of them
+was planned: `catalytic-gas-oxidation` came apart under the RANKING check.
+
+⚠⚠ **M6 DREW THE SOLID/SURFACE LINE IN THE WRONG PLACE.** It was recorded as
+*inside a crystal / at its surface*, and S4 had already broken that by turning a
+crystal entirely into gas. The line that holds is **reversible or not**: an
+affinity form cannot carry DECLARED rate orders, because detailed balance fixes
+its exponents at the stoichiometric coefficients. That is this file's own
+standing invariant — *a declared rate order may NEVER be reversible* — arriving
+in a new place. Roasting stays in `SurfaceArrays` **for the order, not for the
+denominator.**
+
+⚠⚠ **TWO STATED LIMITATIONS THAT ARE THE SAME LIMITATION.** A lattice in this
+engine may react and may never boil, so:
+
+* **the zinc stays SOLID.** A real retort distils it off at 1180 K, which is
+  product removal. `thermo.get("[Zn]")` refuses the monatomic vapour as a bare
+  element. ⚠ The row does not need the escape — ln K is +2.21 at 1400 K — but the
+  mechanic is absent. `test_the_zinc_stays_a_SOLID_and_that_is_a_stated_limitation`
+  will FAIL the day `[Zn]` becomes priceable, and then the row should be
+  rewritten to evolve it.
+* **nothing caps thermite's temperature.** A real one stops near 3135 K because
+  the IRON BOILS. A 1 J/K flask reports **5469 K**, above the RHS's `T_MAX` clamp
+  of 5000 — which bounds RATE evaluation and not the state. Reported, not
+  refused.
+
+⚠ **AND `direct-combination` IS STILL REFUSED, MEASURED.** `Hg + S8 -> HgS` was
+on the queue as "probably" part of this work. Mercury is a curated LIQUID element
+and S8 is a MOLECULAR solid, which `build_surface_arrays` refuses by name because
+`PhaseArrays.lattice` cannot answer "how much solid is there" for a species with
+a solid block AND a liquid block AND a headspace. Neither table's shape.
+
+⚠ **`blast-furnace` IS NOW ONE CLASS AND ONE MINERAL AWAY** — `slagging` has no
+template (and neither `silicon-dioxide` nor `calcium-silicate` has a lattice),
+and both its `gas-solid-reduction` rows want an `iron-ii-oxide` `mineral_data`
+refuses on the crystal Cp. The closest any five-step route has been.
+
+⚠ **A FALSE CITATION SURVIVED FOUR MILESTONES.** `surface.ROASTING_A`'s comment
+has said *"validation/rate_ceiling.py re-measures it"* since S1 and that audit
+had never read the table. **The sentence claiming the check existed is why nobody
+looked.** Fixed, and the near-miss is kept in the source.
+
 # Still open
 
 - ✔ ~~**THE DRYOUT BAND.**~~ CLOSED 2026-08-23, HANDOFF 72. Was the last live member of the

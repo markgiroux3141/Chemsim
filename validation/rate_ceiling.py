@@ -314,11 +314,54 @@ def solid_state_panel() -> float:
     return coldest
 
 
+def surface_panel() -> float:
+    """⚠⚠ S9 -- THE SECOND TABLE THIS AUDIT DID NOT READ, AND ITS OWN SOURCE
+    HAS CLAIMED SINCE S1 THAT IT DID.
+
+    ``surface.ROASTING_A``'s pinning comment ends *"validation/rate_ceiling.py
+    re-measures it"*. It did not. S4 found the same fault about
+    ``SOLID_STATE_REACTIONS`` and added the panel above; ``SURFACE_REACTIONS``
+    is the other curated table that never becomes a ``Reaction``, and it was
+    left out. S9 tripped over it while writing the identical sentence for a new
+    constant. **A recorded measurement is a claim about a past state of the
+    code, and this one was about a state that never existed.**
+
+    ⚠ THE UNITS ARE NOT THE OTHER PANEL'S. A surface rate is EXTENSIVE in the
+    solid and INTENSIVE in the gas -- ``k prod(nS ** order_s) prod(C ** order_g)``
+    in mol/s -- so with order 1 in one arriving gas the constant is in
+    L/(mol s) and the ceiling to compare it against is the BIMOLECULAR one, not
+    the unimolecular one. That is M8's unit error, avoided by naming the order:
+    ``n_gas_order`` is 1 on every row here.
+    """
+    from chemsim.properties import surface as sf
+
+    print("\n=== THE SURFACE TABLE, which NOTHING here has ever read ===")
+    print(f"  bimolecular ceiling {COLLISION_LIMIT:.1e} L/(mol s); every row is "
+          "order 1 in one gas")
+    print(f"  {'row':<28} {'A':>11} {'Ea/kJ':>7} {'k(298)':>11} "
+          f"{'crosses at':>12}")
+    coldest = float("inf")
+    for decl in sf.SURFACE_REACTIONS:
+        p = sf.price(decl, THERMO)
+        k298 = p.A * math.exp(-p.Ea / (R * T_REF))
+        ratio = p.A / COLLISION_LIMIT
+        cross = (p.Ea / (R * math.log(ratio))) if ratio > 1.0 else float("inf")
+        coldest = min(coldest, cross)
+        where = f"{cross:12.0f}" if math.isfinite(cross) else "       never"
+        print(f"  {decl.name:<28} {p.A:11.4e} {p.Ea/1000:7.1f} {k298:11.4e} "
+              f"{where}")
+    print("  Every pre-exponential here is BELOW the collision limit outright,")
+    print("  so no row can cross at any temperature -- which is the property")
+    print("  that makes a heterogeneous constant a rate and not a knob.")
+    return coldest
+
+
 def main() -> None:
     nets = networks()
     over = cold_panel(nets)
     coldest = hot_panel(nets)
     solid_coldest = solid_state_panel()
+    surface_panel()
     water_panel(nets)
 
     print("\n" + "=" * 74)

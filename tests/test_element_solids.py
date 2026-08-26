@@ -145,7 +145,17 @@ def test_a_gas_solid_reduction_cannot_clear_the_irreversibility_bar(
     furnace's top gas still contains CO because these reductions really are
     reversible, and the zinc row is not even downhill -- a real retort works by
     boiling the zinc off at 1180 K, which is product removal and not a
-    favourable equilibrium."""
+    favourable equilibrium.
+
+    ⚠⚠ S9 -- THIS REFUSAL STANDS AND THE CONCLUSION S8 DREW FROM IT DOES NOT.
+    An IRREVERSIBLE term still cannot hold these rows, which is what this test
+    asserts and all it asserts. But `SolidStateArrays` can: writing its gas
+    quotient as two ONE-SIDED products makes a gas REACTANT bounded, and
+    `tenorite-carbon-monoxide-reduction` and
+    `litharge-carbon-monoxide-reduction` are ordinary rows of
+    `SOLID_STATE_REACTIONS` now. See `tests/test_smelting.py`. **The reading to
+    keep is "the reverse is a real flux"; the reading to drop is "so it cannot
+    be expressed".**"""
     o, m = md.MINERALS[oxide], md.MINERALS[metal]
     co, co2 = thermo.get("[C-]#[O+]"), thermo.get("O=C=O")
     n_m = next(v for k, v in o.formula.items() if k != "O")
@@ -169,20 +179,41 @@ def test_a_gas_solid_reduction_cannot_clear_the_irreversibility_bar(
 
 
 def test_the_roasting_family_still_clears_it(thermo):
-    """The bar is not unreachable -- every declared row is far above it, which is
-    what makes the four refusals above a statement about the chemistry."""
-    for decl in sf.SURFACE_REACTIONS:
+    """The bar is not unreachable -- every ROAST is far above it, which is what
+    makes the four refusals above a statement about the chemistry.
+
+    ⚠ S9 -- THE ">60" CLAIM IS ABOUT THE ROASTS AND NOT ABOUT THE TABLE.
+    `carbon-combustion` joined `SURFACE_REACTIONS` and clears the bar by 1.87
+    nats rather than 46, because above ~1000 K carbon dioxide over carbon is
+    increasingly taken to CO -- so its own product stops being the stable one.
+    That reversal is `solid_state.boudouard-gasification`, declared next door.
+    """
+    roasts = [d for d in sf.SURFACE_REACTIONS if d.name.endswith("-roasting")]
+    assert len(roasts) == 4
+    assert len(sf.SURFACE_REACTIONS) == 5
+    for decl in roasts:
         priced = sf.price(decl, thermo)
         assert priced.ln_K_run > sf.LN_K_IRREVERSIBLE
         assert priced.ln_K_run > 60.0
-    assert len(sf.SURFACE_REACTIONS) == 4
+    # every row still clears the bar -- that is what makes THIS term's
+    # forward-only integration a measurement rather than a simplification
+    for decl in sf.SURFACE_REACTIONS:
+        assert sf.price(decl, thermo).ln_K_run > sf.LN_K_IRREVERSIBLE
 
 
 def test_the_zinc_retort_is_a_product_removal_problem_not_an_equilibrium(thermo):
     """Worth its own assertion because it is the one row that is UPHILL, and the
     reason a zinc retort works anyway is not in this engine: zinc boils at
     1180 K and leaves. `mineral_data` holds zinc as a lattice with no vapour
-    pressure, so that escape is not expressible here either."""
+    pressure, so that escape is not expressible here either.
+
+    ⚠⚠ S9 -- AND THIS IS NOT THE CATALOG'S ROW. `zinc-smelting` step 2 reads
+    `zinc-oxide + carbon-graphite -> zinc + carbon-monoxide`, i.e. the CARBON
+    route, where the entropy of making a mole of CO carries it: dG = 0 at
+    1264.3 K, and the retort runs. What is measured below is the CO route, which
+    nothing in the corpus asks for. **The arithmetic here is right and it was
+    about the wrong reaction** -- so this test is kept as the measurement it is
+    and the +63.31 must not be read as "the class is blocked" again."""
     zincite, zinc = md.MINERALS["zincite"], md.MINERALS["zinc"]
     co, co2 = thermo.get("[C-]#[O+]"), thermo.get("O=C=O")
     dG = (zinc.Gf_solid + co2.Gf) - (zincite.Gf_solid + co.Gf)

@@ -433,13 +433,99 @@ species-ready, so the intersection — the only column a route can be judged on 
 does not move for it. **A split whose measured effect is negative is a split
 doing its job, and this is the first one to prove it.**
 
+### ⚠⚠ S9 SPLIT `carbothermic-reduction` — FIVE ROWS, FOUR MECHANISMS
+
+The class was one label over four different things that happen to have coke on
+the left. S9 built the OXIDE one and split the rest out rather than credit them:
+
+| route | step | became | what it is | covered? |
+|---|---|---|---|---|
+| `zinc-smelting` 2 | `ZnO + C -> Zn + CO` | `carbothermic-oxide-reduction` | carbon takes the oxygen and leaves as CO; the metal is freed | ✔ **built by S9** |
+| `frank-caro` 1 | `CaO + C -> CaC2 + CO` | `carbide-formation` | ⚠ **the carbon ends up IN the product** as well as leaving | ✘ named gap |
+| `calcium-carbide` 1 | `CaO + C -> CaC2 + CO` | `carbide-formation` | the same furnace | ✘ named gap |
+| `white-phosphorus` 1 | `Ca3(PO4)2 + SiO2 + C -> P4 + CO + CaSiO3` | `carbothermic-phosphate-reduction` | needs a SLAG FORMER to displace the phosphate first | ✘ named gap |
+| `leblanc-process` 2 | `Na2SO4 + C + CaCO3 -> Na2CO3 + CaS + CO2` | `carbothermic-sulfate-reduction` | the SULFUR is reduced, not removed, and there is a metathesis on top | ✘ named gap |
+
+⚠ **CREDITING THE WHOLE CLASS ON THE OXIDE ROW WOULD HAVE BEEN
+`roasting-to-metal`'s FALSE CREDIT IN A FOURTH COSTUME.** A term that turns an
+oxide into its metal cannot make a carbide — the carbon is on the wrong side of
+the reaction — and it cannot slag a phosphate. Two of those routes would have
+moved into the template-ready list on the strength of a mechanism that does not
+make their products.
+
+⚠ **THE SPLIT COSTS NOTHING AND MOVES THE DENOMINATOR (224 → 227; S9's second
+split takes it to 229).** None
+of the four uncovered rows was ever credited, so no route loses anything —
+unlike S7's `combustion` split, which cost `match-chemistry` its
+template-readiness. Both are correct; the difference is only whether the old
+credit was live.
+
+⚠ **AND THE QUEUE HAD PRICED THE WRONG REACTION FOR THE ROW THAT DID GET BUILT.**
+`NEXT_PROMPT` carried S8's measurement that `ZnO + CO -> Zn + CO2` is **uphill at
++63.3 kJ/mol** and warned the class might need engine work. The catalog's own row
+is not that reaction — it is the CARBON one, where the entropy of making a mole
+of CO carries it, dG = 0 at **1264.3 K** against a real Belgian retort's
+1200–1300. It needed no engine work at all: two solid reactants and one gas
+PRODUCT is an ordinary row of M6's table. **Read the row, not the class name.**
+
+### ⚠⚠ S9 ALSO SPLIT `catalytic-gas-oxidation` — A FALSE CREDIT ON TWO OF ITS THREE ROWS
+
+Found while RANKING the work queue, not while building anything, which is the
+second time a class has come apart under that check. All three rows are "a gas
+oxidised in air over a solid catalyst" and **all three are different reactions**:
+
+| route | step | became | covered? |
+|---|---|---|---|
+| `deacon-process` 1 | `HCl + O2 + CuCl2 -> Cl2 + H2O` | `catalytic-hydrogen-chloride-oxidation` | ✔ `deacon_oxidation` |
+| `contact-process` 2 | `SO2 + O2 + V2O5 -> SO3` | `catalytic-sulfur-dioxide-oxidation` | ✘ **nothing makes this** |
+| `ostwald-process` 1 | `NH3 + O2 + Pt -> NO + H2O` | `catalytic-ammonia-oxidation` | ✘ **nothing makes this** |
+
+⚠⚠ **AND THE NEAR-MISS IS THE PART WORTH KEEPING: THE OBVIOUS READING IS THAT
+`sulfur_dioxide_oxidation` COVERS THE CONTACT-PROCESS ROW, AND IT DOES NOT.**
+That template is `SO2 + NO2 + H2O -> H2SO4 + NO` — the lead chamber's core step —
+and it is credited to `redox-oxygen-transfer`. **A template's NAME is not its
+SMARTS**, and the same trap already caught `combustion`/`sulfur_combustion` in S7.
+
+⚠ **HEADLINE EFFECT: ZERO ON BOTH COLUMNS.** `deacon-process` keeps its credit,
+and neither of the other two routes was template-ready anyway. What it removes is
+a RANKING error: `ostwald-process` was being counted as **one class away** when
+it is two, so it was sitting near the top of the work queue on a credit it never
+had. Classes 227 → 229.
+
+### S9 CREDITED `gas-solid-reduction` — AND THE FOUR ROWS ARE ONE MECHANISM
+
+No split needed, which is worth recording because the row check is usually where
+a class comes apart. All four are `MO + CO -> M(or a lower oxide) + CO2`:
+
+| route | step | runs? |
+|---|---|---|
+| `copper-smelting` 2 | `CuO + CO -> Cu + CO2` | ✔ |
+| `lead-smelting` 2 | `PbO + CO -> Pb + CO2` | ✔ |
+| `blast-furnace` 3 | `Fe2O3 + CO -> FeO + CO2` | ✘ `iron-ii-oxide` has no lattice |
+| `blast-furnace` 4 | `FeO + CO -> Fe + CO2` | ✘ the same mineral |
+
+⚠ The two that do not run are blocked on a SPECIES and not on the mechanism —
+`mineral_data` refuses FeO because CRC does not tabulate its crystal Cp — which
+is the column this taxonomy counts separately.
+
+### S9 ALSO CREDITED `boudouard` AND `carbon-combustion` FOR **ZERO** ROUTES
+
+Both are `blast-furnace`'s, and that route is still blocked on `slagging` (no
+template, and neither `silicon-dioxide` nor `calcium-silicate` has a lattice) as
+well as on the FeO above. So they are here for a MECHANIC, said out loud rather
+than left to be inferred from a class count: **with them a flask of ore, coke and
+air makes metal, and without them the same flask has to be handed a carbon
+oxide.** S9 measured that flask at exactly zero conversion on four tolerance
+rungs. `blast-furnace` is now **one class and one mineral away**, the closest any
+five-step route has been.
+
 ### S7 BUILT FOUR INORGANIC GAS PROCESSES — AND CHOSE THEM OFF A THIRD COLUMN
 
 | route | step | class | what covers it |
 |---|---|---|---|
 | `water-gas-shift` 1 | `CO + H2O <=> CO2 + H2` | `water-gas-shift` | `water_gas_shift`, over hematite |
 | `steam-reforming` 1 | `CH4 + H2O <=> CO + 3 H2` | `steam-reforming` | `steam_reforming`, over nickel |
-| `deacon-process` 1 | `4 HCl + O2 <=> 2 Cl2 + 2 H2O` | `catalytic-gas-oxidation` | `deacon_oxidation`, over tenorite |
+| `deacon-process` 1 | `4 HCl + O2 <=> 2 Cl2 + 2 H2O` | `catalytic-hydrogen-chloride-oxidation` (⚠ S9 renamed it — see below) | `deacon_oxidation`, over tenorite |
 | `claus-process` 1,2 | `H2S + O2`, then `2 H2S + SO2` | two classes | `hydrogen_sulfide_combustion` + `claus_comproportionation` |
 
 **Every one of the four was charged into a real `Vessel` and integrated** —

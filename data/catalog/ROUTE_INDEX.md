@@ -642,7 +642,7 @@ The same species is routinely a feedstock in one route and an intermediate in an
 | # | step | in | out | conditions | class |
 |--:|---|---|---|---|---|
 | 1 | salt cake | sodium-chloride + sulfuric-acid | sodium-sulfate + hydrogen-chloride | 1100 K | `salt-metathesis` |
-| 2 | black ash | sodium-sulfate + carbon-graphite + calcium-carbonate | sodium-carbonate + calcium-sulfide + carbon-dioxide | reverberatory furnace | `carbothermic-reduction` |
+| 2 | black ash | sodium-sulfate + carbon-graphite + calcium-carbonate | sodium-carbonate + calcium-sulfide + carbon-dioxide | reverberatory furnace | `carbothermic-sulfate-reduction` |
 | 3 | lixiviation | sodium-carbonate + water | sodium-carbonate + water | leaching, crystallisation | `dissolution` |
 | 4 | galligu waste weathering | calcium-sulfide + water + carbon-dioxide | calcium-carbonate + hydrogen-sulfide | tip, open air | `hydrolysis` |
 
@@ -672,7 +672,7 @@ The same species is routinely a feedstock in one route and an intermediate in an
 
 | # | step | in | out | conditions | class |
 |--:|---|---|---|---|---|
-| 1 | carbothermic reduction | calcium-phosphate + silicon-dioxide + carbon-graphite | phosphorus-white + carbon-monoxide + calcium-silicate | electric furnace, 1700 K | `carbothermic-reduction` |
+| 1 | carbothermic reduction | calcium-phosphate + silicon-dioxide + carbon-graphite | phosphorus-white + carbon-monoxide + calcium-silicate | electric furnace, 1700 K | `carbothermic-phosphate-reduction` |
 
 <a id="zinc-smelting"></a>
 
@@ -701,7 +701,7 @@ The same species is routinely a feedstock in one route and an intermediate in an
 | # | step | in | out | conditions | class |
 |--:|---|---|---|---|---|
 | 1 | sphalerite roasting | zinc-sulfide + oxygen | zinc-oxide + sulfur-dioxide | roaster | `roasting` |
-| 2 | retort reduction | zinc-oxide + carbon-graphite | zinc + carbon-monoxide | retort, 1400 K | `carbothermic-reduction` |
+| 2 | retort reduction | zinc-oxide + carbon-graphite | zinc + carbon-monoxide | retort, 1400 K | `carbothermic-oxide-reduction` |
 
 <a id="prussian-blue-route"></a>
 
@@ -794,7 +794,7 @@ The same species is routinely a feedstock in one route and an intermediate in an
 | # | step | in | out | conditions | class |
 |--:|---|---|---|---|---|
 | 1 | sulfur combustion | sulfur-s8 + oxygen | sulfur-dioxide | burner | `sulfur-combustion` |
-| 2 | catalytic SO2 oxidation | sulfur-dioxide + oxygen + vanadium-pentoxide | sulfur-trioxide + vanadium-pentoxide | 700-900 K, V2O5 | `catalytic-gas-oxidation` |
+| 2 | catalytic SO2 oxidation | sulfur-dioxide + oxygen + vanadium-pentoxide | sulfur-trioxide + vanadium-pentoxide | 700-900 K, V2O5 | `catalytic-sulfur-dioxide-oxidation` |
 | 3 | absorption into oleum | sulfur-trioxide + sulfuric-acid | disulfuric-acid | absorber, 98% acid | `acid-anhydride-absorption` |
 | 4 | oleum dilution | disulfuric-acid + water | sulfuric-acid | dilution | `hydrolysis` |
 
@@ -920,7 +920,7 @@ The same species is routinely a feedstock in one route and an intermediate in an
 
 | # | step | in | out | conditions | class |
 |--:|---|---|---|---|---|
-| 1 | HCl reoxidation | hydrogen-chloride + oxygen + copper-ii-oxide | chlorine + water + copper-ii-oxide | 700 K, CuCl2 | `catalytic-gas-oxidation` |
+| 1 | HCl reoxidation | hydrogen-chloride + oxygen + copper-ii-oxide | chlorine + water + copper-ii-oxide | 700 K, CuCl2 | `catalytic-hydrogen-chloride-oxidation` |
 
 <a id="weldon-chlorine"></a>
 
@@ -1907,7 +1907,7 @@ The same species is routinely a feedstock in one route and an intermediate in an
 
 | # | step | in | out | conditions | class |
 |--:|---|---|---|---|---|
-| 1 | carbide furnace | calcium-oxide + carbon-graphite | calcium-carbide + carbon-monoxide | electric arc, 2300 K | `carbothermic-reduction` |
+| 1 | carbide furnace | calcium-oxide + carbon-graphite | calcium-carbide + carbon-monoxide | electric arc, 2300 K | `carbide-formation` |
 | 2 | carbide hydrolysis | calcium-carbide + water | acetylene + calcium-hydroxide | ambient, water drip | `hydrolysis` |
 
 <a id="vulcanisation"></a>
@@ -2977,7 +2977,7 @@ The same species is routinely a feedstock in one route and an intermediate in an
 
 | # | step | in | out | conditions | class |
 |--:|---|---|---|---|---|
-| 1 | ammonia oxidation | ammonia + oxygen + platinum | nitric-oxide + water + platinum | 1150 K, Pt-Rh gauze | `catalytic-gas-oxidation` |
+| 1 | ammonia oxidation | ammonia + oxygen + platinum | nitric-oxide + water + platinum | 1150 K, Pt-Rh gauze | `catalytic-ammonia-oxidation` |
 | 2 | NO oxidation | nitric-oxide + oxygen | nitrogen-dioxide | cooling train | `gas-phase-oxidation` |
 | 3 | absorption | nitrogen-dioxide + water | nitric-acid + nitric-oxide | absorption tower | `disproportionation-hydrolysis` |
 
@@ -3038,7 +3038,7 @@ The same species is routinely a feedstock in one route and an intermediate in an
 
 | # | step | in | out | conditions | class |
 |--:|---|---|---|---|---|
-| 1 | carbide formation | calcium-oxide + carbon-graphite | calcium-carbide + carbon-monoxide | electric furnace, 2300 K | `carbothermic-reduction` |
+| 1 | carbide formation | calcium-oxide + carbon-graphite | calcium-carbide + carbon-monoxide | electric furnace, 2300 K | `carbide-formation` |
 | 2 | nitrogen fixation | calcium-carbide + nitrogen | calcium-cyanamide + carbon-graphite | 1300 K | `gas-solid-fixation` |
 | 3 | hydrolysis to ammonia | calcium-cyanamide + water | ammonia + calcium-carbonate | steam | `hydrolysis` |
 
@@ -5372,7 +5372,6 @@ This is the list a template library has to grow into. `validation/catalog_covera
 | glycoside-hydrolysis | 6 | 5 |
 | radical-polymerisation | 6 | 6 |
 | nucleophilic-substitution | 6 | 6 |
-| carbothermic-reduction | 5 | 5 |
 | precipitation-metathesis | 5 | 5 |
 | electrophilic-aromatic-nitration | 5 | 3 |
 | polycondensation | 5 | 5 |
@@ -5386,7 +5385,6 @@ This is the list a template library has to grow into. `validation/catalog_covera
 | nucleophilic-addition | 4 | 4 |
 | catalytic-air-oxidation | 4 | 3 |
 | gas-phase-oxidation | 3 | 3 |
-| catalytic-gas-oxidation | 3 | 3 |
 | calcination | 3 | 3 |
 | catalytic-gas-synthesis | 3 | 2 |
 | acid-displacement-precipitating | 3 | 3 |
@@ -5409,6 +5407,7 @@ This is the list a template library has to grow into. `validation/catalog_covera
 | disproportionation-hydrolysis | 2 | 2 |
 | halide-oxidation | 2 | 2 |
 | oxidative-dissolution | 2 | 2 |
+| carbide-formation | 2 | 2 |
 | disproportionation | 2 | 2 |
 | precipitation | 2 | 2 |
 | molten-salt-electrolysis | 2 | 2 |
@@ -5443,24 +5442,30 @@ This is the list a template library has to grow into. `validation/catalog_covera
 | metal-ion-aldehyde-oxidation | 2 | 2 |
 | redox-oxygen-transfer | 1 | 1 |
 | nitrosation | 1 | 1 |
+| catalytic-sulfur-dioxide-oxidation | 1 | 1 |
 | acid-anhydride-absorption | 1 | 1 |
 | sulfate-thermal-decomposition | 1 | 1 |
 | hydrogen-sulfide-combustion | 1 | 1 |
 | comproportionation | 1 | 1 |
 | salt-metathesis | 1 | 1 |
+| carbothermic-sulfate-reduction | 1 | 1 |
 | dissolution | 1 | 1 |
 | carbonate-equilibrium | 1 | 1 |
 | bicarbonate-thermal-decomposition | 1 | 1 |
 | aqueous-electrolysis | 1 | 1 |
 | solid-carbonation | 1 | 1 |
+| catalytic-ammonia-oxidation | 1 | 1 |
 | thermal-fixation | 1 | 1 |
 | acid-displacement | 1 | 1 |
 | gas-solid-fixation | 1 | 1 |
+| catalytic-hydrogen-chloride-oxidation | 1 | 1 |
+| carbothermic-phosphate-reduction | 1 | 1 |
 | chlorate-oxygen-transfer | 1 | 1 |
 | amphoteric-dissolution | 1 | 1 |
 | carbon-combustion | 1 | 1 |
 | boudouard | 1 | 1 |
 | slagging | 1 | 1 |
+| carbothermic-oxide-reduction | 1 | 1 |
 | roasting-to-metal | 1 | 1 |
 | metallothermic-reduction | 1 | 1 |
 | amalgam-electrolysis | 1 | 1 |

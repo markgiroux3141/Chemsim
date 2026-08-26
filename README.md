@@ -449,18 +449,29 @@ python validation/catalog_coverage.py  # the audit
 | refused | 444 (28%), of which ~166 are charged organics the Born model correctly declines |
 | UNIFAC-decomposable (can enter an LLE) | 828 (52%) |
 | routes species-ready | **77 / 173** (was 49) |
-| reaction classes with a template | **43 / 224** (was 12) |
-| routes template-ready | 34 / 173 (was 7) |
-| ⚠⚠ **routes template-ready AND species-ready — the one to quote** | **24 / 173** |
+| reaction classes with a template | **48 / 229** (was 12) |
+| routes template-ready | 38 / 173 (was 7) |
+| ⚠⚠ **routes template-ready AND species-ready — the one to quote** | **28 / 173** |
 
-⚠⚠ **34 IS NOT WHAT COULD RUN; 24 IS.** The three readiness columns answer
+⚠⚠ **38 IS NOT WHAT COULD RUN; 28 IS.** The three readiness columns answer
 INDEPENDENT questions and the smallest does not bound the others: a route needs a
-template for every step **and** a price for every species. **10 of the 34
+template for every step **and** a price for every species. **10 of the 38
 template-ready routes have a refused species** — `pyrite-roasting`, `tnt-route`,
 `superphosphate` and seven more. Nothing computed the intersection until S6.
-⚠ And 24 is an **upper bound on what runs**, not a measured count: a class is
+⚠ And 28 is an **upper bound on what runs**, not a measured count: a class is
 credited when a template would fire on the right substrate at all, and
 `pyrite-roasting` is the standing proof that this is not the same as running.
+
+⚠⚠ **S9 MOVED THE INTERSECTION BY +4 — ALL THREE SMELTING ROUTES AND THERMITE —
+FOR ~15 LINES OF ENGINE.** S8 had named "a REVERSIBLE solid-gas term" as the most
+valuable unscoped item in the plan, blocking the work queue's only +2. It turned
+out to be one algebraic rearrangement of a term that already existed: writing the
+affinity's gas quotient as its two ONE-SIDED products, `k_f P_react - k_r P_prod`
+instead of `k_f - k_r Q`, so nothing is ever divided by a pressure that can reach
+zero. Same root, so the same equilibrium; the five pre-S9 rows are BIT-IDENTICAL.
+⚠ And **half the reason recorded beside that refusal was about mass action, a
+form this term never used.** The class count's denominator moved too, because
+`carbothermic-reduction` was one label over four mechanisms.
 
 ⚠ **THE REFUSED COLUMN WENT UP IN S7 AND THAT WAS THE POINT.** Nine catalog
 compounds are dot-separated NEUTRAL mixtures — a rubber marker, a nylon salt,

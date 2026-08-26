@@ -231,6 +231,17 @@ T_REF = 298.15
 # it, and stated rather than assumed, because a heterogeneous pre-exponential
 # with a sub-collision value is the one property that makes it a rate and not a
 # knob. ``validation/rate_ceiling.py`` re-measures it.
+#
+# ⚠⚠ AND THAT LAST SENTENCE WAS FALSE FROM S1 UNTIL S9 -- FOUR MILESTONES OF A
+# CITATION TO AN AUDIT THAT COULD NOT SEE THIS TABLE. ``rate_ceiling`` walks
+# ``net.reactions``, and a ``SurfaceReaction`` never becomes a ``Reaction``. S4
+# found the identical fault about ``SOLID_STATE_REACTIONS`` and added a panel
+# for it; this table was left out, and nothing noticed because the sentence
+# claiming otherwise was sitting right here. S9 tripped over it while writing
+# the same sentence for a new constant. It is TRUE now -- see
+# ``rate_ceiling.surface_panel`` -- and the near-miss is kept because it is the
+# project's own standing trap: a recorded measurement is a claim about a past
+# state of the code, and this one was about a state that never existed.
 ROASTING_A = 3.21e6
 
 # J/mol. Apparent activation energy for the oxidation of a metal sulfide, whose
@@ -241,6 +252,42 @@ ROASTING_A = 3.21e6
 # together are one clock for the whole family; the module docstring measures what
 # that costs and why the available alternative is worse.
 ROASTING_EA = 150_000.0
+
+# ---------------------------------------------------------------------------
+# S9 -- CARBON BURNING, WHICH IS NOT THE SULFIDE EVENT
+# ---------------------------------------------------------------------------
+# ⚠ WHY THIS IS A SECOND PAIR AND NOT A FIFTH USE OF THE FIRST. The shared
+# constants above are shared on a stated claim: the rate-determining event is an
+# O2 molecule arriving at a metal-SULFIDE surface, which is one event for
+# sphalerite, galena and covellite. ``C(s) + O2 -> CO2`` has neither a metal nor
+# a sulfur in it. Reusing ``ROASTING_A`` for it would be the exact mistake this
+# module's docstring names -- asserting that two different events are one.
+#
+# J/mol. Reported apparent activation energies for the oxidation of graphite and
+# coke in the chemically-controlled regime run about 130-210 kJ/mol (higher for
+# graphite than for chars, and always partly transport above 1200 K); 160 is
+# inside that band and is NOT the sulfide value.
+CARBON_COMBUSTION_EA = 160_000.0
+
+# L/(mol s) per mole of carbon. ⚠ WHAT PINS IT: a blast furnace's TUYERE, the
+# same style of pin as ``ROASTING_A``'s fluidised bed. With
+#
+#     tau = 1 / (k C_O2)
+#
+# a coke bed in front of a 2200 K tuyere under a 0.21 bar oxygen blast
+# (C_O2 = 1.149e-3 mol/L) burns through in about 10 s, so k = 87.0 L/(mol s),
+# and at the barrier above that is A = 5.48e5 L/(mol s).
+#
+# ⚠ THAT IS 5.5e-6 OF THIS PROJECT'S BIMOLECULAR COLLISION LIMIT -- a decade
+# below ``ROASTING_A``'s 3.2e-5 and inside it by five, stated rather than
+# assumed. ``validation/rate_ceiling.py`` re-measures it.
+#
+# ⚠ AND THE CONSEQUENCE AT THE COLD END IS STATED TOO: at 800 K this clock puts
+# charcoal's burn-through at 1.6e7 s, where real charcoal lights at 700-800 K.
+# The pin is the tuyere, and one Arrhenius pair cannot also be an ignition
+# model; a real charcoal fire is sustained by its own heat, which this engine's
+# energy balance does carry but which starts from a match nothing here declares.
+CARBON_COMBUSTION_A = 5.48e5
 
 # The bar a declaration must clear for its reverse to be droppable. ln K = 20 is
 # K = 4.9e8: eight decades between the equilibrium and any quotient a flask can
@@ -289,6 +336,17 @@ class SurfaceReaction(NamedTuple):
     the temperature the catalog's own equipment column gives for this row. It is
     NOT a threshold and nothing gates on it: the rate law runs at every
     temperature, and how fast is Arrhenius' business.
+
+    ⚠ **S9 -- ``A`` AND ``Ea`` MAY BE DECLARED PER ROW, AND THAT IS A LOOSENING
+    OF THE SHARED-CONSTANT CLAIM RATHER THAN AN ABANDONMENT OF IT.**
+    ``ROASTING_A``/``ROASTING_EA`` are shared because the rate-determining event
+    is *an O2 molecule arriving at a metal-SULFIDE surface*, and that is one
+    event for sphalerite, galena and covellite. Carbon burning is not that
+    event: there is no metal and no sulfur in it, so borrowing the sulfide
+    constants would be the mistake this module's docstring says a shared
+    constant IS -- a claim that two reactions are the same event. ``None`` keeps
+    the sulfide pair; a row outside that family declares its own, and must
+    declare BOTH.
     """
 
     name: str
@@ -297,6 +355,8 @@ class SurfaceReaction(NamedTuple):
     mechanism: str          # the catalog CLASS this row is, as a mechanism
     T_run: float            # K -- where the reverse is checked, from the catalog
     note: str
+    A: float | None = None   # L^g mol^(1-g-s)/s -- None means ROASTING_A
+    Ea: float | None = None  # J/mol -- None means ROASTING_EA
 
 
 class PricedSurfaceReaction(NamedTuple):
@@ -384,6 +444,40 @@ SURFACE_REACTIONS: tuple[SurfaceReaction, ...] = (
             "way and neither declaration knows about the other"
         ),
     ),
+    # ⚠⚠ S9 -- THE FIRST ROW HERE THAT IS NOT A ROAST, and it is the row that
+    # lets a furnace START. S9 built the reversible solid-gas term next door and
+    # measured a carbon-fed copper furnace INERT with no gas in it at all
+    # (exactly zero at four tolerance rungs): both of the reactions that make it
+    # work need a carbon oxide, and a charge of ore and coke has none. What a
+    # real furnace is given is an AIR BLAST, and this is that.
+    #
+    # ⚠ ITS PRODUCT IS ALL GAS, so there is no crystal on the right -- which
+    # ``SolidStateArrays`` needed a bound for and this term does not, because a
+    # mass-action rate is PROPORTIONAL to the solid present and self-limits.
+    #
+    # ⚠ AND ITS ln K AT THE TUYERE'S OWN 2200 K IS +21.87 AGAINST A BAR OF +20 --
+    # the tightest row in this table by 46 nats, and the reason is real chemistry
+    # rather than a marginal constant: above about 1000 K carbon dioxide over
+    # carbon is increasingly taken to CO by the Boudouard reaction, so THIS
+    # reaction's own product is what stops being the stable one. The reversal is
+    # declared next door in ``solid_state.boudouard-gasification``; nothing
+    # connects the two but a shared headspace.
+    SurfaceReaction(
+        name="carbon-combustion",
+        solids=(("carbon-graphite", -1, 1.0),),
+        gases=(("O=O", -1, 1.0), ("O=C=O", +1, 0.0)),
+        mechanism="carbon-combustion",
+        T_run=2200.0,
+        note=(
+            "`blast-furnace` step 1 -- the tuyere. It is here for a MECHANIC "
+            "rather than a route: with it, a flask of ore, coke and air makes "
+            "metal, and without it the same flask needs a carbon oxide handed "
+            "to it. `blast-furnace` itself is still blocked on `slagging` and "
+            "on an iron(II) oxide `mineral_data` refuses"
+        ),
+        A=CARBON_COMBUSTION_A,
+        Ea=CARBON_COMBUSTION_EA,
+    ),
 )
 
 
@@ -400,6 +494,21 @@ def price(
     exactly what ``standard_state`` exists to prevent for a species dissolved in
     a solvent, which is in neither.
     """
+    # ⚠ S9 -- BOTH HALVES OF A KINETIC DECLARATION OR NEITHER. Half of one
+    # silently pairs a declared barrier with a pre-exponential fitted to the
+    # SULFIDE event, and an Arrhenius pair is not separable: A and Ea are only
+    # meaningful together, which is why the pinning comments above quote a
+    # time constant at a temperature rather than either number alone.
+    if (decl.A is None) != (decl.Ea is None):
+        given, missing = (("A", "Ea") if decl.Ea is None else ("Ea", "A"))
+        raise UnpricedSurfaceReaction(
+            f"{decl.name!r}: declares {given} and not {missing}. A row here "
+            "either takes the SHARED sulfide-roasting pair (ROASTING_A with "
+            "ROASTING_EA, which asserts that its rate-determining event is an "
+            "O2 molecule arriving at a metal-sulfide surface) or declares BOTH "
+            "halves of its own. An Arrhenius pair is not separable."
+        )
+
     dH = 0.0
     dG = 0.0
     resolved: list[tuple[MineralRecord, int, float]] = []
@@ -480,8 +589,11 @@ def price(
         # barrierless roast that goes as fast as O2 can arrive, which is not
         # what a roaster is. The barrier is the surface chemistry and it has to
         # be declared; see ROASTING_EA.
-        Ea=ROASTING_EA,
-        A=ROASTING_A,
+        # ⚠ S9 -- the row's own pair if it declares one, and the SULFIDE pair
+        # otherwise. See ``SurfaceReaction`` for why that is a loosening of the
+        # shared-constant claim rather than a retreat from it.
+        Ea=ROASTING_EA if decl.Ea is None else float(decl.Ea),
+        A=ROASTING_A if decl.A is None else float(decl.A),
         minerals=tuple(resolved),
         basis="; ".join(sources),
     )

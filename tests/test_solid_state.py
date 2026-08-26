@@ -281,9 +281,18 @@ def test_the_barrier_is_the_reaction_enthalpy_and_the_reverse_has_none(thermo):
     else here. Calcite comes out at 179.2 kJ/mol against experimental
     activation energies quoted at 170-200; nothing was fitted.
     """
-    for decl in ss.SOLID_STATE_REACTIONS:
+    # ⚠ S9 -- OVER THE **DERIVED** ROWS ONLY, which is the whole of what this
+    # derivation was ever about: an ENDOTHERMIC decomposition. An exothermic row
+    # would get Ea = max(dH, 0) = 0 -- a barrierless reaction with no
+    # temperature dependence -- so it declares its own forward pair, and
+    # ``price`` refuses the derivation for it by name. See
+    # ``test_an_exothermic_row_may_not_take_the_derived_pair``.
+    derived = [d for d in ss.SOLID_STATE_REACTIONS if d.Ea is None]
+    assert len(derived) == 7
+    for decl in derived:
         p = ss.price(decl, thermo)
         assert p.Ea == pytest.approx(p.dH)
+        assert p.dH > 0.0
 
     arr, _ = build_solid_state_arrays(LIME_SPECIES)
     assert arr.Ea_rev == pytest.approx(np.zeros(arr.m))
@@ -309,16 +318,21 @@ def test_the_declared_constant_is_the_REVERSE_one_and_it_is_shared(thermo):
     barrier), which is the same event for every row -- and that is why one number
     can cover four rows that make different amounts of gas.
     """
-    for decl in ss.SOLID_STATE_REACTIONS:
+    # ⚠ S9 -- THE DERIVED ROWS ONLY. A row that declares its own forward pair
+    # has its own elementary event, so its reverse constant is NOT this one; the
+    # claim being pinned is that ONE number covers every row whose reverse IS
+    # "a gas molecule reacting at a crystal surface with no barrier to climb".
+    derived = [d for d in ss.SOLID_STATE_REACTIONS if d.Ea is None]
+    for decl in derived:
         p = ss.price(decl, thermo)
-        # every row's reverse constant is the SAME number, exactly
+        # every derived row's reverse constant is the SAME number, exactly
         assert p.A * math.exp(-p.dS / R) == pytest.approx(
             ss.RECOMBINATION_A, rel=1e-12
         )
     # ...and the forward constants are NOT the same number: the two-gas rows are
     # eleven decades above the one-gas rows, which is the entropy that used to be
     # hidden in a shared constant.
-    forward = {d.name: ss.price(d, thermo).A for d in ss.SOLID_STATE_REACTIONS}
+    forward = {d.name: ss.price(d, thermo).A for d in derived}
     assert max(forward.values()) / min(forward.values()) > 1.0e11
 
     # ⚠ AND CALCINATION'S FORWARD CONSTANT IS UNCHANGED TO EVERY DIGIT, which is
@@ -347,6 +361,18 @@ def test_the_four_rows_land_on_four_real_timescales(thermo):
         "sulfate-thermal-decomposition": (1000.0, 25.4),
         "bicarbonate-thermal-decomposition": (450.0, 43.7),
         "oxide-thermal-decomposition": (900.0, 0.2405),
+        # ⚠⚠ S9 -- AND FIVE MORE, of which THREE are again timescales nothing
+        # was calibrated against. The two CO reductions are pinned (600 s at
+        # 1400 K is what fixes ``REDUCTION_A``) and so is thermite (1 s at its
+        # 1200 K ignition temperature). The zinc retort at 257 s and the
+        # Boudouard reaction at 13 s come out of ``RECOMBINATION_A`` -- a
+        # constant pinned on a LIME KILN -- and land on a Belgian retort's own
+        # few minutes and on a gasifier's own seconds.
+        "tenorite-carbon-monoxide-reduction": (1400.0, 600.1),
+        "litharge-carbon-monoxide-reduction": (1400.0, 600.1),
+        "zincite-carbothermic-reduction": (1400.0, 256.9),
+        "boudouard-gasification": (1300.0, 13.28),
+        "metallothermic-reduction": (1200.0, 1.000),
     }
     for decl in ss.SOLID_STATE_REACTIONS:
         T, tau = expect[decl.name]
@@ -355,31 +381,183 @@ def test_the_four_rows_land_on_four_real_timescales(thermo):
         assert 1.0 / k == pytest.approx(tau, rel=0.02), decl.name
 
 
-def test_a_gas_reactant_is_refused_rather_than_clipped():
-    """⚠ THE AFFINITY FORM IS NOT A RATE LAW FOR A GAS-CONSUMING SURFACE
-    REACTION. A gas reactant's pressure sits in the denominator of Q, so an
-    atmosphere depleted of it drives the reverse flux without bound. Roasting
-    and the five heterogeneous templates that fold a catalyst into a barrier are
-    a DIFFERENT mechanism, and they want the mass-action kernel.
+def test_a_gas_reactant_is_BOUNDED_now_and_the_old_refusal_measured_why():
+    """⚠⚠ S9 -- THE REFUSAL THIS TEST USED TO PIN IS GONE, AND THE MEASUREMENT
+    BEHIND IT IS REPRODUCED HERE AS THE CONTRAST.
+
+    What was refused was an algebraic FORM, not a mechanism. Taken as one
+    quotient, ``Q = prod(p ** nu_gas)`` gives a gas REACTANT a negative exponent
+    -- its pressure in a denominator -- so an atmosphere depleted of it drove the
+    reverse flux without bound. Split into the two one-sided products,
+
+        net = k_f * prod(p ** consumed)  -  k_r * prod(p ** formed)
+
+    nothing is divided at all, and the bound is ``k_r`` times a pressure. This
+    test measures both numbers on the same declaration.
     """
     bogus = ss.SolidStateReaction(
-        name="bogus-roasting",
-        solids=(("sphalerite", -1), ("calcite", +1)),
-        gases=(("O=O", -1),),
-        mechanism="roasting",
+        name="bogus-reduction",
+        solids=(("tenorite", -1), ("copper", +1)),
+        gases=(("[C-]#[O+]", -1), ("O=C=O", +1)),
+        mechanism="gas-solid-reduction",
         note="a gas on the reactant side",
+        Ea=ss.REDUCTION_EA,
+        A=ss.REDUCTION_A,
     )
     original = ss.SOLID_STATE_REACTIONS
     ss.SOLID_STATE_REACTIONS = (bogus,)
     try:
         arr, report = build_solid_state_arrays(
-            [MINERALS["sphalerite"].lattice, CALCITE, "O=O"]
+            [MINERALS["tenorite"].lattice, MINERALS["copper"].lattice,
+             "[C-]#[O+]", "O=C=O"]
         )
     finally:
         ss.SOLID_STATE_REACTIONS = original
-    assert arr.m == 0
-    assert any("REFUSED" in line and "reactant side" in line
-               for line in report)
+    # it BUILDS now, and nothing is reported against it
+    assert arr.m == 1
+    assert not [line for line in report if "bogus-reduction" in line]
+    assert (arr.nu_gas < 0.0).any()          # a gas really is on the left
+
+    # the two one-sided products, and the quotient that used to be taken
+    p = np.zeros(4)
+    p[2] = 1.0e-12          # CO all but gone
+    p[3] = 1.0               # CO2 at a bar
+    T = 1400.0
+    k_f = arr.A_fwd * np.exp(-arr.Ea_fwd / (R * T))
+    k_r = arr.A_rev * np.exp(-arr.Ea_rev / (R * T))
+
+    # ⚠ WHAT THE OLD FORM WOULD HAVE DONE. Q = p_CO2 / p_CO = 1e+12, so the
+    # reverse branch is k_r Q -- twelve decades of it, and unbounded as p_CO
+    # falls further. This is M6's 2.6e15 in this row's own units.
+    Q = np.prod(p[None, :] ** arr.nu_gas, axis=1)
+    assert Q[0] == pytest.approx(1.0e12, rel=1e-9)
+    assert (k_r * Q)[0] > 1.0e4
+
+    # ⚠ AND WHAT THE SPLIT FORM DOES: the reverse is k_r * p_CO2, full stop.
+    P_react = np.prod(p[None, :] ** arr.gas_consumed, axis=1)
+    P_prod = np.prod(p[None, :] ** arr.gas_formed, axis=1)
+    net = k_f * P_react - k_r * P_prod
+    assert net[0] == pytest.approx(-k_r[0] * 1.0, rel=1e-9)
+    assert abs(net[0]) < 1.0e-5
+
+    # ...and at p_CO exactly ZERO it is still finite, which is the whole claim.
+    p[2] = 0.0
+    P_react = np.prod(p[None, :] ** arr.gas_consumed, axis=1)
+    assert P_react[0] == 0.0
+    assert np.isfinite(k_f * P_react - k_r * P_prod).all()
+
+
+def test_the_split_form_has_the_same_zero_as_the_quotient_form():
+    """⚠⚠ ``net = k_f P_react - k_r P_prod`` IS ``P_react (k_f - k_r Q)``, so it
+    has the SAME root: the equilibrium is still ``Q = K`` exactly and not
+    ``Q = K n_A/n_B``. That is the property the affinity form exists to have, and
+    the reason a gas reactant never threatened it.
+    """
+    original = ss.SOLID_STATE_REACTIONS
+    ss.SOLID_STATE_REACTIONS = tuple(
+        d for d in original if d.name == "boudouard-gasification"
+    )
+    try:
+        arr, _ = build_solid_state_arrays(
+            [MINERALS["carbon-graphite"].lattice, "O=C=O", "[C-]#[O+]"]
+        )
+    finally:
+        ss.SOLID_STATE_REACTIONS = original
+    assert arr.m == 1
+
+    T = 1300.0
+    K = float(arr.equilibrium_pressure(T)[0])       # bar^(+1), sum nu = +1
+    k_f = arr.A_fwd * np.exp(-arr.Ea_fwd / (R * T))
+    k_r = arr.A_rev * np.exp(-arr.Ea_rev / (R * T))
+    # k_f / k_r IS K, in closed form and never by dividing two exponentials
+    assert (k_f / k_r)[0] == pytest.approx(K, rel=1e-9)
+
+    # put the gases at a quotient of exactly K and the flux is zero -- for ANY
+    # solid charge, which is the unit-activity claim
+    p_CO2 = 0.5
+    p_CO = math.sqrt(K * p_CO2)                     # Q = p_CO^2 / p_CO2 = K
+    p = np.array([0.0, p_CO2, p_CO])
+    P_react = np.prod(p[None, :] ** arr.gas_consumed, axis=1)
+    P_prod = np.prod(p[None, :] ** arr.gas_formed, axis=1)
+    net = k_f * P_react - k_r * P_prod
+    assert abs(net[0]) < 1.0e-12 * k_f[0]
+    for charge in (1.0e-6, 1.0, 1.0e3):
+        nS = np.array([charge, 0.0, 0.0])
+        units_f, units_r = arr.units(nS)
+        flux = net * np.where(net > 0.0, units_f, units_r)
+        assert abs(flux[0]) < 1.0e-9 * charge
+
+
+def test_an_exothermic_row_may_not_take_the_derived_pair(thermo):
+    """⚠⚠ ``Ea = max(dH, 0)`` IS A DERIVATION ABOUT A DECOMPOSITION, and on an
+    exothermic row it silently returns ZERO -- a barrierless reaction with no
+    temperature dependence at all. Measured on thermite: 4.15e-6 1/s, a 2.8-day
+    reaction that runs just as fast in a cold jar as in a furnace, which deletes
+    the only mechanic thermite has. Refused at the declaration.
+    """
+    bogus = ss.SolidStateReaction(
+        name="bogus-thermite-derived",
+        solids=(("hematite", -1), ("aluminium", -2),
+                ("iron", +2), ("corundum", +1)),
+        gases=(),
+        mechanism="metallothermic-reduction",
+        note="no declared kinetics on an exothermic row",
+    )
+    with pytest.raises(ss.UnpricedSolidReaction, match="EXOTHERMIC"):
+        ss.price(bogus, thermo)
+
+    # ...and the number the refusal exists to prevent, so it is not an assertion
+    real = [d for d in ss.SOLID_STATE_REACTIONS
+            if d.name == "metallothermic-reduction"][0]
+    p = ss.price(real, thermo)
+    A_derived = ss.RECOMBINATION_A * math.exp(p.dS / R)
+    assert A_derived == pytest.approx(4.15e-6, rel=0.02)
+    assert max(p.dH, 0.0) == 0.0                     # the barrier that vanishes
+    assert 1.0 / A_derived / 86400.0 == pytest.approx(2.79, rel=0.02)   # days
+
+
+def test_half_a_kinetic_declaration_is_refused(thermo):
+    """``A`` without ``Ea`` is a pre-exponential for a barrier nobody wrote
+    down; ``Ea`` without ``A`` takes a constant calibrated as the reverse of a
+    decomposition. Both or neither."""
+    base = dict(
+        solids=(("calcite", -1), ("quicklime", +1)),
+        gases=(("O=C=O", +1),),
+        mechanism="decarbonation",
+        note="",
+    )
+    with pytest.raises(ss.UnpricedSolidReaction, match="declares Ea and not A"):
+        ss.price(ss.SolidStateReaction(name="half-a", Ea=1.0e5, **base), thermo)
+    with pytest.raises(ss.UnpricedSolidReaction, match="declares A and not Ea"):
+        ss.price(ss.SolidStateReaction(name="half-b", A=1.0e5, **base), thermo)
+
+
+def test_a_declared_barrier_below_dH_is_refused_because_it_would_break_K(thermo):
+    """⚠ ``Ea_rev = max(Ea - dH, 0)`` CLIPS, and the clip is not a safety net --
+    it would leave ``k_f/k_r`` no longer equal to ``K``, so the equilibrium would
+    stop being the thermodynamics. It is also ``detailed_balance``'s own floor
+    everywhere else in this project.
+    """
+    bogus = ss.SolidStateReaction(
+        name="bogus-low-barrier",
+        solids=(("calcite", -1), ("quicklime", +1)),
+        gases=(("O=C=O", +1),),
+        mechanism="decarbonation",
+        note="",
+        Ea=50_000.0,                  # dH is +179.2 kJ/mol
+        A=1.0e5,
+    )
+    with pytest.raises(ss.UnpricedSolidReaction, match="below dH"):
+        ss.price(bogus, thermo)
+
+    # and every declared row in the table clears its own floor
+    for decl in ss.SOLID_STATE_REACTIONS:
+        if decl.Ea is None:
+            continue
+        p = ss.price(decl, thermo)
+        assert p.Ea >= max(p.dH, 0.0)
+        arr_Ea_rev = max(p.Ea - p.dH, 0.0)
+        assert arr_Ea_rev == pytest.approx(p.Ea - p.dH)      # no clipping
 
 
 def test_an_estimated_gas_is_refused_on_one_side_of_a_lattice(thermo):
@@ -807,13 +985,26 @@ def test_solvay_step_3_goes_in_its_own_calciner(soda_network):
                                                  rel=1e-3)
 
 
-def test_every_declared_row_prices_and_evolves_only_gases(thermo):
-    """The two guards, over the whole table rather than one row: a mineral that
-    cannot sit in a solid block is refused, and a gas REACTANT is refused."""
+def test_every_declared_row_prices_and_carries_its_own_kinetics(thermo):
+    """The guards, over the whole table rather than one row: every mineral can
+    sit in a solid block, and every row's barrier clears its own enthalpy.
+
+    ⚠ S9 -- WHAT THIS TEST USED TO ASSERT AND NO LONGER CAN: ``all(nu > 0)`` on
+    the gases, i.e. that no row consumes one. Three rows now do, and the bound
+    that made that assertion necessary is in
+    ``test_a_gas_reactant_is_BOUNDED_now_and_the_old_refusal_measured_why``.
+    """
+    exothermic = 0
     for decl in ss.SOLID_STATE_REACTIONS:
         priced = ss.price(decl, thermo)                    # raises if unpriced
-        assert priced.dH > 0.0            # every row here is endothermic
-        assert all(nu > 0 for _, nu in decl.gases)
+        # ⚠ the barrier clears the enthalpy on EVERY row, derived or declared --
+        # otherwise the reverse barrier clips and K stops being K
+        assert priced.Ea >= max(priced.dH, 0.0)
+        if priced.dH < 0.0:
+            exothermic += 1
+            assert decl.Ea is not None and decl.A is not None
         for name, _ in decl.solids:
             rec = MINERALS[name]
             assert rec.Cp_solid is not None and rec.Vm_solid is not None
+    # three exothermic rows, all of them S9's, all of them declaring
+    assert exothermic == 3

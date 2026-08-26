@@ -1,5 +1,22 @@
 """Layer 1 -- M6: a reaction that happens INSIDE a crystal.
 
+⚠⚠ **S9: THAT TITLE IS NO LONGER THE WHOLE OF IT, AND THE CORRECTION IS THE MOST
+USEFUL THING IN THIS FILE.** M6 split the solid mechanics along *inside a crystal
+/ at its surface* and put a refusal in each direction. S4 had already broken that
+line by turning a crystal ENTIRELY into gas, and S9 broke it the rest of the way:
+``MO(s) + CO(g) -> M(s) + CO2(g)`` is a gas arriving at a surface and it is a row
+of THIS table. **The line that actually holds is REVERSIBLE OR NOT.** An affinity
+form's rate-law exponents are fixed at the stoichiometric coefficients by
+detailed balance; a mass-action term can DECLARE them. So:
+
+    reversible, exponents forced       -> here (this file, SolidStateArrays)
+    irreversible, orders declarable    -> properties/surface.py, SurfaceArrays
+
+which is this project's standing invariant *a declared rate order may never be
+reversible*, arriving as a module boundary. What this table now holds is **a
+crystal in equilibrium with a headspace**, evolving a gas or consuming one or
+neither. See §S9 below.
+
 ``CaCO3(s) -> CaO(s) + CO2(g)`` is a lime kiln, and it is the first reaction in
 this project that neither block of the RHS could write. It is not a liquid-phase
 reaction, not a gas-phase one, and not a transport term either: matter changes
@@ -160,6 +177,45 @@ Two guards keep it that way:
     asks every species in the solid block how much room it takes and how much
     heat it holds, and a lattice with no answer would borrow an ion's
     placeholder silently.
+
+## ⚠⚠ §S9 -- WHAT CHANGED, AND IT IS TWO THINGS
+
+**1. THE GAS SIDE IS TWO ONE-SIDED PRODUCTS AND NOT A QUOTIENT.**
+
+    net = k_f * prod(p ** consumed_gas)  -  k_r * prod(p ** formed_gas)
+
+is ``P_react (k_f - k_r Q)`` algebraically, so it has the SAME root and the same
+equilibrium, and it never divides -- which is the whole of the "reversible
+solid-gas term" S8 named as this plan's most valuable unscoped item. Three rows
+consume a gas now: two CO reductions and the Boudouard reaction. ⚠ **The five
+pre-S9 rows are BIT-IDENTICAL**, because ``p ** 0`` is exactly 1.0 for every
+finite p (zero included) and ``formed_gas`` IS ``nu_gas`` when nothing is
+consumed. Verified against ``examples/lime_cycle.py`` and
+``examples/mercury_retort.py`` byte for byte, not by argument.
+
+**2. AN EXOTHERMIC ROW MUST DECLARE ITS FORWARD KINETICS.** ``Ea = max(dH, 0)``
+is a derivation about an endothermic decomposition whose reverse is barrierless.
+On an exothermic row it returns **zero**, i.e. a rate law with no temperature in
+it: thermite comes out at 4.15e-6 1/s -- a 2.8-day reaction that goes just as
+fast in a cold jar as in a furnace -- and a CO reduction at 9.70e-4 1/(bar s).
+Neither is a slow reaction; both are reactions with the wrong SHAPE. So such a
+row declares ``Ea`` and ``A`` (both or neither) and still gets its reverse by
+detailed balance, and a declared ``Ea`` below ``dH`` is refused because
+``SolidStateArrays``' ``max(Ea - dH, 0)`` would clip and silently break
+``k_f/k_r = K``.
+
+⚠ **WHAT S9 DID NOT NEED.** ``zincite-carbothermic-reduction`` and
+``boudouard-gasification`` are ENDOTHERMIC, so M6's derived pair is right for
+both, and the zinc retort comes out with dG = 0 at **1264.3 K** against a real
+Belgian retort's 1200-1300 with nothing fitted. The queue had spent a session
+believing that class was blocked because it had priced ``ZnO + CO -> Zn + CO2``
+(uphill at +63.3 kJ/mol) instead of the catalog's own carbon row. **Read the row,
+not the class name.**
+
+⚠ **AND WHAT IS STILL NOT EXPRESSIBLE.** A lattice may react and may never boil,
+so the retort's zinc stays SOLID (a real one distils it off at 1180 K, which is
+product removal) and nothing caps thermite's temperature (a real one stops near
+3135 K because the iron boils). Those are the same limitation, stated twice.
 """
 
 from __future__ import annotations
@@ -254,6 +310,89 @@ T_REF = 298.15
 # retort runs at 900 K, 2810 K below its own crossing.
 RECOMBINATION_A = 4.259e-4
 
+# ---------------------------------------------------------------------------
+# S9 -- THE TWO DECLARED FORWARD PAIRS, AND WHY THEY EXIST AT ALL
+# ---------------------------------------------------------------------------
+# ``RECOMBINATION_A`` above is the reverse constant of a DECOMPOSITION, and with
+# ``Ea = max(dH, 0)`` it covers every endothermic row here -- including S9's own
+# two endothermic additions, which declare nothing:
+#
+#     zincite + C   -> zinc + CO      dH +240.0 kJ   A 3.50e6 1/s      tau  258 s at 1400 K
+#     C + CO2       -> 2 CO           dH +172.5      A 6.40e5 1/(bar s) tau   13 s at 1300 K
+#
+# ⚠ AN EXOTHERMIC ROW CANNOT USE IT, and the measurement is what forces these
+# two constants rather than a preference. ``max(dH, 0)`` is ZERO for an
+# exothermic reaction: a barrierless forward step with NO TEMPERATURE DEPENDENCE
+# AT ALL. Measured on the two families S9 adds:
+#
+#     thermite on the derived pair       4.15e-6 1/s        a 2.8-DAY reaction,
+#                                                           and just as fast cold
+#     tenorite + CO on the derived pair  9.69e-4 1/(bar s)  a furnace whose heat
+#                                                           changes nothing
+#
+# Neither is a slow reaction; both are reactions with the wrong SHAPE. Thermite's
+# entire mechanic is that it sits in a jar until something ignites it, and a
+# smelter's is that it needs a furnace. So an exothermic row declares its forward
+# pair and the reverse still comes from detailed balance -- the direction every
+# ``ReactionTemplate`` in this project already declares in.
+
+# J/mol. Apparent barrier for a CO molecule arriving at a metal-oxide surface,
+# taking a lattice oxygen and leaving as CO2. Reported values for the CO
+# reduction of CuO, PbO, NiO and Fe2O3 cluster in a 60-100 kJ/mol band (wider
+# for Fe2O3, and always partly transport); 80 is the middle, and it is SHARED
+# across the family, which is the same claim ``surface.ROASTING_EA`` makes and
+# the same limitation: the rows then differ only in their thermodynamics.
+#
+# ⚠ IT MUST CLEAR ``max(dH, 0)`` FOR EVERY ROW IT IS USED ON, and ``price``
+# checks that. The tightest case is not a declared row at all: ``zincite + CO ->
+# zinc + CO2`` is ENDOTHERMIC at +67.5 kJ/mol, so 80 would only just clear it --
+# which is one more reason the zinc route here is the CARBON one.
+REDUCTION_EA = 80_000.0
+
+# 1/(bar s) per formula unit of oxide. ⚠ WHAT PINS IT: a smelter's own residence
+# time, not a fit. With the affinity form's forward branch
+#
+#     tau = 1 / (k_f p_CO)
+#
+# a lead blast furnace or a copper converter takes the oxide down in ten minutes
+# of contact with a roughly 1 bar CO stream, so tau = 600 s at 1400 K needs
+# k_f = 1.667e-3 1/(bar s), and at ``REDUCTION_EA`` that is A = 1.609.
+#
+# ⚠⚠ AND THE UNITS ARE WHAT MAKE THE VALUE DEFENSIBLE, which is this project's
+# standing rule about a pre-exponential. The ceiling for a rate written per
+# formula unit of solid per bar is not a collision frequency in solution -- it is
+# the HERTZ-KNUDSEN arrival rate at a crystal face. CO at 1 bar and 1400 K
+# arrives at 2209 mol/(m2 s); tenorite's molar volume over a 100 um particle is
+# 0.756 m2/mol of specific surface, so no rate law of this shape can exceed
+# 1.67e3 1/(bar s). **A is 9.6e-4 of that** -- inside it by three decades, and
+# stated rather than assumed. (A 1 mm bed grain moves the bound to 1.67e2 and A
+# to 9.6e-3 of it; the conclusion is unchanged over the whole range a furnace
+# charges.)
+REDUCTION_A = 1.609
+
+# J/mol. Thermite. ⚠ THIS IS AN IGNITION BARRIER AND IT IS THE MECHANIC, not a
+# clock: a jar of iron oxide and aluminium powder is indefinitely stable and a
+# spark takes it to 3000 K. DTA studies of the Fe2O3/Al reaction report apparent
+# activation energies of roughly 230-320 kJ/mol; 250 is inside that band.
+THERMITE_EA = 250_000.0
+
+# 1/s. ⚠ PINNED ON THE IGNITION TEMPERATURE, which is the only number about
+# thermite anybody quotes: the mixture lights at about 1200 K, so tau = 1 s
+# there, so A = exp(Ea / R / 1200). What comes out of that single pin is a
+# column nothing was fitted to:
+#
+#     298 K   8.2e+32 s   -- a jar that keeps for longer than the universe
+#     600 K   7.6e+10 s
+#     933 K   1.3e+03 s   -- and this is where ALUMINIUM MELTS, which is the
+#                            trigger every account of thermite names
+#    1200 K   1.0e+00 s   -- pinned
+#    1500 K   6.7e-03 s
+#
+# ⚠ A = 7.62e10 1/s is three and a half decades under this project's
+# unimolecular collision ceiling of 1e14, and ``validation/rate_ceiling.py``
+# reads this table, so the row is reported rather than asserted.
+THERMITE_A = 7.62e10
+
 # Formation sources this module will subtract a lattice from. Anything else is
 # an ESTIMATE, and a group-contribution number on one side of a lattice
 # subtraction is the failure ``solubility_product`` records at 25-29 decades.
@@ -293,6 +432,26 @@ class SolidStateReaction(NamedTuple):
     table for the same reason ``SOLUBILITY_PRODUCTS`` is one.
 
     ``solids`` and ``gases`` are signed: negative consumed, positive formed.
+
+    ⚠⚠ **S9 -- ``Ea`` AND ``A`` MAY BE DECLARED, AND FOR AN EXOTHERMIC ROW THEY
+    MUST BE.** ``None`` keeps M6's derivation (``Ea = max(dH, 0)`` and
+    ``A = RECOMBINATION_A exp(dS/R)``), which is right for every row that
+    DECOMPOSES: its reverse is a gas landing on a crystal with nothing to climb,
+    so the forward barrier IS the enthalpy. Write an EXOTHERMIC row and that
+    derivation says ``Ea = 0`` -- a barrierless reaction with no temperature
+    dependence at all, which for thermite means a mixture that reacts in a cold
+    jar and for a CO reduction means a furnace whose heat does nothing. The
+    numbers are in the module docstring. So an exothermic row declares its
+    forward pair and gets its reverse by detailed balance, which is what every
+    ``ReactionTemplate`` in this project already does; ``price`` refuses a
+    declaration with ``Ea < max(dH, 0)``, because the ``max`` in ``Ea_rev``
+    would otherwise silently break ``k_f/k_r = K``.
+
+    ⚠ A row may declare BOTH or NEITHER. Half a declaration is refused: ``A``
+    without ``Ea`` is a pre-exponential belonging to a barrier nobody wrote
+    down, and ``Ea`` without ``A`` gets ``RECOMBINATION_A exp(dS/R)`` -- a
+    constant calibrated as the reverse of a decomposition, which is not this
+    row's elementary event.
     """
 
     name: str
@@ -300,6 +459,8 @@ class SolidStateReaction(NamedTuple):
     gases: tuple            # ((canonical SMILES, nu), ...)   nu signed
     mechanism: str          # the catalog CLASS this row is, as a mechanism
     note: str
+    Ea: float | None = None  # J/mol -- None DERIVES max(dH, 0); see above
+    A: float | None = None   # 1/(bar^n s) -- None DERIVES from RECOMBINATION_A
 
 
 class PricedSolidReaction(NamedTuple):
@@ -329,10 +490,15 @@ class PricedSolidReaction(NamedTuple):
 # species that already price, so the MECHANISM is covered honestly and the ROW is
 # not claimed. `data/catalog` scores rows, and this one still reads uncovered.
 #
-# ⚠ AND `roasting` IS NOT HERE, which is a MECHANISM refusal and not a data one:
-# a gas REACTANT puts its pressure in the denominator of Q, so `price` refuses
-# such a declaration by name and `properties/surface.py` carries the mass-action
-# term it wants instead.
+# ⚠⚠ AND `roasting` IS STILL NOT HERE, BUT S9 CHANGED THE REASON. This comment
+# read "a gas REACTANT puts its pressure in the denominator of Q, so `price`
+# refuses such a declaration by name". That refusal is GONE -- the quotient is
+# split into two one-sided products and three rows below consume a gas. **What
+# keeps roasting in `properties/surface.py` is the ORDER**: an affinity form's
+# exponents are fixed at the stoichiometric coefficients by detailed balance, and
+# `2 ZnS + 3 O2 -> 2 ZnO + 2 SO2` taken third order in oxygen stalls
+# asymptotically as the atmosphere is consumed. That is this project's standing
+# invariant "a declared rate order may never be reversible", from the other side.
 #
 # ⚠⚠ THE ONE THING THIS COMMENT USED TO SAY THAT S4 REFUTED: it read
 # "`mercury-from-cinnabar` would still need its own template, because HgO
@@ -434,6 +600,132 @@ SOLID_STATE_REACTIONS: tuple[SolidStateReaction, ...] = (
             "`cinnabar-roasting` sharing one crystal in the solid block"
         ),
     ),
+    # -----------------------------------------------------------------------
+    # S9 -- THE SMELTER. Five rows, and the first two of them are the first
+    # reactions in this table that CONSUME a gas.
+    # -----------------------------------------------------------------------
+    # ⚠⚠ THE FIRST TWO ROWS ARE WHAT THE OLD REFUSAL REFUSED. `gas-solid-
+    # reduction` sat on the work queue as its only +2 for a whole milestone,
+    # blocked on "a REVERSIBLE solid-gas term" -- and the term was this one all
+    # along, one algebraic rearrangement short. See the module docstring §S9.
+    #
+    # ⚠ AND THEY ARE REVERSIBLE FOR A REASON A BLAST FURNACE IS BUILT AROUND:
+    # ln K is only +10.90 and +7.24 at their own furnace temperatures, so the
+    # top gas keeps carbon monoxide in it. `surface.LN_K_IRREVERSIBLE` refused
+    # all four catalog rows on exactly that reading and was RIGHT to -- an
+    # irreversible term cannot hold them. This one can.
+    SolidStateReaction(
+        name="tenorite-carbon-monoxide-reduction",
+        solids=(("tenorite", -1), ("copper", +1)),
+        gases=(("[C-]#[O+]", -1), ("O=C=O", +1)),
+        mechanism="gas-solid-reduction",
+        note=(
+            "`copper-smelting` step 2 -- the converter, and the second half of "
+            "the first ore-to-metal chain in this project that is not mercury. "
+            "`covellite-roasting` in properties/surface.py makes the tenorite "
+            "this consumes and neither declaration mentions the other"
+        ),
+        Ea=REDUCTION_EA,
+        A=REDUCTION_A,
+    ),
+    SolidStateReaction(
+        name="litharge-carbon-monoxide-reduction",
+        solids=(("litharge", -1), ("lead", +1)),
+        gases=(("[C-]#[O+]", -1), ("O=C=O", +1)),
+        mechanism="gas-solid-reduction",
+        note=(
+            "`lead-smelting` step 2. `galena-roasting` makes the litharge, so "
+            "chain 2's lead chamber now has a route to its own vessel metal "
+            "from galena in two declared reactions and no template"
+        ),
+        Ea=REDUCTION_EA,
+        A=REDUCTION_A,
+    ),
+    # ⚠⚠ NO DECLARED KINETICS, AND THAT IS THE INTERESTING PART: this row is
+    # ENDOTHERMIC (+240.0 kJ/mol), so M6's derivation is exactly right for it and
+    # the retort comes out at tau = 258 s at the catalog's own 1400 K. The
+    # reverse -- CO landing on hot zinc -- is the barrierless event
+    # ``RECOMBINATION_A`` was calibrated as.
+    #
+    # ⚠ AND THE ZINC IS A SOLID HERE WHILE A REAL RETORT DISTILS IT OFF AT
+    # 1180 K. That is a STATED limitation and not a hidden one: ``mineral_data``
+    # holds zinc as a lattice, ``thermo.get("[Zn]")`` refuses the monatomic
+    # vapour as a bare element, and a lattice in this engine may react and may
+    # never boil. What is lost is the product removal that pulls the reaction
+    # over; what is kept is the reaction's own thermodynamics, which do not need
+    # it -- dG = 0 at 1264 K against a real retort's 1200-1300, and ln K is
+    # +2.21 at 1400 K, so it runs against one bar of its own CO without help.
+    SolidStateReaction(
+        name="zincite-carbothermic-reduction",
+        solids=(("zincite", -1), ("carbon-graphite", -1), ("zinc", +1)),
+        gases=(("[C-]#[O+]", +1),),
+        mechanism="carbothermic-oxide-reduction",
+        note=(
+            "`zinc-smelting` step 2 -- the Belgian retort, and the third "
+            "ore-to-metal chain, with `sphalerite-roasting` making the zincite. "
+            "⚠ It needs no gas REACTANT and no declared kinetics: it is an "
+            "ordinary row of this table that nobody had written, and the only "
+            "reason it was blocked is that the queue priced the CO route "
+            "(uphill at +63.3 kJ/mol) instead of the catalog's own carbon one"
+        ),
+    ),
+    # ⚠⚠ THE ROW THAT MAKES THE OTHER TWO INTO A FURNACE, and it is here for the
+    # MECHANIC rather than for a route -- `blast-furnace` is still blocked on
+    # `slagging` and on an FeO ``mineral_data`` refuses. What it buys is that a
+    # flask given CARBON and a trace of CO2 regenerates its own reductant:
+    #
+    #     C + CO2 -> 2 CO        this row, reversible, ln K +5.18 at 1300 K
+    #     CuO + CO -> Cu + CO2   the row above, which hands the CO2 back
+    #
+    # so the carbon monoxide is a CARRIER and the carbon is the reagent. Nothing
+    # declares that; it is two rows sharing a headspace, which is the same shape
+    # as the mercury retort's two rows sharing a crystal.
+    #
+    # ⚠ ENDOTHERMIC (+172.5 kJ/mol) and therefore on the derived pair again --
+    # and its reverse, 2 CO landing on carbon to lay down soot, is the classic
+    # Boudouard deposition that really is barrierless-ish. dG = 0 at 981.6 K,
+    # which is the temperature every ironmaking text puts the Boudouard reversal
+    # at.
+    SolidStateReaction(
+        name="boudouard-gasification",
+        solids=(("carbon-graphite", -1),),
+        gases=(("O=C=O", -1), ("[C-]#[O+]", +2)),
+        mechanism="boudouard",
+        note=(
+            "`blast-furnace` step 2, and the reason a furnace is charged with "
+            "coke rather than carbon monoxide. ⚠ Its reverse is what puts soot "
+            "in a cool flue, and it is this row run backwards -- nothing "
+            "declares that either"
+        ),
+    ),
+    # ⚠⚠ THE FIRST ROW HERE WITH NO GAS AT ALL, and it is a structural first
+    # rather than a bigger one of the same thing. Every row above exchanges at
+    # least one gas, so ``Q`` always had something in it; here both one-sided
+    # pressure products are empty, i.e. exactly 1.0, and the affinity collapses
+    # to ``k_f - k_r`` -- a constant. That is CORRECT and it is what a
+    # condensed-phase reaction with no gas participant means: there is no
+    # quotient to move, so the row is effectively irreversible at ln K +29.5 and
+    # runs to completion.
+    #
+    # ⚠ AND IT IS THE ROW THAT FORCED THE DECLARED PAIR. dH is -851.5 kJ/mol, so
+    # ``max(dH, 0)`` is zero: on the derived pair thermite is a 2.8-day reaction
+    # that runs at the same speed in a cold jar as in a furnace. See
+    # ``THERMITE_A`` for what one pin on the ignition temperature buys instead.
+    SolidStateReaction(
+        name="metallothermic-reduction",
+        solids=(("hematite", -1), ("aluminium", -2),
+                ("iron", +2), ("corundum", +1)),
+        gases=(),
+        mechanism="metallothermic-reduction",
+        note=(
+            "`thermite`, the whole route in one row. Four crystals and no gas, "
+            "which makes it the only row here whose affinity has no quotient in "
+            "it at all -- and the only one whose mechanic is entirely in its "
+            "BARRIER: 8e32 s at room temperature against 1 s at 1200 K"
+        ),
+        Ea=THERMITE_EA,
+        A=THERMITE_A,
+    ),
 )
 
 
@@ -511,21 +803,76 @@ def price(
         sources.append(f"{smiles}: {data.source}")
 
     dS = (dH - dG) / T_ref
-    return PricedSolidReaction(
-        decl=decl,
-        dH=dH,
-        dS=dS,
-        # ⚠ DERIVED, NOT DECLARED. See the module docstring: an endothermic
-        # decomposition whose reverse is barrierless has Ea = dH exactly, which
-        # is also the floor detailed_balance enforces on every other reaction
-        # here. An EXOTHERMIC row as written would get Ea = 0 -- barrierless
-        # forward -- and its reverse would carry the whole |dH|.
-        Ea=max(dH, 0.0),
+
+    # ⚠⚠ S9 -- HALF A KINETIC DECLARATION IS REFUSED. Both or neither: ``A``
+    # alone is a pre-exponential for a barrier nobody wrote down, and ``Ea``
+    # alone would take ``RECOMBINATION_A exp(dS/R)``, a constant calibrated as
+    # the REVERSE of a decomposition and not this row's elementary event.
+    if (decl.Ea is None) != (decl.A is None):
+        given, missing = (("Ea", "A") if decl.A is None else ("A", "Ea"))
+        raise UnpricedSolidReaction(
+            f"{decl.name!r}: declares {given} and not {missing}. A row here "
+            "either takes M6's derived pair (Ea = max(dH, 0) with "
+            "A = RECOMBINATION_A exp(dS/R), which is the barrierless-reverse "
+            "decomposition) or declares BOTH halves of its own forward "
+            "kinetics. Half of one silently mixes a declared barrier with a "
+            "pre-exponential fitted to a different elementary event."
+        )
+
+    if decl.Ea is None:
+        # ⚠ DERIVED, NOT DECLARED, AND THIS IS THE ENDOTHERMIC-DECOMPOSITION
+        # CASE ONLY. See the module docstring: a decomposition whose reverse is
+        # barrierless has Ea = dH exactly, which is also the floor
+        # detailed_balance enforces on every other reaction here.
+        Ea = max(dH, 0.0)
         # DERIVED from the reverse constant and this row's own entropy -- see
         # RECOMBINATION_A. ``math.exp(dS/R)`` is the entropy of making gas, and
         # it is the difference between a retort that works and one that is
         # thirteen decades too slow.
-        A=RECOMBINATION_A * math.exp(dS / R),
+        A = RECOMBINATION_A * math.exp(dS / R)
+        # ⚠ AN EXOTHERMIC ROW CANNOT TAKE THE DERIVATION, and S9 measured what
+        # it costs rather than assuming it: ``max(dH, 0)`` is ZERO, so the
+        # forward rate has no temperature dependence at all. Thermite comes out
+        # at 4.15e-6 1/s -- a 2.8-DAY reaction that runs just as fast in a cold
+        # jar as in a furnace, i.e. no ignition -- and a CO reduction at
+        # 9.7e-4 1/(bar s) with a furnace whose heat does nothing. Refused
+        # here, at the declaration, rather than integrated.
+        if dH < 0.0:
+            raise UnpricedSolidReaction(
+                f"{decl.name!r}: dH = {dH / 1000.0:.2f} kJ/mol is EXOTHERMIC "
+                "and no forward kinetics are declared. The derived pair here "
+                "is the barrierless reverse of a DECOMPOSITION, so it gives "
+                "Ea = max(dH, 0) = 0: a reaction with no temperature "
+                "dependence, which is a thermite that goes off in a cold jar "
+                "and a smelting reduction whose furnace does nothing. Declare "
+                "Ea and A on the row; the reverse still comes from detailed "
+                "balance."
+            )
+    else:
+        Ea = float(decl.Ea)
+        A = float(decl.A)
+        # ⚠⚠ THE FLOOR IS NOT A CONVENIENCE, IT IS WHAT KEEPS ``K`` RIGHT.
+        # ``SolidStateArrays`` derives the reverse barrier as
+        # ``max(Ea - dH, 0)``, and that max is inert for the derived pair
+        # (``max(dH,0) - dH >= 0`` always). A declared ``Ea`` below ``dH``
+        # would CLIP there, and the clip breaks ``k_f/k_r = K`` silently --
+        # the equilibrium would no longer be the thermodynamics. It is also
+        # ``detailed_balance``'s own floor everywhere else in this project.
+        if Ea < max(dH, 0.0):
+            raise UnpricedSolidReaction(
+                f"{decl.name!r}: declared Ea = {Ea / 1000.0:.2f} kJ/mol is "
+                f"below dH = {dH / 1000.0:.2f} kJ/mol. An elementary barrier "
+                "cannot be lower than the reaction enthalpy -- and here it is "
+                "worse than wrong: the reverse barrier is max(Ea - dH, 0), so "
+                "the clip would leave k_f/k_r no longer equal to K and the "
+                "equilibrium would stop being the thermodynamics."
+            )
+    return PricedSolidReaction(
+        decl=decl,
+        dH=dH,
+        dS=dS,
+        Ea=Ea,
+        A=A,
         minerals=tuple(resolved),
         basis="; ".join(sources),
     )

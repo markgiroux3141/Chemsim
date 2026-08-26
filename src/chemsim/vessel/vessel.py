@@ -774,26 +774,32 @@ def build_solid_state_arrays(
         ] + [smi for smi, _ in decl.gases if smi not in index]
         if missing:
             continue                      # not a candidate here; not a failure
-        # ⚠ A GAS REACTANT IS REFUSED, and ``SolidStateArrays`` carries the
-        # measurement: its pressure sits in the DENOMINATOR of Q, so an
-        # atmosphere with none of it left drives the reverse flux to 2.6e15
-        # formula units per second. That is the affinity form saying it is not
-        # a rate law for a gas-CONSUMING surface reaction -- a different
-        # mechanism, which wants the mass-action kernel.
-        consuming = [smi for smi, nu in decl.gases if nu < 0]
-        if consuming:
-            report.append(
-                f"{decl.name}: REFUSED -- {consuming} appear on the reactant "
-                "side as gases. The affinity form puts a gas reactant's "
-                "pressure in the denominator of Q, so an atmosphere depleted "
-                "of it gives an unbounded reverse rate. A gas-consuming "
-                "surface reaction (roasting; a solid catalyst) is a different "
-                "mechanism and is built as one: properties/surface.py and "
-                "SurfaceArrays. NOT a third PHASE_INDEX entry -- that label "
-                "would move a catalysed gas reaction onto the pure-liquid "
-                "standard state, which is 2.6e10 in K at 500 K."
-            )
-            continue
+        # ⚠⚠ S9 -- A GAS REACTANT USED TO BE REFUSED HERE AND THE REFUSAL IS
+        # GONE, because the thing it refused was an ALGEBRAIC FORM and the form
+        # changed. What stood here said: the gas reactant's pressure sits in the
+        # DENOMINATOR of Q, so an atmosphere depleted of it drives the reverse
+        # flux to 2.6e15 formula units per second -- true of ``k_f - k_r Q``,
+        # and the same statement is now made by splitting Q into its two
+        # one-sided products, ``net = k_f P_react - k_r P_prod``. Nothing is
+        # divided, ``net = 0`` is still ``Q = K``, and ``p_react = 0`` gives a
+        # finite reverse. ``SolidStateArrays.__post_init__`` carries the algebra
+        # and ``validation/smelting.py`` measures the bound it replaces.
+        #
+        # ⚠ THE OTHER HALF OF THE OLD REASON WAS ABOUT A FORM THIS TERM NEVER
+        # USED. It said mass action on a solid AMOUNT settles at
+        # ``p/K = n_A/n_B`` -- M6's measurement, and true -- but the affinity
+        # form takes ONE ``units`` for both directions, chosen by the sign, so
+        # it is a common factor that divides out of ``net = 0``. That was
+        # already the case when the refusal was written.
+        #
+        # ⚠ AND ROASTING STILL DOES NOT COME HERE, for the reason that survives:
+        # its rate law wants DECLARED orders (three O2 do not meet one crystal)
+        # and an affinity form cannot have them -- detailed balance fixes the
+        # exponents at the stoichiometric coefficients or the equilibrium is
+        # wrong. That is this project's own standing invariant, "a declared rate
+        # order may NEVER be reversible", arriving in a new place. Its ln K is
+        # +67.6 to +78.8 anyway, so the reverse it would gain is unobservable.
+        # ``properties/surface.py`` keeps the mass-action term.
         try:
             priced = price(decl, thermo)
         except UnpricedSolidReaction as exc:

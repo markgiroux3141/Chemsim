@@ -5111,6 +5111,154 @@ the measurements that justify them.
     instead of taking one at random. The queue is now ranked against THREE bars
     (species, product-is-a-graph, balanceable) instead of one.
 
+94. ✔✔ **S9 — THE REVERSIBLE SOLID-GAS TERM WAS ONE ALGEBRAIC REARRANGEMENT,
+    AND HALF THE REASON RECORDED BESIDE THE REFUSAL WAS ABOUT A DIFFERENT FORM.**
+
+    **+5 classes (43 → 48, of 229 after two splits), +4 template-ready (34 → 38), +4 RUNNABLE
+    (24 → 28)** — tying S7 for the largest single-session move the intersection
+    has had, on ~15 lines of engine. Six declarations, no new term, no new phase,
+    and the five pre-S9 solid-state rows BIT-IDENTICAL. All four coverage numbers
+    were predicted before the audit ran and all four came out.
+
+    The four routes: **`copper-smelting`, `lead-smelting`, `zinc-smelting`,
+    `thermite`** — all three smelters at once, which `catalog_coverage.py` has
+    carried a comment about since S1.
+
+    ⚠⚠ **WHAT THE ENGINE GAP ACTUALLY WAS.** `SolidStateArrays` already
+    integrates the affinity form and already reaches `Q = K`; what it refused was
+    a gas REACTANT, whose negative exponent in `Q = prod(p ** nu_gas)` puts its
+    pressure in a DENOMINATOR (M6 measured 2.6e15 formula units per second as it
+    ran out). Written as the two ONE-SIDED products,
+
+        net = k_f * prod(p ** consumed_gas)  -  k_r * prod(p ** formed_gas)
+
+    nothing is divided. It is `P_react (k_f - k_r Q)` algebraically — **the same
+    root, so the same equilibrium** — and at `p_react = 0` it is the finite
+    `-k_r P_prod`. Measured on the copper row at 1400 K as p_CO falls
+    1 → 1e-3 → 1e-6 → 1e-30 → 0: the old branch reads 1.5e-8, 1.5e-5, 1.5e-2,
+    1.5e+22, `inf`; the new one is bounded by `k_r` = 1.4973e-08 the whole way.
+
+    ⚠⚠ **AND THE OTHER RECORDED REASON WAS ABOUT MASS ACTION, WHICH THIS TERM
+    NEVER USED.** It said a reversible pair on a solid AMOUNT settles at
+    `p/K = n_A/n_B` — M6's own measurement, 3.0863 against 3.0863, and true. But
+    the affinity form takes ONE `units` for both directions, chosen by the sign,
+    so it is a COMMON FACTOR that divides out of `net = 0`. That was already the
+    case when the refusal was written. Measured over a **50x charge range**:
+    Q/K = 1.0000 every time.
+
+    ⚠⚠ **SO M6 DREW THE LINE IN THE WRONG PLACE, AND THE RIGHT LINE IS ALREADY AN
+    INVARIANT OF THIS PROJECT.** The dichotomy was recorded as *inside a crystal /
+    at its surface* — and S4 had already broken that by turning a crystal
+    entirely into gas. The line that holds is **reversible or not**: an affinity
+    form cannot carry DECLARED rate orders, because detailed balance fixes its
+    exponents at the stoichiometric coefficients. That is verbatim *"a declared
+    rate order may NEVER be reversible"*. Roasting stays in `SurfaceArrays` **for
+    the order and not for the denominator** — `3 O2` as mass action stalls
+    asymptotically, which is what `SurfaceReaction.orders` exists to declare away.
+
+    ⚠⚠ **THE SECOND CHANGE: `Ea = max(dH, 0)` IS A DERIVATION ABOUT A
+    DECOMPOSITION AND RETURNS ZERO ON AN EXOTHERMIC ROW.** Thermite on the derived
+    pair is `A = 4.15e-6 1/s` — a 2.8-DAY reaction — and a CO reduction is
+    9.70e-4 1/(bar s), 17 minutes. ⚠ **The finding is not the size of the numbers,
+    it is that the temperature has left the rate law**: with `Ea = 0` there is no
+    exponential, so a thermite goes just as fast in a cold jar as in a furnace and
+    a smelter's heat does nothing. So an exothermic row DECLARES its forward pair
+    and still gets its reverse by detailed balance, and `price` refuses the
+    derivation for such a row by name.
+    ⚠ **A declared `Ea` below `dH` is refused too, and that is not a
+    convenience:** `Ea_rev = max(Ea - dH, 0)` clips, and the clip leaves
+    `k_f/k_r` no longer equal to `K` — the equilibrium silently stops being the
+    thermodynamics. The `max` is provably inert for the derived pair.
+
+    THE SIX DECLARATIONS. `tenorite-carbon-monoxide-reduction` (−125.68 kJ,
+    declared), `litharge-carbon-monoxide-reduction` (−63.98, declared),
+    `metallothermic-reduction` (−851.50, declared),
+    `zincite-carbothermic-reduction` (+239.97, **derived**),
+    `boudouard-gasification` (+172.45, **derived**) and, in `surface.py`,
+    `carbon-combustion` (−393.51, declared).
+
+    ⚠⚠ **`carbothermic-reduction` NEEDED NO ENGINE WORK AND THE QUEUE HAD PRICED
+    THE WRONG REACTION.** `NEXT_PROMPT` carried S8's finding that
+    `ZnO + CO -> Zn + CO2` is uphill at +63.3 kJ/mol. **The catalog's row is not
+    that reaction** — it is `zinc-oxide + carbon-graphite -> zinc +
+    carbon-monoxide`, where the entropy of making a mole of CO carries it, and
+    dG = 0 at **1264.3 K** against a real Belgian retort's 1200–1300. Two solid
+    reactants and one gas PRODUCT is an ordinary row of M6's table nobody had
+    written. **Read the row, not the class name.**
+
+    ⚠⚠ **THE ROUTE NOBODY DECLARES: ORE + COKE + AIR → METAL.** Four
+    declarations in two modules, none mentioning another, sharing a solid block
+    and a headspace: `CuS + O2 -> CuO + SO2` (S1), `C + O2 -> CO2` (S9),
+    `C + CO2 -> 2 CO` (Boudouard, reversible), `CuO + CO -> Cu + CO2` (reversible).
+    A sealed 10 L flask, 0.04 mol covellite + 0.20 mol graphite + air at 1500 K:
+    **0.040000 mol copper, 0.040000 mol SO2, no ore and no coke left,
+    `conservation_report` empty.** Same for galena at 1400 K and sphalerite at
+    1400 K. ⚠ **And the AIR is the control** — on the copper flask, 0.02 mol O2 →
+    29.01%, 0.06 → 80.41%, 0.10 → 99.89%, 0.20 → 100.00%.
+    ⚠⚠ **THE ZINC FLASK GOES *DOWN* AT 0.20 mol, AND NOBODY DECLARED THAT
+    EITHER**: 0.032476 mol of metal at 0.06 against **0.025515 at 0.20**, with
+    0.014485 mol of zincite left and the coke gone. The carbothermic reduction
+    and the tuyere **compete for the same carbon**, so a blast rich enough to
+    burn all of it leaves nothing to reduce the oxide with. Copper and lead do
+    not do this — their reductant is the CO the carbon made, and Boudouard keeps
+    handing it back. **Overblowing a zinc retort really does waste the charge.**
+
+    ⚠⚠ **THE CARRIER-FREE FURNACE IS EXACTLY INERT AND THAT IS THE LEAD
+    CHAMBER'S FAILURE MODE NOT HAPPENING.** Ore + coke with no gas at all: 0.0
+    copper, 0.0 CO, 0.0 CO2 at the default rung, rtol 1e-6, 1e-8 and 1e-10. A
+    cycle with gain on its own carrier is exactly the shape that let round-off
+    seed the lead chamber to 89% yield; the reason it cannot happen here is the
+    FORM and not a guard — the arriving gas enters as `p ** 1` with no
+    denominator, so zero in is zero out with a bounded slope, and there is no
+    smoothstep and no constant scale anywhere in it.
+    ⚠ **Once seeded the carrier MULTIPLIES, which is real chemistry:** 1e-12 mol
+    of CO2, one part in 1e11 of the charge, reduces the whole 0.10 mol of oxide.
+    Boudouard makes 2 CO from 1 CO2 and the reduction hands one back. **The
+    carbon is the reagent; the carbon oxide is only the vehicle**, which is why a
+    furnace is charged with coke.
+
+    THERMITE — the only row in either solid table with NO GAS, so both one-sided
+    products are empty (exactly 1.0) and the affinity collapses to `k_f - k_r`, a
+    constant, correctly. One pin on the reported 1200 K ignition temperature
+    gives 0.0000% at 298.15 K, 3.1e-10 mol at 600, 0.2171% at 800, **36.95% at
+    933 — where ALUMINIUM MELTS** — 98.16% at 1000 and 100% at 1200. ⚠ An
+    insulated flask **ignites itself** and the rise is the arithmetic: +322.45 K
+    measured against +323.86 predicted on a 50 J/K flask.
+    ⚠ **STATED LIMITATION: nothing caps the temperature.** A real thermite stops
+    near 3135 K because the IRON BOILS; a 1 J/K flask here reports 5469 K, above
+    the RHS's `T_MAX` clamp of 5000 which bounds RATE evaluation and not the
+    state. **The same statement the zinc retort makes**: a lattice may react and
+    may never boil, so the zinc stays SOLID and the distillation that pulls a
+    real retort over is not expressible. The row does not need it — ln K is +2.21
+    at 1400 K.
+
+    ⚠⚠ **`carbothermic-reduction` WAS AN OUTCOME LABEL AND WAS SPLIT** — five
+    rows, four mechanisms (oxide reduction, carbide formation where the carbon
+    ends up IN the product, a phosphate needing a slag former, a sulfate whose
+    sulfur is reduced rather than removed). Crediting the class on the oxide row
+    would have been `roasting-to-metal`'s false credit in a fourth costume. The
+    split moves the denominator and costs no route, unlike S7's.
+
+    ⚠ **AND THE INSTRUMENT AUDIT FOUND A FALSE CITATION FOUR MILESTONES OLD.**
+    `surface.ROASTING_A`'s comment has ended *"validation/rate_ceiling.py
+    re-measures it"* since S1 — and it did not, because `rate_ceiling` walks
+    `net.reactions` and a `SurfaceReaction` never becomes one. S4 found the
+    identical fault about `SOLID_STATE_REACTIONS` and added a panel; this table
+    was left out, with the sentence claiming otherwise sitting beside the
+    constant. `rate_ceiling.surface_panel` reads it now: every pre-exponential
+    there is **below the collision limit outright**, so no row can cross at any
+    temperature. ⚠ Against the BIMOLECULAR ceiling, not the unimolecular one the
+    panel above it uses — a surface rate is order 1 in one gas.
+
+    REFUSED, MEASURED. **`direct-combination`** (`Hg + S8 -> HgS`) was on the
+    queue as "probably" part of this work and is not: mercury is a curated LIQUID
+    element and S8 a MOLECULAR solid, which `build_surface_arrays` refuses by name
+    because `PhaseArrays.lattice` cannot answer "how much solid is there" for a
+    species with a solid block AND a liquid block AND a headspace.
+    **`blast-furnace`** gains three of its five classes and is now **one class
+    (`slagging`) and one mineral (`iron-ii-oxide`) away** — the closest any
+    five-step route has been.
+
 IMMEDIATE NEXT TASK: see **`MILESTONES.md`**, which is the plan of record as of
 2026-08-22 and supersedes the ordering below. It is derived from `data/catalog`
 (1,583 compounds, 173 routes) plus four measured capability probes, and it

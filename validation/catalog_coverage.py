@@ -411,7 +411,26 @@ TEMPLATE_CLASSES = {
     # visible in this file's tables. **Read the rows, not the ranking.**
     "water-gas-shift": "water_gas_shift",
     "steam-reforming": "steam_reforming",
-    "catalytic-gas-oxidation": "deacon_oxidation",
+    # ⚠⚠ S9 SPLIT `catalytic-gas-oxidation`, AND IT WAS A FALSE CREDIT ON TWO OF
+    # ITS THREE ROWS -- found while RANKING the queue rather than while building
+    # anything, which is the second time a class has come apart under that check.
+    # The three rows are three different reactions:
+    #
+    #   deacon-process 1    HCl + O2  + CuCl2 -> Cl2 + H2O   ✔ deacon_oxidation
+    #   contact-process 2   SO2 + O2  + V2O5  -> SO3         ✘ NOTHING makes this
+    #   ostwald-process 1   NH3 + O2  + Pt    -> NO + H2O    ✘ NOTHING makes this
+    #
+    # ⚠ AND THE NEAR-MISS IS WORTH KEEPING: the obvious reading is that
+    # ``sulfur_dioxide_oxidation`` covers the contact-process row, because of its
+    # NAME. It does not -- that template is `SO2 + NO2 + H2O -> H2SO4 + NO`, the
+    # lead chamber's step, and it is credited to `redox-oxygen-transfer`. A
+    # template's name is not its SMARTS.
+    #
+    # Headline effect: ZERO on both columns. `deacon-process` keeps its credit
+    # and neither of the other two was template-ready anyway -- but
+    # `ostwald-process` was being counted as ONE class away when it is two, which
+    # is exactly the ranking error this split exists to remove.
+    "catalytic-hydrogen-chloride-oxidation": "deacon_oxidation",
     "comproportionation": "claus_comproportionation",
     # the six in properties/electrolyte.py, which this map used not to know about
     "proton-transfer": "electrolyte.dissociation_templates",
@@ -545,10 +564,63 @@ TEMPLATE_CLASSES = {
     # other column). The honest summary is +1 class, +1 template-ready route, and
     # ZERO new routes that run end to end: all three smelting routes are still
     # blocked at ``carbothermic-reduction`` / ``gas-solid-reduction``.
+    #
+    # ⚠⚠ AND S9 UNBLOCKED ALL THREE, so read that last sentence as a record of
+    # S1's state rather than of this one. `copper-smelting`, `lead-smelting` and
+    # `zinc-smelting` are in the BOTH column now, and each of them is a ROAST
+    # from this table followed by a REDUCTION from ``SOLID_STATE_REACTIONS``,
+    # with neither declaration mentioning the other -- the mercury retort's
+    # pattern, three more times.
     "roasting": (
         "vessel_integrator.SurfaceArrays (a TERM; mass action, first order in "
         "the arriving gas and gated on the solid being present)"
     ),
+    # ---------------------------------------------------------------------
+    # S9 -- THE SMELTER. Five classes, one algebraic change, no new term.
+    # ---------------------------------------------------------------------
+    # ⚠⚠ WHAT S9 ACTUALLY DID: it lifted a REFUSAL. ``SolidStateArrays`` could
+    # not hold a gas REACTANT because ``Q = prod(p ** nu_gas)`` puts one in a
+    # denominator (2.6e15 formula units per second as the gas ran out, measured
+    # by M6). Split into two one-sided products, ``net = k_f P_react -
+    # k_r P_prod``, nothing is divided and ``net = 0`` is still ``Q = K``. That
+    # is the whole of "a REVERSIBLE solid-gas term", which S8 named as the most
+    # valuable unscoped engine item in the plan.
+    #
+    # ⚠ AND EVERY ROW IS RUN IN A REAL VESSEL BY ``validation/smelting.py``,
+    # not credited off this table -- ``pyrite-roasting`` is what that rule
+    # exists to prevent.
+    #
+    # ⚠ THE ROW CHECK, FIRST. `gas-solid-reduction`'s four rows are one
+    # mechanism (`MO + CO -> M + CO2`, four times); two of them run and two are
+    # blocked on an iron(II) oxide ``mineral_data`` refuses, which is a SPECIES
+    # question this audit counts in the other column.
+    "gas-solid-reduction": (
+        "vessel_integrator.SolidStateArrays (a TERM; the affinity form, now "
+        "REVERSIBLE with a gas reactant)"
+    ),
+    # ⚠⚠ `carbothermic-reduction` WAS AN OUTCOME LABEL AND S9 SPLIT IT. Five
+    # rows, four mechanisms -- see data/catalog/README.md. Only the OXIDE row is
+    # built, and crediting the whole class on it would have claimed routes to
+    # calcium carbide and to white phosphorus that this engine cannot make:
+    # `roasting-to-metal`'s false credit in a fourth costume.
+    "carbothermic-oxide-reduction": (
+        "vessel_integrator.SolidStateArrays (a TERM)"
+    ),
+    # ⚠ ONE ROW, ONE MECHANISM, and the only row in either solid table whose
+    # affinity has NO gas in it at all -- so both one-sided pressure products
+    # are empty (exactly 1.0) and the affinity collapses to ``k_f - k_r``.
+    "metallothermic-reduction": (
+        "vessel_integrator.SolidStateArrays (a TERM)"
+    ),
+    # ⚠⚠ THESE TWO ARE CREDITED FOR A MECHANIC AND ARE WORTH **ZERO** ROUTES,
+    # WHICH IS SAID HERE RATHER THAN LEFT TO BE INFERRED. Both are
+    # `blast-furnace`'s, and that route is still blocked on `slagging` (no
+    # template) and on `iron-ii-oxide` (no lattice). What they buy is that the
+    # three smelting routes STOP NEEDING A CARBON OXIDE HANDED TO THEM: with
+    # them a flask of ore, coke and air makes metal, and S9 measured the same
+    # flask without them at exactly zero conversion on four tolerance rungs.
+    "boudouard": "vessel_integrator.SolidStateArrays (a TERM)",
+    "carbon-combustion": "vessel_integrator.SurfaceArrays (a TERM)",
     # ---------------------------------------------------------------------
     # M8 -- reactions/electrochemistry.py. Electricity as a reagent.
     # ---------------------------------------------------------------------

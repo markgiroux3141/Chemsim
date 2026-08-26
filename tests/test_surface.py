@@ -399,13 +399,24 @@ def test_every_declared_row_prices_and_the_reverse_is_29_decades_down(providers)
     and a row that is irreversible in a roaster need not be at room temperature.
     """
     thermo, _ = providers
-    assert len(sf.SURFACE_REACTIONS) == 4
-    for decl in sf.SURFACE_REACTIONS:
+    # ⚠ S9 -- THE ROASTS ONLY. `carbon-combustion` joined this table and it is
+    # neither the same event nor as far from the bar: it declares its own
+    # Arrhenius pair, its dH is -393.5, and its ln K is +21.87 at the tuyere's
+    # own 2200 K. See `test_smelting.py` for its own bounds.
+    roasts = [d for d in sf.SURFACE_REACTIONS if d.name.endswith("-roasting")]
+    assert len(roasts) == 4
+    assert len(sf.SURFACE_REACTIONS) == 5
+    for decl in roasts:
         priced = sf.price(decl, thermo)
         assert priced.dH < -600_000.0, "roasting is hugely exothermic"
         assert priced.ln_K_run > sf.LN_K_IRREVERSIBLE + 20 * math.log(10.0)
         assert priced.Ea == sf.ROASTING_EA
         assert priced.A == sf.ROASTING_A
+
+    # and every row in the table, roast or not, still clears the bar -- which is
+    # what makes THIS term's forward-only integration a measurement
+    for decl in sf.SURFACE_REACTIONS:
+        assert sf.price(decl, thermo).ln_K_run > sf.LN_K_IRREVERSIBLE
 
 
 def test_a_row_whose_reverse_is_real_is_refused_by_name(providers):
@@ -646,11 +657,25 @@ def test_two_ores_in_one_flask_share_the_oxygen(providers):
 # ---------------------------------------------------------------------------
 
 
-def test_m6s_term_still_refuses_a_gas_consuming_declaration():
-    """The refusal that pointed here must keep pointing here. M6 measured an
-    affinity form's reverse flux at 2.6e15 formula units per second as the gas
-    reactant ran out; that is not a clipping problem, it is the form saying it is
-    not a rate law for this."""
+def test_the_boundary_with_M6_MOVED_and_roasting_stays_on_this_side_of_it():
+    """⚠⚠ S9 -- M6's REFUSAL OF A GAS REACTANT IS GONE AND ROASTING IS STILL
+    HERE, WHICH MEANS THE LINE WAS DRAWN IN THE WRONG PLACE AND HAS BEEN MOVED.
+
+    What the refusal said: an affinity form puts a gas reactant's pressure in the
+    denominator of Q, measured at 2.6e15 formula units per second as the gas ran
+    out. True of ``k_f - k_r Q``, and cured by splitting Q into its two one-sided
+    products -- so a solid-state row may consume a gas now, and
+    ``gas-solid-reduction`` is three rows of ``SOLID_STATE_REACTIONS``.
+
+    ⚠ **The reason roasting is NOT one of them is a different reason, and it is
+    the one that survives:** an affinity form cannot carry DECLARED rate orders.
+    Detailed balance fixes its exponents at the stoichiometric coefficients or
+    the equilibrium is wrong, and ``2 ZnS + 3 O2 -> 2 ZnO + 2 SO2`` taken third
+    order in oxygen stalls asymptotically as the atmosphere is consumed --
+    exactly what ``SurfaceReaction.orders`` exists to declare away. This is this
+    project's standing invariant *a declared rate order may never be reversible*,
+    arriving in a new place.
+    """
     from chemsim.properties import solid_state as ss
 
     decl = ss.SolidStateReaction(
@@ -658,15 +683,37 @@ def test_m6s_term_still_refuses_a_gas_consuming_declaration():
         solids=(("sphalerite", -2), ("zincite", +2)),
         gases=(("O=O", -3), ("O=S=O", +2)),
         mechanism="roasting", note="",
+        # ⚠ IT HAS TO DECLARE ITS OWN KINETICS TO BUILD AT ALL, and that is the
+        # SECOND S9 guard rather than the gas-reactant one: a roast is
+        # exothermic by 882.7 kJ/mol, so ``Ea = max(dH, 0)`` would be zero.
+        Ea=sf.ROASTING_EA, A=sf.ROASTING_A,
     )
     original = ss.SOLID_STATE_REACTIONS
     ss.SOLID_STATE_REACTIONS = original + (decl,)
     try:
-        _, report = build_solid_state_arrays([SPHALERITE, ZINCITE, O2, SO2])
+        arr, report = build_solid_state_arrays([SPHALERITE, ZINCITE, O2, SO2])
     finally:
         ss.SOLID_STATE_REACTIONS = original
-    assert any("REFUSED" in line and "denominator" in line for line in report)
-    assert any("PHASE_INDEX" in line for line in report)
+    # ⚠ it is EXPRESSIBLE now -- no refusal, and the row builds
+    assert not [line for line in report
+                if "roasting-as-a-solid-state-reaction" in line]
+    assert "roasting-as-a-solid-state-reaction" in arr.names
+    # ...and the exponent on oxygen is its STOICHIOMETRY, 3, which is the whole
+    # reason this is the wrong term for a roast even though it now runs.
+    i = arr.names.index("roasting-as-a-solid-state-reaction")
+    assert arr.gas_consumed[i].max() == 3.0
+
+    # THE ROAST THAT ACTUALLY RUNS declares order 1 in oxygen instead, in the
+    # mass-action term, and that is what keeps it from stalling.
+    priced = [sf.price(d, ThermochemistryProvider())
+              for d in sf.SURFACE_REACTIONS
+              if d.name == "sphalerite-roasting"][0]
+    orders = {smi: o for smi, _nu, o in priced.decl.gases}
+    assert orders["O=O"] == 1.0
+    stoich = {smi: nu for smi, nu, _o in priced.decl.gases}
+    assert stoich["O=O"] == -3
+    # and it is irreversible for the second reason, which is unmoved
+    assert priced.ln_K_run > sf.LN_K_IRREVERSIBLE
 
 
 # ---------------------------------------------------------------------------

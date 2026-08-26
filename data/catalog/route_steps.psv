@@ -9,7 +9,7 @@ lead-chamber | 2 | SO2 oxidation by NO2 | sulfur-dioxide + nitrogen-dioxide + wa
 lead-chamber | 3 | carrier regeneration | nitric-oxide + oxygen | nitrogen-dioxide | chamber, cold favoured | gas-phase-oxidation
 lead-chamber | 4 | chamber crystal formation | nitrogen-dioxide + sulfur-dioxide + sulfuric-acid | nitrosylsulfuric-acid + water | water-starved chamber | nitrosation
 contact-process | 1 | sulfur combustion | sulfur-s8 + oxygen | sulfur-dioxide | burner | sulfur-combustion
-contact-process | 2 | catalytic SO2 oxidation | sulfur-dioxide + oxygen + vanadium-pentoxide | sulfur-trioxide + vanadium-pentoxide | 700-900 K, V2O5 | catalytic-gas-oxidation
+contact-process | 2 | catalytic SO2 oxidation | sulfur-dioxide + oxygen + vanadium-pentoxide | sulfur-trioxide + vanadium-pentoxide | 700-900 K, V2O5 | catalytic-sulfur-dioxide-oxidation
 contact-process | 3 | absorption into oleum | sulfur-trioxide + sulfuric-acid | disulfuric-acid | absorber, 98% acid | acid-anhydride-absorption
 contact-process | 4 | oleum dilution | disulfuric-acid + water | sulfuric-acid | dilution | hydrolysis
 vitriol-distillation | 1 | dehydration of green vitriol | iron-ii-sulfate | iron-ii-oxide + sulfur-trioxide | retort, red heat | sulfate-thermal-decomposition
@@ -18,7 +18,7 @@ pyrite-roasting | 1 | pyrite roasting | iron-disulfide + oxygen | iron-iii-oxide
 claus-process | 1 | partial combustion of H2S | hydrogen-sulfide + oxygen | sulfur-dioxide + water | thermal stage | hydrogen-sulfide-combustion
 claus-process | 2 | Claus reaction | hydrogen-sulfide + sulfur-dioxide | sulfur-s8 + water | catalytic stage, alumina | comproportionation
 leblanc-process | 1 | salt cake | sodium-chloride + sulfuric-acid | sodium-sulfate + hydrogen-chloride | 1100 K | salt-metathesis
-leblanc-process | 2 | black ash | sodium-sulfate + carbon-graphite + calcium-carbonate | sodium-carbonate + calcium-sulfide + carbon-dioxide | reverberatory furnace | carbothermic-reduction
+leblanc-process | 2 | black ash | sodium-sulfate + carbon-graphite + calcium-carbonate | sodium-carbonate + calcium-sulfide + carbon-dioxide | reverberatory furnace | carbothermic-sulfate-reduction
 leblanc-process | 3 | lixiviation | sodium-carbonate + water | sodium-carbonate + water | leaching, crystallisation | dissolution
 leblanc-process | 4 | galligu waste weathering | calcium-sulfide + water + carbon-dioxide | calcium-carbonate + hydrogen-sulfide | tip, open air | hydrolysis
 solvay-process | 1 | brine ammoniation | sodium-chloride + ammonia + water | sodium-chloride + ammonium-hydroxide | absorber | carbonate-equilibrium
@@ -32,7 +32,7 @@ lime-cycle | 1 | calcination | calcium-carbonate | calcium-oxide + carbon-dioxid
 lime-cycle | 2 | slaking | calcium-oxide + water | calcium-hydroxide | exothermic | lime-slaking
 lime-cycle | 3 | carbonation of mortar | calcium-hydroxide + carbon-dioxide | calcium-carbonate + water | months, ambient | solid-carbonation
 haber-bosch | 1 | ammonia synthesis | nitrogen + hydrogen + iron | ammonia + iron | 700 K, 200 bar, promoted iron | catalytic-gas-synthesis
-ostwald-process | 1 | ammonia oxidation | ammonia + oxygen + platinum | nitric-oxide + water + platinum | 1150 K, Pt-Rh gauze | catalytic-gas-oxidation
+ostwald-process | 1 | ammonia oxidation | ammonia + oxygen + platinum | nitric-oxide + water + platinum | 1150 K, Pt-Rh gauze | catalytic-ammonia-oxidation
 ostwald-process | 2 | NO oxidation | nitric-oxide + oxygen | nitrogen-dioxide | cooling train | gas-phase-oxidation
 ostwald-process | 3 | absorption | nitrogen-dioxide + water | nitric-acid + nitric-oxide | absorption tower | disproportionation-hydrolysis
 birkeland-eyde | 1 | arc nitrogen fixation | nitrogen + oxygen | nitric-oxide | electric arc, 3000 K | thermal-fixation
@@ -41,17 +41,17 @@ birkeland-eyde | 3 | absorption | nitrogen-dioxide + water | nitric-acid + nitri
 saltpetre-nitric | 1 | displacement and distillation | potassium-nitrate + sulfuric-acid | nitric-acid + potassium-bisulfate | retort, red heat | acid-displacement
 aqua-regia | 1 | aqua regia formation | nitric-acid + hydrogen-chloride | nitrosyl-chloride + chlorine + water | 3:1 HCl:HNO3 | halide-oxidation
 aqua-regia | 2 | gold dissolution | gold + chlorine + hydrogen-chloride | chloroauric-acid | ambient | oxidative-dissolution
-frank-caro | 1 | carbide formation | calcium-oxide + carbon-graphite | calcium-carbide + carbon-monoxide | electric furnace, 2300 K | carbothermic-reduction
+frank-caro | 1 | carbide formation | calcium-oxide + carbon-graphite | calcium-carbide + carbon-monoxide | electric furnace, 2300 K | carbide-formation
 frank-caro | 2 | nitrogen fixation | calcium-carbide + nitrogen | calcium-cyanamide + carbon-graphite | 1300 K | gas-solid-fixation
 frank-caro | 3 | hydrolysis to ammonia | calcium-cyanamide + water | ammonia + calcium-carbonate | steam | hydrolysis
 andrussow | 1 | ammoxidation of methane | methane + ammonia + oxygen + platinum | hydrogen-cyanide + water + platinum | 1400 K, Pt gauze | ammoxidation
-deacon-process | 1 | HCl reoxidation | hydrogen-chloride + oxygen + copper-ii-oxide | chlorine + water + copper-ii-oxide | 700 K, CuCl2 | catalytic-gas-oxidation
+deacon-process | 1 | HCl reoxidation | hydrogen-chloride + oxygen + copper-ii-oxide | chlorine + water + copper-ii-oxide | 700 K, CuCl2 | catalytic-hydrogen-chloride-oxidation
 weldon-chlorine | 1 | pyrolusite oxidation of HCl | manganese-dioxide + hydrogen-chloride | chlorine + water + manganese-ii-chloride | warm | halide-oxidation
 bleaching-powder | 1 | chlorination of lime | calcium-hydroxide + chlorine | calcium-hypochlorite + calcium-chloride + water | ambient | disproportionation
 hypochlorite-bleach | 1 | chlorine into caustic | chlorine + sodium-hydroxide | sodium-hypochlorite + sodium-chloride + water | cold, dilute | disproportionation
 phosphoric-wet | 1 | rock digestion | calcium-phosphate + sulfuric-acid + water | phosphoric-acid + gypsum | 350 K | acid-displacement-precipitating
 superphosphate | 1 | rock acidulation | calcium-phosphate + sulfuric-acid | monocalcium-phosphate + calcium-sulfate | den, ambient | acid-displacement-precipitating
-white-phosphorus | 1 | carbothermic reduction | calcium-phosphate + silicon-dioxide + carbon-graphite | phosphorus-white + carbon-monoxide + calcium-silicate | electric furnace, 1700 K | carbothermic-reduction
+white-phosphorus | 1 | carbothermic reduction | calcium-phosphate + silicon-dioxide + carbon-graphite | phosphorus-white + carbon-monoxide + calcium-silicate | electric furnace, 1700 K | carbothermic-phosphate-reduction
 match-chemistry | 1 | match head ignition | potassium-chlorate + phosphorus-white | phosphorus-pentoxide + potassium-chloride | friction | chlorate-oxygen-transfer
 bayer-process | 1 | bauxite digestion | aluminium-oxide + sodium-hydroxide + water | sodium-aluminate | 500 K, 5 bar | amphoteric-dissolution
 bayer-process | 2 | precipitation of hydroxide | sodium-aluminate + water | aluminium-hydroxide + sodium-hydroxide | seeded, cooling | precipitation
@@ -67,7 +67,7 @@ lead-smelting | 2 | oxide reduction | lead-ii-oxide + carbon-monoxide | lead + c
 copper-smelting | 1 | roasting | copper-sulfide + oxygen | copper-ii-oxide + sulfur-dioxide | roaster | roasting
 copper-smelting | 2 | reduction to blister copper | copper-ii-oxide + carbon-monoxide | copper + carbon-dioxide | converter | gas-solid-reduction
 zinc-smelting | 1 | sphalerite roasting | zinc-sulfide + oxygen | zinc-oxide + sulfur-dioxide | roaster | roasting
-zinc-smelting | 2 | retort reduction | zinc-oxide + carbon-graphite | zinc + carbon-monoxide | retort, 1400 K | carbothermic-reduction
+zinc-smelting | 2 | retort reduction | zinc-oxide + carbon-graphite | zinc + carbon-monoxide | retort, 1400 K | carbothermic-oxide-reduction
 mercury-from-cinnabar | 1 | cinnabar roasting | mercury-sulfide + oxygen | mercury + sulfur-dioxide | retort, 900 K | roasting-to-metal
 thermite | 1 | aluminothermic reduction | iron-iii-oxide + aluminium | iron + aluminium-oxide | ignition, 3000 K | metallothermic-reduction
 downs-cell | 1 | molten salt electrolysis | sodium-chloride | sodium + chlorine | 900 K melt, CaCl2 flux | molten-salt-electrolysis
@@ -172,7 +172,7 @@ acetic-anhydride-ketene | 1 | acetic acid pyrolysis | acetic-acid | ketene + wat
 acetic-anhydride-ketene | 2 | ketene absorption | ketene + acetic-acid | acetic-anhydride | 320 K | nucleophilic-addition
 wacker-process | 1 | ethylene oxidation | ethylene + oxygen + copper-ii-ion | acetaldehyde + copper-ii-ion | PdCl2/CuCl2, 400 K | wacker-oxidation
 acetylene-acetaldehyde | 1 | mercury-catalysed hydration | acetylene + water + mercury-ii-ion | acetaldehyde + mercury-ii-ion | 370 K, HgSO4 in H2SO4 | alkyne-hydration
-calcium-carbide | 1 | carbide furnace | calcium-oxide + carbon-graphite | calcium-carbide + carbon-monoxide | electric arc, 2300 K | carbothermic-reduction
+calcium-carbide | 1 | carbide furnace | calcium-oxide + carbon-graphite | calcium-carbide + carbon-monoxide | electric arc, 2300 K | carbide-formation
 calcium-carbide | 2 | carbide hydrolysis | calcium-carbide + water | acetylene + calcium-hydroxide | ambient, water drip | hydrolysis
 steam-cracking | 1 | thermal cracking | octane + water | ethylene + propylene + 1,3-butadiene + methane + hydrogen | 1100 K, steam diluted, 0.5 s | thermal-cracking
 ethylene-oxide-route | 1 | silver-catalysed epoxidation | ethylene + oxygen + silver | ethylene-oxide + silver | 520 K, 20 bar, Ag on alumina | catalytic-epoxidation

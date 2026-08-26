@@ -978,17 +978,38 @@ class SolidStateArrays:
     independent 4.26e-4 1/(bar s).** No clip, no floor, and no exponential in
     this term can overflow.
 
-    ## ⚠ GAS PARTICIPANTS MUST ALL BE PRODUCTS, AND THAT IS A REFUSAL
+    ## ⚠⚠ S9 -- A GAS REACTANT IS ALLOWED NOW, AND THE OLD REFUSAL IS WORTH READING
 
-    ``nu_gas`` is required positive, checked where these arrays are built. A gas
-    REACTANT puts its pressure in the denominator of ``Q``, so an atmosphere
-    with none of it left drives ``Q`` to infinity and the reverse flux with it --
-    measured on a roasting declaration, where ``p_O2 -> 0`` gives a reverse rate
-    of 2.6e15 formula units per second. That is not a numerical artefact to be
-    clipped: it says the affinity form is only a rate law when the gas is on one
-    side, and a gas-consuming surface reaction (roasting, and the five
-    heterogeneous templates that fold a catalyst into an apparent barrier) is a
-    DIFFERENT mechanism that wants the mass-action kernel.
+    This section used to say ``nu_gas`` is required positive, because a gas
+    REACTANT puts its pressure in the DENOMINATOR of ``Q``, so an atmosphere with
+    none of it left drives ``Q`` to infinity and the reverse flux with it --
+    measured on a roasting declaration at 2.6e15 formula units per second as
+    ``p_O2 -> 0``. **All of that is true of a QUOTIENT and none of it is true of
+    the same expression written as its two one-sided halves:**
+
+        net = k_f * prod(p ** gas_consumed)  -  k_r * prod(p ** gas_formed)
+
+    which is ``P_react (k_f - k_r Q)`` algebraically -- the SAME root, hence the
+    same equilibrium -- and which never divides anything at all. At
+    ``p_react = 0`` it is the finite ``-k_r P_prod``. See ``__post_init__``.
+
+    ⚠ **THE SECOND REASON THAT USED TO BE GIVEN WAS ABOUT A FORM THIS TERM NEVER
+    USED.** It cited M6's ``p/K = n_A/n_B``, which is mass action on a solid
+    AMOUNT -- and the block below already takes ONE ``units`` for both directions,
+    chosen by the sign, so it is a common factor that divides out of ``net = 0``.
+    That was already the case when the refusal was written. **Read a refusal as
+    two separate claims: the number, and what the number is about.**
+
+    ⚠ **AND ROASTING IS STILL A DIFFERENT MECHANISM, FOR THE REASON THAT
+    SURVIVES: THE RATE ORDER.** An affinity form's exponents are fixed at the
+    stoichiometric coefficients by detailed balance, or the equilibrium is wrong.
+    ``3 O2`` taken third order stalls asymptotically as the atmosphere is
+    consumed, which is exactly what ``SurfaceReaction.orders`` exists to declare
+    away -- and this project's standing invariant is that **a declared rate order
+    may never be reversible.** So a gas-consuming surface reaction whose reverse
+    is unobservable (``ln K`` +67.6 to +78.8) still wants the mass-action kernel;
+    one whose reverse is a real flux (``ln K`` +10.90 for a copper smelt) wants
+    this one.
 
     ⚠ **IT WAS BUILT -- ``SurfaceArrays``, below -- AND IT TURNED OUT TO WANT A
     TERM OF ITS OWN RATHER THAN THE THIRD ``PHASE_INDEX`` ENTRY THIS DOCSTRING
@@ -1025,6 +1046,34 @@ class SolidStateArrays:
         # not a clip.
         self.has_consumed = (self.consumed > 0.0).any(axis=1)
         self.has_formed = (self.formed > 0.0).any(axis=1)
+        # ⚠⚠ S9 -- THE TWO HALVES OF THE GAS SIDE, WHICH IS THE WHOLE OF THE
+        # REVERSIBLE SOLID-GAS TERM. ``Q`` used to be taken as one product,
+        # ``prod(p ** nu_gas)``, and a gas REACTANT was refused where these
+        # arrays are built because its NEGATIVE exponent puts its pressure in
+        # the DENOMINATOR: an atmosphere with none of it left drives the reverse
+        # flux without bound (measured at 2.6e15 formula units per second on a
+        # roasting declaration). Split into the two one-sided products
+        #
+        #     P_react = prod(p ** consumed_gas)      P_prod = prod(p ** formed_gas)
+        #
+        # nothing is ever divided, so nothing can blow up:
+        #
+        #     net = k_f P_react - k_r P_prod
+        #
+        # which is ALGEBRAICALLY ``P_react * (k_f - k_r Q)`` and therefore the
+        # same equilibrium -- ``net = 0`` is still ``Q = K`` exactly -- while
+        # ``p_react -> 0`` now gives the finite ``-k_r P_prod`` instead of an
+        # infinity. **That is the entire engine gap S8 named**; see
+        # ``properties/solid_state.py``'s docstring for why M6 drew the line in
+        # the wrong place.
+        #
+        # ⚠ AND THE FIVE PRE-S9 ROWS ARE BIT-IDENTICAL, not merely close. Every
+        # one of them has ``nu_gas >= 0``, so ``formed_gas`` IS ``nu_gas``
+        # element for element and ``consumed_gas`` is all zeros -- and
+        # ``p ** 0`` is exactly 1.0 for every finite p, including 0.0. A test
+        # pins it.
+        self.gas_consumed = np.maximum(-self.nu_gas, 0.0)
+        self.gas_formed = np.maximum(self.nu_gas, 0.0)
 
     @property
     def m(self) -> int:
@@ -2118,13 +2167,27 @@ class VesselIntegrator:
             if solid is not None and solid.m:
                 k_f = solid.A_fwd * np.exp(-solid.Ea_fwd / (R * T))
                 k_r = solid.A_rev * np.exp(-solid.Ea_rev / (R * T))
-                # Q over the GAS participants only -- a crystal is at unit
-                # activity, which is the whole reason this cannot be mass
-                # action. ``nu_gas`` is positive by construction (a gas
-                # REACTANT is refused where these arrays are built), so this
-                # product is bounded by the headspace's own pressures and
-                # collapses to zero for a gas that is simply absent.
-                Q = np.prod(np.maximum(p, 0.0)[None, :] ** solid.nu_gas, axis=1)
+                # ⚠⚠ S9 -- THE GAS SIDE AS TWO ONE-SIDED PRODUCTS RATHER THAN
+                # ONE QUOTIENT, WHICH IS THE WHOLE REVERSIBLE SOLID-GAS TERM.
+                # A crystal is at unit activity, so only the gases appear -- but
+                # taken as a single ``Q = prod(p ** nu_gas)`` a gas REACTANT
+                # carries a NEGATIVE exponent, i.e. its pressure sits in a
+                # denominator, and an atmosphere depleted of it drove the
+                # reverse flux to 2.6e15 formula units per second. That was
+                # refused where these arrays are built for five milestones.
+                # Written as the two one-sided products nothing is divided:
+                #
+                #     net = k_f P_react - k_r P_prod
+                #
+                # is ``P_react (k_f - k_r Q)`` algebraically -- SAME zero, so
+                # still ``Q = K`` -- and at ``p_react = 0`` it is the finite
+                # ``-k_r P_prod``. ⚠ The five pre-S9 rows have ``nu_gas >= 0``,
+                # so ``P_react`` is an empty product of exactly 1.0 and
+                # ``P_prod`` is the old ``Q`` element for element: bit-identical,
+                # which a test pins against the recorded lime-kiln numbers.
+                pp = np.maximum(p, 0.0)[None, :]
+                P_react = np.prod(pp ** solid.gas_consumed, axis=1)
+                P_prod = np.prod(pp ** solid.gas_formed, axis=1)
                 units_f, units_r = solid.units(nS)
                 # ⚠ ONE ``units`` FOR BOTH DIRECTIONS, CHOSEN BY THE SIGN OF THE
                 # AFFINITY -- not one per direction. This is the whole
@@ -2142,7 +2205,7 @@ class VesselIntegrator:
                 # ``net = 0`` and the equilibrium is ``Q = K`` whatever the
                 # crystals weigh -- while an EXHAUSTED side still stops the
                 # reaction, because that direction's ``units`` is zero.
-                net = k_f - k_r * Q                             # 1/s, signed
+                net = k_f * P_react - k_r * P_prod      # 1/s x bar^n, signed
                 s_flux = net * np.where(net > 0.0, units_f, units_r)   # mol/s
                 dn_solid_rxn = s_flux @ solid.nu_solid
                 dn_gas_srxn = s_flux @ solid.nu_gas
@@ -2156,10 +2219,17 @@ class VesselIntegrator:
 
             # --- a gas ARRIVING at a crystal ----------------------------
             # Roasting. Mass action, first order in the arriving gas and gated on
-            # the solid being present -- which is the mechanism the term above
-            # measurably is NOT a rate law for, because a gas REACTANT puts its
-            # pressure in the denominator of an affinity quotient. See
-            # ``SurfaceArrays`` and ``properties/surface.py``.
+            # the solid being present. ⚠⚠ S9 -- THIS COMMENT USED TO SAY THE TERM
+            # ABOVE "measurably is NOT a rate law for" a gas reactant, because
+            # its pressure lands in the denominator of an affinity quotient.
+            # That refusal is GONE: the quotient is written as two one-sided
+            # products now and three rows up there consume a gas. **The reason
+            # roasting is still HERE is the ORDER, not the denominator** -- an
+            # affinity form's exponents are fixed at the stoichiometric
+            # coefficients by detailed balance, and ``3 O2`` taken third order
+            # stalls asymptotically as the atmosphere is consumed, which is
+            # exactly what ``SurfaceReaction.orders`` exists to declare away.
+            # See ``SurfaceArrays`` and ``properties/surface.py``.
             #
             # ⚠ THE MIXED BASIS IS THIS ONE LINE. A lattice enters on its AMOUNT
             # and everything else on its headspace CONCENTRATION, so the rate
