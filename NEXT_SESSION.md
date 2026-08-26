@@ -808,7 +808,7 @@ old number.**
 | ⚠⚠ **and TWO EXAMPLES MOVED because of it** | `competing_pathways` worst **0.20380 -> 0.20485 (0.5%)**; `named_routes` ethanol-hydration **2.9% -> 2.7%** | measured before/after, example by example. The other three species appear in no example |
 | **propene's Tc error was not cosmetic** | the oxo flask condensed **0.91 mol of "liquid propene"** 55 K above propene's real Tc and read **167 bar where it was charged to 200**; one candidate line gives **200.00 bar and no liquid** | ⚠ And the 2.8e-24 mol of butanal in a zero-cobalt flask went with it — solver dust from the extra stiff phase, never a gate leak |
 | **four provenance tiers upgrade** | ethylene `joback -> measured`; propylene, butyraldehyde and isobutyraldehyde `joback -> benson` | `data/catalog/derived/species_roles.psv`. A measured Tb lets Benson's formation half assemble where Joback's was standing in — the part of S11's data work a coverage report CAN see |
-| the whole suite | **952 passed / 0 failed in 13:19**, run AFTER every `src/` edit | `python -m pytest -q`. ⚠ `tolerance_audit.py` re-run too, because a DATA table changed: **NO example prints a quotable digit that moves**, and the three self-check examples are OUTPUT IDENTICAL at speedup 1.00 |
+| the whole suite | **952 passed / 0 failed in 13:15**, run AFTER every `src/` edit, and run TWICE — the first read 951/1 and 952/0 would have been ARITHMETIC | `python -m pytest -q`. ⚠ `tolerance_audit.py` re-run too, because a DATA table changed: **NO example prints a quotable digit that moves**, and the three self-check examples are OUTPUT IDENTICAL at speedup 1.00 |
 
 ⚠⚠ **TWO ROWS ABOVE ARE LIMITS TO REMOVE, NOT INVARIANTS TO KEEP**: the Wacker's
 oxygen order, and ethylene's solubility. Both are marked.

@@ -7,7 +7,11 @@ build and in what order.** **M0–M6, M8, M12, S1–S11 are DONE.**
 # ⚠ THE BASELINE IS MEASURED. DO NOT START WITH THE SUITE.
 
 **S11 RAN THE WHOLE SUITE AT THE END AND MEASURED 952 PASSED / 0 FAILED IN
-~13:20.** Take that number and spend the time on content. ⚠ **It was run AFTER
+13:15.** ⚠ It was run TWICE: the first run read 951/1 and the failure was a
+standing test whose pinned number S11's own data change had moved
+(`test_the_250_450_K_FIT_WINDOW_IS_STILL_THE_GENERAL_FAULT` — see engine queue
+item 4). **952/0 would have been arithmetic, so it was re-run as one clean pass
+rather than reported as a sum.** Take that number and spend the time on content. ⚠ **It was run AFTER
 every `src/` edit, so it is a real baseline and not arithmetic** — the second
 session running that is true. (932 at S10; +19 from `test_hydroformylation.py`
 (11) and `test_wacker.py` (8), plus one added and one rewritten in
