@@ -4579,9 +4579,15 @@ the measurements that justify them.
     columns, two directions of error, neither a bug in the engine, and having
     both is what makes the pair informative.
 
-    ⚠ **NOT FIXED, DELIBERATELY** — it changes a published column's definition,
-    so it owes the standing "which routes does it move" check and a verification
-    pass. Recorded at the line that computes it. Next session's instrument job.
+    ⚠⚠ **SUPERSEDED BY ITEM 90 — AND THE 14 ABOVE IS WRONG.** The diagnosis is
+    right; the size is not. It was measured with a RAW string comparison against
+    the canonical `by_lattice` key, and the catalog spells its salts in a
+    different fragment order. Canonically it is **16**, and species-ready goes
+    **49 → 65**, not 63. The two missed are `vulcanisation` and **`lime-cycle`** —
+    the very route the paragraph above names as its headline case while the list
+    of fourteen ids omits it. Left standing rather than silently corrected,
+    because the disagreement between the number, the list and the prose IS the
+    finding.
 
     ⚠ One more thing the diff paid for: **`castner-kellner` became species-ready
     AND fully sourced** (48 → 49, 4 → 5). Curating one element paid somewhere
@@ -4682,6 +4688,78 @@ the measurements that justify them.
     BDF ignores `jac_sparsity` the moment `jac` is callable, so a rig handing over
     both would silently lose the column groups `useful_sparsity` computes — the
     10x it exists to avoid paying. Pinned by a test.
+
+90. ✔✔ **`species-ready` NOW READS `mineral_data` — AND THE RECORDED SIZE OF THE
+    GAP WAS ITSELF WRONG: 14 ON RECORD, 16 MEASURED.**
+
+    S4 recorded that `species-ready` asks the plain `ThermochemistryProvider`,
+    which refuses an ionic lattice by name, while a lattice has had a home on the
+    solid basis since M3. That diagnosis is right. Its **size** was not.
+
+    `validation/catalog_coverage.py` gained `_mineral_fallback` and a `mineral`
+    tier. 19 compounds move refused → `mineral`; **species-ready 49 → 65**,
+    fully-sourced **5 → 14**, resolve 1118 → 1137, refused 465 → 446. **No `src/`
+    file was touched, no chemistry moved, and `template-ready` is UNCHANGED at
+    28/173** — which is the honest headline, template-readiness still being the
+    binding constraint.
+
+    ⚠⚠ **THE RECORDED 14 WAS THE BUG, ONE LAYER DOWN.** It compared the catalog's
+    SMILES to the `by_lattice` key as a RAW STRING, and the catalog spells its
+    salts in a different fragment order than the canonical table —
+    `[Ca+2].[O-]C([O-])=O` against `O=C([O-])[O-].[Ca+2]`. Raw gives 14; the
+    sorted dissolved-ion tuple gives 15; **canonical, which is what the engine
+    itself does, gives 16.** The two missed are `vulcanisation` and
+    **`lime-cycle`** — and `lime-cycle` is the route S4's own note names in prose
+    as its headline case while the list of fourteen ids beside it omits it. **The
+    number, the list and the prose disagreed with each other, and only re-running
+    it showed that.** Same lesson as item 89's four dead triggers, different
+    costume.
+
+    ⚠ Canonical is not a convenience: `network/builder.py` line 320 rebuilds every
+    input SMILES through `Molecule.from_smiles` before the species list exists, so
+    `vessel.py`'s raw `by_lattice()` lookup is reached with the canonical key.
+    **Verified, not inferred** — all 19 rescued minerals were charged into a real
+    `Vessel` solid block, 19 of 19 holding their full 0.02 mol. That check exists
+    because `pyrite-roasting` is the opposite failure: it reads template-ready and
+    does not run.
+
+    ⚠⚠ **THE RULE IS A FALLBACK, NEVER AN OVERRIDE.** 36 catalog compounds sit on
+    a mineral lattice but 17 already resolve as `ion` — `sodium-chloride`'s ions
+    are priced, it genuinely dissolves, and it can also precipitate. Labelling it
+    `mineral` would DOWNGRADE a species the engine handles in two phases to one it
+    handles in one, and would have silently cut the published UNIFAC count. So the
+    fallback fires only where all three providers already refused, which is the
+    engine's own precedence. **The UNIFAC count does not move by one** — a lattice
+    cannot enter a liquid mixture, by the same verdict that sent it down the
+    branch.
+
+    ⚠ `mineral` is a SEPARATE TIER, not part of `measured`. It is measured data
+    (CRC Hf and S0, Gf derived on the same basis) and counts on the measured side
+    of the formation headline, but a solid-basis Hf/Gf **is not on the ideal-gas
+    basis every `ThermoData` uses**; folding it into `measured` would make exactly
+    the conflation the separate `MineralRecord` type exists to prevent. And the
+    claim is narrow: a mineral resolves **as a crystal**. It can be charged, held
+    and reacted; it still cannot dissolve.
+
+    ⚠ **THE NEXT ONE ALONG IS THE SAME SHAPE AND IS NOW MEASURED: 15 ROUTES.** 45
+    compounds are still refused as *a bare element symbol*, correctly — the
+    ideal-gas value for `[C]` is the atom at Gf +671 kJ/mol while the charcoal in
+    the flask is 0. `iron`, `copper` and `nickel` escaped only because S1 needed
+    them as solid catalysts. 15 routes are blocked by nothing else; leverage is
+    `cobalt` +3, then `carbon-graphite`, `platinum`, `silver` at +2 each.
+    ⚠ It is curation with a LAYERING QUESTION in front of it:
+    `element_data.REFERENCE_STATES` already carries S0 and the reference state for
+    Zn(s), Ag(s), C(graphite) — but with `smiles=None`, because a SOLID reference
+    state had nowhere to live until the solid block existed. Mercury resolves
+    today precisely because its standard state is a LIQUID and so it got a SMILES.
+    Missing is that binding plus the `Cp_solid`/`Vm_solid` pair `priced_solid`
+    demands. **Whether that belongs in `element_data` or `mineral_data` is a real
+    decision — a metal is not a mineral.**
+
+    ⚠ Both new report sections are **GENERATED**, because the estimate they
+    replace was a hand-written comment that drifted from its own corpus.
+    `COVERAGE_REPORT.md` stays byte-identical across `PYTHONHASHSEED`
+    (12345 / 999 / 4242), as do both `derived/*.psv`.
 
 IMMEDIATE NEXT TASK: see **`MILESTONES.md`**, which is the plan of record as of
 2026-08-22 and supersedes the ordering below. It is derived from `data/catalog`

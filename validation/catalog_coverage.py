@@ -12,10 +12,21 @@ different tier. The tiers are ranked, because "we have a number" and "we have a
 MEASUREMENT" are not the same claim:
 
     A  measured      curated experimental formation data, or a measured Tb/Tc/Pc
+    A  mineral       a curated LATTICE, on the SOLID basis, from ``mineral_data``
     B  Benson        group additivity fitted to real molecules (RMG database)
     C  Joback        group additivity, several kJ/mol, cannot tell homologues apart
     -  ion           spectator or Born-priced; correct, and not an estimate at all
     F  refused       nothing prices it
+
+⚠ ``mineral`` IS A SEPARATE TIER RATHER THAN PART OF ``measured``, AND THE
+REASON IS THE ONE ``mineral_data`` EXISTS FOR: a solid-basis Hf/Gf is not on the
+ideal-gas basis every ``ThermoData`` uses. Folding it into ``measured`` here
+would make exactly the conflation the separate type upstream exists to prevent.
+It is measured data -- CRC Hf and S0 with Gf derived against the same element
+reference states -- so it counts on the measured side of the formation headline,
+but it is reported under its own name because it is a different basis, and
+because a species priced this way can sit in the solid block and can never
+enter a liquid.
 
 ⚠ **Tier C resolving is NOT the same as tier C being usable.** Joback's error is
 a factor of 2-4 in K and it gives homologues identical reaction energies -- the
@@ -66,6 +77,7 @@ from chemsim.properties import (  # noqa: E402
     UnifacProvider,
     VolatilityProvider,
 )
+from chemsim.properties import mineral_data  # noqa: E402
 from chemsim.properties.electrolyte import electrolyte_provider  # noqa: E402
 
 # ---------------------------------------------------------------------------
@@ -86,7 +98,18 @@ from chemsim.properties.electrolyte import electrolyte_provider  # noqa: E402
 # missing vapour-pressure curve as well as a physical fact: nothing can compute
 # a standard-state shift for one, and ``standard_state.mixed_basis`` exists
 # because that silently mattered.
-TIER_ORDER = ["measured", "benson", "joback", "ion", "nonvolatile", "refused"]
+#
+# ⚠ ``mineral`` RANKS BESIDE ``measured`` BUT IS NEVER COMBINED BY ``_worst``.
+# It is not one half of anything: it is assigned to the species WHOLE, as a
+# fallback taken only after the three providers have refused (see
+# ``_mineral_fallback``), so it never meets another tier in a ``max``.
+TIER_ORDER = [
+    "measured", "mineral", "benson", "joback", "ion", "nonvolatile", "refused",
+]
+
+# The formation halves that are NOT an estimate. ``mineral`` belongs here for
+# the same reason ``ion`` does -- it is curated data, not a group contribution.
+SOURCED_TIERS = ("measured", "mineral", "benson", "ion")
 
 
 def _thermo_tier(source: str) -> str:
@@ -140,6 +163,50 @@ def refusal_bucket(why: str) -> str:
     return "formation half missing (no group value)"
 
 
+_LATTICES = mineral_data.by_lattice()
+
+
+def _mineral_fallback(smiles: str):
+    """The mineral this catalog SMILES *is*, if the solid block could hold it.
+
+    ⚠ A FALLBACK, NEVER AN OVERRIDE, AND THE DIFFERENCE IS THE WHOLE DESIGN.
+    ``sodium-chloride`` resolves today as ``ion``: its ions are priced, it
+    genuinely dissolves, and it can additionally precipitate. Re-labelling it
+    ``mineral`` would DOWNGRADE a species the engine handles in two phases to
+    one it handles in one. So this is consulted only where all three providers
+    have already refused -- which is the engine's own precedence, not a new one:
+    ``thermochemistry`` prices the ions when it can, and ``mineral_data`` is
+    what the SOLID block falls back to when it cannot.
+
+    ⚠ THE LOOKUP IS ON THE **CANONICAL** SMILES, AND THAT IS NOT A DETAIL. The
+    catalog spells zincite ``[Zn+2].[O-2]`` and ``mineral_data`` spells it
+    ``[O-2].[Zn+2]``; ``vessel.py`` does a RAW dict lookup on that key, so the
+    question of whether the engine can really hold the catalog's spelling is the
+    question of whether anything canonicalises in between. Something does --
+    ``network/builder.py`` line 320 rebuilds every input SMILES through
+    ``Molecule.from_smiles`` before the species list is formed -- and this was
+    verified by charging all 19 rescued minerals into a real ``Vessel``, not
+    inferred. Matching RAW instead is what made the previously recorded estimate
+    of this gap read 14 routes rather than 16; it missed ``lime-cycle`` and
+    ``vulcanisation``, and ``lime-cycle`` is the route that same note names in
+    its prose as the headline case.
+
+    ``priced_solid`` is the second half of the test and it is the vessel's own:
+    a formation pair is not enough, the crystal also has to say how much room it
+    takes (``Vm_solid``) and how much heat it holds (``Cp_solid``). Two entries
+    in the table fail it -- blue vitriol and potassium bisulfate -- and neither
+    is rescued here.
+    """
+    try:
+        canon = Molecule.from_smiles(smiles).smiles
+    except Exception:  # noqa: BLE001
+        return None
+    rec = _LATTICES.get(canon)
+    if rec is None or not mineral_data.priced_solid(rec.name):
+        return None
+    return rec
+
+
 def _worst(*tiers: str) -> str:
     """The tier a species is actually usable at is its WEAKEST half, not its best.
 
@@ -162,6 +229,7 @@ def audit_compound(comp, thermo, vol, ionic, unifac) -> dict:
         "thermo_tier": "refused",
         "vol_tier": "refused",
         "unifac": False,
+        "mineral": "",
         "why": "",
     }
     parts = comp.smiles.split(".")
@@ -177,6 +245,31 @@ def audit_compound(comp, thermo, vol, ionic, unifac) -> dict:
             t_tiers.append(_thermo_tier(t.source))
             v_tiers.append(_volatility_tier(v.source, v.kind, ionic_species))
     except Exception as exc:  # noqa: BLE001
+        # ⚠ THE PROVIDERS REFUSING IS NOT THE END OF THE QUESTION FOR A LATTICE.
+        # All three are RIGHT to refuse one -- the fusion law is 407x wrong for
+        # NaCl in one direction and 11x wrong for CaCO3 in the other, so a
+        # lattice must never be handed to a dissolution law. But since M3 a
+        # lattice has had a home on the SOLID basis, and it is the table that
+        # precipitation, ``SolidStateArrays`` and ``SurfaceArrays`` all price
+        # from. A species this project can charge into a flask and react is
+        # species-READY, whatever the ideal-gas providers say about dissolving
+        # it, and reading only the providers is what understated this column.
+        mineral = _mineral_fallback(comp.smiles)
+        if mineral is not None:
+            row["tier"] = row["thermo_tier"] = row["vol_tier"] = "mineral"
+            row["mineral"] = mineral.name
+            # ⚠ ``unifac`` STAYS FALSE, and it is not an omission. The UNIFAC
+            # column asks whether a species can enter a LIQUID MIXTURE, and a
+            # lattice here cannot: it never dissolves, by the same verdict that
+            # sent it down this branch. Every species rescued here was already
+            # refused, so this returns before the UNIFAC probe exactly as the
+            # refusal did and the published UNIFAC count does not move.
+            row["why"] = (
+                f"priced as the lattice {mineral.name!r} on the solid basis "
+                f"(mineral_data); the three ideal-gas providers refuse it, "
+                f"correctly, because the fusion law cannot dissolve it"
+            )
+            return row
         row["why"] = f"{type(exc).__name__}: {str(exc)[:90]}"
         return row
 
@@ -614,7 +707,7 @@ def main() -> int:
     th_c = Counter(r["thermo_tier"] for r in rows)
     vt_c = Counter(r["vol_tier"] for r in rows)
     resolved = n - tiers["refused"]
-    sourced_form = th_c["measured"] + th_c["benson"] + th_c["ion"]
+    sourced_form = sum(th_c[t] for t in SOURCED_TIERS)
     unifac_ok = sum(1 for r in rows if r["unifac"])
 
     lines: list[str] = []
@@ -703,7 +796,7 @@ def main() -> int:
         by_class[r["class"]].append(r)
     for cls, sub in sorted(by_class.items(), key=lambda kv: -len(kv[1])):
         f = Counter(x["thermo_tier"] for x in sub)
-        good = f["measured"] + f["benson"] + f["ion"]
+        good = sum(f[t] for t in SOURCED_TIERS)
         u = sum(1 for x in sub if x["unifac"])
         w(f"| {cls} | {len(sub)} | {good} | {f['joback']} | {f['refused']} | {u} |")
     w("")
@@ -718,7 +811,7 @@ def main() -> int:
         by_role[r["role"]].append(r)
     for role, sub in sorted(by_role.items(), key=lambda kv: -len(kv[1])):
         f = Counter(x["thermo_tier"] for x in sub)
-        good = f["measured"] + f["benson"] + f["ion"]
+        good = sum(f[t] for t in SOURCED_TIERS)
         w(f"| {role} | {len(sub)} | {good} | {f['joback']} | {f['refused']} |")
     w("")
 
@@ -737,8 +830,10 @@ def main() -> int:
             "a group value that may not exist in any published tabulation; "
             "check before promising it.",
         "cannot be fragmented at all":
-            "usually an element, a lattice or an exotic heteroatom, and out of "
-            "the domain of both group methods by construction.",
+            "usually an element or an exotic heteroatom, and out of the domain "
+            "of both group methods by construction. A LATTICE no longer reaches "
+            "this bucket: it is priced on the solid basis from mineral_data, "
+            "which is a curation job per mineral rather than a group value.",
     }
     w("| cause | count | what would close it |")
     w("|---|---:|---|")
@@ -864,50 +959,64 @@ def main() -> int:
     w("")
     species_ready = sourced_routes = template_ready = 0
     route_rows = []
+    mineral_carried: list[tuple[str, list[str]]] = []
     for rid, route in routes.items():
         mine = [s for s in steps if s.route == rid]
         species = {x for s in mine for x in s.reactants + s.products}
         real = [s for s in species if s in compounds]
         markers = len(species) - len(real)
-        # ⚠⚠ S4 MEASURED THIS COLUMN AND IT IS BLIND TO ``mineral_data``, WHICH
-        # UNDERSTATES IT BY 14 ROUTES. ``tier`` comes from the plain
+        # ⚠⚠ S4 RECORDED THIS COLUMN AS BLIND TO ``mineral_data`` AND ESTIMATED
+        # THE GAP AT 14 ROUTES. S6 CLOSED IT AND THE NUMBER IS 16.
+        #
+        # The diagnosis was right: ``tier`` came from the plain
         # ``ThermochemistryProvider``, which REFUSES a lattice by name --
-        # correctly, because the fusion law is 407x wrong for one. But since M3 a
-        # lattice HAS a home: ``mineral_data``, on the solid basis with
-        # ``Cp_solid`` and ``Vm_solid``, which is what precipitation,
-        # ``SolidStateArrays`` and ``SurfaceArrays`` all price from.
+        # correctly, because the fusion law is 407x wrong for one -- while since
+        # M3 a lattice has had a home on the SOLID basis, and it is the table
+        # precipitation, ``SolidStateArrays`` and ``SurfaceArrays`` all price
+        # from. So a route whose only refused species were minerals this project
+        # prices read species-UNREADY while running end to end. That is fixed in
+        # ``_mineral_fallback``: 19 compounds move refused -> ``mineral``, and
+        # species-ready goes 49 -> 65 of 173, fully-sourced 5 -> 14.
         #
-        # So a route whose ONLY refused species are minerals this project prices
-        # reads species-UNREADY while running end to end. Measured: **14 routes**,
-        # i.e. 49 -> at most 63 of 173. They include ``lime-cycle``, which M6
-        # declared complete from limestone and ``examples/lime_cycle.py``
-        # demonstrably runs, and ``haber-bosch`` and ``methanol-synthesis``, where
-        # the only "refused" species is the solid CATALYST S1 curated so that it
-        # could be put in the flask:
+        # ⚠⚠ THE RECORDED 14 WAS ITSELF THE BUG, ONE LAYER DOWN. It was measured
+        # with a RAW string comparison of the catalog's SMILES against the
+        # ``by_lattice`` key, and the catalog spells its salts in a different
+        # fragment order than the canonical table -- ``[Ca+2].[O-]C([O-])=O``
+        # against ``O=C([O-])[O-].[Ca+2]``. Matching canonically, which is what
+        # ``network/builder.py`` does to every input SMILES before the species
+        # list exists, gives 16. The two it missed are ``vulcanisation`` and
+        # ``lime-cycle`` -- and ``lime-cycle`` is the route S4's own note names
+        # in prose as the headline case while its list of 14 ids omits it. **The
+        # recorded number, the recorded list and the recorded prose disagreed
+        # with each other, and only re-measuring showed it.**
         #
-        #     2-ethylhexanol-route, aniline-route, copper-smelting,
-        #     deacon-process, fischer-tropsch, haber-bosch,
-        #     hydrogenation-margarine, mercury-from-cinnabar, methanol-synthesis,
-        #     nylon66-route, phenacetin-route, steam-reforming, vermilion-route,
-        #     water-gas-shift
+        # ⚠ IT IS THE OPPOSITE SHAPE TO ``pyrite-roasting``, which reads
+        # template-ready and does NOT run. This one read unready and DOES, so
+        # the credit was checked the expensive way rather than argued: all 19
+        # rescued minerals were charged into a real ``Vessel``'s solid block,
+        # 19 of 19 holding their full charge. ``mercury-from-cinnabar`` closes
+        # at 0.020000000000 mol of mercury on a 0.02 mol charge (S4), and
+        # ``lime-cycle`` has run end to end since M6.
         #
-        # ⚠ NOT FIXED HERE, DELIBERATELY. It changes the definition of a
-        # PUBLISHED column, so it owes the standing check S1's third mistake
-        # installed -- which routes does it move, predicted before measuring --
-        # and a full verification pass behind it. It is the next session's
-        # instrument job.
-        #
-        # ⚠ AND IT IS THE OPPOSITE SHAPE TO ``pyrite-roasting``, which reads
-        # template-ready and does NOT run. This one reads unready and DOES:
-        # S4 measured `mercury-from-cinnabar` closing at 0.020000000000 mol of
-        # mercury on a 0.02 mol charge. Two columns, two directions of error,
-        # and neither is a bug in the engine.
+        # ⚠ WHAT SPECIES-READY DOES **NOT** CLAIM FOR THESE. A mineral resolves
+        # here on the solid basis only. It can be charged, held and reacted as a
+        # crystal; it still cannot dissolve, and a step needing one in solution
+        # is still not expressible. Template-readiness remains the binding
+        # constraint and none of the 16 becomes template-ready.
         ok = all(by_id[s]["tier"] != "refused" for s in real)
         src = ok and all(by_id[s]["tier"] != "joback" for s in real)
         tmpl = all(s.cls in TEMPLATE_CLASSES for s in mine)
         species_ready += ok
         sourced_routes += src
         template_ready += tmpl
+        # Which routes does the ``mineral`` tier actually carry? A credit that
+        # cannot be pointed at the species it rests on is not auditable, and
+        # this column has already been mis-stated once by a note that named a
+        # route its own list did not contain.
+        if ok:
+            mins = sorted(s for s in real if by_id[s]["tier"] == "mineral")
+            if mins:
+                mineral_carried.append((rid, mins))
         route_rows.append((rid, route.era, len(mine), markers, ok, src, tmpl))
     total_r = len(routes)
     w(f"| | routes | of {total_r} |")
@@ -919,6 +1028,101 @@ def main() -> int:
     w("")
     ready = [r for r in route_rows if r[6]]
     w("Template-ready routes: " + (", ".join(f"`{r[0]}`" for r in ready) or "none"))
+    w("")
+
+    # ---- what the mineral tier carries ---------------------------------
+    w(f"### The {len(mineral_carried)} routes species-ready on a lattice")
+    w("")
+    w(
+        "These are species-ready only because a species in them is priced as a "
+        "crystal on the solid basis from `mineral_data`, after all three "
+        "ideal-gas providers refused it. The refusals are correct -- the fusion "
+        "law is the engine's only route from a solid into solution and it is "
+        "measured wrong for a lattice by up to 407x in **both** directions -- "
+        "but refusing to *dissolve* a species is not refusing to *price* it, and "
+        "this column used to conflate the two."
+    )
+    w("")
+    w(
+        "> ⚠ The claim is narrow and worth stating in full: each species below "
+        "can be charged, held and reacted **as a crystal**. It still cannot "
+        "dissolve, so a step that needs one in solution is still not "
+        "expressible, and none of these routes becomes template-ready. Every "
+        "one of them was verified by charging the mineral into a real `Vessel` "
+        "solid block rather than by argument."
+    )
+    w("")
+    if not mineral_carried:
+        w("None.")
+    else:
+        w("| route | priced as a lattice | the mineral it is |")
+        w("|---|---|---|")
+        for rid, mins in sorted(mineral_carried):
+            w(f"| `{rid}` | " + ", ".join(f"`{m}`" for m in mins) + " | "
+              + ", ".join(by_id[m]["mineral"] for m in mins) + " |")
+    w("")
+
+    # ---- the same gap, one step further out ----------------------------
+    # ⚠ GENERATED RATHER THAN WRITTEN DOWN, DELIBERATELY. The estimate this
+    # section replaces was a hand-written comment, and it disagreed with its own
+    # prose about which routes it covered. A measured number regenerated on every
+    # run cannot drift from the corpus the way that one did.
+    bare = {
+        r["id"] for r in rows
+        if r["tier"] == "refused" and "a bare element symbol" in r["why"]
+    }
+    bare_blocked = {}
+    for rid in routes:
+        mine = [s for s in steps if s.route == rid]
+        sp = {x for s in mine for x in s.reactants + s.products}
+        bad = [s for s in sp if s in compounds and by_id[s]["tier"] == "refused"]
+        if bad and all(b in bare for b in bad):
+            bare_blocked[rid] = sorted(bad)
+    lever: Counter = Counter()
+    for bad in bare_blocked.values():
+        if len(bad) == 1:
+            lever[bad[0]] += 1
+
+    w(f"### The next one along: {len(bare_blocked)} routes blocked only by a "
+      f"bare ELEMENT")
+    w("")
+    w(
+        f"{len(bare)} compounds are still refused with *a bare element symbol is "
+        "the most ambiguous way to name an allotrope*, and the refusal is right: "
+        "the ideal-gas value for `[C]` is the ATOM at Gf +671 kJ/mol, while the "
+        "charcoal in the flask is 0. **This is the same shape as the lattice gap "
+        "just closed, and it is not closed.** `iron`, `copper` and `nickel` "
+        "escaped it only because S1 needed them as solid catalysts and curated "
+        "them into `mineral_data`; the rest did not."
+    )
+    w("")
+    w(
+        "> ⚠ It is a curation job with a layering question in front of it, not a "
+        "lookup. `element_data.REFERENCE_STATES` **already carries S0 and the "
+        "reference state** for these -- Zn(s), Ag(s), C(graphite) -- but with "
+        "`smiles=None`, because a SOLID reference state had nowhere to live "
+        "until the solid block existed. Mercury resolves today precisely because "
+        "its standard state is a LIQUID and so it got a SMILES. What is missing "
+        "is that binding plus the `Cp_solid`/`Vm_solid` pair `priced_solid` "
+        "demands. Whether that belongs in `element_data` or in `mineral_data` is "
+        "a real decision -- a metal is not a mineral -- and it owes its own "
+        "predict-then-measure pass."
+    )
+    w("")
+    if bare_blocked:
+        w("| route | blocked only by |")
+        w("|---|---|")
+        for rid, bad in sorted(bare_blocked.items()):
+            w(f"| `{rid}` | " + ", ".join(f"`{b}`" for b in bad) + " |")
+        w("")
+        w("Routes a SINGLE curated element would unlock on its own:")
+        w("")
+        w("| element | routes it unlocks alone |")
+        w("|---|---:|")
+        for el, c in sorted(lever.items(), key=lambda kv: (-kv[1], kv[0])):
+            w(f"| `{el}` | +{c} |")
+    else:
+        w("None.")
     w("")
     w("### Routes by era")
     w("")
@@ -989,9 +1193,12 @@ def main() -> int:
     print(f"  resolve            {resolved}/{n}  ({100*resolved/n:.1f}%)")
     print(f"  formation measured/Benson {sourced_form}/{n}  ({100*sourced_form/n:.1f}%)")
     print(f"  formation Joback          {th_c['joback']}/{n}")
+    print(f"  formation on a lattice    {th_c['mineral']}/{n}  (solid basis)")
     print(f"  refused                   {tiers['refused']}/{n}")
     print(f"  UNIFAC groups      {unifac_ok}/{n}  ({100*unifac_ok/n:.1f}%)")
     print(f"  reaction classes   {len(covered)}/{len(step_classes)} have a template")
+    print(f"  routes species-ready  {species_ready}/{total_r} "
+          f"({len(mineral_carried)} of them carried by a lattice)")
     print(f"  routes template-ready {template_ready}/{total_r}")
     print(f"\nwrote {out}")
     print(f"wrote {derived}/route_roles.psv and species_roles.psv")

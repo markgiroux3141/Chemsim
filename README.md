@@ -443,12 +443,24 @@ python validation/catalog_coverage.py  # the audit
 
 | | |
 |---|---|
-| formation half measured or Benson | **716 / 1583 (45%)** |
+| formation half measured or Benson | **735 / 1583 (46%)** |
+| ... of which priced as a LATTICE, on the solid basis | 19 |
 | formation half falls back to Joback | 402 (25%) |
-| refused | 465 (29%), of which ~195 are charged organics the Born model correctly declines |
+| refused | 446 (28%), of which ~166 are charged organics the Born model correctly declines |
 | UNIFAC-decomposable (can enter an LLE) | 836 (53%) |
+| routes species-ready | **65 / 173** (was 49) |
 | reaction classes with a template | **36 / 218** (was 12) |
 | routes template-ready end to end | **28 / 173** (was 7) |
+
+⚠ **`species-ready` moved 49 → 65 in S6 without one new datum being curated**:
+the audit was asking only the three ideal-gas providers, which refuse an ionic
+lattice by name — correctly, since the fusion law is the engine's only route
+from a solid into solution and it is measured wrong for a lattice by up to 407x
+in *both* directions. But refusing to **dissolve** a species is not refusing to
+**price** it, and `mineral_data` has priced these on the solid basis since M3.
+19 compounds moved refused → `mineral` and 16 routes with them, including
+`lime-cycle`, which M6 declared complete end to end and whose example runs.
+`template-ready` is untouched, and remains the binding constraint.
 
 ⚠ The class denominator MOVES, because a class is a mechanism claim and reading
 a class's rows sometimes splits it: 212 -> 218 over M6, S1 and S3. Six of the
