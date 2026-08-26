@@ -275,14 +275,21 @@ and say which you are picking for.**
 
 | class | its route | worth | what it is |
 |---|---|---:|---|
-| **`skraup-cyclisation`** | `skraup-route` | +1 | aniline + acrolein -> quinoline. ⚠ Step 1 (`dehydration`) is already covered, so this is genuinely the last class the route needs. ⚠⚠ **READ THE ROW FIRST**: it is `aniline + acrolein + nitrobenzene + sulfuric-acid -> quinoline + aniline + water + sulfuric-acid` — **aniline appears on BOTH sides**, because the real oxidant nitrobenzene is REDUCED to aniline and feeds back in. Decide what that means before writing a SMARTS |
-| **`oxidative-cleavage`** | `vanillin-lignin` | +1 | a C=C cleaved by an oxidant; NaOH on both sides, so it is `_maybe_catalyse`'s case again. Every species resolves |
+| ⚠⚠ **`skraup-cyclisation`** | `skraup-route` | **+1, and it is now the queue's best row** | aniline + acrolein -> quinoline. ⚠ Step 1 (`dehydration`) is already covered, so this is genuinely the last class the route needs, and S11 CHECKED the row rather than leaving it as a warning. **Aniline on both sides is NOT the `spurious` pattern** — the nitrobenzene oxidant is REDUCED to aniline. **It balances at `3 aniline + 3 acrolein + 1 nitrobenzene -> 3 quinoline + 1 aniline + 5 water`, four aromatic rings in and four out.** That is the real Skraup stoichiometry and it is what the SMARTS has to carry: **7 reactant slots and 9 product slots** (Claus proves 24 works). ⚠ Every species resolves, and `sulfuric-acid` on both sides is `_maybe_catalyse`'s own case |
+| ~~**`oxidative-cleavage`**~~ | `vanillin-lignin` | ⚠⚠ **S11 MEASURED IT AND REFUSED IT** | The row is `coniferyl alcohol + O2 -> vanillin + water` and **it cannot be that reaction**: a C10 monolignol makes one C8 vanillin and a C2 fragment the row does not name. `corpus_balance` passes it because it balances at **8 C10H12O3 + 7 O2 -> 10 C8H8O3 + 8 H2O** — eight aromatic rings in and TEN out. Naming the missing product would be inventing chemistry inside the corpus. ⚠ **Do not re-derive this**; the audit prints it now |
 | `fischer-tropsch` | `fischer-tropsch` | +1 | `8 CO + 17 H2 -> octane + 8 H2O`, **25 slots**. The Claus template proves 24 works — but read M8 §6 on the lump that was refused |
 | `molten-salt-electrolysis` | `downs-cell` | +1 | ⚠ **A MELT is not a phase this project has** — M8's own named leftover, and it is engine work |
 | `catalytic-air-oxidation` | `p-xylene-oxidation` | +1 | ⚠⚠ **M5 REFUSED THIS CLASS** — its four rows are at least three mechanisms. **Split it before crediting it**, and only one of the four rows is runnable |
 | `direct-combination` | `vermilion-route` | +1 | ⚠⚠ **S9 MEASURED AND REFUSED IT**, and engine queue item 3 is the only thing that could change that. **Do not re-derive this** |
 | `fermentation` | `abe-fermentation`, `msg-route` | +1 | ⚠ **M5 REFUSED IT** as a metabolic NETWORK rather than a transformation. That refusal still stands |
 | `separation` | `coal-tar-distillation` | +1 | ⚠ **M5 REFUSED IT**: a distillation is not a reaction class, and the feedstock has no graph |
+
+⚠⚠ **AND READ `corpus_balance.py`'s LAST PANEL BEFORE PICKING ANY OF THEM.** S11
+added it: **the balance audit's test is a WEAK one.** It asks whether ANY positive
+coefficient vector conserves the elements, and element conservation does not
+forbid rearranging carbon skeletons — so a row can PASS and still not be the
+reaction it is written as. `vanillin-lignin` is the standing example and it cost
+S11 a template. **A pass there is not permission to write a SMARTS.**
 
 ⚠⚠ **AND THE EIGHT THE REPORT STILL PROMISES THAT THE BALANCE AUDIT KILLS.** Do
 not start any of these without reading `corpus_balance.py`'s output on it:
@@ -640,7 +647,13 @@ NEED NOT.**
 ⚠⚠ **A RECORDED REFUSAL CAN BE RIGHT ABOUT ITS MEASUREMENT AND WRONG ABOUT ITS
 SCOPE.**
 ⚠⚠ **READ THE CATALOG ROW, NOT THE CLASS NAME.** S11: `skraup-route` step 2 has
-ANILINE ON BOTH SIDES, because the oxidant is reduced to it.
+ANILINE ON BOTH SIDES, because the oxidant is reduced to it — and that row is
+REAL. `vanillin-lignin`'s, next to it on the same queue, is not.
+⚠⚠ **AND A BALANCE CHECK IS A NECESSARY CONDITION, NOT A SUFFICIENT ONE.**
+`corpus_balance` asks whether ANY positive coefficient vector conserves the
+elements. `vanillin-lignin` passes at **8 rings in and 10 out**. **Element
+conservation does not forbid rearranging carbon skeletons**, and the audit now
+says so in its own last panel.
 ⚠⚠ **A COLUMN THAT ANSWERS A QUESTION CANNOT ANSWER THE NEXT ONE.** `RUNNABLE`
 cannot ask whether the number is RIGHT, whether the product is a GRAPH, or whether
 the CREDIT under the ranking is real. **And S11 adds: a coverage table cannot ask

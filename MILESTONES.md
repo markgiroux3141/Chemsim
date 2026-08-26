@@ -3079,7 +3079,43 @@ against `chemicals` 1.5.2 this session:
   13983-17-0 — so it is not a curation job at all. `slagging` is blocked, and
   `blast-furnace` is blocked twice over.
 
-### 11. THE SMALL THINGS
+### ⚠⚠ 12. AND A THIRD CLASS WAS ATTEMPTED AND REFUSED — BECAUSE THE BALANCE AUDIT'S TEST IS WEAK
+
+`oxidative-cleavage` was the queue's next row after the two above, worth +1 and
+listed as clean: every species resolves, and `corpus_balance` passes its only
+step. **It cannot be built, and finding out why is a finding about the
+instrument.**
+
+The row is `coniferyl alcohol + oxygen -> vanillin + water`. Coniferyl alcohol is
+**C10H12O3** and vanillin is **C8H8O3**: a C10 monolignol makes ONE C8 vanillin
+and a C2 fragment the row does not name. `corpus_balance` passes it anyway,
+because its test is *does ANY positive coefficient vector conserve every element*,
+and there is one:
+
+    8 C10H12O3 + 7 O2  ->  10 C8H8O3 + 8 H2O
+
+**EIGHT AROMATIC RINGS IN AND TEN OUT.** Element conservation does not forbid
+rearranging carbon skeletons, so a row can PASS this audit and still not be the
+reaction it is written as. ⚠ **A pass there is not permission to write a SMARTS**,
+and the audit says so in a new last panel now.
+
+Naming the missing C2 product would be inventing chemistry inside the corpus,
+which is the `diels-alder-route` precedent this project already follows. **So the
+class is REFUSED, measured, and the measurement is printed rather than remembered.**
+
+⚠⚠ **AND THE ROW NEXT TO IT ON THE SAME QUEUE IS THE CONVERSE, WHICH IS WHY BOTH
+WERE CHECKED.** `skraup-route` step 2 reads with **aniline on BOTH sides**, which
+looks exactly like the `spurious` pattern the audit exists to catch — and is not:
+the nitrobenzene oxidant is REDUCED to aniline. It balances at
+
+    3 aniline + 3 acrolein + 1 nitrobenzene -> 3 quinoline + 1 aniline + 5 water
+
+with **four aromatic rings in and four out**. That is the real Skraup
+stoichiometry, and it is now the coverage queue's best row — 7 reactant slots and
+9 product slots, which the Claus template's 24 proves is reachable.
+**Two rows, one passing audit each, and only one of them is real.**
+
+### 13. THE SMALL THINGS
 
 * **`species_roles.psv` upgrades four provenance tiers** — ethylene `joback -> measured`,
   and propylene, butanal and 2-methylpropanal `joback -> benson` (a measured Tb lets Benson's formation half assemble where
