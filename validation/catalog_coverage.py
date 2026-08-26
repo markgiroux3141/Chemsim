@@ -702,6 +702,20 @@ def main() -> int:
     rows = [audit_compound(c, thermo, vol, ionic, unifac) for c in compounds.values()]
     by_id = {r["id"]: r for r in rows}
 
+    # ⚠⚠ SPECIES-READINESS IS NEEDED BEFORE THE WORK QUEUE, NOT AFTER IT. The
+    # unlock tables below decide what gets built next, and a class that unlocks
+    # three routes whose species are refused is not worth what a class that
+    # unlocks one runnable route is. Reporting the unlock count alone sends work
+    # at routes that cannot run either way -- measured: `catalytic-air-oxidation`
+    # unlocks 3 and NONE of them is species-ready.
+    species_ok: dict[str, bool] = {}
+    for rid in routes:
+        mine = [s for s in steps if s.route == rid]
+        sp = {x for s in mine for x in s.reactants + s.products}
+        species_ok[rid] = all(
+            by_id[s]["tier"] != "refused" for s in sp if s in compounds
+        )
+
     n = len(rows)
     tiers = Counter(r["tier"] for r in rows)
     th_c = Counter(r["thermo_tier"] for r in rows)
@@ -925,13 +939,24 @@ def main() -> int:
         f"argues for a target rather than for completeness."
     )
     w("")
-    w("| class | routes it unlocks ALONE | steps | those routes |")
-    w("|---|---:|---:|---|")
-    for cls, rids in sorted(one_away.items(), key=lambda kv: (-len(kv[1]), kv[0]))[:20]:
+    w(
+        "> ⚠⚠ **READ THE `RUNNABLE` COLUMN, NOT THE `ALONE` COLUMN.** A template "
+        "unlocks a route only in the template column; the route still needs every "
+        "species priced. `runnable` counts the ones that would clear BOTH bars. "
+        "The two orders disagree at the top, which is exactly when it matters."
+    )
+    w("")
+    w("| class | routes it unlocks ALONE | ...of those, RUNNABLE | steps | those routes |")
+    w("|---|---:|---:|---:|---|")
+    for cls, rids in sorted(
+        one_away.items(),
+        key=lambda kv: (-sum(species_ok[r] for r in kv[1]), -len(kv[1]), kv[0]),
+    )[:20]:
         names = ", ".join(f"`{r}`" for r in sorted(rids)[:4])
         if len(rids) > 4:
             names += f", +{len(rids) - 4} more"
-        w(f"| {cls} | {len(rids)} | {step_classes[cls]} | {names} |")
+        run = sum(species_ok[r] for r in rids)
+        w(f"| {cls} | {len(rids)} | **{run}** | {step_classes[cls]} | {names} |")
     w("")
     w("#### The greedy set-cover curve")
     w("")
@@ -946,6 +971,21 @@ def main() -> int:
     for (cls, gain), (added, total) in zip(chosen, curve):
         w(f"| {added} | {cls} | +{gain} | {total} |")
     w("")
+    top3 = [
+        (cls, gain, sum(species_ok[r] for r in one_away.get(cls, ())))
+        for cls, gain in chosen[:3]
+    ]
+    w(
+        "> ⚠⚠ **THIS CURVE OPTIMISES THE OVERSTATED COLUMN.** Its totals are "
+        "template-ready, and a route also needs every species priced. Its top "
+        "three rows are "
+        + "; ".join(
+            f"`{c}` +{g} unlocked / **{r} runnable**" for c, g, r in top3
+        )
+        + " -- so the curve's own ordering is not the work order. "
+        "Cross-reference the `RUNNABLE` column above before taking the top row."
+    )
+    w("")
 
     # ---- route readiness ------------------------------------------------
     w("## Route readiness")
@@ -954,7 +994,9 @@ def main() -> int:
         "A route is *species-ready* when every non-marker species in its steps "
         "resolves; *sourced* when none of them falls back to Joback; and "
         "*template-ready* when every one of its step classes has a template. "
-        "Template-readiness is the binding constraint and it is not close."
+        "⚠ These are INDEPENDENT questions, and neither of the first two bounds "
+        "the third — so the row that decides whether a route can run at all is "
+        "the intersection, which is smaller than any of them."
     )
     w("")
     species_ready = sourced_routes = template_ready = 0
@@ -1025,9 +1067,36 @@ def main() -> int:
     w(f"| fully sourced (no Joback anywhere) | {sourced_routes} | "
       f"{100*sourced_routes/total_r:.1f}% |")
     w(f"| template-ready | {template_ready} | {100*template_ready/total_r:.1f}% |")
+    # ⚠⚠ THE INTERSECTION IS THE ONLY ONE OF THESE A ROUTE CAN BE JUDGED ON, AND
+    # UNTIL S6 NOTHING COMPUTED IT. The three columns above are independent
+    # questions and were reported as though the smallest bounded the others. It
+    # does not: a route needs a template for every step AND a price for every
+    # species, and **11 of the 28 template-ready routes have a refused species**.
+    # Quoting 28 as "what could run" overstates it by a factor of 1.6.
+    both_ready = sum(1 for r in route_rows if r[4] and r[6])
+    w(f"| **BOTH — template-ready AND species-ready** | **{both_ready}** | "
+      f"**{100*both_ready/total_r:.1f}%** |")
     w("")
     ready = [r for r in route_rows if r[6]]
     w("Template-ready routes: " + (", ".join(f"`{r[0]}`" for r in ready) or "none"))
+    w("")
+    blocked = sorted(r[0] for r in route_rows if r[6] and not r[4])
+    w(
+        f"> ⚠⚠ **{both_ready} is the number to quote, not {template_ready}.** The "
+        "three rows above answer independent questions and the smallest does NOT "
+        "bound the others: a route needs a template for every step **and** a "
+        f"price for every species. **{len(blocked)} template-ready routes have a "
+        "refused species and cannot run**: "
+        + (", ".join(f"`{r}`" for r in blocked) or "none") + "."
+    )
+    w("")
+    w(
+        f"> ⚠ And {both_ready} is an **upper bound on what runs**, not a measured "
+        "count. A class is credited when a template would fire on the right "
+        "substrate at all; `pyrite-roasting` is the standing proof that this is "
+        "not the same as running, and S1 credited a route that could not. The "
+        "only way to know a route runs is to run it."
+    )
     w("")
 
     # ---- what the mineral tier carries ---------------------------------
@@ -1200,6 +1269,9 @@ def main() -> int:
     print(f"  routes species-ready  {species_ready}/{total_r} "
           f"({len(mineral_carried)} of them carried by a lattice)")
     print(f"  routes template-ready {template_ready}/{total_r}")
+    print(f"  routes BOTH (the one to quote) {both_ready}/{total_r} "
+          f"-- {template_ready - both_ready} template-ready routes have a "
+          f"refused species")
     print(f"\nwrote {out}")
     print(f"wrote {derived}/route_roles.psv and species_roles.psv")
     return 0

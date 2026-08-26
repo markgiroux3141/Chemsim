@@ -450,7 +450,17 @@ python validation/catalog_coverage.py  # the audit
 | UNIFAC-decomposable (can enter an LLE) | 836 (53%) |
 | routes species-ready | **65 / 173** (was 49) |
 | reaction classes with a template | **36 / 218** (was 12) |
-| routes template-ready end to end | **28 / 173** (was 7) |
+| routes template-ready | 28 / 173 (was 7) |
+| ⚠⚠ **routes template-ready AND species-ready — the one to quote** | **17 / 173** |
+
+⚠⚠ **28 IS NOT WHAT COULD RUN; 17 IS.** The three readiness columns answer
+INDEPENDENT questions and the smallest does not bound the others: a route needs a
+template for every step **and** a price for every species. **11 of the 28
+template-ready routes have a refused species** — `pyrite-roasting`, `tnt-route`,
+`superphosphate` and eight more. Nothing computed the intersection until S6.
+⚠ And 17 is an **upper bound on what runs**, not a measured count: a class is
+credited when a template would fire on the right substrate at all, and
+`pyrite-roasting` is the standing proof that this is not the same as running.
 
 ⚠ **`species-ready` moved 49 → 65 in S6 without one new datum being curated**:
 the audit was asking only the three ideal-gas providers, which refuse an ionic
@@ -460,7 +470,8 @@ in *both* directions. But refusing to **dissolve** a species is not refusing to
 **price** it, and `mineral_data` has priced these on the solid basis since M3.
 19 compounds moved refused → `mineral` and 16 routes with them, including
 `lime-cycle`, which M6 declared complete end to end and whose example runs.
-`template-ready` is untouched, and remains the binding constraint.
+`template-ready` is untouched — but it moved the INTERSECTION from 12 to 17, which
+is where curating a species pays and where the template count cannot reach.
 
 ⚠ The class denominator MOVES, because a class is a mechanism claim and reading
 a class's rows sometimes splits it: 212 -> 218 over M6, S1 and S3. Six of the

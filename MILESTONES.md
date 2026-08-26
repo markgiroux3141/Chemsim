@@ -1755,6 +1755,50 @@ solid-basis `Hf`/`Gf` **is not on the ideal-gas basis every `ThermoData` uses**.
 Folding it into `measured` in the report would make exactly the conflation the
 separate `MineralRecord` type upstream exists to prevent.
 
+### ⚠⚠ THE COLUMN NOBODY WAS COMPUTING: THE INTERSECTION IS 17, NOT 28
+
+Asked afterwards what the coverage actually is, S6 measured the one thing none of
+the three readiness columns says. **They answer INDEPENDENT questions, and the
+smallest does not bound the others.**
+
+| | routes |
+|---|---:|
+| species-ready | 65 |
+| template-ready | 28 |
+| **BOTH — the only one a route can be judged on** | **17** |
+
+**11 of the 28 template-ready routes have a refused species and cannot run** —
+`pyrite-roasting`, `tnt-route`, `superphosphate`, `chrome-yellow-route`,
+`biodiesel-route` and six more. Quoting 28 as *what could run* overstates it by a
+factor of 1.6, and this project has quoted 28 since S4.
+
+⚠ **AND IT CHANGES WHAT S6 IS WORTH.** Measured both ways: the intersection
+without the `mineral` tier is **12**, with it **17**. So the milestone that
+"moved no template-ready route" moved the runnable count by **+5** — more than the
+last three content milestones combined. Curating a species and writing a template
+are the SAME axis on this column, which neither of the published ones can show.
+
+⚠⚠ **AND THE WORK QUEUE WAS RANKED ON THE OVERSTATED COLUMN.** The greedy curve
+and the one-class-away table both counted template unlocks alone. Re-ranked by
+routes that would clear BOTH bars, the top changes hands:
+
+| class | unlocks ALONE | of those, RUNNABLE |
+|---|---:|---:|
+| `isomerisation` | 3 | **2** |
+| `crosslinking` | 2 | **2** |
+| `electro-organic-coupling` | 2 | **2** |
+| `electrolysis` (= M8) | 3 | **1** |
+| `catalytic-air-oxidation` | 3 | **0** |
+
+⚠ `catalytic-air-oxidation` is the third row of the greedy curve and is worth
+**ZERO** runnable routes. Both tables now carry a RUNNABLE column, generated.
+
+⚠ One thing the re-rank does NOT settle: `electro-organic-coupling`
+(`kolbe-electrolysis`, `adiponitrile-route`) is electrochemistry too, and M8's
+brief names only `electrolysis`. If one milestone covers both it is +5 unlocked /
+**+3 runnable**, which would put it back on top. **That is a scoping question to
+answer before scheduling M8, not an assumption to make.**
+
 ⚠ **And the claim it makes is narrow.** A mineral resolves here *as a crystal*:
 it can be charged, held and reacted, and it still cannot dissolve. A step needing
 one in solution is still not expressible. **None of the 16 routes becomes
@@ -2104,6 +2148,22 @@ permanent hard wall** — the only truly unachievable item, absolute reaction
 TIME, degrades a number rather than removing a transformation. The catalog's own headline stands: growing the template library,
 not the data tables, is what moves the number that matters — but M2, M3 and M4
 all beat templates on payoff per unit effort, and none of them is a template.
+
+⚠⚠ **AND S6 MEASURED THE TRAJECTORY, WHICH NO MILESTONE HAD DONE.** Template-ready
+routes went **25 at M5 → 28 now**: S1 +1, S3 +0, S4 +1, S5 +0, S6 +0. **Six
+consecutive sessions produced +3 routes.** Each found something real — a gas that
+attacks a crystal, a bounded Jacobian, a swept tolerance, a trustworthy species
+column — but the aggregate is a project spending its measurement discipline on the
+ENGINE while its own plan says the constraint is CONTENT. The instruction *"M5
+onward is content and new physics, and should be run against a target rather than
+against completeness"* is in this document and has not been followed since M5.
+
+⚠ **The fair counter, also measured:** on the INTERSECTION column (§S6) the same
+stretch reads better than +3, because species work and template work land on the
+same number there — S6 alone moved it **12 → 17**. The engine sessions were not
+wasted; they were being scored against a column that could not see half of what
+they did. **Both readings are true and the honest summary is: right work, wrong
+scoreboard, and the content queue is still untouched since M5.**
 
 ⚠⚠ **AND M6 ONWARD KEEPS REFUTING THE SECOND HALF OF THAT SENTENCE, WHICH IS
 WORTH SAYING OUT LOUD.** The template count has been **34 since M5** and the

@@ -4,16 +4,40 @@ Red) in d:\Claude Code Projects\Chemistry Simulator.
 **The plan is `MILESTONES.md`. Read it first — it is the authority on what to
 build and in what order.** **M0–M6, M12, S1–S6 are DONE.**
 
-**START WITH: ⚠⚠ THE BURNER.** It is the live fragility and it is the only one
-left with a measured reproduction: **53 s at rtol 1e-8 against 0.8 s at the
-default.** S5 bounded the CRASH and explicitly did not bound the THRASHING. BDF
-is genuinely struggling with a liquid layer holding **1e-29 mol**, which
-`LAYER_REABSORB` drains toward zero without ever reaching it. **The question
-nobody has asked is whether a layer below `LAYER_EPS` should be *merged
-discretely* at a step boundary rather than drained continuously forever.**
-⚠ `merge_phases` already does exactly that at the `run` boundary — so this may be
-a matter of WHEN IT IS CALLED, not of a new mechanic. **Measure the layer-2
-inventory over the failing run before designing anything.**
+**START WITH: ⚠⚠ CONTENT, NOT THE ENGINE — AND THE REASON IS MEASURED.**
+Template-ready routes went **25 at M5 → 28 now**: S1 +1, S3 +0, S4 +1, S5 +0,
+S6 +0. **Six consecutive sessions produced +3 routes.** Every one found something
+real, and the aggregate is still a project spending its measurement discipline on
+the ENGINE while its own plan says the constraint is CONTENT. `MILESTONES.md`'s
+own instruction — *"M5 onward is content and new physics, and should be run
+against a target rather than against completeness"* — has not been followed since
+M5. **Take a template milestone this session. The burner is item 5 and it will
+keep.**
+
+⚠⚠ **AND READ §S6's INTERSECTION FINDING BEFORE PICKING ONE, BECAUSE IT CHANGES
+THE WORK QUEUE.** The three readiness columns answer INDEPENDENT questions and the
+smallest does not bound the others: **species-ready 65, template-ready 28, BOTH
+17.** Eleven template-ready routes have a refused species and cannot run. The
+greedy curve and the one-class-away table were BOTH ranked on the overstated
+column; both now carry a generated `RUNNABLE` column, and the top changes hands:
+
+    class                       unlocks ALONE   of those RUNNABLE
+    isomerisation                     3                2
+    crosslinking                      2                2
+    electro-organic-coupling          2                2
+    electrolysis  (= M8)              3                1
+    catalytic-air-oxidation           3                0     <-- greedy row 3
+
+⚠ **`catalytic-air-oxidation` is the third row of the greedy curve and is worth
+ZERO runnable routes.** Read the RUNNABLE column, not the ALONE column.
+
+⚠ **ONE SCOPING QUESTION TO ANSWER FIRST, NOT ASSUME.** `electro-organic-coupling`
+(`kolbe-electrolysis`, `adiponitrile-route`) is electrochemistry too, and M8's
+brief names only `electrolysis`. **If one milestone covers both it is +5 unlocked
+/ +3 runnable and goes back to the top of the queue.** Measure whether one
+mechanism covers both rows before choosing between M8 and `isomerisation`.
+⚠ And M8 is the only planned item that WILL break the spectator zeros — budget for
+re-deriving the five pH values, do not budget for them being unmoved.
 
 ⚠⚠ **S6 IS THE PRECEDENT TO READ BEFORE ANY INSTRUMENT JOB, AND S5 BEFORE ANY
 FRAGILITY JOB.** S6's brief handed it a number (14 routes) and a list; the number
@@ -22,16 +46,25 @@ beside it. It only came out because the standing predict-then-measure check was
 run on a number that looked already-measured. **A recorded measurement is a claim
 about a past state of the code, and it can be wrong about its own subject.**
 
-After that, in order:
+The queue, re-ordered by what it is measured to be WORTH:
 
-1. **⚠ THE BARE-ELEMENT GAP — S6 MEASURED IT AT 15 ROUTES AND IT IS THE CHEAPEST
-   THING ON THIS LIST.** 45 compounds are refused as *a bare element symbol*,
-   correctly — the ideal-gas value for `[C]` is the ATOM at Gf +671 kJ/mol while
-   the charcoal in the flask is 0. `iron`, `copper` and `nickel` escaped only
-   because S1 needed them as solid catalysts. **15 routes are blocked by nothing
-   else**; leverage `cobalt` **+3**, then `carbon-graphite` / `platinum` /
-   `silver` at **+2** each. The generated table is in
-   `data/catalog/COVERAGE_REPORT.md` under *"The next one along"*.
+1. **⚠⚠ THE TEMPLATE MILESTONE — SEE START WITH.** `isomerisation` (+3 / **2
+   runnable**), `crosslinking` (+2 / **2**) and `electro-organic-coupling` (+2 /
+   **2**) are the three worth most. **M8 = `electrolysis` is +3 / 1 alone but +5 /
+   3 if its scope also covers `electro-organic-coupling`** — measure that first.
+   ⚠ Do NOT take `catalytic-air-oxidation` because the greedy curve ranks it
+   third: it is worth **zero** runnable routes.
+2. **⚠ THE BARE-ELEMENT GAP — S6 MEASURED IT AT 15 ROUTES AND IT IS THE CHEAPEST
+   ITEM HERE.** 45 compounds are refused as *a bare element symbol*, correctly —
+   the ideal-gas value for `[C]` is the ATOM at Gf +671 kJ/mol while the charcoal
+   in the flask is 0. `iron`, `copper` and `nickel` escaped only because S1 needed
+   them as solid catalysts. **15 routes are blocked by nothing else**; leverage
+   `cobalt` **+3**, then `carbon-graphite` / `platinum` / `silver` at **+2** each.
+   The generated table is in `data/catalog/COVERAGE_REPORT.md` under *"The next
+   one along"*.
+   ⚠⚠ **AND IT IS NOT SECOND-CLASS WORK ON THE COLUMN THAT MATTERS.** S6 moved no
+   template-ready route and moved the INTERSECTION **12 → 17**. Curating a species
+   and writing a template land on the SAME number there.
    ⚠ **IT HAS A LAYERING QUESTION IN FRONT OF IT, SO IT IS NOT A LOOKUP.**
    `element_data.REFERENCE_STATES` **already carries S0 and the reference state**
    for Zn(s), Ag(s), C(graphite) — but with **`smiles=None`**, because a SOLID
@@ -41,7 +74,7 @@ After that, in order:
    `priced_solid` demands. **Whether that belongs in `element_data` or in
    `mineral_data` is a real decision — a metal is not a mineral** — and it owes
    its own predict-then-measure pass.
-2. **⚠ S5's SIXTH INSTRUMENT FAULT, STILL OPEN AND STILL CHEAP.**
+3. **⚠ S5's SIXTH INSTRUMENT FAULT, STILL OPEN AND STILL CHEAP.**
    `tolerance_audit.py` reports `QUOTABLE DIGITS MOVE, worst 99.85%` on
    `oil_of_vitriol`, and **that headline is wrong**: four of its five moved lines
    are the CREATED-MATTER residual and every one gets SMALLER, on rows
@@ -50,21 +83,33 @@ After that, in order:
    zero.** `REPORT_ABS` exists for this and 2.9e-05 clears it. Reported, not
    fixed — raising it blunts the test for genuine quantities, so picking the
    number owes its own predict-then-measure pass.
-3. **Pyrite** — one mineral entry from `pyrite-roasting` running. Blocked on the
+4. **Pyrite** — one mineral entry from `pyrite-roasting` running. Blocked on the
    same-database rule (`Hfs` in WEBBOOK, `S0s` in nothing), which is a rule worth
-   keeping, so this needs a SOURCE and not a workaround.
-4. **⚠ `hydrolysis` IS GREEDY RANK 4 — AND READ S3's LANDMINE FIRST.** Measured:
-   it unlocks **exactly ONE route alone, `vitriol-distillation`**, and that
-   route's step 1 reads `-> iron-ii-OXIDE` while the engine makes HEMATITE. The
-   whole standalone payoff of the 4th-ranked template is a route carrying a step
-   whose product the engine does not make. ⚠ S3 and S4 disagree about what to do
-   with such a row — S3's was the MECHANISM right and the ROW wrong, S4's was the
-   ROW right and the mechanism short. Read §S3's "which one is WRONG" check
-   before deciding.
-5. **M7 (dissociation as an equilibrium — ⚠ M12 took most of its case away;
-   re-scope before scheduling)**, then **M8+ (electrochemistry — ⚠ that one WILL
-   break the spectator zeros)** and **M10 (the site balance S1 did not build)**.
-6. **NUCLEATION, now that half of it is modelled.** S3 named the gap; S4 turned
+   keeping, so this needs a SOURCE and not a workaround. ⚠ It is also one of the
+   **11 template-ready routes that cannot run**, so closing it is +1 on the
+   intersection for one curated entry.
+5. **⚠⚠ THE BURNER — THE LIVE FRAGILITY, DEMOTED NOT DISMISSED.** **53 s at rtol
+   1e-8 against 0.8 s at the default.** S5 bounded the CRASH and explicitly did
+   not bound the THRASHING. BDF is struggling with a liquid layer holding
+   **1e-29 mol**, which `LAYER_REABSORB` drains toward zero without ever reaching
+   it. **The question nobody has asked is whether a layer below `LAYER_EPS`
+   should be *merged discretely* at a step boundary rather than drained
+   continuously forever.** ⚠ `merge_phases` already does exactly that at the
+   `run` boundary — so this may be a matter of WHEN IT IS CALLED, not of a new
+   mechanic. **Measure the layer-2 inventory over the failing run before
+   designing anything.** It is at rtol 1e-8, not the default, so nothing a player
+   does reaches it.
+6. **⚠ `hydrolysis` — AND READ S3's LANDMINE FIRST.** Measured: it unlocks
+   **exactly ONE route alone, `vitriol-distillation`**, and that route's step 1
+   reads `-> iron-ii-OXIDE` while the engine makes HEMATITE. The whole standalone
+   payoff is a route carrying a step whose product the engine does not make.
+   ⚠ S3 and S4 disagree about what to do with such a row — S3's was the MECHANISM
+   right and the ROW wrong, S4's was the ROW right and the mechanism short. Read
+   §S3's "which one is WRONG" check before deciding.
+7. **M7 (dissociation as an equilibrium — ⚠ M12 took most of its case away;
+   re-scope before scheduling)**, **M9 (polymers, 12 routes)** and **M10 (the
+   site balance S1 did not build, 8 routes)**.
+8. **NUCLEATION, now that half of it is modelled.** S3 named the gap; S4 turned
    the *deposition-needs-a-seed* half into a real bound in
    `SolidStateArrays.units`, which is why the mercury retort does not re-form its
    oxide when cooled 289 K below the oxide's threshold. What is still not
@@ -96,7 +141,7 @@ the memory files (auto-loaded), especially chemsim-species-ready-minerals,
   chemsim-generated-artefacts.
 
 ```bash
-python validation/catalog_coverage.py        # 36/218, 28/173, 65/173 species-ready, ~10 s
+python validation/catalog_coverage.py        # ⚠ READ THE 'BOTH' LINE: 17/173, ~10 s
 python tools/build_route_index.py            # ⚠ RUN THIS TOO -- it is the artefact nothing reads
 python validation/jacobian_bound.py          # ⚠ S5's standing audit, ~1 min
 python examples/mercury_retort.py            # S4, six panels, ~4 s
@@ -132,8 +177,10 @@ report the way it reports a mass one, 34 templates, a reaction that happens INSI
 a crystal, a gas that ATTACKS a crystal, a catalyst you have to actually put in
 the flask, a route that nothing declares, and a Jacobian that cannot be probed
 outside its own state. `SAVE_VERSION` is **5**.
-Coverage: **28/173 template-ready routes**, **36/218 classes**, **34 templates**
-(all unchanged — S6 moved no chemistry), **65/173 species-ready** (was 49).
+Coverage: **36/218 classes**, **34 templates**, **28/173 template-ready**,
+**65/173 species-ready** (was 49) — and ⚠⚠ **17/173 BOTH, which is the only one
+of the three a route can be judged on.** S6 moved that one **12 → 17** while
+moving no template-ready route at all.
 
 ---
 
@@ -199,7 +246,35 @@ is `network/builder.py` line 320, which rebuilds every input SMILES through
 `Molecule.from_smiles` before the species list exists. **All 19 rescued minerals
 were charged into a real `Vessel` solid block: 19 of 19 at their full 0.02 mol.**
 
-## ⚠ 4. WHAT `species-ready` DOES NOT CLAIM FOR THESE
+## ⚠⚠ 4. THE COLUMN NOBODY WAS COMPUTING: THE INTERSECTION IS 17, NOT 28
+
+Asked afterwards what the coverage actually IS, S6 measured the one thing none of
+the three readiness columns says. **They answer INDEPENDENT questions and the
+smallest does not bound the others.**
+
+    species-ready   65        template-ready  28        BOTH   17
+
+**11 of the 28 template-ready routes have a refused species and cannot run** —
+`pyrite-roasting`, `tnt-route`, `superphosphate`, `chrome-yellow-route`,
+`biodiesel-route` and six more. **This project has quoted 28 as "what could run"
+since S4, and it overstates by a factor of 1.6.**
+
+⚠ **AND IT CHANGES WHAT S6 IS WORTH.** Measured both ways: the intersection
+without the `mineral` tier is **12**, with it **17**. The milestone that "moved no
+template-ready route" moved the runnable count **+5**, more than the last three
+content milestones combined. **Curating a species and writing a template are the
+SAME axis on this column**, which neither published column can show.
+
+⚠⚠ **AND THE WORK QUEUE WAS RANKED ON THE OVERSTATED COLUMN.** Both the greedy
+curve and the one-class-away table counted template unlocks alone; both now carry
+a generated RUNNABLE column. `catalytic-air-oxidation` is greedy row 3 and is
+worth **zero** runnable routes. See START WITH for the re-ranked queue.
+
+⚠ 17 is an **upper bound on what runs**, not a measured count: a class is credited
+when a template would fire on the right substrate at all, and `pyrite-roasting` is
+the standing proof that this is not the same as running.
+
+## ⚠ 5. WHAT `species-ready` DOES NOT CLAIM FOR THESE
 
 A mineral resolves **as a crystal**. It can be charged, held and reacted; it still
 cannot dissolve, so a step needing one in solution is still not expressible.
@@ -211,7 +286,9 @@ of this project's coverage.**
 # ⚠ THE FRAGILITIES
 
 **1. ⚠⚠ THE BURNER IS STILL 53 s AT rtol 1e-8 AGAINST 0.8 s AT THE DEFAULT.** The
-crash is bounded; the thrashing is not. **This is the live one — see START WITH.**
+crash is bounded; the thrashing is not. **Still the live one — but it is QUEUE
+ITEM 5, not the next job.** It fires only at rtol 1e-8, so nothing a player does
+reaches it, and six sessions of engine work against +3 routes is why it waits.
 
 **2. ⚠ A SOLID DECOMPOSITION'S FORWARD CONSTANT CROSSES THE UNIMOLECULAR CEILING
 AT 3710 K, INSIDE THE RHS's 5000 K CLAMP.** New in S4, reported by
@@ -310,6 +387,12 @@ S4's seed crystal, S5's state extent.
 ⚠ **A RELATIVE-DIFFERENCE TEST IS MEANINGLESS ON A COLUMN WHOSE CONVERGED VALUE
 IS ZERO.** `0.000e+00 -> 2.728e-07` reads as "99% moved" and means "a residual got
 smaller".
+⚠⚠ **TWO COLUMNS THAT ANSWER INDEPENDENT QUESTIONS DO NOT BOUND EACH OTHER —
+COMPUTE THE INTERSECTION.** template-ready 28 and species-ready 65 were both
+published for four milestones while the number that decides whether a route runs,
+17, was computed by nothing. **A work queue ranked on either one alone sends
+effort at routes that cannot run** — measured: `catalytic-air-oxidation` unlocks
+3 routes and 0 runnable ones.
 ⚠ **AUDIT THE INSTRUMENT BEFORE THE FINDINGS — AND THEN AUDIT ITS OUTPUT AND ITS
 COVERAGE.** S2's harness invented a finding; S1's coverage audit credited a route
 that cannot run; S3's report could not be diffed; S4's rate-ceiling audit made a

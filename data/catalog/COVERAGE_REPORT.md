@@ -748,28 +748,30 @@ The table above ranks by how many STEPS use a class. That is the wrong ranking f
 
 145 routes have at least one gap. **59 of them are ONE class away**, and those come from **45 different classes** -- which is why there is no bottleneck to attack and why this milestone argues for a target rather than for completeness.
 
-| class | routes it unlocks ALONE | steps | those routes |
-|---|---:|---:|---|
-| catalytic-air-oxidation | 3 | 4 | `maleic-anhydride-route`, `p-xylene-oxidation`, `phthalic-anhydride-route` |
-| electrolysis | 3 | 4 | `chloralkali`, `downs-cell`, `hall-heroult` |
-| isomerisation | 3 | 3 | `hydrogenation-margarine`, `starch-hydrolysis`, `wohler-urea` |
-| ammoxidation | 2 | 4 | `acrylonitrile-sohio`, `andrussow` |
-| carbothermic-reduction | 2 | 5 | `white-phosphorus`, `zinc-smelting` |
-| crosslinking | 2 | 2 | `tanning-route`, `vulcanisation` |
-| electro-organic-coupling | 2 | 2 | `adiponitrile-route`, `kolbe-electrolysis` |
-| fermentation | 2 | 5 | `abe-fermentation`, `msg-route` |
-| gas-solid-reduction | 2 | 4 | `copper-smelting`, `lead-smelting` |
-| metal-ion-aldehyde-oxidation | 2 | 2 | `fehling-test`, `tollens-test` |
-| pyrolysis | 2 | 3 | `coal-gas`, `wood-distillation` |
-| biological-transformation | 1 | 2 | `tyrian-purple-route` |
-| carbonate-equilibrium | 1 | 1 | `solvay-process` |
-| carbonyl-ene-cyclisation | 1 | 1 | `menthol-route` |
-| catalytic-epoxidation | 1 | 1 | `ethylene-oxide-route` |
-| catalytic-gas-oxidation | 1 | 3 | `deacon-process` |
-| comproportionation | 1 | 1 | `claus-process` |
-| diels-alder-cycloaddition | 1 | 2 | `diels-alder-route` |
-| direct-combination | 1 | 1 | `vermilion-route` |
-| dissolving-metal-reduction | 1 | 2 | `aniline-route` |
+> ⚠⚠ **READ THE `RUNNABLE` COLUMN, NOT THE `ALONE` COLUMN.** A template unlocks a route only in the template column; the route still needs every species priced. `runnable` counts the ones that would clear BOTH bars. The two orders disagree at the top, which is exactly when it matters.
+
+| class | routes it unlocks ALONE | ...of those, RUNNABLE | steps | those routes |
+|---|---:|---:|---:|---|
+| isomerisation | 3 | **2** | 3 | `hydrogenation-margarine`, `starch-hydrolysis`, `wohler-urea` |
+| crosslinking | 2 | **2** | 2 | `tanning-route`, `vulcanisation` |
+| electro-organic-coupling | 2 | **2** | 2 | `adiponitrile-route`, `kolbe-electrolysis` |
+| electrolysis | 3 | **1** | 4 | `chloralkali`, `downs-cell`, `hall-heroult` |
+| fermentation | 2 | **1** | 5 | `abe-fermentation`, `msg-route` |
+| gas-solid-reduction | 2 | **1** | 4 | `copper-smelting`, `lead-smelting` |
+| biological-transformation | 1 | **1** | 2 | `tyrian-purple-route` |
+| catalytic-gas-oxidation | 1 | **1** | 3 | `deacon-process` |
+| comproportionation | 1 | **1** | 1 | `claus-process` |
+| direct-combination | 1 | **1** | 1 | `vermilion-route` |
+| dissolving-metal-reduction | 1 | **1** | 2 | `aniline-route` |
+| fischer-tropsch | 1 | **1** | 1 | `fischer-tropsch` |
+| oxidative-cleavage | 1 | **1** | 2 | `vanillin-lignin` |
+| oxidative-complexation | 1 | **1** | 1 | `iron-gall-ink` |
+| polycondensation | 1 | **1** | 5 | `pet-route` |
+| separation | 1 | **1** | 1 | `coal-tar-distillation` |
+| skraup-cyclisation | 1 | **1** | 1 | `skraup-route` |
+| steam-reforming | 1 | **1** | 1 | `steam-reforming` |
+| thermal-cracking | 1 | **1** | 1 | `steam-cracking` |
+| wacker-oxidation | 1 | **1** | 1 | `wacker-process` |
 
 #### The greedy set-cover curve
 
@@ -798,17 +800,24 @@ Templates added in the order that unlocks the most routes at each step. ⚠ The 
 | 19 | radical-polymerisation | +1 | 64 |
 | 20 | precipitation | +1 | 65 |
 
+> ⚠⚠ **THIS CURVE OPTIMISES THE OVERSTATED COLUMN.** Its totals are template-ready, and a route also needs every species priced. Its top three rows are `electrolysis` +3 unlocked / **1 runnable**; `isomerisation` +3 unlocked / **2 runnable**; `catalytic-air-oxidation` +3 unlocked / **0 runnable** -- so the curve's own ordering is not the work order. Cross-reference the `RUNNABLE` column above before taking the top row.
+
 ## Route readiness
 
-A route is *species-ready* when every non-marker species in its steps resolves; *sourced* when none of them falls back to Joback; and *template-ready* when every one of its step classes has a template. Template-readiness is the binding constraint and it is not close.
+A route is *species-ready* when every non-marker species in its steps resolves; *sourced* when none of them falls back to Joback; and *template-ready* when every one of its step classes has a template. ⚠ These are INDEPENDENT questions, and neither of the first two bounds the third — so the row that decides whether a route can run at all is the intersection, which is smaller than any of them.
 
 | | routes | of 173 |
 |---|---:|---:|
 | species-ready | 65 | 37.6% |
 | fully sourced (no Joback anywhere) | 14 | 8.1% |
 | template-ready | 28 | 16.2% |
+| **BOTH — template-ready AND species-ready** | **17** | **9.8%** |
 
 Template-ready routes: `pyrite-roasting`, `lime-cycle`, `haber-bosch`, `saltpetre-nitric`, `bleaching-powder`, `hypochlorite-bleach`, `phosphoric-wet`, `superphosphate`, `match-chemistry`, `mercury-from-cinnabar`, `tnt-route`, `chrome-yellow-route`, `salicylic-kolbe`, `phenacetin-route`, `salicin-hydrolysis`, `aspirin-impurity`, `ddt-route`, `methanol-synthesis`, `acetic-fermentation`, `acetylene-acetaldehyde`, `dop-route`, `biodiesel-route`, `ethanol-hydration`, `invert-sugar`, `cannizzaro-route`, `perkin-route`, `knoevenagel-route`, `williamson-ether`
+
+> ⚠⚠ **17 is the number to quote, not 28.** The three rows above answer independent questions and the smallest does NOT bound the others: a route needs a template for every step **and** a price for every species. **11 template-ready routes have a refused species and cannot run**: `acetylene-acetaldehyde`, `biodiesel-route`, `bleaching-powder`, `chrome-yellow-route`, `dop-route`, `hypochlorite-bleach`, `match-chemistry`, `phosphoric-wet`, `pyrite-roasting`, `superphosphate`, `tnt-route`.
+
+> ⚠ And 17 is an **upper bound on what runs**, not a measured count. A class is credited when a template would fire on the right substrate at all; `pyrite-roasting` is the standing proof that this is not the same as running, and S1 credited a route that could not. The only way to know a route runs is to run it.
 
 ### The 16 routes species-ready on a lattice
 

@@ -4756,6 +4756,45 @@ the measurements that justify them.
     demands. **Whether that belongs in `element_data` or `mineral_data` is a real
     decision — a metal is not a mineral.**
 
+    ⚠⚠ **AND THE COLUMN NOBODY WAS COMPUTING: THE INTERSECTION IS 17, NOT 28.**
+    Asked afterwards what the coverage actually IS, S6 measured the one thing
+    none of the three readiness columns says. **They answer INDEPENDENT
+    questions and the smallest does not bound the others:** species-ready 65,
+    template-ready 28, **BOTH 17**. **11 of the 28 template-ready routes have a
+    refused species and cannot run** -- `pyrite-roasting`, `tnt-route`,
+    `superphosphate`, `chrome-yellow-route`, `biodiesel-route` and six more.
+    This project has quoted 28 as "what could run" since S4 and it overstates by
+    a factor of 1.6.
+
+    ⚠ **IT RE-PRICES S6 ITSELF.** Measured both ways: the intersection without
+    the `mineral` tier is **12**, with it **17**. The milestone that moved no
+    template-ready route moved the runnable count **+5**, more than the last
+    three content milestones combined. **Curating a species and writing a
+    template land on the SAME number here**, which neither published column can
+    show.
+
+    ⚠⚠ **AND THE WORK QUEUE WAS RANKED ON THE OVERSTATED COLUMN.** Both the
+    greedy curve and the one-class-away table counted template unlocks alone.
+    Re-ranked by routes that clear BOTH bars: `isomerisation` 3/**2**,
+    `crosslinking` 2/**2**, `electro-organic-coupling` 2/**2**, `electrolysis`
+    (= M8) 3/**1**, and **`catalytic-air-oxidation` -- greedy row 3 -- 3/ZERO**.
+    Both tables now carry a generated RUNNABLE column. ⚠ One scoping question
+    stays open rather than assumed: `electro-organic-coupling` is
+    electrochemistry too, and if M8 covers both rows it is +5 unlocked /
+    **+3 runnable** and goes back to the top.
+
+    ⚠ 17 is an **upper bound on what runs**, not a measured count. A class is
+    credited when a template would fire on the right substrate at all;
+    `pyrite-roasting` is the standing proof that is not the same as running.
+
+    ⚠⚠ **AND THE TRAJECTORY, MEASURED FOR THE FIRST TIME.** Template-ready went
+    **25 at M5 -> 28 now**: S1 +1, S3 +0, S4 +1, S5 +0, S6 +0. **Six consecutive
+    sessions produced +3 routes**, every one of them finding something real,
+    while the plan's own instruction says M5 onward is CONTENT. On the
+    intersection column the same stretch reads better, because species work and
+    template work land on one number there. **Right work, wrong scoreboard --
+    and the content queue is untouched since M5.**
+
     ⚠ Both new report sections are **GENERATED**, because the estimate they
     replace was a hand-written comment that drifted from its own corpus.
     `COVERAGE_REPORT.md` stays byte-identical across `PYTHONHASHSEED`
