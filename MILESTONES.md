@@ -4333,7 +4333,7 @@ kJ/mol, because both ask the line for more than 2.686 decades. The protection is
 therefore entirely about PROTONATION, which is the real mechanism: an amide has
 no lone pair to protonate and an aniline in mixed acid is an anilinium.
 
-## ⚠⚠ WHAT IS LEFT — G3 IS THE ONLY UNBUILT G-SERIES ITEM (2026-08-27, AFTER G6)
+## ⚠⚠ WHAT IS LEFT — **THE G-SERIES IS COMPLETE** (2026-08-27, AFTER G3)
 
     1. G4 -- the granularity audit           ✔ DONE. The answer is FIVE, and
                                                 the useful half of it is that
@@ -4341,9 +4341,17 @@ no lone pair to protonate and an aniline in mixed acid is an anilinium.
     2. the HAMMETT LINE SATURATES            ✔ DONE as §G6. A sourced encounter
                                                 plateau; the design question
                                                 answered itself in a measurement
-    3. G3 -- PLAYABLE.md                      <- ALL THAT IS LEFT. the scoreboard
-                                                the GOAL needs, and the
-                                                expensive one
+    3. G3 -- PLAYABLE.md                     ✔ DONE. 12 of 173, three tiers, and
+                                                the C-series is a 21-row TABLE
+                                                rather than a grind
+
+⚠⚠⚠ **THE ARC IS THE C-SERIES NOW, AND G3 HANDED IT A WORK ORDER INSTEAD OF A
+BACKLOG.** Every G-series item is built. The next thing to build is CONTENT, and
+`data/catalog/PLAYABLE.md` §8 says which content: **21 routes are already fed
+from natural materials and blocked only on a template or a price**, and granting
+all 21 takes playability from 12 to **37** — the G-series GOAL's own ~40. The
+other 116 unrunnable routes move a coverage number and no player can reach them
+until something in the 21 lands. ⚠ **Read that table before picking a template.**
 
 ⚠⚠ **THE ORDER WAS TAKEN AS WRITTEN AND BOTH ITEMS PAID FOR THEMSELVES IN THE
 WAY THE ARGUMENT ABOVE PREDICTED, WHICH IS WORTH RECORDING BECAUSE THE ARGUMENT
@@ -4441,6 +4449,151 @@ puts 0.0345 mol of trinitro in the flask in ten seconds at 300 K and finishes at
 See HANDOFF §103, `validation/saturation.py` (six panels, 27 s),
 `tests/test_saturation.py` (12 tests).
 
+## G3 -- `PLAYABLE.md`, the scoreboard the goal needs ✔✔ **DONE 2026-08-27** *(and the answer is that the tech tree is a BUSH, not a tree)*
+
+**WHAT IT IS.** `tools/build_playable.py` writes `data/catalog/PLAYABLE.md` (326
+lines, ~50 s because it RUNS the deep chain) and `tests/test_playable.py` (18
+tests) pins every headline in it. The question no other artefact asks:
+*what can a player make, starting from what?*
+
+    tier 1 -- from the ground                8 routes
+    tier 2 -- one step up                    3
+    tier 3 -- two steps up                   1     <- methanol, and that is all
+    runnable but unfed                      24
+    not runnable                           137
+                                           173
+
+**12 of 173 playable, against a GOAL of ~40, and the deepest chain is 3 tiers.**
+
+### ⚠⚠⚠ 1. THE HEADLINE IS THE SHAPE, NOT THE COUNT: 8 OF THE 12 ARE TIER 1
+
+The GOAL asks for a *connected tech tree*. This corpus is not a short tree; it is
+a **fan of one-step routes off the ground with one thin chain hanging off it**.
+Two thirds of what a player can make touches nothing another route made. That is
+a different problem from "not enough routes" and it is the reason this artefact
+had to exist rather than a bigger coverage number.
+
+### ⚠⚠⚠ 2. THE DEEPEST CHAIN IN THE CORPUS RUNS THROUGH A BYPRODUCT, AND THE THIRD TIER IS ONE CATALYST
+
+    zinc-smelting  1400 K  ->  zinc 0.032793 mol  AND  carbon monoxide 0.054290
+      copper-smelting 1500 K on that CO  ->  copper 0.039995 mol
+      water-gas-shift  700 K on that CO  ->  hydrogen 0.053445 mol
+        methanol-synthesis 520 K, copper in the solid block -> 0.004154 mol
+
+⚠⚠ **NOTHING ELSE A PLAYER CAN REACH MAKES CARBON MONOXIDE**, and the retort
+makes MORE of it than of its own target. Three tier-2 routes and one tier-3 route
+all want it. ⚠⚠ **AND METHANOL IS TIER 3 FOR EXACTLY ONE REASON: ITS CATALYST.**
+Its CO is tier 1 and its hydrogen is tier 1 too (`chloralkali` throws hydrogen
+off making caustic soda from rock salt) -- it is tier 3 only because **the copper
+has to be smelted first, and smelting it needs the byproduct of smelting a
+different metal.** Grant free copper and the corpus has no third tier at all.
+⚠ *A catalyst is a tech-tree node, and treating one as free was measured at two
+routes and one whole tier.*
+
+### ⚠⚠⚠ 3. FOUR SCORING RULES, ALL FOUR MEASURED WRONG FIRST -- AND FIXING ONE MASKED ANOTHER
+
+G4's rule (**the target may not be CHARGED**) was reused rather than re-derived;
+it lives in `catalog.route_reachable` now and both audits call it. The three new
+ones:
+
+* **a need is decided by ORDER, not by `route_roles`** -- `lime-cycle` derives an
+  EMPTY feedstock list because row 3 regenerates the limestone row 1 calcined, so
+  a closed cycle scored playable while needing *nothing at all*;
+* **a route shelves its target AND its byproducts**, target unioned in
+  explicitly, because a route's target is not always among its products;
+* **a catalyst is a feedstock**.
+
+⚠⚠⚠ **AND THE INTERACTION IS THE FINDING.** Measured as a 2x3 grid: under the
+CORRECT needs rule, shelving byproducts-only costs nothing (12 either way), so
+the fouling-row bug is **invisible**; it is worth one route only under the wrong
+needs rule (13 against 14). **Two rules were wrong at once and fixing the first
+masked the second** -- had they been done in the other order, the shelf rule
+would have looked like a distinction without a difference, gone in wrong, and
+started costing routes silently the moment the lead chamber became reachable.
+⚠ *Measure two suspected rules as a GRID, not as a list.*
+
+### ⚠⚠ 4. THE SAME TWO CATALOG ROUTES BROKE THREE OF THE FOUR RULES, AND G4 HAD ALREADY FOUND ONE OF THEM
+
+`lead-chamber` is in it twice. Row 4 (the nitrosylsulfuric acid that fouls a
+chamber) is what made G4's ROW scorer call the route blocked -- and the same row
+makes `route_roles` classify sulfuric acid as an INTERMEDIATE, so a shelf built
+from products alone does not hold the thing the route exists to make. Row 2 then
+wants nitrogen dioxide and row 3 makes it, so the **NOx carrier reads as an
+intermediate when it is a starting charge** -- G4's own run had to hand it
+0.004 mol by hand and measured it recovered.
+⚠⚠ **AND THAT COSTS THE 18TH CENTURY ITS SULFURIC ACID.** `lead-chamber` is
+blocked on a *pinch* of NO2 that nothing reachable makes; the corpus has
+saltpetre as a natural material and **no step that turns it into NOx**, though
+that is historically exactly where the charge came from. A **corpus** gap, and
+one of the two most valuable single species in the file.
+
+### ⚠⚠ 5. WHAT RUNNING IT BOUGHT, WHICH IS G1's QUESTION ANSWERED
+
+⚠ **THE COPPER SMELTER IS ORE-LIMITED, NOT CO-LIMITED** -- doubling the retort's
+CO moves the copper in the sixth decimal. That is the *opposite* of what the
+contention above suggests and only running it settled which.
+⚠ **THE CATALYST IS A GATE, NOT A MULTIPLIER** -- 0.01 mol of copper already
+reaches 99.3% of the reference rate, so one ore charge is 4x more catalyst than
+the route needs. A player must *reach* copper and need not stockpile it.
+⚠⚠ **WHAT DOES BITE IS SCALE.** At the retort's own scale methanol converts at
+**7.7%**; the same route, template and loading at the corpus's declared charge of
+3 mol CO + 12 mol H2 gives **99.8%**. *"Reachable" and "worth doing" are
+different questions and a static scoreboard can only answer the first.*
+⚠ And the first version of the generator shadowed its own output buffer and wrote
+a 200-byte file of route names. **`test_the_report_on_disk_matches_the_code`
+caught it on its first run**, which is the whole argument for asserting a
+generated artefact -- see §6.
+
+### ⚠⚠ 6. THE ARTEFACT HAS TESTS, BECAUSE `ROUTE_INDEX.md` DID NOT
+
+S3 found the route index stale by three milestones for one reason: no audit read
+it. So `tests/test_playable.py` pins the headline, the tier shape, all four rules
+*and their wrong answers*, the lever, and the fact that the file on disk is the
+one the current code produces. ⚠ It does not diff the whole report --
+`chemsim-generated-artefacts` records that a report which cannot be diffed is a
+report nobody diffs -- it pins the numbers a reader would quote.
+
+### ⚠⚠⚠ 7. THE DELIVERABLE IS A WORK ORDER, AND IT IS FINITE
+
+**21 of the 137 unrunnable routes are ALREADY FED from natural materials.** Grant
+all 21 and the fixed point reaches **37** playable -- the GOAL's own ~40, because
+four more (`acetic-fermentation`, `haber-bosch`, `saltpetre-nitric`, `thermite`)
+fall out free once the shelf grows. Ranked by what each is worth:
+
+    +3  hall-heroult      1 class (molten-salt-electrolysis)  -- aluminium
+                            unblocks thermite, whose iron unblocks haber-bosch
+    +2  abe-fermentation, blast-furnace, iron-gall-ink, vitriol-distillation
+    +1  the other sixteen
+
+⚠⚠ **THE C-SERIES IS THIS TABLE AND NOT A GRIND AGAINST 173 ROUTES.** The other
+116 move a coverage number no player can reach. ⚠ **AND THE TWO RANKINGS
+DISAGREE**: `COVERAGE_REPORT.md`'s greedy curve maximises classes per template;
+this maximises routes a player can walk to.
+⚠ **TWO OF THE 21 NEED NO TEMPLATE AT ALL** -- `hypochlorite-bleach` and
+`pyrite-roasting` are blocked purely on a refused price, and pyrite is the engine
+queue's own source-blocked entry (enthalpy in WEBBOOK, entropy in nothing).
+**A data refusal is now measurably a PLAYABILITY blocker and not just a coverage
+one.**
+
+### ⚠⚠ 8. NO LEVER, AND THE FREQUENT BLOCKER IS NOT THE VALUABLE ONE
+
+The biggest single species grant is **+2** (`nitrogen-dioxide`, `aluminium`) --
+the same shape as coverage's "no lever". ⚠⚠ And `sulfuric-acid` **blocks the most
+routes (4) and is worth +1**, because every route it blocks is blocked by
+something else too. *A histogram of blockers is not a work order; the fixed point
+is, and they disagree.*
+
+### ⚠ 9. THE HAND JUDGEMENT, PRINTED
+
+45 species are declared NATURAL in three groups with a sourced reason each, and
+the rule is stated: obtainable without running any chemistry. **The GOAL says
+~10, so the list is generous by 4x and 12 is an UPPER bound.** What is
+deliberately NOT natural is printed too, because that half is the arguable half:
+the catalyst metals, the metals as opposed to their ores, methane, the
+benzaldehyde bottle, and the fermentation products.
+
+*The original brief follows.*
+
 ## G3 -- `PLAYABLE.md`, the scoreboard the goal needs
 
 A generated standing audit answering the question no existing artefact does:
@@ -4452,6 +4605,19 @@ feedstock is obtainable. Neither answers *"what can I make from a rock?"*
 one-step-up / 14 blocked on an unmakeable intermediate / 4 from a reagent bottle).
 ⚠ **The one hand judgement in it -- which compounds count as NATURAL -- must be
 printed, not hidden**, so it can be argued with.
+
+⚠⚠⚠ **AND THE MEASUREMENT DISAGREED WITH THAT CLASSIFICATION, WHICH IS THE FIRST
+THING G3 HAD TO SETTLE.** The 7/6/14/4 above sums to the 31 of the BOTH column
+and it is a LOOSE ONE-STEP count: it credits a route whose feedstock is any other
+route's *target*, whether or not that route can run. Re-measured on the same 31,
+that rule gives **6 from-the-ground / 8 one-step (14 total)** -- so the recorded
+"13 connect to natural materials" was close to right about the TOTAL and wrong
+about the SPLIT. The strict fixed point, which only credits a hop onto a route
+that is itself playable, gives **10 of the 31** and **12 of the 36 runnable**.
+⚠⚠ **EIGHT OF THE THIRTEEN HOPS LANDED ON ROUTES THAT CANNOT RUN**, and a
+one-step count cannot see that because it never asks the question twice. *A
+reachability claim has to be iterated to a fixed point or it is not a reachability
+claim.*
 
 ## G4 -- The granularity audit ✔✔ **DONE 2026-08-27 — the answer is FIVE, and the value of the session is that FIVE IS SMALL**
 

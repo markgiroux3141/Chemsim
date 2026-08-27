@@ -203,6 +203,81 @@ def route_roles(steps: list[Step], route_id: str) -> RouteRoles:
     return roles
 
 
+
+def route_reachable(
+    steps: list[Step],
+    route_id: str,
+    target: str,
+    priced,
+    covered_classes,
+    compounds: dict[str, Compound],
+) -> bool:
+    """Can the engine's templates get from this route's feedstocks to its TARGET?
+
+    G4's DAG walk, hoisted here so that the two audits that need it cannot
+    disagree. ``validation/granularity.py`` scores how much of the coverage
+    report's BOTH column is a catalog artefact; ``tools/build_playable.py`` asks
+    whether a route is reachable before asking whether it is *fed*. Both ask
+    exactly this question, and a copy in each would drift silently.
+
+    ``priced(species) -> bool`` decides whether the engine can put a price on a
+    species; ``covered_classes`` is the set of reaction classes a template
+    exists for. Both are injected because this module deliberately imports
+    nothing but the standard library -- the tier of a compound is an engine
+    question and the caller already knows the answer. ``compounds`` is here only
+    so that a MARKER product (a rock, a mixture, a protein -- see ``is_marker``)
+    does not block a step it appears in; a marker has no molecular graph, so
+    "nothing prices it" is not a statement about the chemistry.
+
+    The row scorer that ``COVERAGE_REPORT.md`` uses asks whether EVERY row has a
+    template and a price. A route is not a list of rows; it is a DAG with
+    alternatives, declared byproducts and workup in it, and the question a
+    player asks is whether the target comes out of the end.
+
+    ⚠ **THE TARGET MAY NOT BE CHARGED.** Without that rule ``bayer-process``
+    and ``contact-process`` both score reachable by BUYING the thing the route
+    exists to make -- Bayer purifies bauxite and the contact process recycles
+    its own acid. It is one line and it is the difference between an instrument
+    and a flattering one. See MILESTONES §G4.
+    """
+    mine = sorted((s for s in steps if s.route == route_id), key=lambda s: s.index)
+    first_made: dict[str, int] = {}
+    first_used: dict[str, int] = {}
+    for s in mine:
+        for p in s.products:
+            first_made.setdefault(p, s.index)
+        for r in s.reactants:
+            first_used.setdefault(r, s.index)
+
+    def chargeable(x: str) -> bool:
+        # priced, and either never made here, or wanted before anything makes it
+        if not priced(x):
+            return False
+        return x not in first_made or first_used.get(x, 1 << 30) <= first_made[x]
+
+    def made_by(x: str, stack: frozenset[str]) -> bool:
+        for s in mine:
+            if x not in s.products or s.cls not in covered_classes:
+                continue
+            if not all(priced(p) for p in s.products
+                       if not is_marker(p, compounds)):
+                continue
+            if all(go(r, stack | {x}) for r in s.reactants if r != x):
+                return True
+        return False
+
+    def go(x: str, stack: frozenset[str]) -> bool:
+        if chargeable(x):
+            return True
+        if x in stack or x not in first_made:
+            return False
+        return made_by(x, stack)
+
+    if target not in first_made:
+        return False
+    return made_by(target, frozenset())
+
+
 def validate(catalog_dir: str = CATALOG_DIR) -> list[str]:
     """Structural check. Returns a list of problems; empty means clean."""
     from rdkit import Chem, RDLogger

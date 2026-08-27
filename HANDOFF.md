@@ -6537,3 +6537,124 @@ RESOLVED since the last handoff:
     regression. ⚠ It still does not DIAGNOSE that regression — no list exists on
     either side of S13's data commit — but a stash-and-rerun there would now be
     readable, because the measurement's own repeatability is known.
+
+104. ✔✔ **G3 — `PLAYABLE.md`: WHAT A PLAYER CAN MAKE IS 12 OF 173, AND THE
+    TECH TREE IS A BUSH RATHER THAN A TREE.** `tools/build_playable.py` writes
+    `data/catalog/PLAYABLE.md` (326 lines, ~50 s — it RUNS its deepest chain) and
+    `tests/test_playable.py` (18 tests) pins every headline in it. The question
+    no other artefact asks: *what can a player make, starting from what?*
+
+        tier 1  from the ground     8      runnable but unfed   24
+        tier 2  one step up         3      not runnable        137
+        tier 3  two steps up        1                          173
+
+    ⚠⚠⚠ **THE COUNT IS NOT THE FINDING — THE SHAPE IS. 8 OF THE 12 ARE
+    TIER 1**, so two thirds of everything reachable touches nothing another route
+    made. The GOAL asks for a connected tech tree; this is a fan of one-step
+    routes off the ground with one thin chain hanging off it. That is a different
+    problem from "not enough routes", and no coverage number can express it.
+
+    ⚠⚠⚠ **AND THE ONE CHAIN RUNS THROUGH A BYPRODUCT.**
+
+        zinc-smelting 1400 K -> zinc 0.032793 AND carbon monoxide 0.054290 mol
+          copper-smelting 1500 K on that CO -> copper 0.039995
+          water-gas-shift  700 K on that CO -> hydrogen 0.053445
+            methanol-synthesis 520 K + copper in the solid block -> 0.004154
+
+    The retort makes MORE carbon monoxide than zinc, **nothing else a player can
+    reach makes any**, and three tier-2 routes plus one tier-3 route all want it.
+    ⚠⚠ **AND METHANOL IS TIER 3 FOR EXACTLY ONE REASON: ITS CATALYST.** Its CO is
+    tier 1 and its hydrogen is tier 1 too (`chloralkali` throws hydrogen off
+    making caustic soda from rock salt) — it is tier 3 only because **the copper
+    must be smelted first, and smelting it needs the byproduct of smelting a
+    different metal.** Grant free copper and the corpus has no third tier at all.
+    *A catalyst is a tech-tree node.*
+
+    ⚠⚠⚠ **FOUR SCORING RULES, ALL FOUR WRONG FIRST, AND FIXING ONE MASKED
+    ANOTHER.** G4's *the target may not be CHARGED* was reused rather than
+    re-derived — it lives in `catalog.route_reachable` now and both audits call
+    it, so they cannot drift. The three new ones: **a need is decided by ORDER**
+    (not by `route_roles`, under which `lime-cycle` derives an EMPTY feedstock
+    list and is playable for free); **a route shelves its target AND its
+    byproducts**; **a catalyst is a feedstock**. Measured as a 2x3 grid:
+
+                          shelf=target   +byproducts   +target unioned in
+        needs=roles           10 / d2       13 / d3        14 / d3
+        needs=order           8 / d1        12 / d3        **12 / d3**
+
+    ⚠⚠ **THE TWO CELLS BESIDE THE ANSWER ARE EQUAL, AND THAT IS THE FINDING.**
+    Under the correct needs rule the fouling-row bug in rule 3 is **invisible**;
+    it costs a route only under the wrong needs rule. Had the rules been done in
+    the other order, rule 3 would have looked like a distinction without a
+    difference, gone in wrong, and started costing routes silently the moment the
+    lead chamber became reachable. **Measure two suspected rules as a GRID.**
+
+    ⚠⚠ **THE SAME TWO CATALOG ROUTES BROKE THREE OF THE FOUR RULES, AND G4 HAD
+    ALREADY FOUND ONE OF THEM.** `lead-chamber` row 4 — the nitrosylsulfuric acid
+    that fouls a chamber — is what made G4's ROW scorer call the route blocked,
+    and the same row makes `route_roles` call sulfuric acid an INTERMEDIATE, so a
+    products-only shelf does not hold the thing the route exists to make. Row 2
+    then wants NO2 and row 3 makes it, so **the NOx carrier reads as an
+    intermediate when it is a starting charge** — G4's own run handed it 0.004 mol
+    by hand and measured it recovered.
+    ⚠⚠ **AND THAT COSTS THE 18TH CENTURY ITS SULFURIC ACID.** The lead chamber is
+    blocked on a *pinch* of NO2 nothing reachable makes; saltpetre is a natural
+    material here and **no step turns it into NOx**, which is historically
+    exactly where the charge came from. A CORPUS gap, not an engine one.
+
+    ⚠⚠ **WHAT RUNNING IT BOUGHT — G1's QUESTION ANSWERED THREE WAYS.** The copper
+    smelter is **ore-limited, not CO-limited** (doubling the retort's CO moves the
+    copper in the sixth decimal), which is the *opposite* of what the contention
+    suggests. The catalyst is a **gate, not a multiplier** — 0.01 mol of copper
+    already reaches 99.3% of the reference rate, so one ore charge is 4x more
+    than needed: a player must *reach* copper and need not stockpile it. And what
+    bites is **SCALE**: methanol converts at **7.7%** on the retort's own gas and
+    **99.8%** at the corpus's declared 3 mol CO + 12 mol H2. *"Reachable" and
+    "worth doing" are different questions and a static scoreboard answers only
+    the first.*
+
+    ⚠⚠ **THE ARTEFACT HAS TESTS, BECAUSE `ROUTE_INDEX.md` DID NOT** — S3 found
+    that stale by three milestones for one reason: no audit read it. And the
+    assertion paid for itself immediately: the first generator **shadowed its own
+    output buffer** in the grid loop above and wrote a 200-byte file of route
+    names. `test_the_report_on_disk_matches_the_code` caught it on its first run.
+
+    ⚠⚠⚠ **THE DELIVERABLE IS A FINITE WORK ORDER, WHICH IS WHAT THE C-SERIES
+    NEEDED.** **21 of the 137 unrunnable routes are ALREADY FED** from natural
+    materials; grant all 21 and the fixed point reaches **37** — the GOAL's own
+    ~40 — because `acetic-fermentation`, `haber-bosch`, `saltpetre-nitric` and
+    `thermite` fall out free once the shelf grows. Top row is `hall-heroult` at
+    **+3** for one class, opening aluminium -> thermite -> iron -> haber-bosch.
+    ⚠ **The other 116 move a coverage number no player can reach**, and the two
+    rankings disagree: the greedy curve maximises classes per template, this
+    maximises routes a player can walk to.
+    ⚠ **TWO OF THE 21 NEED NO TEMPLATE AT ALL** — `hypochlorite-bleach` and
+    `pyrite-roasting`, blocked purely on a refused price, and pyrite is the engine
+    queue's own source-blocked entry. **A data refusal is now measurably a
+    PLAYABILITY blocker.**
+
+    ⚠⚠ **NO LEVER, AND THE FREQUENT BLOCKER IS NOT THE VALUABLE ONE.** The
+    biggest single grant is **+2** (`nitrogen-dioxide`, `aluminium`) — coverage's
+    "no lever" again. And `sulfuric-acid` **blocks the most routes (4) and is
+    worth +1**, because every route it blocks is blocked by something else too.
+    *A histogram of blockers is not a work order; the fixed point is.*
+
+    ⚠ **AND THE BRIEF'S OWN RECORDED CLASSIFICATION WAS A LOOSE ONE-STEP COUNT.**
+    The 7/6/14/4 in MILESTONES credits a hop onto any route's *target* whether or
+    not it runs. Re-measured on the same 31 that rule gives **6 / 8 (14 total)**;
+    the strict fixed point gives **10 of 31** and **12 of 36**. **Eight of the
+    thirteen hops landed on routes that cannot run.** *A reachability claim has to
+    be iterated to a fixed point or it is not one.*
+
+    ⚠ 45 species are declared NATURAL, in three groups with a reason each, and
+    **printed** — which is what the brief demanded. The GOAL says ~10, so the list
+    is generous by 4x and **12 is an UPPER bound.** What is deliberately NOT
+    natural is printed too, that being the arguable half.
+
+    ⚠ **NO `src/` EDIT, so `tolerance_audit.py` WAS NOT OWED and the full suite
+    was not either.** `tools/catalog.py` gained a function, `granularity.py` lost
+    a duplicate, `catalog_coverage.py` gained a pointer paragraph. Verified:
+    `test_granularity` + `test_playable` + `test_hydroformylation` +
+    `test_protonation` + `test_ui` = **86 passed**, `granularity.py` still
+    reports 31 + 5 through the shared walk, `COVERAGE_REPORT.md` moved exactly
+    2 lines, ruff clean over `src tests examples validation tools`.

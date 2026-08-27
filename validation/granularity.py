@@ -230,50 +230,16 @@ rule("PANEL 3  TARGET-REACHABLE -- SCORING THE DAG INSTEAD OF THE ROWS")
 
 
 def reachable(rid: str, target: str, tc=TC) -> bool:
-    """Can the engine's templates get from this route's feedstocks to its TARGET?
+    """G4's DAG walk. ⚠ IT LIVES IN ``tools/catalog.py`` NOW.
 
-    The row scorer asks whether EVERY row has a template. A route is not a list
-    of rows; it is a DAG with alternatives, byproducts and workup in it, and the
-    question a player asks is whether the target comes out.
+    G3 needed exactly this question -- is a route's target reachable at all --
+    before it could ask whether the route is FED from natural materials, and two
+    copies of a scorer drift silently. So the body moved to
+    ``catalog.route_reachable`` and both audits call it. Everything about it that
+    was decided by measurement is documented there, including the rule that took
+    three sessions of trap out of it: **the target may not be charged.**
     """
-    mine = route_steps(rid)
-    first_made: dict[str, int] = {}
-    first_used: dict[str, int] = {}
-    for s in mine:
-        for p in s.products:
-            first_made.setdefault(p, s.index)
-        for r in s.reactants:
-            first_used.setdefault(r, s.index)
-
-    def chargeable(x: str) -> bool:
-        # priced, and either never made here, or wanted before anything makes it
-        if not priced(x):
-            return False
-        return x not in first_made or first_used.get(x, 1 << 30) <= first_made[x]
-
-    def made_by(x: str, stack: frozenset[str]) -> bool:
-        for s in mine:
-            if x not in s.products or s.cls not in tc:
-                continue
-            if not all(priced(p) for p in s.products if p in compounds):
-                continue
-            if all(go(r, stack | {x}) for r in s.reactants if r != x):
-                return True
-        return False
-
-    def go(x: str, stack: frozenset[str]) -> bool:
-        if chargeable(x):
-            return True
-        if x in stack or x not in first_made:
-            return False
-        return made_by(x, stack)
-
-    # ⚠ THE TARGET MAY NOT BE CHARGED. See the block below: without this rule
-    # `bayer-process` and `contact-process` both score reachable by BUYING the
-    # thing the route exists to make.
-    if target not in first_made:
-        return False
-    return made_by(target, frozenset())
+    return cat.route_reachable(steps, rid, target, priced, tc, compounds)
 
 
 both = set(buckets["BOTH"])

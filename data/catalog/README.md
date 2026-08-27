@@ -19,6 +19,7 @@ unflattering.
 | `route_steps.psv` | the steps; `route_id \| step \| name \| reactants \| products \| conditions \| class` |
 | `COVERAGE_REPORT.md` | **generated.** The audit result. |
 | `ROUTE_INDEX.md` | **generated.** Every route as feedstocks → intermediates → products. |
+| `PLAYABLE.md` | **generated.** *What can a player make, starting from what?* The tech tree scored from natural materials, and the only artefact here that RUNS anything. |
 | `derived/route_roles.psv` | **generated.** The same split, machine-readable. |
 | `derived/species_roles.psv` | **generated.** Per species: how often it is a feedstock / intermediate / product / catalyst across all routes, plus its resolution tier. |
 
@@ -28,7 +29,23 @@ Regenerate everything:
 python tools/catalog.py             # structural validation only
 python tools/build_route_index.py   # writes ROUTE_INDEX.md
 python validation/catalog_coverage.py  # writes COVERAGE_REPORT.md + derived/
+python tools/build_playable.py      # writes PLAYABLE.md -- ~1 min, it RUNS the deep chain
 ```
+
+⚠⚠ **THE THREE REPORTS ANSWER THREE DIFFERENT QUESTIONS AND ARE ROUTINELY
+CONFUSED FOR ONE.** `COVERAGE_REPORT.md` asks *can the engine do this chemistry*,
+which is a question about the ENGINE. `ROUTE_INDEX.md` asks *what is a feedstock
+here*, which is a question about the CORPUS. `PLAYABLE.md` asks *can a player get
+to it from a rock* -- and it is the only one of the three whose answer is not a
+property of either, because G1 measured a route's yield moving 4.5x on a change
+that touched no species and no template. **A route can be fully covered, fully
+indexed, and unreachable.** Measured: 36 routes are runnable and **12** are
+playable.
+
+⚠ **AND `PLAYABLE.md` HAS TESTS BEHIND IT, WHICH IS THE ONE THING THE STALE-INDEX
+FINDING BELOW ASKED FOR.** `tests/test_playable.py` pins its headline numbers and
+its four scoring rules, so it cannot go stale in silence the way the index did --
+and that assertion caught a real bug in the generator on its first run.
 
 ⚠⚠ **RUN ALL THREE. `ROUTE_INDEX.md` WAS STALE BY THREE MILESTONES AND NOBODY
 NOTICED**, because it is the one generated file no audit reads — the coverage

@@ -1505,6 +1505,22 @@ def main() -> int:
         "its scorer credited and the **run refuted**."
     )
     w("")
+    # ⚠⚠ G3 -- AND EVERY NUMBER IN THIS TABLE IS SILENT ON WHETHER A FEEDSTOCK
+    # CAN BE OBTAINED. A route can be fully covered here and unreachable in the
+    # game: 36 are runnable and 12 are playable from natural materials. That is
+    # a different artefact because its answer is not a property of the corpus --
+    # ``data/catalog/PLAYABLE.md``, which RUNS its deepest chain.
+    w(
+        "> ⚠⚠ **And a route in the BOTH column may still be unreachable.** This "
+        "audit never asks whether a feedstock can be *obtained*. "
+        "`PLAYABLE.md` does, and it scores the same corpus against the G-series "
+        "GOAL: **36 runnable, 12 playable from natural materials, 3 tiers "
+        "deep** — with the whole of tiers 2 and 3 hanging off a *byproduct* of "
+        "one zinc retort. Its work order (21 routes that are already fed and "
+        "only need a template) is ranked by playability rather than by class "
+        "coverage, and **the two rankings are not the same list.**"
+    )
+    w("")
 
     # ---- what the mineral tier carries ---------------------------------
     w(f"### The {len(mineral_carried)} routes species-ready on a lattice")
