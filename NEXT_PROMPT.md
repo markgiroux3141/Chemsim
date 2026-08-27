@@ -2,7 +2,7 @@ We're building chemsim, an emergent chemistry simulator (game inspired by Nile
 Red) in d:\Claude Code Projects\Chemistry Simulator.
 
 **The plan is `MILESTONES.md`. Read it first — it is the authority on what to
-build and in what order.** **M0–M6, M8, M12, S1–S13, G1, G2 and G5 are DONE.**
+build and in what order.** **M0–M6, M8, M12, S1–S13, G1, G2, G4 and G5 are DONE.**
 
 ⚠⚠⚠ **THE ARC IS THE G-SERIES.** The catalog is a measuring instrument and was
 being read as a specification; the goal is a connected tech tree a player can
@@ -11,7 +11,11 @@ DEFERRED to a C-series, not cancelled.
 
 # ⚠ THE BASELINE IS MEASURED. DO NOT START WITH THE SUITE.
 
-**G5 RAN THE WHOLE SUITE AT THE END AND MEASURED 1024 PASSED / 0 FAILED IN
+**G4 TOUCHED NO `src/` FILE, SO IT OWED NO SUITE AND RAN NONE. THE BASELINE IS
+STILL G5's: 1024 PASSED / 0 FAILED IN 22:28**, plus G4's own
+`tests/test_granularity.py` (9 tests, 9.3 s, green).
+
+**G5 RAN THE WHOLE SUITE AND MEASURED 1024 PASSED / 0 FAILED IN
 22:28.** Take that number and spend the time on content. ⚠ It was run AFTER every
 BEHAVIOURAL `src/` edit — sixth session running that is true. (995 at G2; the +29
 are G5's `tests/test_protonation.py`.) ⚠ **Two DOCSTRING-ONLY edits and one test
@@ -52,7 +56,8 @@ anions are BIT-IDENTICAL and that is asserted in a test** — so
 S13's and every warning in §S13 about it still stands.
 
 ```bash
-python validation/protonation.py                # ⚠ G5's, 18 s. NEW -- read panels 3, 4 and 5
+python validation/granularity.py                # ⚠ G4's, 18 s. NEW -- read panels 3 and 4
+python validation/protonation.py                # G5's, 18 s. read panels 3, 4 and 5
 python validation/ring_deactivation.py          # G2's, ~25 s. READ PANEL 3
 python validation/dropwise.py                   # G1's, 78 s
 python validation/boiling_points.py             # S13's, 2 s. READ PANEL 2
@@ -62,7 +67,8 @@ python validation/hydroformylation.py           # S11's, ~1 min
 python validation/wacker.py                     # S11's other one, ~1 min
 python validation/gas_processes.py              # S7's, ~1 min
 python validation/corpus_balance.py             # S7's other one, ~20 s. READ IT before picking
-python validation/catalog_coverage.py           # ⚠ READ THE 'BOTH' LINE: 31/173, ~15 s
+python validation/catalog_coverage.py           # ⚠ 'BOTH' is 31/173, ~9 s. ⚠⚠ AND IT IS A
+                                                #   LOWER BOUND TOO -- G4 measured 31+5
 python validation/physical_estimation.py        # S13 took its panel 3 to n=254
 python validation/game_gates.py                 # the element floor's cross-check, seconds
 python tools/build_route_index.py               # the artefact nothing reads
@@ -80,163 +86,135 @@ OWN MACHINE.** Say what a long run will cost before starting one, and ask.
 
 ---
 
-# ⚠⚠⚠ WHAT G5 TURNED OUT TO BE
+# ⚠⚠⚠ WHAT G4 TURNED OUT TO BE
 
-**G2 posed protonation as a design question — *"is it a barrier shift or a species
-split? Measure that before designing a coupling"* — and the question was the right
-one. It is a species split, the table row is three lines, and THE ARITHMETIC
-BOUND TAKEN FIRST SAYS THE SPLIT DOES NOT FIX ANILINE.**
+**G4 asked how many routes are, like `benzene-nitration`, chemically runnable but
+scored blocked because the catalog spells a mechanism out in steps the engine does
+in one. THE ANSWER IS FIVE — and the value of the session is that FIVE IS SMALL.**
 
-## ⚠⚠⚠ 1. THE CROSSOVER IS AT pH −9.42, AND THAT IS NOT A WRONG NUMBER
+The deliverable is `validation/granularity.py` (~18 s, five panels) and
+`tests/test_granularity.py` (9 tests, 9.3 s). **Every route counted is charged
+into a real `Vessel` and its moles are printed.** Nothing is credited on an
+argument, because S1's *"crediting a class made a FALSE route credit"* is the
+standing precedent and this session made it a THREE-time finding.
 
-    free base   -NH2   sigma+ -1.300   k/k0 = 2.8184e+08
-    anilinium   -NH3+  sigma  +0.860   k/k0 = 2.5704e-06     ratio 1.10e14
+## ⚠⚠⚠ 1. THE COUNT, AND EACH ONE WAS RUN
 
-    crossover at [H3O+] = Ka * k_free / k_ion = 2.630e+09 mol/L,  pH -9.42
+    benzene-nitration        1.000000 mol nitrobenzene   340 K, 2 h
+    aniline-route            0.998860 mol aniline        470 K, 2 h, Ni charged
+    hydrogenation-margarine  1.000000 mol tristearin     450 K, 2 h, Ni charged
+    tanning-route            1.999999 mol gallic acid    360 K, 2 h
+    lead-chamber             0.104063 mol sulfuric acid  650 K burn -> 350 K chamber
 
-Real aniline gives largely **meta** product only in 90–98% sulfuric acid, whose
-Hammett acidity function **H0 falls to roughly −8 at 90 wt% and roughly −10 at
-98 wt%**. ⚠ The band is quoted to ONE FIGURE because it is recalled from a
-standard H0 table rather than sourced in this repo — the claim being made is that
-**−9.42 lands INSIDE the band real aniline nitration is run in**, not that it
-matches a tabulated value. The engine's own two table rows land it there without
-being told about it. **The split is the right model.**
+So the reported **31/173 understates the engine by 16%**. ⚠⚠ **BUT THE NUMBER
+THAT MATTERS IS THE OTHER ONE: 142 routes sit outside the BOTH column and only 5
+are catalog artefacts — 4%. THE BOTH COLUMN WAS NOT HIDING A CONTENT BACKLOG.**
+The other 137 are chemistry this engine cannot do or data nothing prices, and
+they can now be treated as real work rather than as possible bookkeeping. That
+retirement of an unknown is the whole deliverable, and it is M1's shape — M1
+fixed this same instrument and its corrected baseline went DOWN.
 
-## ⚠⚠⚠ 2. AND THE WALL IS A SECOND MEASUREMENT NOBODY HAD TAKEN: A DRIER ACID IS A LESS ACIDIC POT
+## ⚠⚠⚠ 2. THE BRIEF'S OWN WORKED EXAMPLE IS NOT IN THE BUCKET THE BRIEF POINTS AT
 
-    5 + 5 mol HNO3/H2SO4 in  30 mol water  ->  pH -0.789   <- the FLOOR
-    the same acid in         10 mol water  ->  pH -0.233
-    the same acid in          2 mol water  ->  pH +4.899
+`benzene-nitration` is **species**-blocked, not template-blocked: `nitronium` and
+`arenium-benzene` are refused a price, correctly — a mechanism has them and a
+flask never holds them. **Walking the species-ready-but-not-template-ready
+bucket, which is exactly what the brief said to do, would have missed the case
+that started the audit.** Granularity has two forms:
 
-Every dissociation in this project is written with water on **both** sides — a
-standard-state decision in `properties/electrolyte`'s docstring — so `[H2O]` is a
-mass-action factor and running out of water SUPPRESSES the reaction that makes the
-proton. ⚠ **NOT a solver artefact**: dry sulfuric acid autoprotolyses to
-H3SO4+/HSO4− and is not a source of hydronium.
+    STEP granularity     one transformation spelled as several rows whose
+                         classes have no template
+    SPECIES granularity  one transformation spelled THROUGH intermediates the
+                         engine never materialises, and those have no price
 
-⚠⚠ **THE REACHABLE FLOOR IS pH −0.79, TEN DECADES ABOVE THE CROSSOVER. SO THE
-LIMIT IS RENAMED, NOT REMOVED: it is not "no protonation in a barrier" any more,
-it is "NO ACIDITY FUNCTION"** — H0 is not the concentration of anything and a
-molarity cannot reach 1e9 mol/L. That is a better-posed gap than the one G2 named.
+## ⚠⚠ 3. THE FINDING UNDERNEATH THE COUNT: THE INSTRUMENT SCORES *ROWS*
 
-## ⚠⚠ 3. WHAT THE SPLIT BUYS: SIX DECADES OF FOURTEEN, AND THE OTHER EIGHT ARE ELSEWHERE
+Four of the five are blocked by a row that is **not on the path to the target at
+all**:
 
-At pH −0.667 the aniline is **100.000% anilinium** and the effective rate is
-**380 × benzene** against 2.8e8. ⚠⚠ **And the anilinium carries 1e-7 % of it** —
-every remaining decade is a FREE-BASE LEAK surviving at 1e-6 mole fraction.
-**Fixing the FRACTION cannot fix that.** See §ITEM 2 below.
+    aniline-route            rows 1 and 2 are ALTERNATIVES, read as a sequence
+    hydrogenation-margarine  row 2 is the corpus's own "trans isomer byproduct"
+    tanning-route            row 2 crosslinks collagen into a MARKER, past the target
+    lead-chamber             row 4 makes CHAMBER CRYSTALS -- the FOULING product
 
-## ⚠⚠⚠ 4. THE BIGGEST ACTUAL PAYOFF WAS A DEAD TABLE, PRINTED IN A GENERATED REPORT TWELVE TIMES
+⚠ **AND THE CORPUS SAYS SO IN ITS OWN PROSE, WHICH NOTHING HAD EVER READ.** Nine
+rows in eight routes are named `... byproduct` / `side reaction` / `alternative`,
+and five more rows in five routes have products that are a **subset** of their
+reactants — workup (crystallisation, salting out, lixiviation, kieselguhr) plus
+`furfural-route` 1, which reads `xylose + water -> xylose`. **No template can ever
+match those five, so scoring them as uncovered mechanisms counts gaps nothing can
+close.**
 
-`ion_thermochemistry` anchored every pair on its **ACID**. Four rows of `_PAIRS`
-are CATION/neutral pairs whose acid IS the ion (ammonium 9.25, methylammonium
-10.66, pyridinium 5.23, anilinium 4.62); `anchored(pair.acid)` refused all four —
-loudly and correctly, Joback and Benson are fitted to neutral molecules — and a
-bare `except Exception: continue` swallowed it. **The table shipped 24 anions, one
-hard-coded hydronium, and no cation at all.**
+## ⚠⚠⚠ 4. THE SCORER MADE THREE FALSE CREDITS AND RUNNING CAUGHT ALL THREE
 
-    refused species  430 -> 419      species-ready routes  80 -> 82
-    ion-resolvable    84 -> 95      `solvay-process`  0 -> species-ready
+**This is the most transferable thing in the session.** A `TARGET-REACHABLE`
+scorer — does the DAG get from feedstocks to the target — first said **38**:
 
-Every ammonium salt in the catalog moved. ⚠⚠ **AND `COVERAGE_REPORT.md` HAD BEEN
-PRINTING `refusing to price '[NH4+]'` FOR TWELVE OF THEM, SESSION AFTER SESSION**,
-where it read as an ordinary Born-domain refusal. ⚠ The refusal message even said
-*"add the conjugate acid to `_PAIRS` if it is not there"* — **and it WAS there.**
-A refusal that names the wrong fix is worse than one that names none; the message
-now says that for a cation the neutral member is the BASE.
+* `bayer-process` and `contact-process` scored reachable **by BUYING the target**,
+  because in both the target is also a step-1 reactant. Bayer *purifies* bauxite;
+  the contact process recycles its own acid. ⚠⚠ **A scorer that does not forbid
+  charging the target will credit every recycle loop in the corpus.** 38 → 36.
+* `starch-hydrolysis` survived that rule and **the RUN refuted it**: zero
+  reactions, not a slow one. `starch-unit` is spelled as a single
+  α-D-glucopyranose ring and row 1 reads `starch-unit + water -> maltose` — a
+  hydrolysis making a disaccharide from a monosaccharide. From MALTOSE the same
+  template gives 0.9986 mol glucose, so the blockage is **the corpus's spelling
+  of its own FEEDSTOCK** and no engine work would move it.
 
-## ⚠⚠ 5. AND `ammonium_dissociation` COULD NOT DEPROTONATE AN AMMONIUM
+## ⚠⚠ 5. ONE CLASS THE INSTRUMENT HAD SIMPLY NEVER KEYED
 
-`[NX4H+]` is N with **exactly one** hydrogen in SMARTS — measured False against
-`[NH4+]`, anilinium, methylammonium and pyridinium, True only against
-`C[NH+](C)C`. **The template named for the ammonium ion was the one ion it could
-not touch**, and nothing in the corpus can put a trialkylammonium in a flask to
-catch it. Replaced by `amine_protonation`, written PROTONATION-forward because
-discovery is forward-only.
+`TEMPLATE_CLASSES` credited the M5 `saponification` template under
+`ester-hydrolysis`'s name, and the catalog **also** has a class literally called
+`saponification` — so `soap-saponification` step 1 read as an uncovered mechanism
+for eight milestones. Checked the S1 way before crediting: tristearin + hydroxide
+builds 10 species and 7 `saponification` reactions, all three esters off.
 
-## ⚠⚠ 6. THE PLAYABLE RESULT WAS ALREADY BUILDABLE: PROTECT THE AMINE
+    reaction classes covered   51 -> 52     steps covered   114 -> 115
+    routes ONE class away      46 -> 47     from classes     36 -> 37
+    template-ready / BOTH      41 / 31      UNCHANGED
 
-    benzene              sum(sigma) + 0.000   Ea 60.00 kJ/mol   k/k0 1.0000e+00
-    aniline, free base   sum(sigma) - 1.300   Ea 11.77 kJ/mol   k/k0 2.8184e+08
-    anilinium            sum(sigma) + 0.860   Ea 91.91 kJ/mol   k/k0 2.5704e-06
-    acetanilide          sum(sigma) - 0.600   Ea 37.74 kJ/mol   k/k0 7.9433e+03
+⚠ **+0 routes and credited anyway**, because a class that reads as a gap sends
+work at a template that is already built.
 
-Nobody nitrates an aniline — you acetylate it, nitrate the acetanilide, hydrolyse
-the amide off. `n_acylation` and the `acylamino` σ⁺ row already existed, and an
-amide does not answer `amine_protonation`'s pattern, **so the acetanilide network
-BUILDS (21 species) where the aniline one refuses.** Nobody told the engine that
-an amide is a protecting group.
+## ⚠ 6. WHAT WAS DELIBERATELY NOT DONE
+
+**The BOTH column in `COVERAGE_REPORT.md` still says 31.** That table is a
+mechanical measure of the CORPUS; the five rest on a hand judgement about five
+specific rows. Folding a judgement into a mechanical column is how M1's
+`deprotonation` credit happened. The report gained a **pointer** instead.
 
 ---
 
 # ⚠⚠⚠ START HERE: THE G-SERIES IS THE WORK ORDER
 
-⚠⚠ **READ `MILESTONES.md` § THE G-SERIES.** G1, G2 and G5 are marked done there
-with what they actually turned out to be.
+⚠⚠ **READ `MILESTONES.md` § THE G-SERIES.** G1, G2, G4 and G5 are marked done
+there with what they actually turned out to be.
 
-## ⚠⚠⚠ THE RECOMMENDED ORDER, AND THE REASON, BECAUSE IT IS NOT THE OBVIOUS ONE
+## ⚠⚠⚠ THE ORDER, AND G4 HAS BEEN TAKEN OFF THE FRONT OF IT
 
-    1. G4 -- the granularity audit           <- START HERE. cheap, and it
-                                                MEASURES THE INSTRUMENT the
-                                                other two are scored against
-    2. THE HAMMETT LINE SATURATES            <- the interesting one, and G5
-                                                already did its arithmetic
-    3. G3 -- PLAYABLE.md                      <- the scoreboard the GOAL needs,
+    1. THE HAMMETT LINE SATURATES            <- START HERE. the interesting one,
+                                                and G5 already did its arithmetic
+    2. G3 -- PLAYABLE.md                      <- the scoreboard the GOAL needs,
                                                 and the expensive one
+       (G4 -- the granularity audit           ✔ DONE. the answer is FIVE, and
+                                                the useful half is that 5 is SMALL)
 
-⚠⚠ **G4 GOES FIRST FOR M1's REASON, NOT BECAUSE IT IS THE BEST WORK.** The
-saturation item is more interesting and G4's answer does not change its value one
-bit — but G4's answer *could* change what content is worth building at all, and
-every session that spends itself against an unmeasured scoreboard is a session
-that may have been aimed at a gap that is not a gap. M1 came before the content
-work for exactly this reason, and MILESTONES records that the measurement taken
-first CHANGED the milestone in four of five cases.
+⚠⚠ **G4 WENT FIRST FOR M1's REASON AND IT PAID FOR ITSELF THE WAY M1 DID — BY
+RETIRING AN UNKNOWN, NOT BY FINDING WORK.** The BOTH column was not hiding a
+content backlog: of the 142 routes outside it, **5 were bookkeeping and 137 are
+real**. So the standing worry that content sessions were being aimed at gaps that
+are not gaps is now measured and closed, and **the next session can spend itself
+on chemistry without hedging.**
 
-⚠ **THE COUNTER-ARGUMENT, STATED SO THE CHOICE IS A CHOICE:** the G-series exists
-because *"the catalog is a measuring instrument and was being read as a
-specification"*, and G4 is more instrument work on that same instrument — which is
-the trap §"the shape of the plan" names (*"right work, wrong scoreboard, and the
-content queue is still untouched since M5"*). If this session wants to move the
-GAME rather than the number, take the saturation item and leave G4. **Both are
-defensible; pick deliberately and say which.**
+⚠ **AND THE COUNTER-ARGUMENT THAT WAS KEPT LAST TIME IS NOW SPENT.** It said the
+G-series exists because *"the catalog is a measuring instrument and was being read
+as a specification"* and that more instrument work risks the trap §"the shape of
+the plan" names. That was a fair objection and the answer is now in hand; **there
+is no remaining instrument question standing between this project and content
+work.** ⚠ G3 is the exception and it is a different artefact — it answers *what
+can a player make*, which no existing report asks.
 
-## ⚠⚠ ITEM 1 (RECOMMENDED START): **G4 — the granularity audit**  *(possibly free routes)*
-
-How many routes are, like `benzene-nitration`, chemically runnable but scored as
-blocked because the catalog spells a mechanism out in steps the engine does in
-one? **Nobody has counted.** Until someone does, the BOTH column (**31/173**) is
-an unknown amount too low, and every content session is aimed with it.
-
-**The worked example that started this, and it is the template for the audit.**
-`benzene-nitration` is written as a three-step arenium mechanism
-(`nitronium-generation`, `electrophilic-aromatic-substitution`,
-`arenium-deprotonation`), so it scores as NOT template-ready — while the engine
-nitrates benzene quantitatively today:
-
-    benzene 1.0 + nitric acid 1.2, 340 K, 2 h
-      benzene left  0.0000     NITROBENZENE  1.0000 mol     conservation clean
-
-⚠ **THE INSTRUMENT IS `validation/catalog_coverage.py` AND IT ALREADY KNOWS WHICH
-CLASS EACH STEP WANTS**, so the question is answerable without new machinery:
-walk the routes that are species-ready but NOT template-ready, and for each ask
-whether the engine's existing templates take the OVERALL transformation even
-though no single template matches the catalog's step. ⚠⚠ **AND THAT LAST CLAUSE
-IS THE WHOLE DIFFICULTY** — it is not a string comparison, so a mechanical answer
-is not available and each candidate has to be read.
-
-⚠⚠ **RUNNABLE IS THE ONLY HONEST TEST, AND S7 ALREADY RECORDED WHY: `RUNNABLE`
-CANNOT ASK WHETHER A NUMBER IS RIGHT.** So the deliverable is a COUNT plus a
-NAMED LIST, not a re-scored headline — crediting a route because a network builds
-is exactly the false credit S1 made (`chemsim-surface-reactions`: *"crediting a
-class made a FALSE route credit"*). ⚠ If the audit wants to move the BOTH column,
-it has to say per route what it ran and what came out.
-
-⚠ **AND M1 IS THE PRECEDENT FOR THE OUTCOME BEING NEGATIVE**: M1 fixed the
-instrument and the corrected baseline went DOWN (33/377 steps), because *"a class
-must name a MECHANISM not an outcome"*. **A G4 that finds few free routes is a
-successful G4** — it retires an unknown that is currently inflating every plan.
-
-## ⚠⚠ ITEM 2: **THE HAMMETT LINE SATURATES**
+## ⚠⚠ ITEM 1 (RECOMMENDED START): **THE HAMMETT LINE SATURATES**
 
 G5 created this, measured its arithmetic, and deliberately did not build it
 because the CONSTANT needs sourcing.
@@ -313,7 +291,7 @@ substituent-shifted rate at all. Fragility 13 in a new suit.
 
 ⚠ **Cost it against the four nitration routes first**, as G2 did.
 
-## ⚠ ITEM 3: **G3 — `PLAYABLE.md`, the scoreboard the goal needs**  *(the expensive one)*
+## ⚠ ITEM 2: **G3 — `PLAYABLE.md`, the scoreboard the goal needs**  *(the expensive one)*
 
 A generated standing audit answering *what can a player make, starting from
 what?* `ROUTE_INDEX.md` knows feedstocks but not what runs; `COVERAGE_REPORT.md`
@@ -329,6 +307,13 @@ must be PRINTED, not hidden**, so it can be argued with.
 "what a player can make" is not a property of the corpus alone. **A PLAYABLE
 scoreboard has to RUN things**, which is what makes it different from the two
 artefacts above and also what makes it expensive.
+
+⚠⚠ **AND G4 GAVE IT A FOURTH, WHICH IS THE CHEAPEST OF THE FOUR: G4's FIVE ARE
+ALREADY-RUN ROUTES A PLAYABLE SCOREBOARD MUST NOT SCORE AS BLOCKED.** More
+usefully, `validation/granularity.py`'s `reachable()` is the DAG walk G3 needs and
+it already carries the rule that took three sessions' worth of trap out of it —
+**the target may not be charged.** ⚠ Do not re-derive that; a scorer without it
+credits every recycle loop in the corpus (`bayer-process`, `contact-process`).
 
 ⚠⚠ **AND G5 GAVE IT A THIRD, WHICH IS SHARPER: A ROUTE CAN BE BLOCKED ON WHETHER
 ITS NETWORK BUILDS AT ALL.** Aniline + nitric acid with electrolyte support
@@ -352,7 +337,7 @@ is a measured, live finding — but **do not start here**, and do not treat a ro
 age as a reason to take it.
 
 1. **⚠⚠ THE HAMMETT LINE DOES NOT SATURATE — NEW IN G5, AND IT IS PROMOTED TO
-   §ITEM 2 OF THE WORK ORDER ABOVE.** See that section, which carries the
+   §ITEM 1 OF THE WORK ORDER ABOVE.** See that section, which carries the
    arithmetic AND the ratio-vs-encounter-rate design question; it is not repeated
    here.
 
@@ -557,23 +542,23 @@ repo-local `user.name`/`user.email` if that should be yours.
 
 Start by reading, in order:
 
-MILESTONES.md — the plan, and **§ THE G-SERIES first**. ⚠ **§G1, §G2 and §G5 are
-  marked DONE with what they turned out to be, and G1's original brief is kept
-  underneath because the measurement that overturned it only means something
-  against it.** Then §S13, §S12, §S11, §S10, §S9, §S8, §S7, §M8, §S1, §S3, §S4,
+MILESTONES.md — the plan, and **§ THE G-SERIES first**. ⚠ **§G1, §G2, §G4 and
+  §G5 are marked DONE with what they turned out to be, and G1's and G4's original
+  briefs are kept underneath because the measurements that overturned them only
+  mean something against them.** Then §S13, §S12, §S11, §S10, §S9, §S8, §S7, §M8, §S1, §S3, §S4,
   §S5, §S6.
 HANDOFF.md — what exists, and the ethos to preserve. **85 is S1 … 98 is S13,
-  99 is G1, 100 is G2, 101 is G5.**
+  99 is G1, 100 is G2, 101 is G5, 102 is G4.**
 NEXT_SESSION.md — the invariants table at the bottom is the contract, and **G1,
-  G2 and G5 each added a block**. ⚠ Read the two warnings above it before
+  G2, G5 and G4 each added a block**. ⚠ Read the two warnings above it before
   trusting any row, and note that **G5's "no acidity function" and
   "the Hammett line does not saturate" rows are LIMITS TO REMOVE**, not
   invariants to keep — as is G2's regioselectivity row.
 GAME_DESIGN.md — the settled design.
 data/catalog/README.md — the reaction-class taxonomy; plus
   `data/catalog/COVERAGE_REPORT.md`.
-the memory files (auto-loaded), especially **chemsim-protonation** and
-  **chemsim-ring-deactivation**, then chemsim-dropping-funnel,
+the memory files (auto-loaded), especially **chemsim-granularity-audit** and
+  **chemsim-protonation**, then chemsim-ring-deactivation, chemsim-dropping-funnel,
   chemsim-skraup-standard-state, chemsim-ion-transfer,
   chemsim-competing-templates, chemsim-solubility-product,
   chemsim-measured-physical-table, chemsim-coverage-catalog and
@@ -591,9 +576,12 @@ closure whose OXIDANT turns into one of its own reagents, a dropping funnel whos
 addition is a CONDITION and not a duration, an aromatic ring that knows what is
 already on it, **an amine that PROTONATES in acid — and a measured statement of
 why that is not enough to make an aniline behave.** `SAVE_VERSION` is **6**.
-Coverage: **51/229 classes**, **46 templates**, **41/173 template-ready**,
-**82/173 species-ready** (was 80 — G5's ion-table fix) — and ⚠⚠ **31/173 BOTH,
-which is the only one of the three a route can be judged on.**
+Coverage: **52/229 classes** (was 51 — G4's `saponification` credit), **46
+templates**, **41/173 template-ready**, **82/173 species-ready** — and ⚠⚠ **31/173
+BOTH, which is the only one of the three a route can be judged on.**
+⚠⚠ **AND G4 MEASURED THAT 31 IS ALSO A LOWER BOUND: FIVE MORE ROUTES RUN TODAY
+AND ARE SCORED BLOCKED (31 + 5 = 36), while 137 of the remaining 142 are real
+work.** See `validation/granularity.py`.
 ⚠ The corpus's **PHYSICAL half is measured for 652/1583 (41.2%)** as of S13;
 its refusals are down to **419 of 1583** as of G5.
 
@@ -702,6 +690,19 @@ than the audit samples.
 **28. ⚠ THE 31 SPECIES THAT MISS THE BOILS-AT-1-ATM BAR (S13).** 858 of 889 clear
 1.5%; the 31 are NAMED in `BOILS_LOOSELY` and **eight are pre-existing**.
 
+**29b. ⚠⚠ FIVE CORPUS ROWS CAN NEVER MATCH ANY TEMPLATE (G4).** Their products
+are a SUBSET of their reactants — `leblanc` 3, `nitroglycerin` 2, `aspirin` 2,
+`soap` 2, `furfural` 1 (`xylose + water -> xylose`). They are workup, not
+chemistry, and every coverage number counts them as uncovered mechanisms.
+**Asserted by count AND by route id in `tests/test_granularity.py`.**
+
+**29c. ⚠⚠ `starch-hydrolysis` CANNOT START FROM ITS OWN FEEDSTOCK (G4).**
+`starch-unit` is spelled as a single α-D-glucopyranose ring, so row 1
+(`starch-unit + water -> maltose`) is a hydrolysis making a disaccharide from a
+monosaccharide. The engine builds **ZERO reactions** — asserted. ⚠ From maltose
+the same template gives 0.9986 mol glucose, so **this is a CORPUS spelling bug,
+not an engine gap**, and no template would move it.
+
 **29. ⚠ BENZOIC ACID'S MOLAR VOLUME GOT WORSE IN S13** — 96 → 87.4 mL/mol against
 a real ~96.5. Taken deliberately: a record may not mix two group-contribution
 methods.
@@ -769,4 +770,26 @@ rather than borrowing the anilinium's row.
 WRITING CODE. ⚠ **AND THE SOLVER IS PART OF THE ARITHMETIC** (M8).
 ⚠⚠ **SEARCH FOR THE MECHANIC BEFORE BUILDING IT, AND SEARCH THE OTHER LAYER**
 (G1). ⚠⚠ **AND THE HALF A BRIEF CALLS FREE IS THE HALF TO MEASURE.**
+⚠⚠⚠ **A REACHABILITY SCORER THAT DOES NOT FORBID *CHARGING THE TARGET* CREDITS
+EVERY RECYCLE LOOP IN THE CORPUS (G4).** `bayer-process` and `contact-process`
+both write their own target on the left of step 1 — Bayer purifies bauxite, the
+contact process recycles its acid — and both scored "reachable" by buying the
+thing the route exists to make. **The rule is one line and it is the difference
+between an instrument and a flattering one.**
+⚠⚠⚠ **AND THE LAST SURVIVOR OF THAT RULE WAS STILL WRONG, AND ONLY *RUNNING* IT
+SAID SO (G4).** `starch-hydrolysis` passed every static check and built ZERO
+reactions. **Three false credits in one session, all three caught by charging a
+flask** — S1's *"crediting a class made a FALSE route credit"* is now a three-time
+finding, not an anecdote.
+⚠⚠ **AN INSTRUMENT THAT SCORES *ROWS* CANNOT SEE A ROUTE'S SHAPE (G4).** A route
+is a DAG with alternatives, declared byproducts and workup in it, and the corpus
+says which is which **in its own prose** — 9 rows are named `... byproduct` /
+`side reaction` / `alternative` and nothing had ever read them.
+⚠⚠ **THE THING THE MAP CREDITS IS NOT ALWAYS THE THING THE MAP IS KEYED BY (G4).**
+`saponification` was built in M5 and credited under `ester-hydrolysis`'s NAME, so
+the catalog class of the same name read as a gap for eight milestones. **Grep the
+template names against the class names; it is one command and it found a real one.**
+⚠ **HOIST A PROVIDER OUT OF A COMPREHENSION.** Building `electrolyte_provider()`
+inside a comprehension over 1583 compounds constructs one per compound: **290 s
+against 18 s**, with no symptom but the clock.
 ⚠⚠ **A COUNT OF THINGS THAT ARE MISSING IS NOT A COUNT OF THINGS THAT ARE WRONG.**

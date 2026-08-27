@@ -617,6 +617,20 @@ TEMPLATE_CLASSES = {
     # TWO templates each, because the class has two mechanisms in it and crediting
     # it on one of them would be the ``deprotonation`` mistake again.
     "ester-hydrolysis": "ester_hydrolysis + saponification",
+    # ⚠⚠ G4 -- AND THE CATALOG HAS ITS OWN ``saponification`` CLASS, WHICH THIS
+    # MAP NEVER KEYED. The template has existed since M5; the row above credits
+    # it under the OTHER class's name, so ``soap-saponification`` step 1 read as
+    # an uncovered mechanism for eight milestones. Measured against the catalog's
+    # own substrate before crediting it, on the S1 standard: tristearin +
+    # hydroxide builds 10 species and 7 ``saponification`` reactions, all three
+    # esters coming off down to glycerol.
+    # ⚠ IT BUYS ZERO ROUTES AND IS CREDITED ANYWAY, because a class that reads as
+    # a gap sends work at a template that is already built. ``soap-saponification``
+    # still cannot run: its other row is ``salting-out`` (a phase split, not a
+    # reaction -- see ``validation/granularity.py`` panel 2a) and its target
+    # ``sodium-stearate`` is REFUSED, the stearate anion having no pKa in the ion
+    # table. +1 class, +1 covered step, +0 template-ready routes, +0 BOTH.
+    "saponification": "saponification",
     "catalytic-gas-synthesis": (
         "ammonia_synthesis + methanol_from_carbon_monoxide/dioxide"
     ),
@@ -1463,6 +1477,32 @@ def main() -> int:
         "substrate at all; `pyrite-roasting` is the standing proof that this is "
         "not the same as running, and S1 credited a route that could not. The "
         "only way to know a route runs is to run it."
+    )
+    w("")
+    # ⚠⚠ G4 -- AND IT IS ALSO A LOWER BOUND, WHICH NOTHING SAID UNTIL NOW. The
+    # three rows above score the corpus's ROWS. A route is not a list of rows; it
+    # is a DAG with alternatives, declared byproducts and workup in it, and this
+    # audit reads none of that prose. ``validation/granularity.py`` counts the
+    # difference and RUNS every route it counts.
+    #
+    # ⚠ THE FIVE ARE NOT ADDED TO ``both_ready`` HERE, AND THAT IS DELIBERATE.
+    # This number is a mechanical measure of the CORPUS; those five rest on a
+    # hand judgement about five specific rows (this row is a byproduct, that one
+    # is fouling, that one makes a marker). Folding a judgement into a mechanical
+    # column is how the ``deprotonation`` credit happened. The pointer goes in
+    # instead, so the judgement can be argued with where it is written down.
+    w(
+        "> ⚠⚠ **And it is a LOWER bound at the same time — measured in G4 at "
+        f"{both_ready} + 5.** This table scores the corpus's *rows*; a route is a DAG "
+        "with alternatives, declared byproducts and workup in it. Five routes "
+        "are scored blocked and **run today**: `benzene-nitration` (its "
+        "nitronium and arenium are transient), `aniline-route` (rows 1 and 2 are "
+        "alternatives), `hydrogenation-margarine` (row 2 is the corpus's own "
+        "byproduct), `tanning-route` (row 2 makes a marker past the target) and "
+        "`lead-chamber` (row 4 is the process's fouling product). Each is "
+        "charged into a real `Vessel` with its moles printed in "
+        "`validation/granularity.py`, which also records the sixth candidate "
+        "its scorer credited and the **run refuted**."
     )
     w("")
 

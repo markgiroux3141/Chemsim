@@ -6257,3 +6257,100 @@ RESOLVED since the last handoff:
     ⚠ **One live claim was cross-checked for free**: fragility 10 and engine queue
     item 15 both say the burner is *"~50 s at rtol 1e-8"*, and it measured
     **52.47 s**. The claim was right, and it is 3.9% of the suite.
+
+102. ✔✔ **G4 — THE GRANULARITY AUDIT: THE ANSWER IS FIVE, AND THE VALUE
+    OF THE SESSION IS THAT FIVE IS SMALL.** The G-series brief asked how many
+    routes are, like `benzene-nitration`, chemically runnable but scored blocked
+    because the catalog spells a mechanism out in steps the engine does in one.
+    **Nobody had counted.** The deliverable is `validation/granularity.py`
+    (~18 s, five panels) and `tests/test_granularity.py` (9 tests, 9.3 s), and
+    every route counted is charged into a real `Vessel` with its moles printed.
+
+    ⚠⚠⚠ **THE COUNT, AND EACH ONE WAS RUN:**
+
+        benzene-nitration        1.000000 mol nitrobenzene   340 K, 2 h
+        aniline-route            0.998860 mol aniline        470 K, 2 h, Ni charged
+        hydrogenation-margarine  1.000000 mol tristearin     450 K, 2 h, Ni charged
+        tanning-route            1.999999 mol gallic acid    360 K, 2 h
+        lead-chamber             0.104063 mol sulfuric acid  650 K burn -> 350 K chamber
+
+    So the reported **31/173 understates the engine by 16%** — and the number
+    that matters is the other one: **142 routes sit outside the BOTH column and
+    only 5 are catalog artefacts, 4%.** ⚠⚠ **THE BOTH COLUMN WAS NOT
+    HIDING A CONTENT BACKLOG.** The remaining 137 are chemistry this engine
+    cannot do or data nothing prices, and they can now be treated as real work.
+    That retirement of an unknown is what the session bought, and it is M1's
+    shape exactly — M1 fixed this same instrument and its baseline went DOWN.
+
+    ⚠⚠⚠ **THE BRIEF'S OWN WORKED EXAMPLE IS NOT IN THE BUCKET THE
+    BRIEF POINTS AT, AND THAT KILLED THE OBVIOUS SEARCH FIRST.**
+    `benzene-nitration` is **species**-blocked, not template-blocked: `nitronium`
+    and `arenium-benzene` are refused a price, correctly — a mechanism has
+    them and a flask never holds them. Walking the species-ready-but-not-
+    template-ready bucket, which is what the brief points at, **would have missed
+    the case that started the audit.** Granularity has two forms: STEP (rows whose
+    classes have no template) and SPECIES (intermediates the engine never
+    materialises).
+
+    ⚠⚠ **THE FINDING UNDERNEATH THE COUNT: THE INSTRUMENT SCORES ROWS,
+    AND A ROUTE IS A DAG.** Four of the five are blocked by a row that is not on
+    the path to the target at all — `aniline-route`'s two rows are
+    ALTERNATIVES read as a sequence, `hydrogenation-margarine`'s row 2 is the
+    corpus's own *"trans isomer byproduct"*, `tanning-route`'s row 2 crosslinks
+    collagen into a MARKER past the target, and `lead-chamber`'s row 4 makes
+    chamber crystals, the process's FOULING product.
+    ⚠ **THE CORPUS SAYS SO IN ITS OWN PROSE AND NOTHING HAD EVER READ IT.**
+    Nine rows in eight routes are named `... byproduct` / `side reaction` /
+    `alternative`; five more rows in five routes have products that are a SUBSET
+    of their reactants and can never match any template — crystallisation,
+    salting out, lixiviation, kieselguhr, plus `furfural-route` 1 which reads
+    `xylose + water -> xylose`.
+
+    ⚠⚠⚠ **THE SCORER MADE THREE FALSE CREDITS AND RUNNING CAUGHT
+    ALL THREE. THIS IS THE MOST TRANSFERABLE PART.** A TARGET-REACHABLE scorer
+    first said 38:
+
+      * `bayer-process` and `contact-process` scored reachable **by BUYING the
+        target**, because in both the target is also a step-1 reactant. Bayer
+        PURIFIES bauxite; the contact process recycles its own acid.
+        ⚠ **A scorer that does not forbid charging the target will credit
+        every recycle loop in the corpus.** Rule added, 38 → 36.
+      * `starch-hydrolysis` survived that rule and **the RUN refuted it.**
+        `starch-unit` is spelled as a single α-D-glucopyranose ring and row 1
+        reads `starch-unit + water -> maltose` — a hydrolysis making a
+        disaccharide from a monosaccharide. The engine matched **nothing at
+        all**: zero reactions, not a slow one. From maltose the same template
+        delivers 0.9986 mol of glucose, so the blockage is the corpus's spelling
+        of its own FEEDSTOCK and no engine work would move it.
+
+    ⚠⚠ S1's *"crediting a class made a FALSE route credit"* is now a
+    THREE-time finding, and what caught it every time was charging a flask.
+
+    ⚠⚠ **ONE CLASS THE INSTRUMENT HAD SIMPLY NEVER KEYED.**
+    `TEMPLATE_CLASSES` credited the M5 `saponification` template under
+    `ester-hydrolysis`'s name, and the catalog **also** has a class literally
+    called `saponification` — so `soap-saponification` step 1 read as an
+    uncovered mechanism for eight milestones. Checked the S1 way before
+    crediting: tristearin + hydroxide builds 10 species and 7 `saponification`
+    reactions, all three esters off down to glycerol.
+
+        reaction classes covered   51 -> 52     steps covered     114 -> 115
+        routes ONE class away      46 -> 47     from classes       36 -> 37
+        template-ready / BOTH      41 / 31      UNCHANGED
+
+    ⚠ **+0 routes and credited anyway**, because a class that reads as a gap
+    sends work at a template that is already built. `soap-saponification` still
+    cannot run: `salting-out` is a phase split and `sodium-stearate` is REFUSED
+    — the stearate anion has no pKa in the ion table.
+
+    ⚠ **WHAT WAS DELIBERATELY NOT DONE.** The BOTH column in
+    `COVERAGE_REPORT.md` still says **31**. That table is a mechanical measure of
+    the CORPUS; the five rest on a hand judgement about five specific rows.
+    Folding a judgement into a mechanical column is how M1's `deprotonation`
+    credit happened. The report gained a **pointer** instead.
+
+    ⚠ **NO `src/` EDIT, SO NO SUITE AND NO TOLERANCE AUDIT.** G4 touched
+    `validation/catalog_coverage.py` and added two files. `ruff` clean;
+    `catalog_coverage.py` re-run and its diff read line by line;
+    `tools/build_route_index.py` re-run and BYTE-IDENTICAL. The suite baseline
+    remains G5's **1024 passed / 0 failed in 22:28**, plus this session's 9.
