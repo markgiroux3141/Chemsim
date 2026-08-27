@@ -195,8 +195,33 @@ flask:**
 
 — against a real anilinium **slower** than benzene. ⚠ A saturation near 1e5 lands
 aniline within a decade or two of benzene instead of eight above it, **on ONE
-declared field**, and it lives at SETUP like `hammett_rho` does, so there is no
-RHS edit and no tolerance-audit exposure.
+declared field**.
+
+⚠⚠⚠ **BUT THE DESIGN QUESTION IS WHICH OF TWO THINGS IT IS, AND THEY COST
+DIFFERENT AMOUNTS. ASK THIS BEFORE WRITING ANY CODE.**
+
+* **A capped RATIO** — clamp `|rho * sum(sigma+)|` at a declared number of
+  decades. Lives at SETUP exactly like `hammett_rho`, bakes into the kinetics
+  array, **no RHS edit and no tolerance-audit exposure.** ⚠ But it asserts that
+  the ceiling is a fixed *selectivity*, so the capped substrate stays a fixed
+  multiple of benzene at every temperature — and a real encounter limit does not
+  behave that way.
+* **An absolute ENCOUNTER CEILING** — the physically correct statement. Nitration
+  of an activated arene saturates because the reaction happens on every encounter,
+  so the ceiling is a *diffusion rate* (roughly `A_enc`, weakly
+  temperature-dependent) and NOT a ratio to benzene. ⚠⚠ That is a **rate-law
+  change**: `min(k_hammett, k_enc)` cannot be baked into an `Ea` because the two
+  have different temperature dependences, so it is an RHS edit **and
+  `tolerance_audit.py` is owed** (~10 min of the user's CPU).
+
+⚠⚠ **THE RATIO IS THE CHEAP ONE AND MAY STILL BE THE RIGHT ONE — BUT SAY WHICH,
+AND SAY WHAT IT ASSERTS.** This is the project's first question (setup vs hot
+loop) landing on the aromatic branch, and G2's answer for `hammett_rho` was
+setup. ⚠ **Measure the temperature spread before choosing**: if the capped
+substrates' rates stay well under the encounter limit across the 300–380 K band
+the nitration routes actually run in, then the two forms are
+indistinguishable there and the ratio wins on cost. **That measurement is one
+script and nobody has run it.**
 
 ⚠⚠ **THE WHOLE JOB IS SOURCING THE CONSTANT, AND THAT IS THE POINT.** Coombes and
 Ridd measured encounter-controlled nitration; this project's rule for a

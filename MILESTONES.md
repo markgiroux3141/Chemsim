@@ -4302,6 +4302,13 @@ residual is a FREE-BASE LEAK, and the next item is named with its arithmetic
 done: `rho * sigma+` = 8.45 decades off a line fitted on |rho*sigma| < 2.6, where
 the real relation SATURATES because nitration of an activated arene is
 encounter-controlled. See HANDOFF §101 and `validation/protonation.py` panel 5.
+⚠⚠ **AND ITS DESIGN QUESTION IS WHICH OF TWO THINGS IT IS**: a capped RATIO of
+decades (SETUP, free, but asserts a temperature-independent selectivity at the
+ceiling) or an absolute ENCOUNTER RATE (physically right, but the two rate laws
+have different temperature dependences, so it is an RHS edit with the tolerance
+audit attached). **Measure the temperature spread over 300-380 K first** -- if
+the capped rates stay well under the encounter limit there, the two forms are
+indistinguishable and the cheap one wins. See NEXT_PROMPT.
 
 ⚠ **A NEW STRUCTURAL MISMATCH, AND THE REFUSAL IS KEPT:** a protonation
 TEMPLATE is open-ended where the ion table is a CURATED LIST, so nitrating an
