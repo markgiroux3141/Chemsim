@@ -685,11 +685,13 @@ class World:
         LEFT IN THE FUNNEL, NOT OFF A SHORTFALL IN THE DELIVERY**, and the first
         draft got that wrong in a way worth recording. The obvious test is
         ``delivered < rate * elapsed``, and it does not survive contact with a
-        real funnel: measured on the nitration below, ``rate * elapsed`` was
-        0.40702 mol and the donor's liquid inventory fell by **0.40799** --
-        MORE, not less, because a funnel with a headspace also evaporates into
-        it. Two numbers that each have their own error term cannot be subtracted
-        to decide a third thing. ``donor_left`` is a direct measurement of the
+        real funnel. Measured on a nitration funnel with a LIVE HEADSPACE
+        (``kla = 1.0``): ``rate * elapsed`` was 0.40702 mol and the donor's
+        liquid inventory fell by **0.40799** -- MORE, not less, because the
+        funnel was also evaporating into its own headspace. Two numbers that
+        each have their own error term cannot be subtracted to decide a third
+        thing. ⚠ A SEALED funnel does agree to the integrator's tolerance, which
+        is exactly why the bad test would have passed every check written for it. ``donor_left`` is a direct measurement of the
         question actually being asked, so that is what the flag reads.
 
         ⚠ ``delivered`` is still reported, and it is the donor's own liquid

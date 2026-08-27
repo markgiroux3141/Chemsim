@@ -180,10 +180,14 @@ def test_a_funnel_that_empties_early_is_reported_rather_than_hidden():
 
     ⚠⚠ AND ``ran_dry`` IS READ OFF WHAT IS LEFT IN THE FUNNEL, NOT OFF A
     SHORTFALL IN THE DELIVERY. The obvious test -- ``delivered < rate*elapsed``
-    -- does not survive a real funnel: with a headspace over it the donor's
-    liquid inventory falls FASTER than the tap takes it, so ``delivered``
-    measured 0.40799 mol against a nominal 0.40702. Two numbers that each carry
-    their own error term cannot be subtracted to decide a third thing.
+    -- does not survive a real funnel: measured on a funnel with a LIVE
+    HEADSPACE (``kla = 1.0``) the donor's liquid inventory falls FASTER than the
+    tap takes it, so ``delivered`` came out 0.40799 mol against a nominal
+    0.40702. Two numbers that each carry their own error term cannot be
+    subtracted to decide a third thing.
+
+    ⚠ The funnel in THIS test is sealed (``kla = 0``), where the two figures do
+    agree -- which is the point: the bad test would have passed here.
     """
     w = _charged(acid=0.05, funnel_volume=0.2)
     out = w.add_dropwise(0, 0.02, "pot", reaches(340.0), timeout=200.0)

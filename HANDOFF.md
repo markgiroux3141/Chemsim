@@ -6044,3 +6044,18 @@ RESOLVED since the last handoff:
     template whose barrier is not the one it declares, and the floored case where
     the pre-exponential IS the rate. Activated nitration sits at 1.0e10, **one
     tenth of the collision ceiling**.
+
+    ⚠⚠ **AND THE SUITE RUN AT THE END REFUTED S13's EXPLANATION OF ITS OWN
+    CLOCK.** **995 passed / 0 failed in 22:06**, run after every `src/` edit and
+    with NOTHING else on the CPU. S13 measured **21:36** against S12's **13:20**
+    and wrote that the difference was CONTENTION rather than the suite getting
+    slower; an uncontended run lands **within 30 seconds of S13's figure**, and
+    the 30 tests this session added are separately measured at **47 s combined**
+    (35.1 + 12.4), so they account for about one of the eight minutes.
+    ⚠ **THE CAUSE IS NOT MEASURED AND IS NOT ASSERTED.** The likeliest candidate
+    is the only large change between S12 and S13 — the measured-physical table
+    going 37 → 1239 species, which moved every example's volatility and therefore
+    every trajectory's stiffness — but nobody has bisected it, and
+    `pytest --durations=25` has never been run here. **A ONE-POINT WALL-CLOCK
+    ATTRIBUTION IS NOT A MEASUREMENT**: what is established is that the contention
+    explanation is refuted, not that the data table is convicted.

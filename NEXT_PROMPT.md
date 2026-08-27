@@ -11,10 +11,30 @@ connected tech tree a player can walk from natural materials. **Read MILESTONES
 
 # ⚠ THE BASELINE IS MEASURED. DO NOT START WITH THE SUITE.
 
-**G2 RAN THE WHOLE SUITE AT THE END AND MEASURED SUITE_RESULT_PLACEHOLDER.**
-Take that number and spend the time on content. ⚠ It was run AFTER every `src/`
-edit — fifth session running that is true — and with **nothing else on the CPU**,
-so unlike S13's 21:36 the wall clock is not contaminated by contention.
+**G2 RAN THE WHOLE SUITE AT THE END AND MEASURED 995 PASSED / 0 FAILED IN
+22:06.** Take that number and spend the time on content. ⚠ It was run AFTER
+every `src/` edit — fifth session running that is true. (965 at S13; the +30 are
+G1's 9 and G2's 21.)
+
+⚠⚠⚠ **AND IT CORRECTS S13's OWN EXPLANATION OF THE CLOCK. THE SUITE REALLY IS
+~8 MINUTES SLOWER THAN IT WAS AT S12, AND IT IS NOT CONTENTION.** S13 measured
+21:36 against S12's 13:20 and wrote *"the 21:36 against S12's 13:20 is
+CONTENTION, not the suite getting slower: S13 ran examples in another process at
+the same time."* **This run had NOTHING else on the CPU and came out at 22:06** —
+within 30 seconds of S13's supposedly-contended figure. And the 30 tests this
+session added are measured separately at **47 s combined**
+(`test_dropping_funnel` 35.1 s, `test_ring_deactivation` 12.4 s), so they account
+for about one of the eight minutes.
+
+⚠ **THE CAUSE IS NOT MEASURED AND SHOULD NOT BE ASSERTED.** The likeliest
+candidate is the only large thing that changed between S12 and S13 — the
+measured-physical table going from 37 species to 1239, which moved every
+example's volatility and therefore every trajectory's stiffness — but **nobody
+has bisected it**, and a plausible cause is not a measured one. ⚠⚠ **A ONE-POINT
+WALL-CLOCK ATTRIBUTION IS NOT A MEASUREMENT**: the honest correction is that the
+contention explanation is REFUTED, not that the data table is convicted. If the
+suite's cost matters to a future session, `pytest --durations=25` is the probe
+and it has never been run here.
 
 ⚠ **NEITHER G1 NOR G2 TOUCHED THE RHS OR A DATA TABLE**, so `tolerance_audit.py`
 was not owed and was NOT re-run. Its last measured state is S13's and every
@@ -628,6 +648,12 @@ reciprocal residence time and a meter's is mol/s.
 ⚠ **A RELATIVE-DIFFERENCE TEST IS MEANINGLESS ON A COLUMN WHOSE CONVERGED VALUE
 IS ZERO.**
 ⚠ **A NEW CREDIT MUST BE A FALLBACK BEFORE IT IS AN OVERRIDE.**
+⚠⚠ **A ONE-POINT WALL-CLOCK ATTRIBUTION IS NOT A MEASUREMENT.** S13 explained a
+suite that had gone from 13:20 to 21:36 as CONTENTION, from one run with other
+work on the machine. G2's uncontended run is **22:06** — the explanation is
+refuted, and the cause is still not measured. ⚠ **Note which half of that
+sentence is the finding**: "not contention" is established; "therefore the data
+table" is not, and `pytest --durations=25` has never been run here.
 ⚠ **AUDIT THE INSTRUMENT BEFORE THE FINDINGS.** S2's harness invented a finding;
 S1's coverage audit credited a route that cannot run; S3's report could not be
 diffed; S4's rate-ceiling audit made a claim about a table it does not read; S6's
