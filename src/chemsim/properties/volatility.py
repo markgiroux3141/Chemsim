@@ -388,7 +388,27 @@ class VolatilityProvider:
 
         # Fit over a bench-realistic window bracketing the boiling point, kept
         # inside the correlation's valid range (it degrades badly near Tc).
-        T_lo = max(0.30 * t.Tc, t.Tb - 120.0, 150.0)
+        #
+        # ⚠⚠ THE 150 K FLOOR MUST NEVER RISE ABOVE Tb, AND UNTIL S13 IT COULD.
+        # The word in the comment above is BRACKETING, and a bare
+        # ``max(..., 150.0)`` breaks it for anything cryogenic: methane boils at
+        # 111.66 K, so its window opened at 150 K and the Antoine fit reached Tb
+        # only by EXTRAPOLATION -- 38 K outside its own domain, reading
+        # **1.1804 bar at the normal boiling point, +16.50%**. Nitric oxide
+        # (121.38 K) read +14.53% the same way.
+        #
+        # ⚠ PRE-EXISTING AND INVISIBLE, which is the part worth recording.
+        # ``test_every_assembled_record_boils_at_one_atmosphere`` walks
+        # ``MEASURED_PHYSICAL``; methane, nitric oxide and fluorine are in
+        # ``_CURATED_RAW``, so the check that exists for exactly this could not
+        # see any of them. S13's corpus sweep put species with a measured Tb
+        # into the table in bulk and the same fault came in through the front
+        # door -- 1,3-butadiene at -1.52% -- which is how it was found.
+        #
+        # ⚠ The floor is still worth having: Lee-Kesler below ~150 K on a
+        # NORMAL-boiling species is far outside anything a bench does. It just
+        # has to yield to the species' own boiling point rather than outrank it.
+        T_lo = max(0.30 * t.Tc, t.Tb - 120.0, min(150.0, t.Tb))
         T_hi = min(0.95 * t.Tc, t.Tb + 120.0)
         if T_hi <= T_lo:
             T_lo, T_hi = 0.5 * t.Tc, 0.9 * t.Tc

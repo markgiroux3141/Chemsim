@@ -109,9 +109,47 @@ def rule(title: str) -> None:
     print("=" * 78)
 
 
+def _resolve(name: str, cid: str, mol) -> str | None:
+    """The CAS for this species, by GRAPH first and then by NAME.
+
+    ⚠⚠ NEITHER KEY ALONE IS ENOUGH, AND THAT IS S13's LARGEST FINDING ABOUT ITS
+    OWN INSTRUMENT. S11 recorded that a bare SMILES is read as a FORMULA
+    (``CAS_from_any("C")`` returns CARBON) and the fix was "always use
+    ``smiles=``". The first version of this file did exactly that, and reported
+    the gap as 322 species -- with **no aniline, no nitrobenzene and no
+    quinoline** among them, because ``chemicals``' SMILES index does not contain
+    them at all while ``CAS_from_any("aniline")`` answers instantly.
+
+    Measured: of 1069 corpus species with no graph-resolved CAS, 874 resolve by
+    NAME with a matching formula and 508 of those carry a measured boiling
+    point. **The gap is 830, not 322.** The fix for one trap became the next
+    one.
+
+    ⚠ The formula cross-check is what makes the name path safe, and it earns its
+    keep: it refuses 72 name matches whose database formula disagrees with the
+    graph this table is keyed by.
+    """
+    from chemicals import CAS_from_any, search_chemical
+    from chemicals.elements import simple_formula_parser
+
+    for probe in ("smiles=" + mol.smiles, name, cid.replace("-", " ")):
+        try:
+            cas = CAS_from_any(probe)
+        except Exception:                                     # noqa: BLE001
+            continue
+        try:
+            db = simple_formula_parser(search_chemical(cas).formula)
+        except Exception:                                     # noqa: BLE001
+            db = None
+        if db is not None and db != mol.element_counts():
+            continue
+        return cas
+    return None
+
+
 def census(compounds) -> tuple[list[dict], dict[str, int]]:
     """Walk the corpus once. Returns the absent-with-a-measurement rows."""
-    from chemicals import CAS_from_any, Tb, Tb_methods
+    from chemicals import Tb, Tb_methods
 
     thermo = ThermochemistryProvider()
     in_table = {Molecule.from_smiles(s).smiles for s in MEASURED_PHYSICAL}
@@ -134,10 +172,11 @@ def census(compounds) -> tuple[list[dict], dict[str, int]]:
         if key in in_table:
             counts["in_table"] += 1
             continue
-        # "smiles=" IS LOAD-BEARING. See panel 3.
-        try:
-            cas = CAS_from_any("smiles=" + key)
-        except Exception:                                     # noqa: BLE001
+        # ⚠⚠ TWO KEYS. See panel 3 -- the graph is the stronger identity and is
+        # tried first, but `chemicals`' SMILES index does not hold aniline, so
+        # the NAME has to be tried too, guarded by the formula cross-check.
+        cas = _resolve(c.name, cid, mol)
+        if cas is None:
             counts["no_cas"] += 1
             continue
         got = _measured(Tb, Tb_methods, cas)
@@ -234,8 +273,7 @@ def main() -> int:
     rule("1. THE CENSUS -- what the corpus holds against what the table holds")
     print(f"  catalog compounds                        {len(compounds):5d}")
     print(f"  ...with a molecular graph                {counts['graph']:5d}")
-    print(f"  already in MEASURED_PHYSICAL             {counts['in_table']:5d}"
-          f"   <- the hand-typed list")
+    print(f"  already in MEASURED_PHYSICAL             {counts['in_table']:5d}")
     print(f"  no CAS resolvable from the graph         {counts['no_cas']:5d}")
     print(f"  CAS, but no non-estimated Tb anywhere    {counts['no_source']:5d}")
     print(f"  ** measured Tb available, NOT in table   {counts['absent']:5d} **")
@@ -254,12 +292,69 @@ def main() -> int:
     print("  whole resolution. A headline of the first number would be this")
     print("  project's own recurring mistake, told about itself.")
     print()
-    print("  Every one of these is a species for which a measurement exists,")
-    print("  is already installed on this machine, and is not being used --")
-    print("  not because it was weighed and rejected, but because nobody typed")
-    print("  its name into a list.")
+    if counts["absent"]:
+        print("  Every one of these is a species for which a measurement exists,")
+        print("  is already installed on this machine, and is not being used --")
+        print("  not because it was weighed and rejected, but because nobody")
+        print("  typed its name into a list.")
+    else:
+        print("  THE GAP IS CLOSED. Every corpus species that has a measured")
+        print("  boiling point in `chemicals` is in the table. Panel 2 is now")
+        print("  the panel that matters: it measures what that CORRECTION was")
+        print("  worth, which is a number that stays meaningful at zero gap.")
 
-    rule("2. WHAT THE ENGINE PRICES INSTEAD, AND HOW WRONG IT IS")
+    rule("2. WHAT THE CORRECTION WAS WORTH -- measured against Joback")
+    # ⚠ THE PANEL THAT SURVIVES THE GAP BEING CLOSED. A census can only report
+    # a gap, and a gap that is closed reports nothing. This asks the question
+    # that stays answerable: for every species now carrying a measured boiling
+    # point, what would this engine have said WITHOUT it?
+    #
+    # `ThermochemistryProvider(measured_physical=False)` is the pre-existing
+    # switch for exactly this -- the same reason `benson=False` and
+    # `liquid_standard_state=False` exist. It is not a reconstruction of the old
+    # behaviour, it IS the old behaviour.
+    estimated = ThermochemistryProvider(measured_physical=False)
+    installed = ThermochemistryProvider()
+    corr: list[tuple[float, str, float, float]] = []
+    no_tb_before = 0
+    for smi in MEASURED_PHYSICAL:
+        try:
+            new = installed.get(smi)
+        except Exception:                                     # noqa: BLE001
+            continue
+        if new.Tb is None:
+            continue
+        try:
+            old = estimated.get(smi)
+        except Exception:                                     # noqa: BLE001
+            old = None
+        if old is None or old.Tb is None:
+            no_tb_before += 1
+            continue
+        corr.append((abs(old.Tb - new.Tb) / new.Tb * 100.0, smi, old.Tb, new.Tb))
+    corr.sort(reverse=True)
+    print(f"  species now carrying a measured Tb           {len(corr) + no_tb_before:5d}")
+    print(f"  ...that had NO boiling point at all before   {no_tb_before:5d}")
+    print(f"  ...that had an ESTIMATED one, now corrected  {len(corr):5d}")
+    if corr:
+        vals = [c[0] for c in corr]
+        print("  the estimate's mean / median / worst |error|  "
+              "%6.2f%% / %5.2f%% / %6.2f%%"
+              % (statistics.mean(vals), statistics.median(vals), vals[0]))
+        print("  over  2%% / 5%% / 10%% / 20%%                    %5d / %4d / %4d / %4d"
+              % tuple(sum(1 for v in vals if v > t) for t in (2, 5, 10, 20)))
+        print()
+        print("  worst 12 corrections:")
+        print("    %7s  %-30s %10s %10s" % ("was off", "smiles", "Joback", "measured"))
+        for e, smi, o, n in corr[:12]:
+            print("    %6.2f%%  %-30s %10.2f %10.2f" % (e, smi[:30], o, n))
+        print()
+        print("  A mean of a few per cent is not the finding. The finding is")
+        print("  that the error was UNSIGNED and UNBOUNDED: nothing in the")
+        print("  engine knew which of these was the 3% one and which was the")
+        print("  85% one, because all of them RESOLVED.")
+
+    rule("2b. WHAT IS STILL ABSENT, IF ANYTHING")
     priced = [r for r in rows if r["tb_now"] is not None]
     errs = sorted(((abs(r["tb_now"] - r["tb"]) / r["tb"] * 100.0, r)
                    for r in priced), key=lambda t: -t[0])
@@ -301,11 +396,24 @@ def main() -> int:
     assert bare != smi, "the formula/SMILES ambiguity has gone away -- reread this"
     print()
     print("  A bare SMILES is read as a FORMULA, and a single-letter SMILES is")
-    print("  also an element symbol. The first sweep of this gap counted 360")
-    print("  and had methane boiling at 4273 K, because it had asked about")
-    print("  carbon. Every lookup in this file goes through 'smiles=' + smi.")
+    print("  also an element symbol. S11's sweep counted 360 and had methane")
+    print("  boiling at 4273 K, because it had asked about carbon.")
+    print()
+    print("  AND THE FIX FOR THAT TRAP IS THE NEXT TRAP:")
+    for probe in ("smiles=Nc1ccccc1", "aniline"):
+        try:
+            got = CAS_from_any(probe)
+            print("  CAS_from_any(%-18s) -> %s" % (repr(probe), got))
+        except Exception as exc:                              # noqa: BLE001
+            print("  CAS_from_any(%-18s) -> REFUSED: %s"
+                  % (repr(probe), str(exc)[:44]))
+    print()
+    print("  `chemicals`' SMILES index does not contain aniline, nitrobenzene")
+    print("  or quinoline. A sweep keyed only on the graph reported this gap")
+    print("  as 322 species when it is 830. Both keys, graph first, with the")
+    print("  formula as the arbiter -- see `_resolve` above.")
 
-    rule("4. EXPOSURE -- how much of the corpus names these species")
+    rule("4. EXPOSURE -- how much of the corpus names any species still absent")
     named: dict[str, int] = {}
     for st in steps:
         for sp in set(st.reactants) | set(st.products):

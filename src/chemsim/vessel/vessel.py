@@ -2490,9 +2490,24 @@ class Vessel:
         # partial pressures by Henry's law, so summing everything made this True
         # at any temperature for any flask left open to the room -- see
         # ``VesselIntegrator.volatile_pressure``.
+        # ⚠⚠ A RELATIVE FLOOR, AND IT IS NOT COSMETIC. ``boils()`` stops the run
+        # on a scipy ROOT of ``volatile_pressure - P_ambient``, which means the
+        # state it hands back has that expression equal to zero to solver
+        # precision -- and whether the last bit lands at -1e-15 or +1e-15 bar is
+        # not physics. A bare ``>=`` therefore reports a flask that has just
+        # been integrated to its own boiling point as NOT boiling, about half
+        # the time, and the test that exists to catch exactly that disagreement
+        # had been passing on which side the root happened to fall.
+        #
+        # ⚠ MEASURED (S13, and the trigger was a DATA change, not this line):
+        # after ``wait_until(boils())`` the 50/50 ethanol/water hotplate lands at
+        # -1.110e-15 bar, a relative -1.1e-15, and reads True again 0.05 s later
+        # at +9.7e-08. The floor below is 1e-12 relative -- three decades above
+        # the noise it exists to absorb and six below the smallest excess any
+        # boiling flask actually carries.
         return self.integrator.volatile_pressure(
             self._nL, self.T, self._nL2
-        ) >= self.P_ambient
+        ) >= self.P_ambient * (1.0 - 1.0e-12)
 
     def bubble_point(self, lo: float = 200.0, hi: float = 700.0) -> float:
         """K, the temperature at which the current liquid would boil.

@@ -5787,3 +5787,91 @@ RESOLVED since the last handoff:
   separate: `saturation_activity(T)` is the composition-independent fusion law
   (still exactly 1 at Tm, so melting is untouched) and `solubility(T, gamma)`
   divides by γ. Melting must not care how badly a solvent dissolves the solid.
+
+98. ✔✔ **S13 -- THE HAND-TYPED LIST, CLOSED, AND THE INSTRUMENT BUILT TO EXPOSE
+    IT UNDERCOUNTED THE GAP BY 60% USING THE PREVIOUS SESSION'S FIX AS THE
+    REASON.** 2026-08-26.
+    **37 hand-typed species -> 1239 generated ones; 20 measured boiling points ->
+    896.** The corpus's PHYSICAL half went from **measured 40/1583 (2.5%) to
+    652/1583 (41.2%)** and from **Joback 964 (61%) to 333 (21%)**. +3
+    species-ready, 14 fewer refusals, **+0 on the BOTH column, which was
+    predicted**: this is a DATA milestone and cannot add a template.
+
+    ⚠⚠ **THE LARGEST FINDING IS ABOUT THIS SESSION'S OWN INSTRUMENT.** S11
+    recorded that `CAS_from_any("C")` returns CARBON -- a bare SMILES is read as
+    a FORMULA -- and its fix was "always use `smiles=`". S13 built its sweep on
+    exactly that, measured the gap at **322 species**, wrote the number into a
+    commit message, generated a table -- and the table **had no aniline in it.
+    No nitrobenzene, no quinoline.** `chemicals`' SMILES index does not contain
+    them; `CAS_from_any("aniline")` answers instantly. Measured: of 1069 species
+    with no graph-resolved CAS, **874 resolve by NAME with a matching formula and
+    508 carry a measured Tb.** The gap is **830, not 322**.
+    ⚠ **THE FIX FOR ONE TRAP BECAME THE NEXT TRAP.** Both keys now, graph first,
+    with the formula cross-check as arbiter -- and it earns its place: it refuses
+    **72** name matches outright.
+
+    ⚠⚠ **AND THE GAP WAS NOT EXOTIC, IT WAS THE SOLVENT IN THE FLASK.** All
+    priced by Joback, in a project whose flagship rig is a distillation column:
+    **acetylene +14.60%, methanol -6.80% (23 K), ethanol -3.99% (14 K)**, diethyl
+    ether, n-hexane. Over the whole table **881 estimates were replaced, mean
+    6.10%, worst 110.94%, 437 over 2% and 68 over 20%** -- and the error was
+    UNSIGNED and UNBOUNDED, because every one of them RESOLVED.
+
+    ⚠⚠ **THE COVERAGE AUDIT'S TIER CLASSIFIER WAS PARSING PROSE, AND
+    `thermochemistry` HAD ALREADY WRITTEN DOWN WHY THAT WOULD FAIL** -- its
+    `physical_source` field carries the comment *"deducing it by matching on the
+    prefix of a composite string is the kind of guess that goes quietly wrong the
+    first time the wording changes."* `_thermo_tier` was handed the whole
+    composite `source` and said `measured` if "experimental" appeared anywhere;
+    after the sweep it reported **669 MEASURED FORMATION halves where the answer
+    is 135**, from a data change that touched no formation data. Its twin fell
+    through a bare `return "benson"` and reported **659 Benson PHYSICAL halves**,
+    of which there is no such thing. ⚠ **A DEFAULT AT THE BOTTOM OF A MATCHER IS
+    A GUESS.** Both now split on structure, take the FIELD, and raise on an
+    unrecognised provenance. The fix also found a pre-existing overcount, 144 ->
+    135, and needed a new `compilation` tier for 47 YAWS/WIKIDATA boiling points.
+
+    ⚠⚠ **A FIT WINDOW COULD EXCLUDE THE BOILING POINT IT WAS BRACKETING.**
+    `volatility.py` fitted over `max(0.30*Tc, Tb-120, 150.0)`, so methane's
+    window opened **38 K ABOVE its own Tb** and the curve reached it only by
+    extrapolation: **+16.50%** at the normal boiling point, nitric oxide
+    **+14.53%**. PRE-EXISTING and invisible -- the check that exists for exactly
+    this walked `MEASURED_PHYSICAL` and both are in `_CURATED_RAW`. One line.
+
+    ⚠ **THE 1.5% BAR HAD BEEN MEASURED OVER NINE SPECIES.** It now walks all
+    three tables: **889 condensable records against 20, 858 clear it**, and the
+    31 that do not are NAMED with their residuals -- **eight pre-existing**.
+    ⚠⚠ **A BAR IN TEMPERATURE AND A BAR IN PRESSURE ARE NOT THE SAME BAR**: zinc's
+    -0.96% (S10's own number, in T) is +12.61% in P, and quoting one against the
+    other would have manufactured a regression.
+
+    ⚠ **THE COST, MEASURED BY RUNNING ALL FIFTEEN EXAMPLES BEFORE AND AFTER.**
+    Five IDENTICAL. Worst: `multistep_prep` 84.0% -> 82.7%, `fractional_
+    distillation` 11.8%, `workshop` 8.7%. ⚠⚠ **`plate_column`'s HEART is 0.8548
+    against 0.8544 -- M2's target still MET**, replay determinism still exact.
+    `named_routes` LOST four `MIXES STANDARD STATES` warnings and GAINED a
+    barrier guard (`aspirin-impurity` 99.8% -> 59.2%, because the reaction's
+    enthalpy moved onto a measured basis and a guard already there fired).
+
+    ⚠⚠ **AND THE TOLERANCE AUDIT'S "CANNOT BE SWEPT" WAS NOT A REGRESSION.**
+    `named_routes` raises at rtol 1e-8 now -- and measured on both data bases,
+    **the PRE-S13 data raises too, at rtol 1e-7**, one decade CLOSER to the
+    default than this audit samples. **A ONE-POINT TOLERANCE SWEEP CANNOT TELL
+    "NEWLY BROKEN" FROM "ALREADY BROKEN WHERE IT DOES NOT LOOK."** The answer is
+    confirmed at the default on both.
+
+    ⚠ **FIVE TESTS MOVED AND EACH WAS A FINDING**: S12's "exactly zero" was one
+    word too strong (water autoprotolyses, so an acid-free Skraup makes ~2.4e-25
+    mol, not 0); a documented `temperature_steady` trap **went below the default
+    tolerance** because ethanol's wrong Tb had made the transient 17x bigger
+    (`max_step` does not recover it, rtol 1e-9 does); `is_boiling` read a flask
+    integrated to its own boiling point as NOT boiling, **1.1e-15 bar** below
+    ambient, and the test had been passing on which side of the root the last bit
+    fell; the provenance test's own illustration turned inside out (**no catalog
+    species has a measured formation half on a Joback physical one any more**);
+    and benzoic acid's molar volume got WORSE, 96 -> 87.4 mL/mol against a real
+    96.5, because a measured Tb brings a Fedors Vc -- **taken anyway and written
+    down**, because a record may not mix two group-contribution methods.
+
+    ⚠ It also closed **eight tenths of M11** as a side effect: the "needs only a
+    boiling point" bucket went **10 -> 2**. RE-COST M11 before scheduling it.

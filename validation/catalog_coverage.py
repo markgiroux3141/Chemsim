@@ -103,17 +103,60 @@ from chemsim.properties.electrolyte import electrolyte_provider  # noqa: E402
 # It is not one half of anything: it is assigned to the species WHOLE, as a
 # fallback taken only after the three providers have refused (see
 # ``_mineral_fallback``), so it never meets another tier in a ``max``.
+# ⚠ ``compilation`` IS S13's ADDITION AND IT IS A TIER, NOT A ROUNDING. Some
+# boiling points come from YAWS or WIKIDATA, which ``chemicals`` itself
+# describes as published-but-unsourced -- "no data points are sourced in the
+# work". ``tools/build_physical_data`` has kept that distinction on every value
+# since the table existed, and before S13 exactly one species in the corpus
+# carried one, so this audit could get away with having no name for it. After
+# the corpus sweep 47 do, and folding them into ``measured`` would relabel an
+# unauditable compilation as a measurement -- which is the ONE thing
+# ``physical_data``'s own docstring exists to refuse.
 TIER_ORDER = [
-    "measured", "mineral", "benson", "joback", "ion", "nonvolatile", "refused",
+    "measured", "mineral", "compilation", "benson", "joback", "ion",
+    "nonvolatile", "refused",
 ]
 
 # The formation halves that are NOT an estimate. ``mineral`` belongs here for
 # the same reason ``ion`` does -- it is curated data, not a group contribution.
-SOURCED_TIERS = ("measured", "mineral", "benson", "ion")
+SOURCED_TIERS = ("measured", "mineral", "compilation", "benson", "ion")
+
+
+_PHYSICAL_MARK = "; physical half: "
+_FORMATION_PREFIX = "formation half: "
+
+
+def formation_half(source: str) -> str:
+    """Just the FORMATION half of a composite provenance string.
+
+    ⚠⚠ THIS FUNCTION IS S13's INSTRUMENT BUG, AND ``thermochemistry`` HAD
+    ALREADY WRITTEN DOWN WHY IT WOULD HAPPEN. Its ``physical_source`` field
+    carries this comment: *"Kept as its own field because a record is assembled
+    from independently-resolved halves ... deducing it by matching on the prefix
+    of a composite string is the kind of guess that goes quietly wrong the first
+    time the wording changes."* This audit was doing exactly that, in the other
+    direction: ``_thermo_tier`` was handed the WHOLE ``source`` string, which
+    names both halves, and returned ``measured`` if the word "experimental"
+    appeared anywhere in it.
+
+    ⚠ IT WAS ALMOST NEVER WRONG UNTIL IT WAS BADLY WRONG. Before S13 only 37
+    species had a measured physical half, so the physical clause almost never
+    contained "experimental" and the formation count read 144. After the corpus
+    sweep 1239 do, and the same code reported **669 species with a MEASURED
+    formation half** -- a 4.6x overstatement of the project's headline honesty
+    number, produced by a data change that touched no formation data at all.
+
+    A fully curated record has no composite form and is returned untouched.
+    """
+    if _PHYSICAL_MARK in source:
+        source = source.split(_PHYSICAL_MARK, 1)[0]
+    if source.startswith(_FORMATION_PREFIX):
+        source = source[len(_FORMATION_PREFIX):]
+    return source
 
 
 def _thermo_tier(source: str) -> str:
-    s = source.lower()
+    s = formation_half(source).lower()
     if "spectator ion" in s or "born" in s or "ion:" in s:
         return "ion"
     if "experimental" in s or "measured" in s or "codata" in s or "nist" in s:
@@ -125,17 +168,55 @@ def _thermo_tier(source: str) -> str:
     return "measured"
 
 
-def _volatility_tier(source: str, kind: str, charged: bool) -> str:
-    s = source.lower()
+def _volatility_tier(
+    source: str, kind: str, charged: bool, physical_source: str | None = None
+) -> str:
+    """Which tier the VAPOUR-PRESSURE curve rests on.
+
+    ⚠ ``physical_source`` IS PASSED BECAUSE IT IS A FIELD AND NOT PROSE.
+    ``VolatilityProvider`` writes its own sentence ("Lee-Kesler from Tb CRC_ORG
+    (experimental); Tc/Pc IUPAC ...") and S13's corpus sweep changed that
+    sentence for 1200 species at once; the old matcher recognised neither
+    "measured" nor "joback" in it and fell through to its ``return "benson"``
+    default, reporting **659 physical halves as Benson** where 20 had been. A
+    default at the bottom of a matcher is a guess, and this one guessed wrong
+    about two-fifths of the corpus.
+
+    ⚠ A record reading "Tb CRC_ORG (experimental); Tc/Pc Wilson-Jasperson; Vc
+    Fedors" counts as MEASURED, and that is the same call the audit already
+    made: the 40 species it called measured before S13 were exactly this shape.
+    Tb is the input Wilson-Jasperson takes and the point the curve is anchored
+    through, so it is the half that decides the label. The accuracy of the
+    estimated criticals that come with it is measured separately, in
+    ``validation/physical_estimation.py`` Panel 1.
+    """
     if kind == "nonvolatile":
         # An ion does not evaporate, full stop. A NEUTRAL that does not
         # evaporate is a separate claim -- see TIER_ORDER.
         return "ion" if charged else "nonvolatile"
-    if "experimental antoine" in s or "measured" in s:
-        return "measured"
+    s = (physical_source or source).lower()
     if "joback" in s:
         return "joback"
-    return "benson"
+    if "benson" in s:
+        return "benson"
+    # ⚠ ORDER MATTERS: a record whose Tb is compilation-tier says so in the same
+    # sentence that names its Wilson-Jasperson criticals, so the compilation
+    # test has to come BEFORE the experimental one.
+    if "(compilation)" in s:
+        return "compilation"
+    if "experimental" in s or "measured" in s or "curated" in s:
+        return "measured"
+    # ``element_data``'s curated solids write their provenance as ``key=SOURCE``
+    # pairs rather than prose -- "tb=crc_inorg; tm=crc_inorg; tc=matthews; ...".
+    # Five species in the corpus carry one. They are curated measurements from
+    # CRC and Matthews, named explicitly rather than pattern-matched.
+    if any(k in s for k in ("crc_inorg", "matthews", "webbook", "crc_org")):
+        return "measured"
+    raise AssertionError(
+        f"unrecognised physical provenance {s!r} -- classify it deliberately "
+        "rather than letting this matcher default, which is the fault S13 "
+        "found here"
+    )
 
 
 def refusal_bucket(why: str) -> str:
@@ -269,7 +350,9 @@ def audit_compound(comp, thermo, vol, ionic, unifac) -> dict:
             t = provider.get(mol)
             v = vol.get(mol)
             t_tiers.append(_thermo_tier(t.source))
-            v_tiers.append(_volatility_tier(v.source, v.kind, ionic_species))
+            v_tiers.append(
+                _volatility_tier(v.source, v.kind, ionic_species,
+                                 t.physical_source))
     except Exception as exc:  # noqa: BLE001
         # ⚠ THE PROVIDERS REFUSING IS NOT THE END OF THE QUESTION FOR A LATTICE.
         # All three are RIGHT to refuse one -- the fusion law is 407x wrong for

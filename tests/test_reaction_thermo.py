@@ -53,19 +53,40 @@ def test_provenance_distinguishes_measured_from_estimated(thermo):
     A record's ``source`` now names BOTH HALVES, because they are resolved
     independently -- see the resolution table in ``thermochemistry``. The halves
     genuinely differ in provenance for most species, which is the whole reason
-    the string is composite rather than a single label: ethyl acetate below has a
-    measured formation half sitting on a Joback physical one.
+    the string is composite rather than a single label: 3-methylpyridine below
+    has a JOBACK formation half sitting on a MEASURED physical one.
+
+    ⚠⚠ S13 TURNED THIS TEST'S OWN ILLUSTRATION INSIDE OUT, AND THAT IS THE
+    RESULT WORTH RECORDING. It used to read "ethyl acetate has a measured
+    formation half sitting on a Joback physical one". After the corpus sweep
+    there is **no catalog species left with that combination at all** -- the
+    physical half is measured wherever a measurement exists, which is 1239 of
+    the 1539 corpus species. The halves still differ, but now it is the
+    FORMATION half that falls back, which is the direction the tiers were always
+    meant to fail in: a boiling point is looked up, an enthalpy of formation is
+    estimated.
     """
     assert thermo.get("O").source.startswith("experimental")            # curated
 
     ester = thermo.get("CCOC(C)=O")                                     # overlay
     assert "formation half: experimental formation data" in ester.source
-    assert "physical half: Joback" in ester.source
+    assert "Tb CRC_ORG (experimental)" in ester.source
 
     assert "Benson group additivity" in thermo.get("C1COCCO1").source   # estimator
 
-    picoline = thermo.get("Cc1cccnc1")                                  # fallback
-    assert picoline.source == "formation half: Joback; physical half: Joback"
+    # ⚠ THE MIXED RECORD, AND IT NOW MIXES THE OTHER WAY. RMG's group table
+    # has no aromatic-nitrogen entry and no pyridine ring correction, so Benson
+    # cannot price 3-methylpyridine's formation half and Joback answers -- while
+    # its boiling point is CRC's.
+    picoline = thermo.get("Cc1cccnc1")                                  # mixed
+    assert picoline.source.startswith("formation half: Joback")
+    assert picoline.physical_source.startswith("Tb CRC_ORG (experimental)")
+
+    # ⚠ The bare-Joback tier is still reachable and still has to be visible:
+    # 204 catalog species resolve with BOTH halves estimated, because nothing
+    # measures them. p-Chloronitrobenzene is one.
+    bare = thermo.get("O=[N+]([O-])c1ccc(Cl)cc1")                       # fallback
+    assert bare.source == "formation half: Joback; physical half: Joback"
     # The physical half's provenance is also a field of its own, so a caller
     # building a vapour-pressure curve does not have to parse the prose.
-    assert picoline.physical_source == "Joback"
+    assert bare.physical_source == "Joback"

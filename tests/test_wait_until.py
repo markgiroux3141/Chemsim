@@ -217,7 +217,7 @@ def test_a_rate_tolerance_fires_on_the_FIRST_transient_not_the_plateau(hotplate)
     """⚠ THE TRAP THIS ARC'S OWN PROBE WAS TOO COARSE TO SEE, caught here instead.
 
     A flask whose headspace has just been filled with air evaporates hard for a
-    moment, so its dT/dt starts at -24 K/s, crosses zero inside a second, and only
+    moment, so its dT/dt starts negative, crosses zero within a second, and only
     then climbs to the steady +0.096 K/s that carries it to the boil. A bare
     ``temperature_steady`` therefore fires in that first second at 298 K -- and
     reports, correctly, that the temperature was momentarily steady.
@@ -225,8 +225,44 @@ def test_a_rate_tolerance_fires_on_the_FIRST_transient_not_the_plateau(hotplate)
     Pinned as behaviour rather than filed as a bug, because it IS what the condition
     says. The lesson is that "until it stabilises" needs the regime named first, and
     that is already expressible.
+
+    ⚠⚠ S13: THE TRAP DID NOT GO AWAY, IT WENT BELOW THE DEFAULT TOLERANCE, AND
+    WHAT MOVED IT WAS A BOILING POINT. Ethanol was priced by Joback at 337.54 K
+    against a measured 351.57, so the flask was roughly twice as volatile at
+    298 K as it should have been and the opening swing was **-24 K/s**. With the
+    measured record it is **-1.42 K/s** at 0.25 s, still crossing zero inside
+    half a second -- but BDF at the default tolerance does not resolve a spike
+    that brief, so no sign change appears at any accepted step and the condition
+    runs on to the plateau instead.
+
+    ⚠ The trap is still THERE, and the companion test below reaches it by
+    tightening the tolerance rather than by shrinking the step. ``max_step``
+    does NOT recover it (0.1 and 0.01 both still land at 966.9 s), because the
+    loose error control has smoothed the spike out of the computed solution
+    rather than merely stepping over it. **THE SOLVER IS PART OF THE
+    ARITHMETIC**, and a behaviour this project had written down was resting on a
+    wrong boiling point making a transient big enough to see.
     """
     out = hotplate.wait_until(temperature_steady(0.01), 7200.0)
+    assert not out.timed_out
+    assert out.elapsed == pytest.approx(966.9, abs=5.0), (
+        "at the default tolerance the opening swing is not resolved, so this "
+        "reaches the boiling plateau"
+    )
+    assert hotplate.T == pytest.approx(352.0, abs=1.0)
+
+
+def test_the_opening_swing_is_still_there_at_a_tighter_TOLERANCE(hotplate):
+    """The other half of the finding above: it is a resolution limit, not a fact.
+
+    ⚠ A behaviour that disappears when the tolerance is loosened has not
+    stopped happening. At rtol 1e-9 the same flask, unchanged in every other
+    respect, fires at **0.08 s and 297.78 K** -- on the evaporative swing
+    through zero, exactly where the original version of this test said it would.
+    """
+    out = hotplate.wait_until(
+        temperature_steady(0.01), 7200.0, rtol=1.0e-9, atol=1.0e-12
+    )
     assert not out.timed_out
     assert out.elapsed < 5.0, "it fires on the initial swing through zero"
     assert hotplate.T < 300.0, "nowhere near the boiling plateau"

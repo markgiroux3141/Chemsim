@@ -217,7 +217,42 @@ EXPENSIVE = ["plate_column", "fractional_distillation", "oil_of_vitriol"]
 # negative and ``num_jac`` therefore steps downward. Same overflow, a different
 # route in -- and the fix the trap was scheduled for (a diagonal on the GAS
 # block) could not have reached it.
-KNOWN_REFUSAL: dict[str, str] = {}
+KNOWN_REFUSAL: dict[str, str] = {
+    "named_routes": (
+        "aniline-route (nitrobenzene + 5 mol H2 over nickel at 470 K) raises "
+        "'Required step size is less than spacing between numbers' after "
+        "2.377e-05 s of 3600. PRE-EXISTING: it raises on the PRE-S13 data too, "
+        "at rtol 1e-7, which this sweep does not sample. The default-tolerance "
+        "answer is CONFIRMED -- 1.000000 mol of aniline on both bases, complete "
+        "conversion, and the liquid/gas split moves 2.5967 -> 2.6114 mol (0.6%). "
+        "See the block below."
+    ),
+}
+
+# ⚠⚠ THE ENTRY ABOVE, AND THE REASON IT IS A DIAGNOSIS AND NOT A REGRESSION.
+#
+# S13's corpus sweep gave nitrobenzene a measured boiling point (483.85 K
+# against Joback's 515.40) and aniline one (457.25 against 436.09), and this
+# audit -- which samples ONE tight point, rtol 1e-8 -- went from "2 lines moved"
+# to "CANNOT BE SWEPT". That reads as a regression caused by the data change.
+#
+# It is not. Measured on BOTH bases, in one script, by rebuilding the same
+# vessel through ``ThermochemistryProvider(measured_physical=...)``:
+#
+#     basis            default (1e-6)      rtol 1e-7        rtol 1e-8
+#     pre-S13 Joback   1.000000 mol        RAISES           1.000000 mol
+#     S13 measured     1.000000 mol        RAISES           RAISES
+#
+# ⚠⚠ **A ONE-POINT TOLERANCE SWEEP CANNOT TELL "NEWLY BROKEN" FROM "ALREADY
+# BROKEN AT A POINT IT DOES NOT SAMPLE."** The fragility was reachable before
+# S13 and one decade CLOSER to the default than the point this file tests; what
+# the data change moved is which tolerances happen to step over it.
+#
+# The state is a violent opening transient: 5 mol of hydrogen charged as a
+# LIQUID into 1 L at 470 K, where it is a Henry's-law solute and flashes into
+# the headspace inside 24 microseconds. Nothing about it is subtle and nothing
+# about the ANSWER is in doubt -- the conversion is complete on every run that
+# finishes, on both data bases.
 
 # ⚠⚠ AND RUNNING THAT SWEEP FOR THE FIRST TIME EXPOSED A FAULT IN THIS FILE.
 # ``--only oil_of_vitriol`` completes in 1061 s tight against 57 s loose and

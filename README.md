@@ -443,15 +443,25 @@ python validation/catalog_coverage.py  # the audit
 
 | | |
 |---|---|
-| formation half measured or Benson | **741 / 1583 (47%)** |
-| ... of which priced as a LATTICE, on the solid basis | 29 |
-| formation half falls back to Joback | 398 (25%) |
-| refused | 444 (28%), of which ~166 are charged organics the Born model correctly declines |
-| UNIFAC-decomposable (can enter an LLE) | 828 (52%) |
-| routes species-ready | **77 / 173** (was 49) |
+| formation half measured or Benson | **921 / 1583 (58%)** |
+| ... of which priced as a LATTICE, on the solid basis | 25 |
+| formation half falls back to Joback | 232 (15%) |
+| refused | 430 (27%), of which ~166 are charged organics the Born model correctly declines |
+| ⚠⚠ **PHYSICAL half measured (S13)** | **652 / 1583 (41%)**, against **40 (2.5%)** before |
+| ... plus compilation-tier (published, not auditable to a measurement) | 47 |
+| physical half falls back to Joback | 333 (21%), against 964 (61%) before |
+| UNIFAC-decomposable (can enter an LLE) | 843 (53%) |
+| routes species-ready | **80 / 173** (was 49) |
 | reaction classes with a template | **51 / 229** (was 12) |
 | routes template-ready | 41 / 173 (was 7) |
 | ⚠⚠ **routes template-ready AND species-ready — the one to quote** | **31 / 173** |
+
+⚠⚠ **S13 CLOSED THE HAND-TYPED LIST.** `properties/physical_data.py` is generated,
+and until S13 it was generated from **37 hand-typed names** — everything else in a
+1583-compound corpus fell to Joback, silently, because a Joback record *resolves*.
+It is now generated from `data/catalog` itself: **1239 species, 896 with a measured
+boiling point**, and the 881 estimates it replaced were off by a mean of 6.1% and a
+worst of 111%. See `validation/boiling_points.py` (2 s) and MILESTONES §S13.
 
 ⚠⚠ **41 IS NOT WHAT COULD RUN; 31 IS.** The three readiness columns answer
 INDEPENDENT questions and the smallest does not bound the others: a route needs a

@@ -286,8 +286,71 @@ def _measured(fn, methods_fn, cas: str, best_tier_only: bool = False, **kw):
     return None
 
 
-def collect() -> tuple[dict, list[str]]:
-    """Look up every candidate; return the table and the excluded-with-reason list."""
+# ---------------------------------------------------------------------------
+# The CORPUS candidate list -- the GENERATED input to this script
+# ---------------------------------------------------------------------------
+def corpus_candidates(hand: set[str]) -> list[tuple[str, str, tuple[str, ...]]]:
+    """Every ``data/catalog`` species with a molecular graph, deduped.
+
+    ⚠⚠ THIS FUNCTION IS THE POINT OF S13. Before it, this script's only input
+    was ``CANDIDATES`` above -- 37 hand-typed names -- and everything else in a
+    1583-compound corpus fell to Joback. The file it writes LOOKED generated
+    from the outside and was a transcription on the inside, and the coverage
+    audit could not see the difference, because a Joback record RESOLVES: it
+    answers every question put to it, confidently, in the wrong place.
+
+    ⚠ The species returned here are resolved to a CAS number BY GRAPH
+    (``"smiles=" + smi``) and not by name, which is both stronger and the only
+    thing that could work: a catalog name is a display string, and 1583 of them
+    are not going to be database keys. See ``collect(by_smiles=True)`` -- and
+    note that the formula cross-check is kept anyway, because a resolver can
+    still hand back a hydrate or a salt of what was asked for.
+
+    ⚠ Names are kept for the COMMENT above each entry only. Nothing resolves on
+    them once ``by_smiles`` is set.
+    """
+    import glob
+    import os
+
+    rows: list[tuple[str, str, tuple[str, ...]]] = []
+    seen: set[str] = set(hand)
+    catalog_dir = REPO / "data" / "catalog" / "compounds"
+    for path in sorted(glob.glob(os.path.join(str(catalog_dir), "*.psv"))):
+        with open(path, encoding="utf-8") as fh:
+            for line in fh:
+                line = line.strip()
+                if not line or line.startswith("#"):
+                    continue
+                cells = [c.strip() for c in line.split("|")]
+                if len(cells) < 3 or cells[0] == "id":
+                    continue
+                name, smiles = cells[1], cells[2]
+                if not smiles:
+                    continue
+                try:
+                    key = Molecule.from_smiles(smiles).smiles
+                except Exception:                           # noqa: BLE001
+                    continue
+                if key in seen:
+                    continue
+                seen.add(key)
+                rows.append((name, key, (cells[0].replace("-", " "),)))
+    return rows
+
+
+def collect(
+    candidates: list[tuple] | None = None,
+    by_smiles: bool = False,
+    quiet_notes: bool = False,
+) -> tuple[dict, list[str]]:
+    """Look up every candidate; return the table and the excluded-with-reason list.
+
+    ``by_smiles`` resolves the CAS from the GRAPH rather than the name, which is
+    what the corpus sweep needs. ``quiet_notes`` suppresses the per-species
+    rejection lines: they are worth reading for 37 hand-picked candidates and
+    are a 1200-line comment block for 1539 corpus ones, so the corpus pass
+    reports COUNTS instead and ``main`` prints them.
+    """
     from chemicals import (
         CAS_from_any, Hfus, Hfus_methods, Pc, Pc_methods, Tb, Tb_methods, Tc,
         Tc_methods, Tm, Tm_methods, Vc, Vc_methods, omega, omega_methods,
@@ -299,32 +362,80 @@ def collect() -> tuple[dict, list[str]]:
 
     table: dict[str, dict] = {}
     notes: list[str] = []
+    counters: dict[str, int] = {
+        "no_cas": 0, "formula_mismatch": 0, "no_tb": 0, "dropped": 0,
+        "by_graph": 0, "by_name": 0,
+    }
 
-    for name, smiles in CANDIDATES:
+    from chemicals import search_chemical
+
+    def db_formula_of(cas):
+        """The database's own formula for this CAS, or None if it has none."""
+        try:
+            return simple_formula_parser(search_chemical(cas).formula)
+        except Exception:                                   # noqa: BLE001
+            return None
+
+    for entry in (CANDIDATES if candidates is None else candidates):
+        name, smiles = entry[0], entry[1]
+        aliases = entry[2] if len(entry) > 2 else ()
         mol = Molecule.from_smiles(smiles)
         key = mol.smiles
 
-        try:
-            cas = CAS_from_any(name)
-        except Exception as exc:                            # noqa: BLE001
-            notes.append(f"{name}: no CAS resolved ({str(exc)[:50]})")
-            continue
-
-        # Guard against a name/SMILES mismatch putting one compound's boiling
-        # point on another's structure. The formula is the cheapest check that
-        # catches a genuine swap, and it is worth having because the NAME is what
-        # reaches the database while the SMILES is what keys the table -- so
-        # nothing else in the pipeline ever compares the two.
-        try:
-            from chemicals import search_chemical
-            db_formula = simple_formula_parser(search_chemical(cas).formula)
-        except Exception:                                   # noqa: BLE001
-            db_formula = None
-        if db_formula is not None and db_formula != mol.element_counts():
-            notes.append(
-                f"{name}: FORMULA MISMATCH -- database {db_formula} vs SMILES "
-                f"{mol.element_counts()}; refusing rather than pairing them"
-            )
+        # ⚠⚠ TWO KEYS, AND NEITHER ONE ALONE IS ENOUGH. THIS IS S13's LARGEST
+        # FINDING AND IT IS ABOUT S13's OWN INSTRUMENT.
+        #
+        # S11 found that ``CAS_from_any(smi)`` reads a bare SMILES as a FORMULA
+        # -- ``"C"`` returns CARBON -- and the recorded fix was "always use
+        # ``smiles=``". S13 built its whole corpus sweep on that fix, and the
+        # first table it generated had **no aniline, no nitrobenzene and no
+        # quinoline in it**, three of the most ordinary organic compounds there
+        # are, because ``chemicals``' SMILES index simply does not contain them:
+        #
+        #     CAS_from_any("smiles=Nc1ccccc1")
+        #       -> "A SMILES identifier was recognized, but it is not in the
+        #          database."
+        #     CAS_from_any("aniline")            -> 62-53-3, Tb 457.15 K
+        #
+        # ⚠ MEASURED: of 1069 corpus species with no graph-resolved CAS, **874
+        # resolve by NAME with a matching formula, and 508 of those carry a
+        # measured boiling point.** A sweep keyed only on the graph reported the
+        # gap as 322 species when it is 830. **The fix for one trap became the
+        # next trap**, and the instrument had to be audited before its finding
+        # could be.
+        #
+        # ⚠ THE FORMULA CROSS-CHECK IS WHAT MAKES THE NAME PATH SAFE, and it
+        # earns its place: it refuses 69 name matches outright. The graph is
+        # tried FIRST because it is the stronger identity claim; a name is only
+        # accepted when the database's own formula agrees with the graph the
+        # table is keyed by.
+        cas = None
+        why = ""
+        keys = [("smiles=" + key, True)] if by_smiles else []
+        keys += [(name, False)] + [(a, False) for a in aliases]
+        for probe, is_graph in keys:
+            try:
+                found = CAS_from_any(probe)
+            except Exception as exc:                        # noqa: BLE001
+                why = str(exc)[:60]
+                continue
+            db_formula = db_formula_of(found)
+            if db_formula is not None and db_formula != mol.element_counts():
+                counters["formula_mismatch"] += 1
+                if not quiet_notes:
+                    notes.append(
+                        f"{name}: FORMULA MISMATCH via {probe!r} -- database "
+                        f"{db_formula} vs SMILES {mol.element_counts()}; "
+                        "refusing rather than pairing them"
+                    )
+                continue
+            cas = found
+            counters["by_graph" if is_graph else "by_name"] += 1
+            break
+        if cas is None:
+            if not quiet_notes:
+                notes.append(f"{name}: no CAS resolved ({why})")
+            counters["no_cas"] += 1
             continue
 
         tb = _measured(Tb, Tb_methods, cas)
@@ -353,11 +464,12 @@ def collect() -> tuple[dict, list[str]]:
         # one derived number -- the same rule that forbids ATCT enthalpy beside
         # CRC entropy inside one formation entry.
         if (tc is None) != (pc is None):
-            notes.append(
-                f"{name}: Tc/Pc SPLIT -- one measured and one not "
-                f"(Tc={tc}, Pc={pc}); taking neither, because they combine into "
-                "the acentric factor and must share a basis"
-            )
+            if not quiet_notes:
+                notes.append(
+                    f"{name}: Tc/Pc SPLIT -- one measured and one not "
+                    f"(Tc={tc}, Pc={pc}); taking neither, because they combine "
+                    "into the acentric factor and must share a basis"
+                )
             tc = pc = None
 
         # Recorded for CROSS-CHECKING only, never used to build a record. omega
@@ -370,20 +482,24 @@ def collect() -> tuple[dict, list[str]]:
             om = None       # back-computed from a vapour pressure, not independent
 
         if tb is None:
-            offered = Tb_methods(cas)
-            why = (
-                f"only estimated sources offered ({offered})"
-                if offered else "no source at all"
-            )
-            notes.append(
-                f"{name}: Tb REJECTED -- {why}. Wilson-Jasperson takes Tb as an "
-                "input, so this species gets no Tc/Pc from that route and cannot "
-                "reach a Benson formation half. Its Tm is still kept below where "
-                "one exists: a solid that never boils still crystallises."
-            )
+            counters["no_tb"] += 1
+            if not quiet_notes:
+                offered = Tb_methods(cas)
+                why = (
+                    f"only estimated sources offered ({offered})"
+                    if offered else "no source at all"
+                )
+                notes.append(
+                    f"{name}: Tb REJECTED -- {why}. Wilson-Jasperson takes Tb "
+                    "as an input, so this species gets no Tc/Pc from that route "
+                    "and cannot reach a Benson formation half. Its Tm is still "
+                    "kept below where one exists: a solid that never boils "
+                    "still crystallises."
+                )
             # Tm/Hfus are still worth keeping: a solid that never boils still
             # crystallises, and Tm drives the solubility law exponentially.
             if tm is None:
+                counters["dropped"] += 1
                 continue
 
         # Classify against Joback so a candidate that needs no help is visible.
@@ -399,6 +515,7 @@ def collect() -> tuple[dict, list[str]]:
             omega_ref=om, joback=joback_state,
         )
 
+    collect.counters = counters                             # type: ignore[attr-defined]
     return table, notes
 
 
@@ -530,8 +647,10 @@ FEDORS_GROUP_SMARTS: dict[str, str] = {{
 '''
 
 
-def physical_data_source(table: dict, notes: list[str]) -> str:
+def physical_data_source(table: dict, notes: list[str], summary: str = "") -> str:
     note_block = "\n".join(f"#   * {n}" for n in notes) or "#   (none)"
+    sweep = sorted(k for k, r in table.items() if r["origin"] == "corpus")
+    sweep_block = "\n".join(f"    {k!r}," for k in sweep) or "    # (none)"
     entries: list[str] = []
     for key, rec in sorted(table.items(), key=lambda kv: kv[1]["name"]):
         def half(v):
@@ -539,7 +658,8 @@ def physical_data_source(table: dict, notes: list[str]) -> str:
                 return "None"
             return f"Measured({v[0]!r}, {v[1]!r}, {v[2]!r})"
         entries.append("\n".join([
-            f"    # {rec['name']}  (CAS {rec['cas']}; Joback: {rec['joback']})",
+            f"    # {rec['name']}  (CAS {rec['cas']}; Joback: {rec['joback']}"
+            f"{'' if rec['origin'] == 'hand' else '; corpus sweep'})",
             f"    {key!r}: MeasuredPhysical(",
             f"        Tb={half(rec['Tb'])},",
             f"        Tm={half(rec['Tm'])},",
@@ -609,7 +729,37 @@ entire value. Entries whose only source is ``ACENTRIC_DEFINITION`` are dropped,
 because that is omega back-computed from a vapour pressure and so is not
 independent of the thing being checked.
 
-WHAT WAS LOOKED UP AND REJECTED, with the reason:
+## ⚠⚠ WHERE THE CANDIDATE LIST COMES FROM, AND WHY THAT SENTENCE IS THE POINT
+
+Two inputs, and the second one is S13's whole subject:
+
+``CANDIDATES``      a hand-typed list in the builder, for classes Joback
+                    genuinely lacks and for species a template needed.
+
+``corpus_candidates``  EVERY species in ``data/catalog`` with a molecular
+                    graph, resolved to a CAS number by GRAPH.
+
+Until S13 there was only the first, and it held 37 names. A file generated from
+a hand-typed list reads as systematic from the outside and is a transcription on
+the inside -- and nothing could see the difference, because a Joback record
+RESOLVES. It answers every question put to it, confidently, in the wrong place.
+``validation/boiling_points.py`` is the instrument that made that a number.
+
+⚠ THE CORPUS PASS RESOLVES BY ``"smiles=" + smi`` AND NEVER BY NAME.
+``chemicals.CAS_from_any("C")`` returns CARBON, because a bare SMILES is read as
+a FORMULA and a single-letter SMILES is also an element symbol. The formula
+cross-check is kept anyway: a graph query can still come back with a hydrate.
+
+⚠ ``CORPUS_SWEEP`` below names every entry that came from the second input. It
+exists so ``tests/test_critical.py`` can tell a batch-costed entry from a
+hand-costed one -- see ``DELIBERATE_OVERRIDES`` there, and the batch cost
+recorded in MILESTONES.md §S13.
+
+{summary}
+
+WHAT WAS LOOKED UP AND REJECTED, with the reason (HAND-LIST CANDIDATES ONLY --
+the corpus pass reports counts instead, because 1500 rejection lines is a
+comment block nobody reads):
 {note_block}
 """
 
@@ -643,6 +793,14 @@ class MeasuredPhysical(NamedTuple):
     omega_reference: Measured | None = None
 
 
+# Every entry that came from the CORPUS sweep rather than the hand-typed
+# candidate list. ``tests/test_critical.py`` reads this to tell a batch-costed
+# override from a hand-costed one; nothing in the engine reads it.
+CORPUS_SWEEP: frozenset[str] = frozenset((
+{sweep_block}
+))
+
+
 MEASURED_PHYSICAL: dict[str, MeasuredPhysical] = {{
 {chr(10).join(entries)}
 }}
@@ -655,15 +813,54 @@ def main() -> int:
     args = parser.parse_args()
 
     table, notes = collect()
+    for rec in table.values():
+        rec["origin"] = "hand"
+    hand_counters = dict(collect.counters)                  # type: ignore[attr-defined]
+
+    corpus = corpus_candidates(set(table))
+    corpus_table, _ = collect(corpus, by_smiles=True, quiet_notes=True)
+    corpus_counters = dict(collect.counters)                # type: ignore[attr-defined]
+    for key, rec in corpus_table.items():
+        if key in table:
+            continue                # the hand list wins; it was chosen on purpose
+        rec["origin"] = "corpus"
+        table[key] = rec
+
+    summary = chr(10).join((
+        f"MEASURED AT GENERATION: {len(CANDIDATES)} hand-typed candidates and "
+        f"{len(corpus)} corpus species with a",
+        "molecular graph. Of the corpus pass:",
+        "",
+        f"    resolved to a CAS by GRAPH ('smiles=')    "
+        f"{corpus_counters['by_graph']:5d}",
+        f"    resolved to a CAS by NAME                 "
+        f"{corpus_counters['by_name']:5d}   <- see the two-key note above",
+        f"    name matched a DIFFERENT formula, refused "
+        f"{corpus_counters['formula_mismatch']:5d}",
+        f"    no CAS from either key                    "
+        f"{corpus_counters['no_cas']:5d}",
+        f"    CAS, but no non-estimated Tb anywhere     "
+        f"{corpus_counters['no_tb']:5d}",
+        f"    entered the table                         "
+        f"{len(corpus_table):5d}",
+    ))
 
     with_tb = sum(1 for r in table.values() if r["Tb"])
+    n_corpus = sum(1 for r in table.values() if r["origin"] == "corpus")
     print(
-        f"candidates: {len(CANDIDATES)}   species in table: {len(table)}   "
-        f"with a measured Tb: {with_tb}   Tb rejected or absent: {len(notes)}"
+        f"hand candidates: {len(CANDIDATES)}   corpus candidates: {len(corpus)}"
+        f"   species in table: {len(table)} ({n_corpus} from the corpus)   "
+        f"with a measured Tb: {with_tb}   hand-list Tb rejected or absent: "
+        f"{len(notes)}"
     )
+    print(f"hand-list counters:   {hand_counters}")
+    print(f"corpus-pass counters: {corpus_counters}")
     print()
     print(f"{'species':32s} {'joback':15s} {'Tb':21s} {'Tm':12s} {'Hfus':8s} {'Tc':12s} {'Pc':11s} Vc")
-    for _, rec in sorted(table.items(), key=lambda kv: kv[1]["name"]):
+    for _, rec in sorted(
+        ((k, r) for k, r in table.items() if r["origin"] == "hand"),
+        key=lambda kv: kv[1]["name"],
+    ):
         def s(v, w=12):
             if not v:
                 return f"{'-':<{w}}"
@@ -699,7 +896,7 @@ def main() -> int:
     out_dir = REPO / "src" / "chemsim" / "properties"
     for filename, source in (
         ("critical_data.py", critical_data_source()),
-        ("physical_data.py", physical_data_source(table, notes)),
+        ("physical_data.py", physical_data_source(table, notes, summary)),
     ):
         path = out_dir / filename
         path.write_text(source, encoding="utf-8")

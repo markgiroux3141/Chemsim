@@ -1373,7 +1373,10 @@ def wacker_oxidation(
 #
 #                     dH / kJ    dG298 / kJ    dS / J/(mol K)
 #     ideal gas       -561.63       -572.55           +36.65
-#     pure liquid     -725.16       -627.05          -329.08
+#     pure liquid     -715.04       -623.12          -308.31   (S13; was
+#                                                               -725.16 /
+#                                                               -627.05 /
+#                                                               -329.08)
 #
 # ⚠⚠ **THE TWO BASES DO NOT AGREE ON THE SIGN OF dS, AND THE EASY ONE IS THE
 # WRONG ONE.** Seven molecules become nine, so counting molecules gives a
@@ -1381,13 +1384,20 @@ def wacker_oxidation(
 # more favourable. That argument is about a gas-phase reaction and this is not
 # one: `phase="liquid"` makes `reaction_deltas` put every condensable species on
 # its own pure liquid, and NINE product molecules condense against SEVEN reactant
-# ones. It is worth 163.53 kJ/mol in dH and it flips dS. **The gas-basis numbers
+# ones. It is worth 153.41 kJ/mol in dH and it flips dS. **The gas-basis numbers
 # were written into this comment first, off a hand calculation, and the audit
 # caught them.**
 #
+# ⚠ S13 MOVED THE LIQUID ROW AND LEFT THE GAS ROW ALONE, WHICH IS THE CLEANEST
+# demonstration of what the two bases are made of. The corpus sweep gave
+# acrolein and quinoline measured boiling points; the liquid standard state is a
+# stack of enthalpies of vaporisation built out of exactly those, so it moved by
+# 10 kJ/mol. Formation data did not change, so the gas row did not move by a
+# digit. `test_the_two_standard_states_disagree_on_the_sign_of_dS` pins both.
+#
 # ⚠ **IRREVERSIBLE IS SAFE ANYWAY, FOR THE OTHER REASON.** ln K on the basis the
-# engine actually uses is **252.9 at 298 K, 154.2 at 450 and 105.8 at 600**, and
-# dG reaches zero only at **2204 K**. S11's rule -- count the moles of GAS on
+# engine actually uses is **251.4 at 298 K, 154.0 at 450 and 106.3 at 600**, and
+# dG reaches zero only at **2319 K**. S11's rule -- count the moles of GAS on
 # each side before giving up a reverse, because hydroformylation's three-gas-to-
 # one equilibrium turns over at a reachable temperature and irreversible lied by
 # a factor of 6000 -- is answered here by there being no gas in the rate law at

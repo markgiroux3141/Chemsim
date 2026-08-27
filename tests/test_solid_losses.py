@@ -113,7 +113,23 @@ def test_the_crust_volume_is_the_wetted_area_times_one_particle_layer(net):
     # that could disagree with the one the RHS integrates.
     molar_volume = src.solid_volume / got.retained_solid          # L/mol
     assert got.retained_solid * molar_volume == pytest.approx(expected_litres)
-    assert 0.09 < molar_volume < 0.11, "benzoic acid is ~96 mL/mol"
+    # ⚠⚠ S13 MADE THIS NUMBER WORSE AND THE RECORD BETTER, WHICH IS A REAL
+    # COST AND IS WRITTEN DOWN RATHER THAN WIDENED AWAY. Benzoic acid's
+    # physical half was Joback's throughout; the corpus sweep gave it a measured
+    # CRC boiling point, and with it come Wilson-Jasperson Tc/Pc and a FEDORS
+    # Vc, because a record may not mix two group-contribution methods inside
+    # itself. Fedors puts Vc at 326.43 cm3/mol against Joback's 343.50, and the
+    # literature is ~341 -- so on THIS species the estimator that came with the
+    # measurement is the worse of the two, and the molar volume fell from
+    # 96 mL/mol to 87.4 against a real ~96.5.
+    #
+    # ⚠ Taken anyway, and the reason is the rule rather than the species:
+    # `physical_estimation.py` Panel 1 measures Fedors at 7.7% mean on Vc and
+    # that error is KNOWN, while cherry-picking Joback's Vc onto a measured Tb
+    # would put two methods in one record. The consequence here is bounded --
+    # a 9% molar volume against an 80 um crystal-size assumption that is itself
+    # a modelling choice.
+    assert 0.08 < molar_volume < 0.11, "benzoic acid is ~96 mL/mol, priced at 87"
 
 
 def test_a_denser_solid_leaves_more_mass_behind_with_no_per_species_parameter(net):
