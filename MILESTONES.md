@@ -4088,7 +4088,33 @@ is where "add the boring reactions until the corpus is covered" lives, and the
 G-series does nothing that makes it harder -- every template the G-series builds
 counts for coverage too. The decision is about ORDER, not about scope.
 
-## G1 -- The dropping funnel, and the first playground  *(the fastest testable slice)*
+## G1 -- The dropping funnel, and the first playground  ~~*(the fastest testable slice)*~~ ✔✔ **DONE 2026-08-27**
+
+⚠⚠ **AND THE BRIEF BELOW NAMED THE WRONG GAP. READ HANDOFF §99 FIRST.** Every
+one of the four items in the build list already existed as the rig's `meter`
+edge, which `rig_integrator` documents as *"a dropping funnel or a syringe
+pump"*: it delivers a set rate, it CARRIES THE DONOR'S SENSIBLE HEAT (270 K
+funnel -> pot at 298.13 K, 370 K funnel -> 364.12 K, same moles), its reservoir
+runs out exactly (0.001 to 10 mol/s, conserved to 1e-12), and `SET_EDGE`
+already opens and shuts it inside a saveable scenario. A `feed` vector was
+REFUSED as a second home for all of it, with a `feed_T` that is a declared
+constant where a funnel VESSEL's temperature is a solved one.
+
+⚠⚠ **WHAT WAS REAL IS THE ONE THING THE BRIEF SAID CAME FOR FREE.** *"It
+composes with `wait_until` for free"* is FALSE, for exactly the reason
+`collect_fraction` exists: an Event carries an absolute `t`, so a tap-close
+scheduled after a discovered instant bakes THIS run's crossing into the recipe
+and the same recipe REFUSES at twice the charge. `World.add_dropwise` stores
+the condition. **SAVE_VERSION 5 -> 6** -- for a different reason than the brief
+gave: an unknown SCRIPT VERB is discovered part-way through `run_script`, so a
+v5 reader stops half-way through a recipe holding a world that looks finished.
+
+⚠ **NO RHS EDIT, SO `tolerance_audit.py` WAS NOT OWED.** Playground:
+`examples/dropping_funnel.py` (39 s). Audit: `validation/dropwise.py` (78 s).
+
+*The original brief follows, kept because the measurement that overturned it
+only means something against it.*
+
 
 ⚠⚠ **THE TARGET VIGNETTE, IN THE USER'S OWN WORDS**: toss a handful of materials
 in a vessel, heat it, drip an acid in -- and *if you drip too much at once it
@@ -4138,7 +4164,37 @@ temperature genuinely selects the product -- and both feedstocks are
 **from-the-ground** (fermentation, then vinegar). ⚠⚠ **DO NOT BUILD IT ON
 NITRATION -- MEASURED AND REFUSED, SEE G2.**
 
-## G2 -- Ring deactivation, so nitration is a PROCESS and not an EVENT
+## G2 -- Ring deactivation, so nitration is a PROCESS and not an EVENT ✔✔ **DONE 2026-08-27**
+
+✔ **BUILT AS THE BRIEF SCOPED IT, AND ITS FOUR DESIGN QUESTIONS ALL ANSWERED
+THE WAY IT GUESSED.** It lives at SETUP (`build_network` bakes the shifted `Ea`
+into the kinetics array -- no RHS edit, no tolerance-audit exposure); the
+basis is Hammett; an unsubstituted ring keeps the declared barrier BIT FOR
+BIT; and the corpus cost is four measured routes. See HANDOFF §100 and
+`src/chemsim/reactions/hammett.py`.
+
+⚠⚠ **THE ONE THING THE BRIEF DID NOT SAY, AND IT IS S12'S FINDING AGAIN: A rho
+IS MEANINGLESS WITHOUT ITS SIGMA SCALE.** The table is **sigma-PLUS** (Brown &
+Okamoto 1958), because electrophilic substitution builds positive charge on
+the ring -- methoxy is -0.27 on sigma and -0.778 on sigma+, amino -0.66 and
+-1.30. A sigma+-fitted rho applied to aqueous sigma is two bases multiplied
+together.
+
+**The result**: three barriers 25.0 kJ/mol apart, and 1.0 mol toluene + 3.5 mol
+nitric acid is mono at 300 K/10 s, di at 300 K/100 s and 340 K/1 h, and TNT
+only at 380 K -- the escalating sequence real manufacture uses. `tnt-route`
+0.1528 -> 0.0662 mol (worse and righter); `benzene-nitration` 0.1762 ->
+**0.8000** and `picric-acid-route` 0.0481 -> **0.1208** (both improvements,
+because a mononitration can now STOP); `ddt-route` unchanged.
+
+⚠ **THREE THINGS IT DOES NOT DO AND THEY ARE NAMED**: no regioselectivity (the
+sum has no attacked carbon in it), no PROTONATION (aniline is priced as a free
+base at 2.8e8 x benzene where the real anilinium is slower than benzene, and
+4-aminophenol drives the barrier through a reported clamp), no sterics.
+**Protonation coupled into a barrier is the next item on this branch.**
+
+*The original brief follows.*
+
 
 ⚠⚠ **THE OBVIOUS DEMO REACTION WAS TESTED FIRST AND IT DOES NOT WORK.** Nitration
 is the canonical add-slowly-or-it-runs-away reaction in all of chemistry, so it

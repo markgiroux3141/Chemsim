@@ -82,6 +82,7 @@ python examples/workshop.py             # crystallisation, melting, pH/titration
 python examples/activity.py             # azeotropes and real solubilities, from UNIFAC
 python examples/named_routes.py         # 17 named historical routes, integrated end to end
 python examples/mercury_retort.py       # a route that EMERGES from two declarations
+python examples/dropping_funnel.py      # drip it too fast and the pot runs away
 ```
 
 ## The interface

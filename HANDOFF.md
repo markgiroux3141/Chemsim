@@ -5875,3 +5875,172 @@ RESOLVED since the last handoff:
 
     ⚠ It also closed **eight tenths of M11** as a side effect: the "needs only a
     boiling point" bucket went **10 -> 2**. RE-COST M11 before scheduling it.
+
+99. ✔✔ **G1 — THE DROPPING FUNNEL WAS ALREADY BUILT, AND WHAT WAS MISSING WAS A
+    WAY TO *SAY* IT.** The brief scoped G1 as engine work: a `feed` vector on
+    `VesselConditions`, a `feed_T` beside it ("THIS TERM IS THE WHOLE POINT"), a
+    `SET_FEED` event, `SAVE_VERSION` 5 → 6, and a funnel whose reservoir is a
+    DERIVED DURATION. **None of it was built, and the reason is measured rather
+    than argued.**
+
+    ⚠⚠ **THE RIG'S `meter` EDGE HAS BEEN A DROPPING FUNNEL SINCE LAYER 5**, and
+    `rig_integrator` says so in its own docstring — *"a dropping funnel or a
+    syringe pump"*. All four halves of the brief already existed:
+
+    * it **delivers its set rate** (`test_rig` has pinned that since Layer 5);
+    * it **carries the donor's SENSIBLE HEAT** — a funnel at 270 K leaves the pot
+      at **298.13 K** where one at 370 K leaves it at **364.12 K**, on the same
+      0.55 mol either way. That is the term the brief called the whole point, and
+      `rig_integrator` has carried `flux @ Cp_donor * (T_src - T_dst)` on every
+      liquid edge since it was written;
+    * its **reservoir runs out, exactly**: at rates from 0.001 to **10 mol/s**
+      the funnel lands on 0.0 and the pair conserves 0.5 mol to **1e-12**;
+    * and **`SET_EDGE` already opens and shuts it inside a saveable scenario**,
+      because `Scenario.edges` has spelled `"meter"` since M2.
+
+    ⚠ **A `feed` VECTOR WOULD HAVE BEEN A SECOND HOME FOR ALL OF IT**, with a
+    `feed_T` that is a DECLARED CONSTANT where a funnel vessel's temperature is a
+    SOLVED one you can put in an ice bath with a thermal edge. Refused.
+
+    ⚠⚠ **WHAT WAS REAL IS ONE LAYER UP, AND THE BRIEF PREDICTED THE OPPOSITE OF
+    IT.** *"It composes with `wait_until` for free — 'drip until the pot reaches
+    340 K, then stop' needs no new machinery."* Measured: it needs exactly the
+    machinery `collect_fraction` needed, and for the same reason. An `Event`
+    carries an absolute `t`, so `wait_until` followed by `now(SET_EDGE)` records
+    **this run's** crossing — 20.348728 s — and replaying the same recipe against
+    twice the charge REFUSES, because that pot reaches 340 K at 31.5 s:
+
+        ValueError: cannot schedule 'set_edge' at t=20.348728465329184 --
+        the world is already at t=31.513289...
+
+    ⚠ **THE REFUSAL IS THE GOOD CASE.** A crossing landing a hair EARLIER would
+    still be in the future and the tap would shut at an instant this run never
+    found, silently. `World.add_dropwise(edge, rate, watch, until, timeout,
+    close=True)` stores the CONDITION and never the instant, turns both taps
+    through `_set_edge` rather than the queue, and refuses a non-meter edge —
+    a drain's `k` is a reciprocal residence time, not mol/s.
+
+    **`SAVE_VERSION` 5 → 6**, and for a reason the brief did not have: an unknown
+    SCRIPT VERB is only discovered part-way through `run_script`, so a v5 reader
+    would execute every entry before it and stop half-way through a recipe
+    holding a world that looks finished.
+
+    ⚠⚠ **`ran_dry` IS READ OFF WHAT IS LEFT IN THE FUNNEL, NOT OFF A DELIVERY
+    SHORTFALL — AND THE FIRST DRAFT GOT THAT WRONG.** The obvious test is
+    `delivered < rate * elapsed`, and it does not survive a real funnel: with a
+    headspace over it the donor's liquid inventory falls FASTER than the tap
+    takes it, measured **0.40799 mol against a nominal 0.40702**. Two numbers
+    that each carry their own error term cannot be subtracted to decide a third.
+
+    ⚠⚠ **AND `total / rate` IS WRONG TWICE OVER.** Besides being derived data, a
+    meter moves the donor's **SOLUTION**: 0.2 mol of acid in 0.1 mol of water at
+    0.01 mol/s takes **30 s and not 20**, so the brief's derived duration would
+    have shut the tap with a third of the charge still in the funnel and reported
+    success. A test caught its own author on that arithmetic.
+
+    ⚠ **NO RHS EDIT AND NO DATA TABLE, so `tolerance_audit.py` is NOT OWED** —
+    which is the largest practical consequence of the finding.
+
+    **THE PLAYGROUND**, `examples/dropping_funnel.py`, 39 s: peak pot temperature
+    runs **382 K → 283 K** across a 100x tap change over a weak bath and
+    **320 K → 278 K** over a strong one. Nobody wrote a runaway; it is `q_rxn`
+    against `UA*(T - T_env)` and the tap is what sets `q_rxn`.
+
+    ⚠ **AND THE VIGNETTE'S LAST CLAUSE IS THE ONE PANEL IT DOES NOT RUN, WHICH IS
+    A MEASUREMENT AND NOT AN OMISSION.** Bolting a head and a receiver onto the
+    two-vessel bench took the same 20-second addition from **3.9 s of wall clock
+    to 220 s — 56x** — because a rig integrates every vessel as ONE stiff system
+    and a vapour edge couples the pressures across all of it; and the cut it then
+    produced was poor (the head entered the 345–368 K band at 89 s and had not
+    left it 2911 s later, having passed 0.016 mol). Both are recorded in the
+    example. A cut itself has been sayable since M2 and two examples are it.
+
+    ⚠ **AND THE SENSIBLE-HEAT TERM ALONE CANNOT PRODUCE THE VIGNETTE**, which is
+    its own panel: the same moles carry the same joules however fast they arrive,
+    so an INSULATED pot lands in the same place — **0.15 K of spread across a 25x
+    rate change**. A rate only matters against another rate. That is why the
+    playground is a nitration (−141.2 kJ/mol) and not an esterification (−3.2).
+
+100. ✔✔ **G2 — A RING KNOWS WHAT IS ALREADY ON IT, SO NITRATION IS A PROCESS.**
+    `aromatic_nitration` gave one `A` and one `Ea` to every nitration on every
+    substrate, so 1.0 mol of toluene and 3.5 mol of nitric acid reached the SAME
+    four numbers at 300 K after ten seconds and at 380 K after a thousand. There
+    was no stage to catch and nothing for an addition rate to control.
+
+        rho = 0     T/K   t/s  toluene   mono     di     tri
+                    300    10   0.0045 0.0303 0.0745  0.2422
+                    380  1000   0.0045 0.0303 0.0745  0.2422   <- identical
+
+        rho = -6.5  300    10   0.0000 0.6339 0.3661  0.0000
+                    300   100   0.0000 0.0721 0.9278  0.0001
+                    340    10   0.0000 0.0015 0.9971  0.0014
+                    340  3600   0.0000 0.0000 0.7345  0.2655
+                    380  1000   0.0000 0.0000 0.1241  0.8756
+
+    A three-stage process out of three barriers **25.0 kJ/mol** apart, and nobody
+    typed 25: it is `-ln(10) * R * 298.15 * rho * sigma+_meta(NO2)`.
+
+    ⚠⚠ **NOT `alpha`, AND THE REFUSAL IS MEASURED RATHER THAN ARGUED.**
+    Evans-Polanyi scales the barrier with dH, and on THIS network the DEACTIVATED
+    ring's step is the more exothermic one — benzene → nitrobenzene **−141.2
+    kJ/mol** against nitrobenzene → dinitrobenzene **−268.1** — so any positive
+    `alpha` makes the second nitration FASTER. `ReactionTemplate` refuses `rho`
+    and `alpha` together and prints those two numbers as the reason.
+
+    ⚠⚠ **A rho IS MEANINGLESS WITHOUT ITS SIGMA SCALE, WHICH IS S12'S FINDING IN
+    ANOTHER SUIT.** The table is **sigma-PLUS** (Brown & Okamoto 1958), because
+    electrophilic substitution builds positive charge on the ring: methoxy is
+    **−0.27 on sigma and −0.778 on sigma+**, amino **−0.66 and −1.30**. Applying
+    a sigma+-fitted rho to aqueous sigma constants would multiply two bases
+    together. ⚠ The two rows with no published sigma+ are labelled `PROXY` and
+    are both ELECTRON ACCEPTORS — the case where the scales agree — and a test
+    refuses a donor in that set.
+
+    ⚠ **ANCHORED AT 298.15 K AND NOT AT `T_ref`.** sigma+ and rho are tabulated
+    from rate ratios at 25 C, so 25 C is the only temperature the conversion
+    reproduces the number it came from. Using the network's build temperature
+    would make one template mean different things in two scenarios with nothing
+    saying it should; a test builds at 280 K and 500 K and asserts equality.
+
+    ⚠ **`meta_directing` IS DECLARED AND NOT DERIVED FROM THE SIGN OF SIGMA.**
+    All four halogens deactivate (`sigma+_meta` +0.35 to +0.41) and all four are
+    ORTHO/PARA directors. A rule of "meta-directing iff sigma_para > 0" would put
+    the incoming group in the wrong place on every halobenzene in the corpus.
+
+    **WHERE IT LIVES: SETUP.** `build_network` bakes the shifted `Ea` into the
+    kinetics array, so there is **no RHS edit and no tolerance-audit exposure** —
+    which is what the brief's first design question asked and got right.
+
+    **WHAT IT COLLAPSES TO**: an unsubstituted ring keeps the declared barrier
+    **bit for bit** (`barrier_shift` returns a literal `0.0`), and every other
+    template leaves `rho` at 0.0, so no non-nitrating network moved. Catalog
+    artefacts byte-identical: **+0 classes, +0 templates, +0 on the BOTH column**,
+    all four predicted before measuring.
+
+    ⚠ **WHAT IT COST THE CORPUS, AND TWO OF THE FOUR ARE IMPROVEMENTS:**
+
+    | route | before | after | |
+    |---|---:|---:|---|
+    | `tnt-route` | 0.1528 | **0.0662** mol | worse and RIGHTER — real TNT needs ~380 K for the third stage |
+    | `benzene-nitration` | 0.1762 | **0.8000** mol | the mononitration can STOP now instead of running on |
+    | `picric-acid-route` | 0.0481 | **0.1208** mol | phenol is activated, dinitrophenol is not |
+    | `ddt-route` | 0.1667 | 0.1667 | unchanged — it does not nitrate |
+
+    ⚠⚠ **THREE THINGS IT DOES NOT DO, NAMED IN `hammett.py` RATHER THAN
+    DISCOVERED LATER.** **No REGIOSELECTIVITY** — the sum has no attacked carbon
+    in it, so the three dinitrobenzenes are still made at one rate; fixing it
+    needs the builder to carry the site, which it discards. **No PROTONATION** —
+    aniline is priced as a free base at **2.8e8 x benzene** where the real
+    anilinium ion is SLOWER than benzene, and 4-aminophenol (Σσ+ = −2.220, a
+    −82.4 kJ/mol shift) drives the barrier through zero. `clamp_barrier` floors
+    it and `build_network` emits a NOTICE saying the rate is now `A` alone and
+    that the missing physics is the protonation. **No STERICS.**
+
+    ⚠ **AND WHERE IT IS MEASURABLY WRONG IS PRINTED BESIDE THE SUCCESSES**:
+    toluene predicts `k/k0` = **105** against a measured **~25**, about 4x high
+    out of a one-parameter model whose rho is quoted over a −6.0 to −7.3 band.
+
+    ⚠ `validation/rate_ceiling.py` gained the two nitration networks — the one
+    template whose barrier is not the one it declares, and the floored case where
+    the pre-exponential IS the rate. Activated nitration sits at 1.0e10, **one
+    tenth of the collision ceiling**.
