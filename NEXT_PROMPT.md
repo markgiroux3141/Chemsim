@@ -4,6 +4,12 @@ Red) in d:\Claude Code Projects\Chemistry Simulator.
 **The plan is `MILESTONES.md`. Read it first — it is the authority on what to
 build and in what order.** **M0–M6, M8, M12, S1–S13 are DONE.**
 
+⚠⚠⚠ **THE PLAN CHANGED ON 2026-08-27 AND THIS SESSION IS `G1` + `G2`.** The
+catalog is a measuring instrument and was being read as a specification; the
+goal is now a connected tech tree a player can walk from natural materials.
+**Read MILESTONES § THE G-SERIES, then the G1/G2 brief below.** Coverage work
+is DEFERRED to a C-series, not cancelled.
+
 # ⚠ THE BASELINE IS MEASURED. DO NOT START WITH THE SUITE.
 
 **S13 RAN THE WHOLE SUITE AT THE END AND MEASURED 965 PASSED / 0 FAILED IN 21:36.**
@@ -65,7 +71,213 @@ diagnosis before acting on any of them.
 
 ---
 
-# ⚠⚠ START HERE: THE ENGINE AND HONESTY QUEUE
+# ⚠⚠⚠ START HERE: **G1 AND G2 ARE THIS SESSION.** THE PLAN CHANGED ON 2026-08-27
+
+⚠⚠ **READ `MILESTONES.md` SECTION "THE G-SERIES" FIRST. IT IS THE BRIEF AND IT
+CARRIES THE MEASUREMENTS THIS SUMMARY COMPRESSES.**
+
+**The direction changed by decision, not by discovery.** The catalog is a
+MEASURING INSTRUMENT and was being read as a SPECIFICATION. The goal is now:
+
+> **A connected tech tree: ~10 natural starting materials to ~40 targets, every
+> one reachable from the ground, with the 1800s aromatic branch lit up.**
+
+⚠ **COVERAGE IS DEFERRED, NOT CANCELLED** -- the C-series holds "grind out the
+remaining classes including the boring ones", nothing in the G-series makes it
+harder, and every G-series template counts toward it. **Do not quietly go back to
+coverage work because it is more familiar.**
+
+⚠ **WHY THE SCOREBOARD HAD TO CHANGE, IN ONE LINE EACH:** of the 31 routes in the
+BOTH column **only 13 connect to natural materials**; and `benzene-nitration`
+scores as not-template-ready while the engine nitrates benzene quantitatively
+today (1.0000 mol, conservation clean). It mismeasures in **both** directions.
+
+---
+
+## ⚠⚠ G1 -- THE DROPPING FUNNEL, AND THE FIRST PLAYGROUND
+
+**THE TARGET VIGNETTE, IN THE USER'S OWN WORDS.** Toss a handful of materials in
+a vessel, heat it, drip an acid in -- and *if you drip too much at once it heats
+up and changes the reaction*, so you have to cool it and add slowly -- then
+collect the vapour, run it through a condenser, and take the drops in a
+temperature range.
+
+⚠⚠ **MEASURED 2026-08-27: EXACTLY ONE MECHANIC IS MISSING.** Everything else in
+that sentence already works.
+
+| the vignette | the engine |
+|---|---|
+| a handful of materials in a vessel | ✔ `Vessel.charge` |
+| heat it up | ✔ `Q_input` / `SET_HEAT` |
+| **drip an acid in slowly** | **MISSING -- THIS IS G1** |
+| too fast -> it heats up -> the reaction changes | ✔ emergent once a feed exists |
+| cool it down | ✔ `SET_ENVIRONMENT`, `UA` |
+| collect the vapour, condense it | ✔ `Rig.vapour` + `Rig.drain` |
+| take the drops in a temperature range | ✔ `collect_fraction(enter, leave)` -- M2 |
+
+### ⚠⚠ `ingress` IS NOT THE MECHANIC AND MUST NOT BE STRETCHED INTO IT
+
+It is **mol/s into the HEADSPACE**, it is a **constant**, and it models an air
+leak. A dropping funnel adds to **liquid layer 1**, carries **sensible heat**, and
+**runs out**. Read `ingress` for the SHAPE of the plumbing and then write a
+separate term.
+
+### The build, with the code locations already found
+
+1. **`VesselConditions.feed`** -- an `(n,)` mol/s vector. `VesselConditions` is at
+   `numerics/vessel_integrator.py` ~line 1317 (`Q_input`, `heat_capacity`,
+   `ingress` at ~1342). It is unpacked at ~1526 and read in the RHS at ~1781.
+2. **The RHS term.** `ingress` is added to the **vapour** block in the final
+   `np.concatenate` at ~line 2394. `feed` goes on the **liquid layer 1** row --
+   the FIRST row of that concatenate.
+   ⚠⚠⚠ **THE BLOCK-ORDER TRAP: the state vector is
+   `pack(n_liquid, n_liquid2, n_gas, n_solid, T)` -- LIQUID2 IS SECOND, NOT
+   LAST.** Every session that forgot this lost time to it.
+3. **`VesselConditions.feed_T`** -- the temperature of what is being added. The
+   energy equation is assembled at ~2347-2369 (`Cp_total`, `cond.Q_input`); add
+   `sum(feed * Cp_i) * (feed_T - T)`.
+   ⚠⚠ **THIS TERM IS THE WHOLE POINT.** Without it, dripping ice-cold acid warms
+   the flask exactly as fast as dripping boiling acid and the "cool it and add
+   slowly" mechanic is COSMETIC. Build it in G1 or the vignette is fake.
+4. **THE RESERVOIR IS NOT STATE.** A funnel that empties looks like a new state
+   block and must not become one. It is a **DURATION**: `total / rate`, derived,
+   with the feed set back to zero afterwards. That is also what makes a drip a
+   RECIPE rather than a script, and it composes with `wait_until` for free --
+   *"drip until the pot reaches 340 K, then stop"* needs no new machinery.
+5. **A `SET_FEED` event** so a drip saves and replays. Events live in
+   `engine/events.py` (`CHARGE`, `SET_HEAT`, `SET_ENVIRONMENT`, `SET_VENT`,
+   `SET_STIRRING`, `TRANSFER`, `FILTER`, `FILL_HEADSPACE`, `SWAP_RECEIVER`,
+   `SET_EDGE`, and `ALL_KINDS` at ~105 which must be updated).
+   **`SAVE_VERSION` 5 -> 6.**
+
+### ⚠ THE NON-NEGOTIABLES
+
+* **`feed=None` must reproduce the current engine BIT FOR BIT.** S9's
+  bit-identical test is the template, and the preserve-list in this file already
+  carries six clauses of exactly this shape.
+* **It touches the RHS, so `validation/tolerance_audit.py` is OWED** (~10 min).
+  Its three self-check examples must come out OUTPUT IDENTICAL. W It has a live
+  `KNOWN_REFUSAL` entry for `named_routes` -- **read the diagnosis before
+  treating it as something you broke.**
+* **Charge conservation and matter conservation still hold.** A feed adds matter
+  from outside the flask, so `conservation_report` has to know about it or it will
+  read the drip as CREATED MATTER. ⚠ **AN INVARIANT MEASURED ACROSS A BOUNDARY
+  FLUX IS NOT AN INVARIANT** -- this is that trap, arriving by the front door.
+
+### ⚠⚠ THE PLAYGROUND: BUILD IT ON A FAMILY THAT ALREADY RACES
+
+**DO NOT BUILD IT ON NITRATION. MEASURED AND REFUSED -- SEE G2.**
+
+`competing_pathways`' five templates on **ethanol / acetic acid / air** do race,
+and the temperature genuinely selects the product: the ester yield is measured at
+**85.6% at 420 K falling to 6.4% at 510 K**. ⚠ **Both feedstocks are
+from-the-ground** (ferment sugar, then make vinegar), so the playground is
+reachable rather than starting from a bottle.
+
+Suggested shape, two panels:
+
+* **the drip panel** -- ethanol + acetic acid in the pot, drip the acid catalyst
+  or the acid itself in at two rates, and show that the FAST drip runs the flask
+  hot and moves the product mix while the SLOW drip with cooling does not. This is
+  the mechanic the user wants to feel.
+* **the cut panel** -- `saltpetre-nitric` is already RUNNABLE and is genuinely
+  this vignette: add sulfuric acid to saltpetre, heat, distil the nitric acid off,
+  take the cut. It gives the satisfying historical half. W Its "too fast" failure
+  mode (nitric acid decomposing to NO2) is probably NOT templated -- **check
+  before promising it**, and if it is missing, say so rather than implying it.
+
+⚠ **PREDICT THE NUMBERS BEFORE MEASURING THEM.** Thirteen sessions running.
+
+---
+
+## ⚠⚠ G2 -- RING DEACTIVATION, SO NITRATION IS A **PROCESS** AND NOT AN **EVENT**
+
+⚠⚠⚠ **THE OBVIOUS DEMO REACTION WAS TESTED FIRST AND IT FAILED. DO NOT
+RE-DERIVE THIS.** Nitration is the canonical add-slowly-or-it-runs-away reaction
+in all of chemistry, so it was the natural choice for G1's playground. Measured,
+1.0 toluene + 3.5 nitric acid + 5.0 water, 1 L, staged by nitro count:
+
+      T/K      t/s  toluene     mono       di      tri
+      300       10   0.0008   0.0098   0.0278   0.9616
+      300      100   0.0000   0.0000   0.0000   1.0000
+      340       10   0.0000   0.0000   0.0000   1.0000
+      380     1000   0.0000   0.0000   0.0000   1.0000
+
+**96% TRINITRO IN TEN SECONDS AT ROOM TEMPERATURE, AND THE ENDPOINT DOES NOT MOVE
+WITH TEMPERATURE AT ALL.** There is no stage to catch and nothing for an addition
+rate to control. (An earlier 2-hour sweep at 300/320/340/360/380 K returned
+**0.1528 mol of 2,4,6-TNT at every single temperature** -- the tell that it is
+not kinetics at all.)
+
+### ⚠ THE CAUSE IS EXACT AND IT IS ONE LINE
+
+`synthesis.aromatic_nitration(A=1.0e10, Ea=60_000.0, alpha=0.0)` -- **one A and
+one Ea for every nitration on every substrate.** So 2,4-dinitrotoluene nitrates
+exactly as fast as toluene, where reality is **4-6 orders of magnitude slower per
+nitro group**. That is precisely why real TNT manufacture is a THREE-STAGE process
+with escalating acid strength and temperature.
+
+### ⚠⚠⚠ DO NOT JUST RAISE `alpha`. THIS IS THE TRAP ON THIS ITEM
+
+S11 **measured** that Evans-Polanyi names the **WRONG major product** when
+kinetics fight thermodynamics, and set `alpha = 0.0` on BOTH hydroformylation
+templates for exactly that reason -- it is in this file's preserve list and in
+`chemsim-competing-templates`. `alpha` scales the barrier with **reaction
+enthalpy**. A substituent effect on an aromatic ring is an **electronic property
+of the SUBSTRATE**. Dressing one up as the other would be that trap again, and it
+would be harder to find the second time because the number would look plausible.
+
+### What it actually needs, and the questions to answer BEFORE writing code
+
+A **substituent-aware barrier**: a term that reads the ring's existing
+substituents and shifts `Ea`. ⚠ **This is new capability -- scope it, do not
+improvise it.** The design questions, in the order they bite:
+
+1. **Where does it live?** The setup/hot-loop split is the project's first
+   question for any new physics: *what uniform array form does this collapse to?*
+   A per-REACTION `Ea` already exists in the kinetics arrays, and
+   `build_network` enumerates concrete reactions from templates at setup. So the
+   honest answer is probably **setup**: score each concrete reaction's substrate
+   once and bake the shifted `Ea` into the array. **No RHS edit, therefore no
+   tolerance-audit exposure.** Check that before assuming it.
+2. **What is the physical basis, and what is it fitted to?** Hammett sigma is the
+   obvious candidate and it is a real tabulated quantity. ⚠⚠ **ASK WHAT A FIT WAS
+   ANCHORED ON.** A sigma-based `Ea` shift needs a rho, and a rho is
+   reaction-specific -- so this is a DECLARATION per template, not a universal
+   constant, and it must be sourced or bounded rather than invented.
+3. **Does it collapse to today's behaviour?** An unsubstituted ring must give the
+   CURRENT number, bit for bit, or every existing aromatic result moves and the
+   whole example set is owed a re-measure.
+4. **What does it cost the corpus?** `tnt-route` currently reports 0.1528 mol of
+   2,4,6-TNT. That number WILL move and that is the point -- but measure it, and
+   check `benzene-nitration`, `picric-acid-route` and `ddt-route` with it.
+
+### ⚠ WHY IT IS THE HIGHEST-VALUE ITEM IN THE ARC
+
+The same missing effect gates the **entire 1800s aromatic tree** -- dyes,
+explosives and painkillers all live on *selective* substitution, and the engine
+currently cannot tell a deactivated ring from a fresh one. Nitration and
+nitro-reduction already work; this is what makes them controllable.
+
+---
+
+## ⚠ SEQUENCING, AND THE ONE HONEST TRADEOFF
+
+**G1 first.** The mechanic is what the user wants to *feel*, and G1 alone is a
+testable playground by the end of a session. Its chemistry is vinegar and aqua
+fortis rather than explosives -- that is the tradeoff, and G2 is what makes it
+cool. If the session runs short, **land G1 completely rather than starting G2**:
+a half-built substituent model is worse than none.
+
+⚠ **G3 (`PLAYABLE.md`, the new scoreboard) and G4 (the granularity audit, which
+may be worth free routes) are written up in MILESTONES and are NOT this session.**
+
+---
+
+# ⚠ THE ENGINE AND HONESTY QUEUE — **REFERENCE NOW, NOT THE WORK ORDER**
+
+⚠⚠ **G1 AND G2 ABOVE ARE THIS SESSION.** This queue is kept because every row is a measured, live finding and two of them (items 1 and 2) are cheap — but **do not start here**, and do not treat a row's age as a reason to take it. The plan changed deliberately; see MILESTONES § THE G-SERIES.
+
 
 ⚠⚠ **S13 TOOK ITEM 1, WHICH HAD BEEN THE LIST'S LARGEST ITEM FOR THREE SESSIONS.**
 What is below is renumbered. **Items 1 and 2 are the two it created.**
