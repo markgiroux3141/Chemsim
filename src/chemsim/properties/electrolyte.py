@@ -34,11 +34,16 @@ using the convention dGf(H3O+) = dGf(H2O), i.e. the proton is the zero. The
 resulting numbers are not literature aqueous values and are not labelled as such;
 they are internally consistent constants that reproduce measured acidity.
 
-**The anchor is the acid in its LIQUID standard state.** A pKa is a
-solution-phase measurement, so the acid and water it is derived against must be
-on the solution basis too (see ``standard_state``). An ion has no volatility
-model and therefore never gets shifted at reaction level; anchoring it here on
-the shifted acid is what makes the two conventions meet. Skip this and every pKa
+**The anchor is the NEUTRAL member of the pair, in its LIQUID standard state.**
+⚠ It used to be the ACID, unconditionally, and that was a bug: four rows of the
+table below are CATION/neutral pairs whose acid IS the ion, and the ordinary
+providers refuse to price a charge. See ``ion_thermochemistry`` for what those
+four rows were worth. A neutral acid anchors its anion, a neutral base anchors
+its cation, and the second is the first read backwards. A pKa is a
+solution-phase measurement, so the neutral member and the water it is derived
+against must be on the solution basis too (see ``standard_state``). An ion has
+no volatility model and therefore never gets shifted at reaction level;
+anchoring it here on the shifted neutral is what makes the two conventions meet. Skip this and every pKa
 moves by about three units, because acetic acid and water are each worth ~9 kJ/mol
 of vaporization Gibbs energy and both land on the same side of the reaction.
 """
@@ -253,26 +258,61 @@ def ion_thermochemistry(
     # ion produced by its first, so each derived value must be visible to the
     # pairs that follow. Sulfate, for instance, is priced from bisulfate, which
     # Joback cannot touch and which is itself derived from sulfuric acid.
+    # ⚠⚠ AND THE ANCHOR IS THE **NEUTRAL** MEMBER, NOT THE ACID -- MEASURED,
+    # AND IT USED TO BE THE ACID. Four rows of this table are CATION/neutral
+    # pairs (ammonium 9.25, methylammonium 10.66, pyridinium 5.23, anilinium
+    # 4.62) whose acid is the ION and whose base is the neutral molecule. On the
+    # acid-anchored form ``anchored(pair.acid)`` refused all four -- Joback and
+    # Benson are fitted to NEUTRAL molecules and refuse a charge, loudly and
+    # correctly -- and the bare ``except Exception: continue`` below swallowed
+    # it, so those four curated rows produced NOTHING. The table shipped 24
+    # anions and one hard-coded hydronium and no cation at all. An anilinium
+    # could not be priced, so nothing could protonate an amine, so ``hammett``
+    # had no choice but to price an aniline as a free base.
+    #
+    # ⚠ The DIRECTION the arithmetic runs in is a property of the PAIR, not of
+    # the table: a neutral acid anchors its anion, a neutral base anchors its
+    # cation, and the second is the first read backwards. Both directions use
+    # the same measured pKa and the same one-water correction, so the pair
+    # reproduces its own pKa either way round -- which is what
+    # ``validation/protonation.py`` asserts rather than assumes.
     for pair in pairs:
         acid_key = Molecule.from_smiles(pair.acid).smiles
+        base_key = Molecule.from_smiles(pair.base).smiles
+        note = f"{_DERIVED} (pKa = {pair.pKa} for {pair.name or pair.acid})"
+
         if acid_key in out:
             # An ion anchoring the next dissociation. Already on the solution
             # basis by construction, so it must NOT be shifted again.
-            acid = out[acid_key]
+            anchor, target, sign = out[acid_key], base_key, +1
+        elif base_key in out:
+            anchor, target, sign = out[base_key], acid_key, -1
         else:
+            # ⚠ THE ACID IS TRIED FIRST AND THAT ORDER IS THE COMPATIBILITY
+            # GUARANTEE: every value this table derived before the fix is
+            # anchored the same way and comes out bit-identical.
             try:
-                acid = anchored(pair.acid)
+                anchor, target, sign = anchored(pair.acid), base_key, +1
             except Exception:
-                continue                 # no anchor for this acid; skip silently
-        key = Molecule.from_smiles(pair.base).smiles
-        if key in out:
+                try:
+                    anchor, target, sign = anchored(pair.base), acid_key, -1
+                except Exception:
+                    continue          # neither side has an anchor; skip silently
+        if target in out:
             continue
-        out[key] = ThermoData(
-            Hf=acid.Hf + pair.dH_diss,
-            # HA + H2O <=> A- + H3O+ consumes one water.
-            Gf=acid.Gf + _dG_from_pKa(pair.pKa, T) + _solvent_correction(1, T),
-            source=f"{_DERIVED} (pKa = {pair.pKa} for {pair.name or pair.acid})",
-            Cp_coeffs=acid.Cp_coeffs,
+        # ⚠ THE TWO TERMS ARE ADDED SEPARATELY AND IN THIS ORDER ON PURPOSE.
+        # dG of  HA + H2O <=> A- + H3O+  in the sense the pKa is quoted in, plus
+        # the mass-action correction for the one water it consumes -- and
+        # summing them into a single ``dG_diss`` first re-groups the addition,
+        # which moved TEN of the pre-existing anions in the last bit. Floating
+        # point is not associative and a data table that shifts by 1e-16 owes
+        # ``tolerance_audit.py`` a ten-minute run to prove it did not matter.
+        out[target] = ThermoData(
+            Hf=anchor.Hf + sign * pair.dH_diss,
+            Gf=(anchor.Gf + sign * _dG_from_pKa(pair.pKa, T)
+                + sign * _solvent_correction(1, T)),
+            source=note,
+            Cp_coeffs=anchor.Cp_coeffs,
         )
     return out
 
@@ -343,9 +383,48 @@ def dissociation_templates(A: float = _FAST_A, Ea: float = _FAST_EA):
                    ">>[S,N,P:1](=[O:2])[O-:3].[OH3+:4]",
             A=A, Ea=Ea, reversible=True,
         ),
+        # ⚠⚠⚠ WRITTEN IN THE PROTONATION DIRECTION, AND IT REPLACES A
+        # ``ammonium_dissociation`` THAT COULD NOT DEPROTONATE AN AMMONIUM.
+        #
+        # The old pattern was ``[NX4H+:1].[OX2H2:2]>>[NX3:1].[OH3+:2]``. In
+        # SMARTS a bare ``H`` inside brackets means EXACTLY ONE hydrogen, so
+        # ``[NX4H+]`` matches a protonated TERTIARY amine and nothing else --
+        # measured, it is False against [NH4+], against anilinium, against
+        # methylammonium and against pyridinium, and True only against
+        # C[NH+](C)C. The template named for the ammonium ion was the one ion it
+        # could not touch, and no example ever caught it because nothing in the
+        # corpus can put a trialkylammonium in a flask.
+        #
+        # ⚠⚠ AND THE DIRECTION IS THE POINT, NOT THE PATTERN. Discovery in
+        # ``network.builder`` runs templates FORWARD ONLY -- a reversible
+        # template's reverse is a concrete reaction in the network, but it is
+        # never used to enumerate species. So a deprotonation-forward template
+        # can only find an anilinium in a flask that already contains one, and a
+        # flask of aniline and mixed acid does not. Writing the same equilibrium
+        # protonation-forward finds it from the free base, which is the
+        # ``ester_hydrolysis`` decision again: when only one direction is
+        # discoverable, the direction you need is the direction you declare.
+        # Nothing is lost by the swap -- ``reversible=True`` puts the
+        # deprotonation in the network with its rate fixed by detailed balance
+        # from the same pKa.
+        #
+        # ⚠ ``[OX2H2;+0:2]`` and not ``[OX2H2:2]``: a mapped atom keeps its
+        # formal charge through a rewrite, so the un-annotated form hands back
+        # water with a +1 on it. ``_element_charge_balance`` catches that and
+        # drops the rewrite, which means the bug's symptom is a template that
+        # silently does nothing rather than a wrong number.
+        #
+        # ⚠ AN AMIDE, A NITRO GROUP, A NITRILE AND A PYRIDINE ARE ALL EXCLUDED
+        # and all four are measured in ``tests/test_protonation.py``. The amide
+        # exclusion is chemistry: its conjugate acid is a different pair with a
+        # pKa near zero, and this table does not carry it. The pyridine
+        # exclusion is a LIMIT and it is named -- an aromatic ring nitrogen is
+        # X2, not X3, so the pyridinium row now in ``_PAIRS`` is priced and
+        # still unreachable.
         ReactionTemplate(
-            name="ammonium_dissociation",
-            smarts="[NX4H+:1].[OX2H2:2]>>[NX3:1].[OH3+:2]",
+            name="amine_protonation",
+            smarts="[NX3;!$([N+]);!$([NX3][CX3]=O);!$([NX3]=*);!$([NX3]#*):1]"
+                   ".[OH3+:2]>>[NX4+:1].[OX2H2;+0:2]",
             A=A, Ea=Ea, reversible=True,
         ),
     ]

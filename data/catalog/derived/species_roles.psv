@@ -40,7 +40,7 @@ propylene | 5 | 4 | 0 | 1 | 0 | benson
 nitric-oxide | 4 | 0 | 3 | 1 | 0 | measured
 disulfuric-acid | 4 | 3 | 1 | 0 | 0 | refused
 calcium-carbonate | 4 | 1 | 2 | 1 | 0 | ion
-ammonium-chloride | 4 | 1 | 1 | 2 | 0 | refused
+ammonium-chloride | 4 | 1 | 1 | 2 | 0 | ion
 calcium-chloride | 4 | 0 | 0 | 4 | 0 | ion
 potassium-nitrate | 4 | 3 | 0 | 1 | 0 | ion
 methane | 4 | 2 | 0 | 2 | 0 | measured
@@ -64,7 +64,7 @@ cellulose-unit | 3 | 2 | 1 | 0 | 0 | joback
 indigo | 3 | 0 | 1 | 2 | 0 | joback
 sodium-nitrite | 3 | 3 | 0 | 0 | 0 | refused
 chlorobenzene | 3 | 1 | 1 | 1 | 0 | benson
-ammonium-sulfate | 3 | 1 | 1 | 1 | 0 | refused
+ammonium-sulfate | 3 | 1 | 1 | 1 | 0 | ion
 chloroform | 3 | 2 | 0 | 1 | 0 | measured
 potassium-persulfate | 3 | 3 | 0 | 0 | 0 | refused
 iodomethane | 3 | 2 | 1 | 0 | 0 | measured
@@ -169,7 +169,7 @@ phenyl-isocyanate | 2 | 0 | 2 | 0 | 0 | refused
 nitrosylsulfuric-acid | 1 | 0 | 0 | 1 | 0 | refused
 iron-disulfide | 1 | 1 | 0 | 0 | 0 | refused
 calcium-sulfide | 1 | 0 | 1 | 0 | 0 | refused
-ammonium-hydroxide | 1 | 0 | 1 | 0 | 0 | refused
+ammonium-hydroxide | 1 | 0 | 1 | 0 | 0 | ion
 sodium-bicarbonate | 1 | 0 | 1 | 0 | 0 | ion
 potassium-bisulfate | 1 | 0 | 0 | 1 | 0 | ion
 gold | 1 | 1 | 0 | 0 | 0 | refused
@@ -290,7 +290,7 @@ triethylaluminium | 1 | 0 | 0 | 0 | 1 | refused
 acetone-cyanohydrin | 1 | 0 | 1 | 0 | 0 | joback
 methacrylamide-sulfate | 1 | 0 | 1 | 0 | 0 | refused
 methyl-methacrylate | 1 | 0 | 1 | 0 | 0 | benson
-ammonium-bisulfate | 1 | 0 | 0 | 1 | 0 | refused
+ammonium-bisulfate | 1 | 0 | 0 | 1 | 0 | ion
 pmma-unit | 1 | 0 | 0 | 1 | 0 | joback
 polycarbonate-unit | 1 | 0 | 0 | 1 | 0 | refused
 allyl-chloride | 1 | 0 | 1 | 0 | 0 | joback

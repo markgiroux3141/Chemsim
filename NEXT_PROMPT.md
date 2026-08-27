@@ -2,64 +2,76 @@ We're building chemsim, an emergent chemistry simulator (game inspired by Nile
 Red) in d:\Claude Code Projects\Chemistry Simulator.
 
 **The plan is `MILESTONES.md`. Read it first — it is the authority on what to
-build and in what order.** **M0–M6, M8, M12, S1–S13, G1 and G2 are DONE.**
+build and in what order.** **M0–M6, M8, M12, S1–S13, G1, G2 and G5 are DONE.**
 
-⚠⚠⚠ **THE PLAN CHANGED ON 2026-08-27 AND THE ARC IS THE G-SERIES.** The catalog
-is a measuring instrument and was being read as a specification; the goal is a
-connected tech tree a player can walk from natural materials. **Read MILESTONES
-§ THE G-SERIES.** Coverage is DEFERRED to a C-series, not cancelled.
+⚠⚠⚠ **THE ARC IS THE G-SERIES.** The catalog is a measuring instrument and was
+being read as a specification; the goal is a connected tech tree a player can
+walk from natural materials. **Read MILESTONES § THE G-SERIES.** Coverage is
+DEFERRED to a C-series, not cancelled.
 
 # ⚠ THE BASELINE IS MEASURED. DO NOT START WITH THE SUITE.
 
-**G2 RAN THE WHOLE SUITE AT THE END AND MEASURED 995 PASSED / 0 FAILED IN
-22:06.** Take that number and spend the time on content. ⚠ It was run AFTER
-every `src/` edit — fifth session running that is true. (965 at S13; the +30 are
-G1's 9 and G2's 21.)
+**G5 RAN THE WHOLE SUITE AT THE END AND MEASURED 1024 PASSED / 0 FAILED IN
+22:28.** Take that number and spend the time on content. ⚠ It was run AFTER every
+BEHAVIOURAL `src/` edit — sixth session running that is true. (995 at G2; the +29
+are G5's `tests/test_protonation.py`.) ⚠ **Two DOCSTRING-ONLY edits and one test
+RENAME landed while it ran**, plus a 12.8 s single-file re-run of
+`test_ring_deactivation.py` on another core; the renamed test was re-run green on
+its own afterwards. **So 22:28 is an upper bound with minor contention in it, and
+it is being reported that way rather than as a clean figure.**
 
-⚠⚠⚠ **AND IT CORRECTS S13's OWN EXPLANATION OF THE CLOCK. THE SUITE REALLY IS
-~8 MINUTES SLOWER THAN IT WAS AT S12, AND IT IS NOT CONTENTION.** S13 measured
-21:36 against S12's 13:20 and wrote *"the 21:36 against S12's 13:20 is
-CONTENTION, not the suite getting slower: S13 ran examples in another process at
-the same time."* **This run had NOTHING else on the CPU and came out at 22:06** —
-within 30 seconds of S13's supposedly-contended figure. And the 30 tests this
-session added are measured separately at **47 s combined**
-(`test_dropping_funnel` 35.1 s, `test_ring_deactivation` 12.4 s), so they account
-for about one of the eight minutes.
+⚠⚠⚠ **AND `--durations=25` WAS FINALLY ATTACHED TO IT — THE PROBE THIS FILE HAS
+SAID FOR TWO SESSIONS HAD NEVER BEEN RUN.** The cost is **CONCENTRATED, NOT
+BROAD**:
 
-⚠ **THE CAUSE IS NOT MEASURED AND SHOULD NOT BE ASSERTED.** The likeliest
-candidate is the only large thing that changed between S12 and S13 — the
-measured-physical table going from 37 species to 1239, which moved every
-example's volatility and therefore every trajectory's stiffness — but **nobody
-has bisected it**, and a plausible cause is not a measured one. ⚠⚠ **A ONE-POINT
-WALL-CLOCK ATTRIBUTION IS NOT A MEASUREMENT**: the honest correction is that the
-contention explanation is REFUTED, not that the data table is convicted. If the
-suite's cost matters to a future session, `pytest --durations=25` is the probe
-and it has never been run here.
+    top 25 tests                                        803.1 s of 1348.3  (59.6%)
+    tests/test_still.py, its six rows in the top 25      402.2 s            (29.8%)
+    ONE test -- test_temperature_steady_on_a_RIG_vessel  164.1 s            (12.2%)
+    test_catalysis::test_a_catalysed_esterification       74.1 s             (5.5%)
+    the burner at rtol 1e-8 (engine queue item 15)        52.5 s             (3.9%)
+    the OTHER 999 tests                                   545   s   -- 0.55 s each
 
-⚠ **NEITHER G1 NOR G2 TOUCHED THE RHS OR A DATA TABLE**, so `tolerance_audit.py`
-was not owed and was NOT re-run. Its last measured state is S13's and every
-warning in §S13 about it still stands.
+⚠⚠ **AND THIS DOES NOT DIAGNOSE THE S12->S13 SLOWDOWN, WHICH IS THE WHOLE POINT
+OF SAYING IT OUT LOUD. A DURATIONS LIST WITH NO BASELINE CANNOT ATTRIBUTE A
+REGRESSION** — nobody has the same list from S12, so the eight minutes remain
+unattributed. What the shape DOES say is that a per-test story is at least as
+plausible as the standing candidate (*"S13's measured-physical table moved every
+trajectory's stiffness"*), because a broad stiffness change should not leave 999
+tests averaging 0.55 s while one RIG test takes 164. **That is a re-ranking of two
+hypotheses, not a measurement of either.**
+⚠ The cheap next step, if the clock ever matters, is a `git stash`-and-rerun of
+`--durations=25` across S13's data commit — which is finally possible now that a
+list exists to diff against.
+⚠ **The burner row is a live cross-check that landed for free**: fragility 10 and
+engine queue item 15 both say *"~50 s at rtol 1e-8"*, and it measured **52.47 s**.
+The claim was right and it is 3.9% of the suite.
+
+⚠ **G5 TOUCHED NO RHS AND SHIFTED NO DATA TABLE — the 24 pre-existing ion-table
+anions are BIT-IDENTICAL and that is asserted in a test** — so
+`tolerance_audit.py` was not owed and was NOT re-run. Its last measured state is
+S13's and every warning in §S13 about it still stands.
 
 ```bash
-python validation/dropwise.py                  # ⚠ G1's, 78 s. NEW -- read panels 1-3 and 5
-python validation/ring_deactivation.py         # ⚠ G2's, ~25 s. NEW -- read panel 3
-python validation/boiling_points.py            # S13's, 2 s. READ PANEL 2
-python validation/skraup.py                    # S12's, ~10 s
-python validation/smelting.py                  # S9's, ~1 min
-python validation/hydroformylation.py          # S11's, ~1 min
-python validation/wacker.py                    # S11's other one, ~1 min
-python validation/gas_processes.py             # S7's, ~1 min
-python validation/corpus_balance.py            # S7's other one, ~20 s. READ IT before picking
-python validation/catalog_coverage.py          # ⚠ READ THE 'BOTH' LINE: 31/173, ~15 s
-python validation/physical_estimation.py       # S13 took its panel 3 to n=254
-python validation/game_gates.py                # the element floor's cross-check, seconds
-python tools/build_route_index.py              # the artefact nothing reads
-python validation/cell_potentials.py           # M8's standing audit, seconds
-python validation/rate_ceiling.py              # ⚠ G2 added TWO NETWORKS to it
-python validation/jacobian_bound.py            # S5's standing audit, ~1 min
+python validation/protonation.py                # ⚠ G5's, 18 s. NEW -- read panels 3, 4 and 5
+python validation/ring_deactivation.py          # G2's, ~25 s. READ PANEL 3
+python validation/dropwise.py                   # G1's, 78 s
+python validation/boiling_points.py             # S13's, 2 s. READ PANEL 2
+python validation/skraup.py                     # S12's, ~10 s
+python validation/smelting.py                   # S9's, ~1 min
+python validation/hydroformylation.py           # S11's, ~1 min
+python validation/wacker.py                     # S11's other one, ~1 min
+python validation/gas_processes.py              # S7's, ~1 min
+python validation/corpus_balance.py             # S7's other one, ~20 s. READ IT before picking
+python validation/catalog_coverage.py           # ⚠ READ THE 'BOTH' LINE: 31/173, ~15 s
+python validation/physical_estimation.py        # S13 took its panel 3 to n=254
+python validation/game_gates.py                 # the element floor's cross-check, seconds
+python tools/build_route_index.py               # the artefact nothing reads
+python validation/cell_potentials.py            # M8's standing audit, seconds
+python validation/rate_ceiling.py               # ⚠ G2 added TWO NETWORKS to it
+python validation/jacobian_bound.py             # S5's standing audit, ~1 min
 python -m ruff check src tests examples validation tools
-python -m pytest -q                            # ~14–25 min. ONLY after touching src/
-python validation/tolerance_audit.py           # ~10 min. After touching the RHS **or any data table**
+python -m pytest -q                             # ONLY after touching src/
+python validation/tolerance_audit.py            # ~10 min. After touching the RHS **or any data table**
 ```
 
 ⚠ **THE SUITE AND THE TOLERANCE AUDIT ARE MINUTES OF SATURATED CPU ON THE USER'S
@@ -68,130 +80,138 @@ OWN MACHINE.** Say what a long run will cost before starting one, and ask.
 
 ---
 
-# ⚠⚠⚠ WHAT G1 AND G2 TURNED OUT TO BE
+# ⚠⚠⚠ WHAT G5 TURNED OUT TO BE
 
-**+0 classes, +0 templates, +0 species-ready, +0 on the BOTH column — all four
-predicted before measuring, twice over.** A Layer 6 VERB is not a template and
-neither is a barrier. What moved is whether the engine can express the thing the
-game is about, and whether the numbers it already reported are right.
+**G2 posed protonation as a design question — *"is it a barrier shift or a species
+split? Measure that before designing a coupling"* — and the question was the right
+one. It is a species split, the table row is three lines, and THE ARITHMETIC
+BOUND TAKEN FIRST SAYS THE SPLIT DOES NOT FIX ANILINE.**
 
-## ⚠⚠⚠ 1. G1's BRIEF NAMED THE WRONG GAP, AND THE MECHANIC WAS ALREADY BUILT
+## ⚠⚠⚠ 1. THE CROSSOVER IS AT pH −9.42, AND THAT IS NOT A WRONG NUMBER
 
-G1 was scoped as engine work: a `feed` vector on `VesselConditions`, a `feed_T`
-beside it (*"THIS TERM IS THE WHOLE POINT"*), a `SET_FEED` event, and a funnel
-whose reservoir is a DERIVED DURATION. **All four already existed as the rig's
-`meter` edge, which `rig_integrator` documents as "a dropping funnel or a syringe
-pump".** Measured, panels 1–2 of `validation/dropwise.py`:
+    free base   -NH2   sigma+ -1.300   k/k0 = 2.8184e+08
+    anilinium   -NH3+  sigma  +0.860   k/k0 = 2.5704e-06     ratio 1.10e14
 
-* it delivers its set rate (pinned since Layer 5);
-* it **carries the donor's sensible heat** — a 270 K funnel leaves the pot at
-  **298.13 K** where a 370 K one leaves it at **364.12 K**, same moles;
-* its reservoir **runs out exactly** — 0.001 to **10 mol/s**, funnel lands on
-  0.0, the pair conserved to **1e-12**;
-* and `SET_EDGE` already opens and shuts it inside a saveable `Scenario`.
+    crossover at [H3O+] = Ka * k_free / k_ion = 2.630e+09 mol/L,  pH -9.42
 
-⚠ **A `feed` VECTOR WAS REFUSED as a second home for all of it**, with a `feed_T`
-that is a DECLARED CONSTANT where a funnel **vessel's** temperature is a solved
-one you can put in an ice bath with a thermal edge.
+Real aniline gives largely **meta** product only in 90–98% sulfuric acid, whose
+Hammett acidity function **H0 falls to roughly −8 at 90 wt% and roughly −10 at
+98 wt%**. ⚠ The band is quoted to ONE FIGURE because it is recalled from a
+standard H0 table rather than sourced in this repo — the claim being made is that
+**−9.42 lands INSIDE the band real aniline nitration is run in**, not that it
+matches a tabulated value. The engine's own two table rows land it there without
+being told about it. **The split is the right model.**
 
-## ⚠⚠⚠ 2. AND THE ONE THING THE BRIEF SAID CAME FOR FREE IS WHAT HAD TO BE BUILT
+## ⚠⚠⚠ 2. AND THE WALL IS A SECOND MEASUREMENT NOBODY HAD TAKEN: A DRIER ACID IS A LESS ACIDIC POT
 
-*"It composes with `wait_until` for free — 'drip until the pot reaches 340 K,
-then stop' needs no new machinery."* **False**, for exactly the reason
-`collect_fraction` exists. An `Event` carries an absolute `t`:
+    5 + 5 mol HNO3/H2SO4 in  30 mol water  ->  pH -0.789   <- the FLOOR
+    the same acid in         10 mol water  ->  pH -0.233
+    the same acid in          2 mol water  ->  pH +4.899
 
-    the free way:  340 K discovered at t = 20.348728 s
-                   recipe records set_edge at t = 20.348728
-      replay at 1x: ran
-      replay at 2x: REFUSED -- cannot schedule 'set_edge' at t=20.348728...
-                    the world is already at t=31.513289
+Every dissociation in this project is written with water on **both** sides — a
+standard-state decision in `properties/electrolyte`'s docstring — so `[H2O]` is a
+mass-action factor and running out of water SUPPRESSES the reaction that makes the
+proton. ⚠ **NOT a solver artefact**: dry sulfuric acid autoprotolyses to
+H3SO4+/HSO4− and is not a source of hydronium.
 
-⚠ **THE REFUSAL IS THE GOOD CASE.** A crossing landing a hair EARLIER stays in
-the future and the tap shuts at an instant the run never found, silently.
-`World.add_dropwise(edge, rate, watch, until, timeout, close=True)` stores the
-CONDITION. **SAVE_VERSION 5 → 6** — for a reason the brief did not have: an
-unknown SCRIPT VERB is discovered part-way through `run_script`, so a v5 reader
-executes every entry before it and stops holding a world that looks finished.
+⚠⚠ **THE REACHABLE FLOOR IS pH −0.79, TEN DECADES ABOVE THE CROSSOVER. SO THE
+LIMIT IS RENAMED, NOT REMOVED: it is not "no protonation in a barrier" any more,
+it is "NO ACIDITY FUNCTION"** — H0 is not the concentration of anything and a
+molarity cannot reach 1e9 mol/L. That is a better-posed gap than the one G2 named.
 
-## ⚠⚠ 3. SENSIBLE HEAT ALONE CANNOT PRODUCE THE VIGNETTE
+## ⚠⚠ 3. WHAT THE SPLIT BUYS: SIX DECADES OF FOURTEEN, AND THE OTHER EIGHT ARE ELSEWHERE
 
-The same moles carry the same joules however fast they arrive, so an INSULATED
-pot lands in the same place: **338.422 / 338.480 / 338.567 K** across a 25x rate
-change. **A rate only matters against another rate.** The playground is therefore
-a nitration (−141.2 kJ/mol) against a bath, not an esterification (−3.2), and
-peak pot temperature runs **382 K → 283 K** on nothing but the tap setting.
+At pH −0.667 the aniline is **100.000% anilinium** and the effective rate is
+**380 × benzene** against 2.8e8. ⚠⚠ **And the anilinium carries 1e-7 % of it** —
+every remaining decade is a FREE-BASE LEAK surviving at 1e-6 mole fraction.
+**Fixing the FRACTION cannot fix that.** See §THE BEST-SCOPED NEW ITEM below.
 
-## ⚠⚠ 4. G2 STAGED THE NITRATION, AND A rho IS MEANINGLESS WITHOUT ITS SIGMA SCALE
+## ⚠⚠⚠ 4. THE BIGGEST ACTUAL PAYOFF WAS A DEAD TABLE, PRINTED IN A GENERATED REPORT TWELVE TIMES
 
-    rho = 0     T/K   t/s  toluene   mono     di     tri
-                300    10   0.0045 0.0303 0.0745  0.2422
-                380  1000   0.0045 0.0303 0.0745  0.2422   <- identical
+`ion_thermochemistry` anchored every pair on its **ACID**. Four rows of `_PAIRS`
+are CATION/neutral pairs whose acid IS the ion (ammonium 9.25, methylammonium
+10.66, pyridinium 5.23, anilinium 4.62); `anchored(pair.acid)` refused all four —
+loudly and correctly, Joback and Benson are fitted to neutral molecules — and a
+bare `except Exception: continue` swallowed it. **The table shipped 24 anions, one
+hard-coded hydronium, and no cation at all.**
 
-    rho = -6.5  300    10   0.0000 0.6339 0.3661  0.0000
-                300   100   0.0000 0.0721 0.9278  0.0001
-                340    10   0.0000 0.0015 0.9971  0.0014
-                380  1000   0.0000 0.0000 0.1241  0.8756
+    refused species  430 -> 419      species-ready routes  80 -> 82
+    ion-resolvable    84 -> 95      `solvay-process`  0 -> species-ready
 
-Three barriers **25.0 kJ/mol** apart, and nobody typed 25: it is
-`-ln(10)*R*298.15*rho*sigma+_meta(NO2)`.
+Every ammonium salt in the catalog moved. ⚠⚠ **AND `COVERAGE_REPORT.md` HAD BEEN
+PRINTING `refusing to price '[NH4+]'` FOR TWELVE OF THEM, SESSION AFTER SESSION**,
+where it read as an ordinary Born-domain refusal. ⚠ The refusal message even said
+*"add the conjugate acid to `_PAIRS` if it is not there"* — **and it WAS there.**
+A refusal that names the wrong fix is worse than one that names none; the message
+now says that for a cation the neutral member is the BASE.
 
-⚠⚠ **THE TABLE IS SIGMA-PLUS (Brown & Okamoto 1958), NOT AQUEOUS SIGMA** —
-S12's standard-state finding in another suit. Electrophilic substitution builds
-positive charge on the ring, so methoxy is **−0.27 on σ and −0.778 on σ⁺** and
-amino **−0.66 and −1.30**. A σ⁺-fitted rho on σ constants multiplies two bases.
+## ⚠⚠ 5. AND `ammonium_dissociation` COULD NOT DEPROTONATE AN AMMONIUM
 
-⚠ **NOT `alpha`, and the refusal is measured**: benzene → nitrobenzene is −141.2
-kJ/mol and nitrobenzene → dinitrobenzene is **−268.1**, so any positive alpha
-makes the DEACTIVATED ring react FASTER. `ReactionTemplate` refuses both.
+`[NX4H+]` is N with **exactly one** hydrogen in SMARTS — measured False against
+`[NH4+]`, anilinium, methylammonium and pyridinium, True only against
+`C[NH+](C)C`. **The template named for the ammonium ion was the one ion it could
+not touch**, and nothing in the corpus can put a trialkylammonium in a flask to
+catch it. Replaced by `amine_protonation`, written PROTONATION-forward because
+discovery is forward-only.
 
-⚠ **It lives at SETUP** — `build_network` bakes the shifted `Ea` into the
-kinetics array. No RHS edit, therefore no tolerance-audit exposure.
+## ⚠⚠ 6. THE PLAYABLE RESULT WAS ALREADY BUILDABLE: PROTECT THE AMINE
 
-## ⚠ 5. WHAT G2 COST THE CORPUS, AND TWO OF FOUR ARE IMPROVEMENTS
+    benzene              sum(sigma) + 0.000   Ea 60.00 kJ/mol   k/k0 1.0000e+00
+    aniline, free base   sum(sigma) - 1.300   Ea 11.77 kJ/mol   k/k0 2.8184e+08
+    anilinium            sum(sigma) + 0.860   Ea 91.91 kJ/mol   k/k0 2.5704e-06
+    acetanilide          sum(sigma) - 0.600   Ea 37.74 kJ/mol   k/k0 7.9433e+03
 
-| route | before | after | |
-|---|---:|---:|---|
-| `tnt-route` | 0.1528 | **0.0662** mol | worse and RIGHTER — real TNT needs ~380 K |
-| `benzene-nitration` | 0.1762 | **0.8000** mol | a mononitration can STOP now |
-| `picric-acid-route` | 0.0481 | **0.1208** mol | phenol activated, dinitrophenol not |
-| `ddt-route` | 0.1667 | 0.1667 | unchanged — it does not nitrate |
+Nobody nitrates an aniline — you acetylate it, nitrate the acetanilide, hydrolyse
+the amide off. `n_acylation` and the `acylamino` σ⁺ row already existed, and an
+amide does not answer `amine_protonation`'s pattern, **so the acetanilide network
+BUILDS (21 species) where the aniline one refuses.** Nobody told the engine that
+an amide is a protecting group.
 
 ---
 
 # ⚠⚠⚠ START HERE: THE G-SERIES IS THE WORK ORDER
 
-⚠⚠ **READ `MILESTONES.md` § THE G-SERIES.** G1 and G2 are marked done there with
-what they actually turned out to be. What is left, in order:
+⚠⚠ **READ `MILESTONES.md` § THE G-SERIES.** G1, G2 and G5 are marked done there
+with what they actually turned out to be. What is left, in order:
 
-## ⚠⚠ THE BEST-SCOPED NEW ITEM: **COUPLE PROTONATION INTO A BARRIER**
+## ⚠⚠ THE BEST-SCOPED NEW ITEM: **THE HAMMETT LINE SATURATES**
 
-G2 created this and it is the clearest next step on the aromatic branch.
+G5 created this, measured its arithmetic, and deliberately did not build it
+because the CONSTANT needs sourcing.
 
-**The gap, measured.** `hammett` prices an amine as a FREE BASE. Aniline comes
-out **2.8e8 times more reactive than benzene**, where the real thing in mixed
-acid is an **anilinium ion** — meta-directing and *slower* than benzene. That is
-wrong by eight orders of magnitude **and in the wrong direction**. 4-aminophenol
-(Σσ⁺ = −2.220, a **−82.4 kJ/mol** shift against a declared 60) drives the barrier
-straight through zero; `hammett.clamp_barrier` floors it and `build_network`
-emits a NOTICE naming the missing physics rather than hiding it.
+**The gap, measured.** `rho * sum(sigma+)` for aniline is −6.5 × −1.30 = **8.45
+decades**, extrapolated off a line fitted on arenes with |σ⁺| < 0.4 (toluene, the
+xylenes, the halobenzenes), i.e. **|rho·sigma| < 2.6**. That is a 3.25x
+extrapolation of the abscissa, and the real relation does not go there: nitration
+of a strongly activated arene is **ENCOUNTER-CONTROLLED**, so mesitylene, anisole
+and phenol all react at one rate and the Hammett line SATURATES.
 
-⚠ **THE MACHINERY IS HALF PRESENT AND NOTHING JOINS IT.** M3 gave the project ion
-tables and a pKa; `electrolyte_provider()` prices charged species; the Skraup's
-gate is already a hydronium concentration. What does not exist is anything that
-lets the FRACTION PROTONATED enter a rate. Design questions, in the order they
-will bite:
+**What a declared saturation would buy, measured in the engine's most acidic
+flask:**
 
-1. **Is it a barrier shift or a species split?** The honest answer may be that
-   an anilinium is a DIFFERENT SPECIES with its own σ⁺ row (−NH3+ is a known,
-   tabulated substituent), in which case `dissociation_templates()` already makes
-   it and the fix is a table row plus a network that carries the acid. **Measure
-   that before designing a coupling** — it would be a data job, not an engine one.
-2. **If it is a coupling, what array form does it collapse to?** A barrier that
-   depends on the flask's acidity is no longer a setup constant, and that is an
-   RHS edit with the tolerance audit attached. The setup/hot-loop split is the
-   project's first question and the answer here is not obvious.
-3. **What does it cost the four nitration routes?** `picric-acid-route` runs on a
-   phenol, which protonates too.
+    saturation 1e4  ->  aniline at 1.35e-2 x benzene
+    saturation 1e5  ->  aniline at 1.35e-1 x benzene
+    saturation 1e6  ->  aniline at 1.35e+0 x benzene
+
+— against a real anilinium **slower** than benzene. ⚠ A saturation near 1e5 lands
+aniline within a decade or two of benzene instead of eight above it, **on ONE
+declared field**, and it lives at SETUP like `hammett_rho` does, so there is no
+RHS edit and no tolerance-audit exposure.
+
+⚠⚠ **THE WHOLE JOB IS SOURCING THE CONSTANT, AND THAT IS THE POINT.** Coombes and
+Ridd measured encounter-controlled nitration; this project's rule for a
+hand-authored kinetic constant is *bound it against a stated observable, or
+declare it hand-authored and say what bounds it* (the sulfur burner is the
+standing example). ⚠ **Do not type 1e5 because it appears above** — the number
+above is an ARITHMETIC CONSEQUENCE printed to show the shape, not a measurement.
+
+⚠ **AND NO EXISTING AUDIT CAN CATCH THE GAP IT CLOSES.** `detailed_balance`'s
+collision cap compares the PRE-EXPONENTIAL against a limit; `hammett` moves `Ea`.
+With A = 1e10 and the barrier clamped at zero a shifted nitration's ceiling is
+1e10 — **one decade UNDER** the 1e11 limit — so the cap never fires on a
+substituent-shifted rate at all. Fragility 13 in a new suit.
+
+⚠ **Cost it against the four nitration routes first**, as G2 did.
 
 ## ⚠ G3 — `PLAYABLE.md`, the scoreboard the goal needs
 
@@ -209,6 +229,12 @@ must be PRINTED, not hidden**, so it can be argued with.
 "what a player can make" is not a property of the corpus alone. **A PLAYABLE
 scoreboard has to RUN things**, which is what makes it different from the two
 artefacts above and also what makes it expensive.
+
+⚠⚠ **AND G5 GAVE IT A THIRD, WHICH IS SHARPER: A ROUTE CAN BE BLOCKED ON WHETHER
+ITS NETWORK BUILDS AT ALL.** Aniline + nitric acid with electrolyte support
+REFUSES, on a nitroanilinium pKa nobody curated. That is not a species being
+unpriced and it is not a template being missing — it is a *combination* failing —
+and neither existing artefact can see it.
 
 ## ⚠ G4 — the granularity audit *(possibly free routes)*
 
@@ -232,33 +258,60 @@ G-series template counts toward it.
 is a measured, live finding — but **do not start here**, and do not treat a row's
 age as a reason to take it.
 
-1. **⚠⚠ NO PROTONATION IN A BARRIER — NEW IN G2, AND IT IS PROMOTED TO THE
+1. **⚠⚠ THE HAMMETT LINE DOES NOT SATURATE — NEW IN G5, AND IT IS PROMOTED TO THE
    G-SERIES ABOVE.** See that section; it is not repeated here.
 
-2. **⚠ NO REGIOSELECTIVITY IN THE SUBSTITUENT MODEL — ALSO NEW IN G2, AND IT IS A
-   BUILDER CHANGE RATHER THAN A DATA ONE.** `hammett.survey` sums over the
-   substrate's ring as a whole, so all three dinitrobenzenes from nitrobenzene
-   get the same barrier and are made at the same rate. Doing better needs the
-   barrier to know WHICH ring carbon was attacked, and a `ConcreteReaction` is a
-   pair of SMILES tuples — the site is discarded by the time
-   `_concrete_in_phase` computes the barrier.
-   ⚠ **The information EXISTS at the moment the rewrite runs** (`tmpl.run` has
-   the RDKit match) and is thrown away, which is S9's shape exactly. What it
-   would buy is real: nitration of toluene is ~60% ortho / 37% para / 3% meta and
-   the engine currently says a third each. ⚠ **Price it against G4 first** — a
-   regioselective nitration may or may not move any catalog row.
+2. **⚠⚠ NO ACIDITY FUNCTION — NEW IN G5, AND IT REPLACES THE OLD "NO PROTONATION"
+   ROW.** A mixed acid's acidity is H0, which is not the concentration of
+   anything; this engine's only handle is a mass-action molarity whose measured
+   floor is **pH −0.79**. ⚠ **DO NOT BUILD THIS BEFORE ITEM 1.** Even a perfect
+   acidity function leaves the free-base leak, because the leak is in how the
+   free base is PRICED and not in how much of it there is — measured, the
+   anilinium is already 100.000% of the aniline and carries 1e-7 % of the rate.
+   ⚠ And an H0 is not a state variable this engine has anywhere to put: it is a
+   property of a MEDIUM, which is what `chemsim-ion-transfer`'s "an aqueous pKa
+   must not run in an oil" is about. **Scope it as physics, not as a table.**
 
-3. **⚠⚠ THE PSRK OVERFLOW IS NO LONGER "MEASURED INERT" (S13), AND IT IS STILL
-   THE CHEAPEST REAL ITEM.** `activity.activity_coefficients` overflows
-   `np.exp(-a / T)` below **4.28 K** (measured exactly: `max(-a/T)` is 760 at
-   T=4 and 292 at T=10). `plate_column` prints **five `RuntimeWarning` lines
-   where it printed none**. ⚠ **MEASURED HARMLESS WHERE IT FIRES** — heart 0.8548
-   against 0.8544, target met, replay exact. **The word to change is "inert", not
-   the number.** ⚠ **WHAT IS NOT KNOWN IS *WHERE*** — nothing has found which
-   call passes a T that low. A `np.errstate(over="raise")` context around the
-   residual term, with the state printed, is the whole probe. Worth ZERO routes.
+3. **⚠ NO REGIOSELECTIVITY IN THE SUBSTITUENT MODEL (G2), AND G5 ASSERTED IT.**
+   `hammett.survey` sums over the substrate's ring as a whole, so all three
+   dinitrobenzenes get the same barrier. `test_protecting_the_amine_is_emergent_and_runs`
+   now asserts `ortho == approx(meta)` on the nitroacetanilides (0.1535 each
+   against a real ~90% para), **so closing this breaks a test rather than going
+   unnoticed.** ⚠ The information EXISTS at rewrite time (`tmpl.run` has the RDKit
+   match) and is discarded before the barrier is computed, which is S9's shape
+   exactly. ⚠ **Price it against G4 first** — a regioselective nitration may or
+   may not move any catalog row.
 
-4. **⚠⚠ `multistep_prep` PRINTS `pH = inf`, AND IT IS PRE-EXISTING.** At the
+4. **⚠ AN OPEN-ENDED TEMPLATE OVER A CURATED TABLE — NEW IN G5, AND THE REFUSAL
+   IS DELIBERATE.** `amine_protonation` protonates every amine a network reaches;
+   the ion table prices the typed ones. Nitrating an aniline REFUSES on
+   `[NH3+]c1ccccc1[N+](=O)[O-]`. ⚠ **Curating the nine nitroaniline pKa values is
+   MEASURED to buy nothing** (the ion channel carries 1e-7 % of the rate), so the
+   refusal stands — the element floor's rule applied to a pKa. ⚠ **The thing that
+   WOULD change this is item 1**, after which the free base no longer dominates
+   and the ion's pKa starts to matter.
+
+5. **⚠ THE PYRIDINIUM IS PRICED AND UNREACHABLE — NEW IN G5.** The ion is in the
+   table (pKa 5.23); an aromatic ring nitrogen is **X2** and `amine_protonation`
+   matches X3, so nothing can make it. A heteroaromatic protonation template is
+   four lines. ⚠⚠ **AND THE THING TO MEASURE FIRST IS THE SKRAUP**, whose product
+   is a pyridine ring in hot sulfuric acid. ⚠ Measured: `validation/skraup.py`
+   builds its network from `quinoline_chemistry()` alone, which is ONE template
+   and carries no dissociation at all — **so the coupling is conditional on
+   somebody adding the bundle there, not automatic.** A protonated quinoline is
+   real chemistry and would change that route's answer if they did.
+
+6. **⚠⚠ THE PSRK OVERFLOW IS NO LONGER "MEASURED INERT" (S13), AND IT IS STILL A
+   CHEAP REAL ITEM.** `activity.activity_coefficients` overflows `np.exp(-a / T)`
+   below **4.28 K** (measured: `max(-a/T)` is 760 at T=4 and 292 at T=10).
+   `plate_column` prints **five `RuntimeWarning` lines where it printed none**.
+   ⚠ **MEASURED HARMLESS WHERE IT FIRES** — heart 0.8548 against 0.8544, target
+   met, replay exact. **The word to change is "inert", not the number.** ⚠ **WHAT
+   IS NOT KNOWN IS *WHERE*** — nothing has found which call passes a T that low. A
+   `np.errstate(over="raise")` context around the residual term, with the state
+   printed, is the whole probe. Worth ZERO routes.
+
+7. **⚠⚠ `multistep_prep` PRINTS `pH = inf`, AND IT IS PRE-EXISTING.** At the
    default tolerance the benzoate flask reports `inf`; at rtol 1e-8, **11.65**.
    ⚠ **A READOUT THAT REPORTS INFINITY IS NOT AN ACCURACY PROBLEM** — same
    mechanism as the Skraup's "exactly zero": a hydronium column the loose solver
@@ -266,7 +319,7 @@ age as a reason to take it.
    on the pH READOUT (the shape `is_boiling` got), but **measure the hydronium
    trajectory first**.
 
-5. **⚠⚠ NOTHING IN `build_phase_arrays` COMPARES T TO Tc.** A CONDENSABLE species
+8. **⚠⚠ NOTHING IN `build_phase_arrays` COMPARES T TO Tc.** A CONDENSABLE species
    above its critical temperature still dissolves by Raoult's law against an
    Antoine curve extrapolated past its own domain. Measured: a Wacker flask at
    400 K dissolves **0.165958 of 0.20 mol of ethylene over 20 mol of water —
@@ -278,7 +331,7 @@ age as a reason to take it.
    ⚠ **S13 PUT 869 MORE SPECIES ON A FITTED ANTOINE CURVE** and added no Tc
    check, so the exposure grew even though the measured example did not move.
 
-6. **⚠⚠ A METAL THAT BOILS OUT OF THE SOLID BLOCK — STILL THE BEST-SCOPED PURE
+9. **⚠⚠ A METAL THAT BOILS OUT OF THE SOLID BLOCK — STILL THE BEST-SCOPED PURE
    ENGINE ITEM.** Measured after S10's commit by patching iron's volatility in
    place (Alcock's curve) and running thermite insulated:
 
@@ -299,44 +352,45 @@ age as a reason to take it.
    same `build_surface_arrays` non-lattice check, but `Hg(l) + S8(s)` is not a
    gas attacking a crystal, so `SurfaceArrays`' form may be wrong for it.
 
-7. **⚠⚠ THE 250–450 K FIT WINDOW.** `CondensedProvider.get(mol, T_lo=250.0,
-   T_hi=450.0)` is an organic-solvent window and **every caller takes the
-   default**. Swept in S11 over each species' OWN Tm→Tb: **99 compounds return a
-   NEGATIVE liquid Cp inside their own liquid range** (worst carminic acid at
-   **−21482 J/(mol K)**) and 38 more swing over 5x.
-   ⚠⚠ **NOBODY HAS RE-SWEPT THE 99 SINCE S13 GAVE 876 SPECIES MEASURED Tb/Tc.**
-   The count is a pre-S13 number and **the first thing this item needs is to
-   measure it again** — S11 moved ethylene from **+1574 to −1782** by giving it a
-   measured Tc, so better inputs do not make an extrapolation safer.
-   ⚠ A negative Cp is not an accuracy problem: **adding heat LOWERS the
-   temperature**, and S10 measured it reachable (3.96 mol of liquid mercury gave
-   a NEGATIVE total thermal mass). ⚠⚠ **DO NOT JUST WIDEN THE WINDOW** — many of
-   the 99 have a Joback Tm/Tb that is itself meaningless.
+10. **⚠⚠ THE 250–450 K FIT WINDOW.** `CondensedProvider.get(mol, T_lo=250.0,
+    T_hi=450.0)` is an organic-solvent window and **every caller takes the
+    default.** Swept in S11 over each species' OWN Tm→Tb: **99 compounds return a
+    NEGATIVE liquid Cp inside their own liquid range** (worst carminic acid at
+    **−21482 J/(mol K)**) and 38 more swing over 5x.
+    ⚠⚠ **NOBODY HAS RE-SWEPT THE 99 SINCE S13 GAVE 876 SPECIES MEASURED Tb/Tc.**
+    The count is a pre-S13 number and **the first thing this item needs is to
+    measure it again** — S11 moved ethylene from **+1574 to −1782** by giving it a
+    measured Tc, so better inputs do not make an extrapolation safer.
+    ⚠ A negative Cp is not an accuracy problem: **adding heat LOWERS the
+    temperature**, and S10 measured it reachable (3.96 mol of liquid mercury gave
+    a NEGATIVE total thermal mass). ⚠⚠ **DO NOT JUST WIDEN THE WINDOW** — many of
+    the 99 have a Joback Tm/Tb that is itself meaningless.
 
-8. **⚠ `slagging` — RE-PRICED IN S11 AND IT WAS PRICED TOO CHEAPLY.**
-   `silicon-dioxide` ✔ fully available; **`calcium-silicate` has NO
-   thermochemical data under ANY of its three CAS numbers** ✘ (not a curation
-   job); `iron-ii-oxide`'s CRC standard row has **`Cps = NaN`**.
-   **`blast-furnace` is blocked TWICE over, on SOURCES rather than on work.**
+11. **⚠ `slagging` — RE-PRICED IN S11 AND IT WAS PRICED TOO CHEAPLY.**
+    `silicon-dioxide` ✔ fully available; **`calcium-silicate` has NO
+    thermochemical data under ANY of its three CAS numbers** ✘ (not a curation
+    job); `iron-ii-oxide`'s CRC standard row has **`Cps = NaN`**.
+    **`blast-furnace` is blocked TWICE over, on SOURCES rather than on work.**
 
-9. **⚠ THE CIS/TRANS BLIND SPOT.** Benson (the RMG group set) has no cis
-   correction, so oleic and elaidic acid come back with IDENTICAL Hf and Gf and
-   the engine reports a confident 50:50 for a real ~5:1. ⚠ **The data exists and
-   is not usable as it stands**: WEBBOOK has both liquid enthalpies (−764.8 and
-   −769.0 kJ/mol) and that 4.2 kJ/mol gap agrees with Benson's own historical cis
-   NNI term to 0.4% — **two independent sources** — but neither has an S0, so no
-   Gf can be derived, and grafting Benson's original correction onto RMG-fitted
-   group values **mixes two bases**.
+12. **⚠ THE CIS/TRANS BLIND SPOT.** Benson (the RMG group set) has no cis
+    correction, so oleic and elaidic acid come back with IDENTICAL Hf and Gf and
+    the engine reports a confident 50:50 for a real ~5:1. ⚠ **The data exists and
+    is not usable as it stands**: WEBBOOK has both liquid enthalpies (−764.8 and
+    −769.0 kJ/mol) and that 4.2 kJ/mol gap agrees with Benson's own historical cis
+    NNI term to 0.4% — **two independent sources** — but neither has an S0, so no
+    Gf can be derived, and grafting Benson's original correction onto RMG-fitted
+    group values **mixes two bases**.
 
-10. **⚠ THE CURRENT BUDGET — M8's OWN NAMED GAP, AND IT IS A LAYER 4 TERM.** Two
+13. **⚠ THE CURRENT BUDGET — M8's OWN NAMED GAP, AND IT IS A LAYER 4 TERM.** Two
     electrode reactions in one cell divide nothing, so both run at full rate:
     k(brine)/k(water) is **4.76e+17 at 2.5 V, 5.94 at 3.0, 1.00 at 4.0**.
     ⚠ Worth **ZERO new routes**.
 
-11. **Pyrite** — one mineral entry, +1 on the intersection. ⚠ **RE-QUERIED IN S11
+14. **Pyrite** — one mineral entry, +1 on the intersection. ⚠ **RE-QUERIED IN S11
     AND THE REFUSAL STANDS**: `Hfs` in WEBBOOK, `S0s` in **nothing**.
 
-12. **⚠⚠ THE BURNER — ~50 s at rtol 1e-8 against 0.8 s at the default.** S5
+15. **⚠⚠ THE BURNER — measured at 52.47 s at rtol 1e-8 against 0.8 s at the
+    default, and it is the 5th most expensive test in the suite (3.9%).** S5
     bounded the CRASH and explicitly did not bound the THRASHING. BDF is
     struggling with a liquid layer holding **1e-29 mol**, which `LAYER_REABSORB`
     drains toward zero without ever reaching it. **The question nobody has asked
@@ -345,24 +399,24 @@ age as a reason to take it.
     does exactly that at the `run` boundary. **Measure the layer-2 inventory over
     the failing run before designing anything.**
 
-13. **THE CORPUS BALANCE BACKLOG — 75 ROWS, AND IT IS NOT A TO-DO LIST.** S7
+16. **THE CORPUS BALANCE BACKLOG — 75 ROWS, AND IT IS NOT A TO-DO LIST.** S7
     built the check and deliberately fixed nothing, on the `diels-alder-route`
     precedent. ⚠ But **17 of the 75 are `spurious`** and those are the cheapest to
     correct. ⚠ `tools/catalog.py`'s `validate` still does NOT check balance, so
     the corpus can grow another one silently.
 
-14. **⚠ `hydrolysis`** — it unlocks **exactly ONE route alone,
+17. **⚠ `hydrolysis`** — it unlocks **exactly ONE route alone,
     `vitriol-distillation`**, and that route's step 1 reads `-> iron-ii-OXIDE`
-    while the engine makes HEMATITE. ⚠ **That is item 8's mineral again.**
+    while the engine makes HEMATITE. ⚠ **That is item 11's mineral again.**
 
-15. **M7 (⚠ M12 took most of its case away; re-scope)**, **M9 (polymers, 12
+18. **M7 (⚠ M12 took most of its case away; re-scope)**, **M9 (polymers, 12
     routes)**, **M10 (the site balance S1 did not build, 8 routes)**,
     **⚠⚠ M11 — RE-COST IT BEFORE SCHEDULING.** Its costed starting point was
     *"10 species that need ONE measured boiling point each"*; **S13 closed eight
     and the bucket counts 2**. What is left is the FORMATION half — 267 species
     with no group value in any published tabulation.
 
-16. **NUCLEATION, now that half of it is modelled.** S3 named the gap; S4 turned
+19. **NUCLEATION, now that half of it is modelled.** S3 named the gap; S4 turned
     the *deposition-needs-a-seed* half into a real bound in
     `SolidStateArrays.units`. What is still not expressible is a solid appearing
     from NO solid — `hydride-thermal-deposition` is still a mechanism gap.
@@ -380,7 +434,7 @@ kind of content work. **Read the row, not the rank.**
 | `fischer-tropsch` | `fischer-tropsch` | +1 | `8 CO + 17 H2 -> octane + 8 H2O`, **25 slots**. Claus proves 24 works and Skraup proves the pattern generalises — but read M8 §6 on the lump that was refused. ⚠ **The queue's best CONTENT row**, and its mechanic is chain growth as a lump, which is M9's problem wearing a template |
 | `molten-salt-electrolysis` | `downs-cell` | +1 | ⚠ **A MELT is not a phase this project has** — M8's own leftover, ENGINE work |
 | `catalytic-air-oxidation` | `p-xylene-oxidation` | +1 | ⚠⚠ **M5 REFUSED THIS CLASS** — its four rows are at least three mechanisms. **Split it before crediting it**; only one of the four is runnable |
-| `direct-combination` | `vermilion-route` | +1 | ⚠⚠ **S9 MEASURED AND REFUSED IT**; engine queue item 6 is the only thing that could change that. **Do not re-derive this** |
+| `direct-combination` | `vermilion-route` | +1 | ⚠⚠ **S9 MEASURED AND REFUSED IT**; engine queue item 9 is the only thing that could change that. **Do not re-derive this** |
 | ~~`oxidative-cleavage`~~ | `vanillin-lignin` | ⚠⚠ **S11 REFUSED IT** | It cannot be the reaction the row is written as: it balances at **8 C10H12O3 + 7 O2 -> 10 C8H8O3 + 8 H2O** — eight aromatic rings in and TEN out. **Do not re-derive this** |
 | `fermentation` | `abe-fermentation`, `msg-route` | +1 | ⚠ **M5 REFUSED IT** as a metabolic NETWORK rather than a transformation |
 | `separation` | `coal-tar-distillation` | +1 | ⚠ **M5 REFUSED IT**: a distillation is not a reaction class, and the feedstock has no graph |
@@ -408,23 +462,25 @@ repo-local `user.name`/`user.email` if that should be yours.
 
 Start by reading, in order:
 
-MILESTONES.md — the plan, and **§ THE G-SERIES first**. ⚠ **§G1 and §G2 are
+MILESTONES.md — the plan, and **§ THE G-SERIES first**. ⚠ **§G1, §G2 and §G5 are
   marked DONE with what they turned out to be, and G1's original brief is kept
   underneath because the measurement that overturned it only means something
   against it.** Then §S13, §S12, §S11, §S10, §S9, §S8, §S7, §M8, §S1, §S3, §S4,
   §S5, §S6.
 HANDOFF.md — what exists, and the ethos to preserve. **85 is S1 … 98 is S13,
-  99 is G1, 100 is G2.**
-NEXT_SESSION.md — the invariants table at the bottom is the contract, and **G1
-  and G2 each added a block**. ⚠ Read the two warnings above it before trusting
-  any row, and note that G2's protonation row and G1's still-cost row are
-  **LIMITS TO REMOVE**, not invariants to keep.
+  99 is G1, 100 is G2, 101 is G5.**
+NEXT_SESSION.md — the invariants table at the bottom is the contract, and **G1,
+  G2 and G5 each added a block**. ⚠ Read the two warnings above it before
+  trusting any row, and note that **G5's "no acidity function" and
+  "the Hammett line does not saturate" rows are LIMITS TO REMOVE**, not
+  invariants to keep — as is G2's regioselectivity row.
 GAME_DESIGN.md — the settled design.
 data/catalog/README.md — the reaction-class taxonomy; plus
   `data/catalog/COVERAGE_REPORT.md`.
-the memory files (auto-loaded), especially **chemsim-dropping-funnel** and
-  **chemsim-ring-deactivation**, then chemsim-skraup-standard-state,
-  chemsim-competing-templates, chemsim-physical-data-sourcing,
+the memory files (auto-loaded), especially **chemsim-protonation** and
+  **chemsim-ring-deactivation**, then chemsim-dropping-funnel,
+  chemsim-skraup-standard-state, chemsim-ion-transfer,
+  chemsim-competing-templates, chemsim-solubility-product,
   chemsim-measured-physical-table, chemsim-coverage-catalog and
   chemsim-generated-artefacts.
 
@@ -436,101 +492,122 @@ templates, a reaction that happens INSIDE a crystal, a gas that ATTACKS a
 crystal, a catalyst you have to actually put in the flask, a Jacobian that cannot
 be probed outside its own state, four inorganic gas processes, three smelters, a
 retort that DISTILS its metal off, two templates that RACE for one alkene, a ring
-closure whose OXIDANT turns into one of its own reagents, **a dropping funnel
-whose addition is a CONDITION and not a duration**, and **an aromatic ring that
-knows what is already on it**. `SAVE_VERSION` is **6**.
+closure whose OXIDANT turns into one of its own reagents, a dropping funnel whose
+addition is a CONDITION and not a duration, an aromatic ring that knows what is
+already on it, **an amine that PROTONATES in acid — and a measured statement of
+why that is not enough to make an aniline behave.** `SAVE_VERSION` is **6**.
 Coverage: **51/229 classes**, **46 templates**, **41/173 template-ready**,
-**80/173 species-ready** — and ⚠⚠ **31/173 BOTH, which is the only one of the
-three a route can be judged on.** ⚠ G1 and G2 moved none of them, as predicted.
-⚠ The corpus's **PHYSICAL half is measured for 652/1583 (41.2%)** as of S13.
+**82/173 species-ready** (was 80 — G5's ion-table fix) — and ⚠⚠ **31/173 BOTH,
+which is the only one of the three a route can be judged on.**
+⚠ The corpus's **PHYSICAL half is measured for 652/1583 (41.2%)** as of S13;
+its refusals are down to **419 of 1583** as of G5.
 
 ---
 
 # ⚠ THE FRAGILITIES
 
-**1. ⚠⚠ NO PROTONATION IN A SUBSTITUENT BARRIER (G2).** Aniline is priced as a
-free base at **2.8e8 × benzene**; the real anilinium ion is meta-directing and
-SLOWER than benzene. 4-aminophenol drives the barrier through zero and is
-CLAMPED with a NOTICE. **A LIMIT to remove**, and the best-scoped new item.
+**1. ⚠⚠ THE HAMMETT LINE DOES NOT SATURATE (G5).** `rho*sigma+` prices aniline
+8.45 decades off a line fitted on |rho·sigma| < 2.6, and real nitration of an
+activated arene is encounter-controlled. **A LIMIT to remove, and the best-scoped
+new item.** ⚠ No existing audit can see it: the collision cap compares `A` and
+hammett moves `Ea`.
 
-**2. ⚠ NO REGIOSELECTIVITY IN A SUBSTITUENT BARRIER (G2).** All three
-dinitrobenzenes are made at one rate. The site exists at rewrite time and is
-discarded. **A LIMIT to remove.** Engine queue item 2.
+**2. ⚠⚠ NO ACIDITY FUNCTION (G5).** The reachable hydronium floor is **pH −0.79**
+and the aniline crossover is at **−9.42**. H0 is a property of a MEDIUM and there
+is nowhere in this engine to put it. **A LIMIT to remove — but AFTER fragility 1**,
+because the anilinium is already 100.000% of the aniline and carries 1e-7 % of
+the rate.
 
-**3. ⚠ A STILL AND A DRIP BENCH CANNOT BE ONE APPARATUS IN AN EXAMPLE'S BUDGET
+**3. ⚠ AN OPEN-ENDED TEMPLATE OVER A CURATED ION TABLE (G5).** Nitrating an
+aniline REFUSES on a nitroanilinium pKa nobody curated. **The refusal is
+deliberate** — curating the nine values is measured to buy nothing.
+
+**4. ⚠ THE PYRIDINIUM IS PRICED AND UNREACHABLE (G5).** An aromatic ring nitrogen
+is X2 and `amine_protonation` matches X3. Closing it lands on the Skraup.
+
+**5. ⚠ NO REGIOSELECTIVITY IN A SUBSTITUENT BARRIER (G2, asserted in G5).** All
+three dinitrobenzenes are made at one rate, and ortho == meta on the
+nitroacetanilides against a real ~90% para. The site exists at rewrite time and
+is discarded. **A LIMIT to remove.** Engine queue item 3.
+
+**6. ⚠ A STILL AND A DRIP BENCH CANNOT BE ONE APPARATUS IN AN EXAMPLE'S BUDGET
 (G1).** The same 20 s addition costs **3.9 s of wall clock on two vessels and
 220 s with a head and receiver attached — 56x.** Not a bug: a rig integrates
 every vessel as one stiff system. **Reported in `examples/dropping_funnel.py`.**
 
-**4. ⚠⚠ NOTHING COMPARES T TO Tc (S11).** Ethylene is ~40x too soluble in the
-Wacker liquor. Engine queue item 5. **A LIMIT to remove.** ⚠ S13 put 869 more
+**7. ⚠⚠ NOTHING COMPARES T TO Tc (S11).** Ethylene is ~40x too soluble in the
+Wacker liquor. Engine queue item 8. **A LIMIT to remove.** ⚠ S13 put 869 more
 species on a fitted Antoine curve and did NOT add a Tc check.
 
-**5. ⚠⚠ THE WACKER'S OXYGEN ORDER IS FIRST AND SHOULD BE ZERO (S11).** Measured
+**8. ⚠⚠ THE WACKER'S OXYGEN ORDER IS FIRST AND SHOULD BE ZERO (S11).** Measured
 at 1.00 / 1.92 / 3.53 / 5.85x. **A LIMIT to remove.**
 
-**6. ⚠⚠ A LATTICE MAY REACT AND MAY NEVER BOIL — HALF CLOSED BY S10.** What
-remains is thermite. **Engine queue item 6**, worth ZERO routes.
+**9. ⚠⚠ A LATTICE MAY REACT AND MAY NEVER BOIL — HALF CLOSED BY S10.** What
+remains is thermite. **Engine queue item 9**, worth ZERO routes.
 
-**7. ⚠⚠ THE BURNER IS STILL ~50 s AT rtol 1e-8 AGAINST 0.8 s AT THE DEFAULT.**
-**Engine queue item 12.**
+**10. ⚠⚠ THE BURNER IS STILL ~50 s AT rtol 1e-8 AGAINST 0.8 s AT THE DEFAULT —
+AND G5's `--durations=25` MEASURED IT AT 52.47 s, 3.9% OF THE WHOLE SUITE.** The
+"~50 s" claim was right. **Engine queue item 15.**
 
-**8. ⚠⚠ NO CURRENT BUDGET (M8).** Selectivity washes out above ~2.7 V.
+**11. ⚠⚠ NO CURRENT BUDGET (M8).** Selectivity washes out above ~2.7 V.
 
-**9. ⚠⚠ THE ION TABLE'S MIXED BASIS (M8, pre-existing).** dG survives it, dS does
+**12. ⚠⚠ THE ION TABLE'S MIXED BASIS (M8, pre-existing).** dG survives it, dS does
 not. Quote E_dec at 298 K; do NOT quote its temperature derivative or a cell's
 HEAT.
 
-**10. ⚠⚠ 75 CATALOG ROWS CANNOT BE BALANCED (S7).** Reported, not fixed.
+**13. ⚠⚠ 75 CATALOG ROWS CANNOT BE BALANCED (S7).** Reported, not fixed.
 
-**11. ⚠⚠ THE ESTIMATORS CANNOT TELL A CIS ALKENE FROM A TRANS ONE (S7).**
+**14. ⚠⚠ THE ESTIMATORS CANNOT TELL A CIS ALKENE FROM A TRANS ONE (S7).**
 
-**12. ⚠ `deacon_oxidation_rev` CROSSES THE BIMOLECULAR CEILING AT 1141 K**, and a
+**15. ⚠ `deacon_oxidation_rev` CROSSES THE BIMOLECULAR CEILING AT 1141 K**, and a
 solid decomposition's forward constant crosses the unimolecular one at 3710 K.
 ⚠ S11 added two rows that cross at 967/969 K, the only ones whose crossing is a
 physical statement rather than a ranking.
 
-**13. ⚠ `detailed_balance`'s RATE CAP COMPARES A CATALYSED PRE-EXPONENTIAL
+**16. ⚠ `detailed_balance`'s RATE CAP COMPARES A CATALYSED PRE-EXPONENTIAL
 AGAINST A LIMIT NOT IN ITS UNITS.** It does not fire on any catalysed template.
+⚠⚠ **AND G5 FOUND ITS SECOND BLIND SPOT: it cannot fire on a HAMMETT-SHIFTED
+rate either**, because it compares `A` and hammett moves `Ea`.
 
-**14. THE DEFAULT TOLERANCE, BOUNDED RATHER THAN OPEN.** ⚠ `tolerance_audit.py`
+**17. THE DEFAULT TOLERANCE, BOUNDED RATHER THAN OPEN.** ⚠ `tolerance_audit.py`
 is a STANDING audit: run it after touching the RHS **or any data table**. ⚠
-**NEITHER G1 NOR G2 DID EITHER**, so its last measured state is S13's.
+**G1, G2 AND G5 DID NEITHER** — G5's ion-table change is asserted BIT-IDENTICAL
+for all 24 pre-existing anions — so its last measured state is S13's.
 
-**15. NOT MODELLED: the SITE BALANCE.** First order in the catalyst for ever. M10.
+**18. NOT MODELLED: the SITE BALANCE.** First order in the catalyst for ever. M10.
 
-**16. ⚠⚠ 99 CORPUS ROWS HAVE A NEGATIVE LIQUID HEAT CAPACITY (S10, re-swept
-S11).** ⚠ **The count is PRE-S13 and nobody has re-swept it.** Engine item 7.
+**19. ⚠⚠ 99 CORPUS ROWS HAVE A NEGATIVE LIQUID HEAT CAPACITY (S10, re-swept
+S11).** ⚠ **The count is PRE-S13 and nobody has re-swept it.** Engine item 10.
 
-**17. ⚠ NUCLEATION, HALF modelled.** A solid can only grow where one already is.
+**20. ⚠ NUCLEATION, HALF modelled.** A solid can only grow where one already is.
 
-**18. ⚠⚠ THERE IS NO REFLUX HEAD (S12).** A reaction at reflux must be modelled
+**21. ⚠⚠ THERE IS NO REFLUX HEAD (S12).** A reaction at reflux must be modelled
 as a SEALED flask, which buys a real pressure (13.7 bar for the Skraup at 450 K).
 ⚠ An OPEN Skraup loses **98% of its yield**.
 
-**19. ⚠ LIQUID MERCURY IS 99.85% HELD IDEAL.**
+**22. ⚠ LIQUID MERCURY IS 99.85% HELD IDEAL.**
 
-**20. ⚠ THE ELEMENT FLOOR'S SOLID HALF IS CURATED AND ITS GAS HALF IS REFUSED.**
+**23. ⚠ THE ELEMENT FLOOR'S SOLID HALF IS CURATED AND ITS GAS HALF IS REFUSED.**
 33 compounds remain refused as bare elements and none blocks a route.
 
-**21. ⚠ `iron-ii-oxide`, `pyrite` AND `calcium-silicate` ARE ALL SOURCE-BLOCKED.**
+**24. ⚠ `iron-ii-oxide`, `pyrite` AND `calcium-silicate` ARE ALL SOURCE-BLOCKED.**
 
-**22. ⚠⚠ THE PSRK OVERFLOW IS NO LONGER "MEASURED INERT" (S13).** Overflows below
+**25. ⚠⚠ THE PSRK OVERFLOW IS NO LONGER "MEASURED INERT" (S13).** Overflows below
 **4.28 K**; `plate_column` prints five `RuntimeWarning` lines. ⚠ Measured
 HARMLESS where it fires. Nothing has found WHICH call passes a T that low.
-**Engine queue item 3.**
+**Engine queue item 6.**
 
-**23. ⚠⚠ `multistep_prep` PRINTS `pH = inf` (pre-existing, visible since S13).**
-**Engine queue item 4.**
+**26. ⚠⚠ `multistep_prep` PRINTS `pH = inf` (pre-existing, visible since S13).**
+**Engine queue item 7.**
 
-**24. ⚠ `named_routes` CANNOT BE SWEPT at rtol 1e-8 (S13) — AND IT IS NOT NEW.**
+**27. ⚠ `named_routes` CANNOT BE SWEPT at rtol 1e-8 (S13) — AND IT IS NOT NEW.**
 The PRE-S13 data raises too, at **rtol 1e-7**, one decade closer to the default
 than the audit samples.
 
-**25. ⚠ THE 31 SPECIES THAT MISS THE BOILS-AT-1-ATM BAR (S13).** 858 of 889 clear
+**28. ⚠ THE 31 SPECIES THAT MISS THE BOILS-AT-1-ATM BAR (S13).** 858 of 889 clear
 1.5%; the 31 are NAMED in `BOILS_LOOSELY` and **eight are pre-existing**.
 
-**26. ⚠ BENZOIC ACID'S MOLAR VOLUME GOT WORSE IN S13** — 96 → 87.4 mL/mol against
+**29. ⚠ BENZOIC ACID'S MOLAR VOLUME GOT WORSE IN S13** — 96 → 87.4 mL/mol against
 a real ~96.5. Taken deliberately: a record may not mix two group-contribution
 methods.
 
@@ -541,225 +618,60 @@ methods.
 
 TRAPS SPECIFIC TO THIS ARC:
 
-⚠⚠⚠ **SEARCH FOR THE MECHANIC BEFORE BUILDING IT, AND SEARCH THE OTHER LAYER.**
-G1's brief said a dropping funnel was MISSING and listed four things to build.
-All four already existed as `Rig`'s `meter` edge, whose own docstring says *"a
-dropping funnel or a syringe pump"* — sensible heat and all. The brief had
-measured the vignette against `Vessel` and never looked at Layer 4's edges.
-**Twenty-eight sessions of audit-the-instrument, and this is the first time the
-instrument was the BRIEF.**
-⚠⚠⚠ **AND THE HALF A BRIEF CALLS FREE IS THE HALF TO MEASURE.** *"It composes
-with `wait_until` for free"* was the only sentence in G1's build list that was
-not an instruction, and it was the only thing that had to be built.
+⚠⚠⚠ **A REFUSAL PRINTED IN A GENERATED AUDIT IS EVIDENCE, AND THIS ONE SAT IN THE
+REPO FOR TWELVE ROWS AND SEVERAL SESSIONS.** `COVERAGE_REPORT.md` printed
+`refusing to price '[NH4+]'` for twelve ammonium salts, and it read as an ordinary
+Born-domain refusal rather than as a bug in the ion table. The refusal even named
+a fix — *"add the conjugate acid to `_PAIRS` if it is not there"* — **and it WAS
+there.** **A refusal that names the WRONG fix is worse than one that names none**,
+because a reader who checks is then satisfied.
+⚠⚠⚠ **BOUND THE FIX BEFORE BUILDING IT, EVEN WHEN THE FIX IS THREE LINES.** The
+`ammonio` σ row is three lines and it was always going to go in. What mattered was
+computing, first, that the two channels cross at pH −9.42 and that the flask's
+floor is −0.79 — because that turned the session's headline from *"protonation is
+modelled"* into *"the limit is NO ACIDITY FUNCTION"*, which is a different and
+much better-posed statement. **Twenty-five times now.**
+⚠⚠ **AND THE ANSWER THAT LOOKS WRONG MAY BE THE MODEL AGREEING WITH REALITY IN A
+PLACE YOU CANNOT GO.** pH −9.42 reads absurd and is not: it is inside the measured
+H0 band of the 90–98% sulfuric acid real aniline nitration is run in. **Ask what a
+number would have to be for the model to be right before calling it wrong.**
+⚠⚠ **FOLDING TWO TERMS OF A SUM TOGETHER IS A DATA-TABLE CHANGE.** Summing the
+pKa term and the solvent correction into one variable before adding it moved **ten
+of the 24 ion-table anions in the last bit**. Floating-point addition is not
+associative, and a 1e-16 shift in a data table owes `tolerance_audit.py` ten
+minutes of the user's CPU. **Not shifting it is cheaper than proving it harmless.**
+⚠⚠ **A DIRECTION IS A DECLARATION, BECAUSE DISCOVERY IS FORWARD-ONLY.** A
+reversible template's reverse is in the network but is never used to enumerate
+species, so a deprotonation-forward template can only find an anilinium in a flask
+that already has one. `ester_hydrolysis` recorded this in M5 and it had to be
+rediscovered.
+⚠⚠ **A SMARTS `H` WITH NO DIGIT MEANS EXACTLY ONE.** `[NX4H+]` matched a
+protonated tertiary amine and nothing else, so the template named
+`ammonium_dissociation` was the one thing that could not deprotonate an ammonium.
+⚠ **AND A MAPPED ATOM KEEPS ITS FORMAL CHARGE**, so `[OX2H2:2]` on a hydronium
+oxygen hands back water with a +1 on it — after which the charge-balance check
+drops the rewrite and **the symptom is a template that silently does nothing.**
+⚠⚠ **AN OPEN-ENDED REWRITE OVER A CURATED TABLE WILL FIND THE EDGE OF THE TABLE.**
+A protonation template makes conjugate acids without limit. **Keeping the refusal
+was the right call and it was decided by arithmetic**, not by taste: the nine
+missing pKa values were measured to buy nothing.
+⚠ **A POSITIONAL INDEX INTO A TABLE IS NOT A KEY.** `hammett._TABLE[0]` with an
+`assert label == "nitro"` guard under it — the guard earned its keep the first
+time a row was inserted. Order in that tuple is a SMARTS-precedence decision.
+⚠ **A TABLE ROW WHOSE TWO CONSTANTS INVERT BREAKS A RULE DERIVED FROM THE OTHERS.**
+−NH3+ is σm 0.86 / σp 0.60 where every other meta-director has σm < σp, so
+"meta-directing iff σp > σm" calls an anilinium an ortho/para director. Second
+reason `meta_directing` is declared data; the halogens are the first.
 ⚠⚠ **A rho IS MEANINGLESS WITHOUT ITS SIGMA SCALE**, exactly as a dH is
-meaningless without its standard state. σ⁺ and σ differ by up to 0.6 for
-resonance donors (methoxy −0.778 against −0.27) and agree within 0.05 for
-acceptors. **Ask which scale a fitted reaction constant was measured against
-before multiplying it by anything.**
-⚠⚠ **TWO NUMBERS THAT EACH CARRY THEIR OWN ERROR TERM CANNOT BE SUBTRACTED TO
-DECIDE A THIRD.** `ran_dry` was first written as `delivered < rate*elapsed` and a
-funnel with a headspace delivers 0.40799 against a nominal 0.40702 — MORE, not
-less. Measure the thing the question is about (what is left in the funnel).
-⚠⚠ **A DERIVED DURATION IS WRONG TWICE: IT IS DERIVED DATA, AND THE ARITHMETIC
-MAY NOT BE THE ARITHMETIC YOU THINK.** `total / rate` for a dropping funnel is
-20 s where the answer is 30, because a meter moves the donor's SOLUTION and not
-its reagent. It caught its own author, in a test written to make a different point.
-⚠⚠ **A RATE ONLY MATTERS AGAINST ANOTHER RATE.** The same moles carry the same
-joules however fast they arrive; an insulated pot moved 0.15 K across a 25x
-addition-rate change. "Add it too fast and it runs away" needs an EXOTHERM racing
-a COOLING CONDUCTANCE, which is why the playground is a nitration and not an
-esterification.
-⚠⚠ **A BIT-IDENTITY CLAIM HAS TO BE ABOUT THE THING IT IS A CLAIM ABOUT.** The
-first draft of G2's collapse check built a 5-species network, which lets one
-dinitrobenzene in, and reported "not identical" while printing two numbers that
-both read 60000.000000. The disagreeing entry was the second reaction, on a ring
-that is no longer unsubstituted.
-⚠ **AN UNSOURCED VALUE IS REPORTED, NOT PRICED AT ZERO IN SILENCE.** Aspirin's
-acetoxy oxygen has no σ⁺ this table can source, so it is excluded from the
-`alkoxy` pattern and comes back in `unknown` with a NOTICE. Pricing it as a
-methoxy would have made aspirin's ring more reactive than anisole's.
-⚠ **A CHEMICAL RULE'S EXCEPTIONS ARE DATA, NOT A DERIVATION.** "Meta-directing
-iff σ_para > 0" is wrong for all four halogens, which deactivate and yet direct
-ortho/para. `meta_directing` is a declared field.
-⚠ **A CLAMP IS NOT A FIX, AND IT SHOULD SAY SO.** `clamp_barrier` floors a
-negative activation energy at zero and `build_network` emits a NOTICE naming the
-missing physics (protonation) rather than letting the floor read as the answer.
+meaningless without its standard state. σ⁺ and σ differ by up to 0.6 for resonance
+donors and agree within 0.05 for acceptors — **which is exactly what licences the
+`ammonio` proxy row**, because −NH3+ has no lone pair to donate.
+⚠ **AN UNSOURCED VALUE IS REPORTED, NOT PRICED AT ZERO IN SILENCE.** An aryl
+quaternary ammonium has no σ this table can source, so it comes back in `unknown`
+rather than borrowing the anilinium's row.
+⚠ **A CLAMP IS NOT A FIX, AND IT SHOULD SAY SO.**
 ⚠ BOUND A MECHANISM ARITHMETICALLY AGAINST THE ACTUAL SIMULATED STATE BEFORE
-WRITING CODE. Twenty-four times now. ⚠ **AND THE SOLVER IS PART OF THE ARITHMETIC**
-(M8).
-⚠⚠ **A GENERATED FILE IS ONLY AS SYSTEMATIC AS ITS INPUT LIST.** S13 closed it
-for `physical_data.py`: the file looked generated from the outside and was a
-transcription on the inside, and nothing could see the difference **because a
-Joback record RESOLVES**.
-⚠⚠⚠ **AND THE FIX FOR ONE TRAP CAN BE THE NEXT TRAP.** S11 recorded "a bare
-SMILES is read as a FORMULA — always use `smiles=`"; S13 did, and generated a
-table with no aniline in it. **NEITHER KEY ALONE IS ENOUGH** — graph first, then
-the NAME, with the formula cross-check as the arbiter.
+WRITING CODE. ⚠ **AND THE SOLVER IS PART OF THE ARITHMETIC** (M8).
+⚠⚠ **SEARCH FOR THE MECHANIC BEFORE BUILDING IT, AND SEARCH THE OTHER LAYER**
+(G1). ⚠⚠ **AND THE HALF A BRIEF CALLS FREE IS THE HALF TO MEASURE.**
 ⚠⚠ **A COUNT OF THINGS THAT ARE MISSING IS NOT A COUNT OF THINGS THAT ARE WRONG.**
-⚠⚠ **A TIER READ OUT OF PROSE GOES WRONG THE MOMENT THE WORDING CHANGES**, and
-**A DEFAULT AT THE BOTTOM OF A MATCHER IS A GUESS.**
-⚠⚠ **A BAR MEASURED OVER NINE SPECIES IS A BAR MEASURED OVER NINE SPECIES**, and
-**A BAR IN TEMPERATURE AND A BAR IN PRESSURE ARE NOT THE SAME BAR.**
-⚠⚠ **A ONE-POINT TOLERANCE SWEEP CANNOT TELL "NEWLY BROKEN" FROM "ALREADY BROKEN
-AT A POINT IT DOES NOT SAMPLE."**
-⚠⚠ **A DOCUMENTED BEHAVIOUR CAN BE RESTING ON A WRONG NUMBER MAKING IT BIG ENOUGH
-TO SEE.**
-⚠ **A ROOT IS ZERO TO SOLVER PRECISION, AND THE LAST BIT IS NOT PHYSICS.**
-⚠ **A BETTER RECORD CAN MAKE ONE NUMBER WORSE, AND THE ANSWER IS TO WRITE IT
-DOWN.**
-⚠⚠ **ASK WHICH NUMBER THE SYMPTOM ACTUALLY DEPENDS ON BEFORE CURATING THE ONE
-THAT LOOKS RESPONSIBLE.**
-⚠⚠ **A CORRELATION EXTRAPOLATED OUTSIDE ITS DOMAIN DOES NOT GET SAFER WHEN ITS
-INPUTS GET BETTER.**
-⚠⚠ **EVANS-POLANYI NAMES THE WRONG MAJOR PRODUCT WHEN KINETICS FIGHT
-THERMODYNAMICS**, and G2 adds the measurement that makes it concrete on a ring:
-the DEACTIVATED substrate's step is the MORE exothermic one.
-⚠⚠ **AN EQUILIBRIUM CONSTANT IS A STATEMENT ABOUT PARTIAL PRESSURES.**
-⚠⚠ **A DECLARED ORDER OF ZERO DRIVES ITS REACTANT NEGATIVE.**
-⚠⚠ **COUNT THE MOLES OF GAS ON EACH SIDE BEFORE DECLARING IRREVERSIBLE.**
-⚠⚠ **A SCOPING GUARD IS NOT A PHYSICS CLAIM.**
-⚠⚠ **A SINGLE-LETTER SMILES IS ALSO AN ELEMENT SYMBOL.**
-⚠⚠ **A REFUSAL'S SENTENCE IS A CLAIM ABOUT A NAMED THING — CHECK WHICH THING**,
-and **TWO SYMPTOMS CITING ONE SENTENCE ARE NOT NECESSARILY ONE GAP.**
-⚠⚠ **THERMODYNAMIC CONCLUSIONS SURVIVE A PHASE CHANGE IN A PRODUCT; KINETIC ONES
-NEED NOT.**
-⚠⚠ **ASK WHAT A FIT WAS ANCHORED ON, NOT WHETHER THE CHECK LOOKS FAMILIAR.**
-G2's answer is 298.15 K and deliberately NOT the network's `T_ref`.
-⚠⚠ **A CORRELATION'S FIT WINDOW IS A DEFAULT ARGUMENT NOBODY OVERRIDES.**
-⚠⚠ **READ THE CATALOG ROW, NOT THE CLASS NAME**, and **A BALANCE CHECK IS A
-NECESSARY CONDITION, NOT A SUFFICIENT ONE.**
-⚠⚠ **A COLUMN THAT ANSWERS A QUESTION CANNOT ANSWER THE NEXT ONE.**
-⚠⚠ **A CLASS IS A MECHANISM CLAIM, AND A SPLIT MAY LOWER THE HEADLINE.**
-⚠⚠ **A SPECIES JOB SHOULD FOLLOW THE TEMPLATE IT ENABLES, NOT LEAD IT.**
-⚠ **A BRIEF'S EXPECTED OUTCOME IS A HYPOTHESIS.** ⚠⚠ **AND G1 IS THE STRONGEST
-CASE OF IT YET: THE BRIEF'S ENTIRE BUILD LIST WAS ALREADY BUILT.**
-⚠ **PREDICT THE NUMBER BEFORE YOU MEASURE IT.** S3 +2/+0; S4 +1/+1; S6 predicted
-14 and measured 16; M8 three for three; S7 five for five; S9 four for four; S10
-four for four and all four ZERO; S11 four for four; S12 four for four; S13 four
-for four; **G1 four for four and G2 four for four — all eight ZERO, because
-neither a Layer 6 verb nor a barrier is a template.**
-⚠ **VERIFY A CREDIT BY RUNNING IT, NOT BY READING THE CODE THAT WOULD RUN IT.**
-⚠ **AND VERIFY A BIT-IDENTICAL CLAIM AGAINST THE EXAMPLE SET, NOT AN ARGUMENT.**
-⚠ **A CONSTANT'S UNITS ARE WHAT MAKE ITS VALUE DEFENSIBLE.** G1 uses it as a
-REFUSAL: `add_dropwise` rejects a drain edge, because a drain's `k` is a
-reciprocal residence time and a meter's is mol/s.
-⚠ **AN ARRHENIUS PAIR IS NOT SEPARABLE.**
-⚠ **AN `inf` IS USUALLY THE WRONG BOUND, NOT A BOUND NEEDING SOFTENING.**
-⚠ **A RELATIVE-DIFFERENCE TEST IS MEANINGLESS ON A COLUMN WHOSE CONVERGED VALUE
-IS ZERO.**
-⚠ **A NEW CREDIT MUST BE A FALLBACK BEFORE IT IS AN OVERRIDE.**
-⚠⚠ **A ONE-POINT WALL-CLOCK ATTRIBUTION IS NOT A MEASUREMENT.** S13 explained a
-suite that had gone from 13:20 to 21:36 as CONTENTION, from one run with other
-work on the machine. G2's uncontended run is **22:06** — the explanation is
-refuted, and the cause is still not measured. ⚠ **Note which half of that
-sentence is the finding**: "not contention" is established; "therefore the data
-table" is not, and `pytest --durations=25` has never been run here.
-⚠ **AUDIT THE INSTRUMENT BEFORE THE FINDINGS.** S2's harness invented a finding;
-S1's coverage audit credited a route that cannot run; S3's report could not be
-diffed; S4's rate-ceiling audit made a claim about a table it does not read; S6's
-target column had been understating itself since M3; M8's new audit found a
-pre-existing ion-table error; S7 found the coverage audit pricing a species the
-engine refuses; S9 found a source comment CITING an audit check that never
-existed; S10's `game_gates` panel INVENTED a 90 kJ/mol error; S11's sweep read
-methane's boiling point as carbon's; S13's counted 322 where the answer is 830;
-**and G1's brief listed four things to build that were already built.**
-⚠ AN INVARIANT MEASURED ACROSS A BOUNDARY FLUX IS NOT AN INVARIANT. Seal it first.
-⚠ A GREEN SUITE IS NOT EVIDENCE THE INVARIANTS TABLE HOLDS.
-⚠ **A GENERATED FILE NOTHING READS IS THE ONE THAT ROTS.** Regenerate all three
-catalog artefacts and check them across `PYTHONHASHSEED`.
-⚠⚠ **AND A GENERATED FILE'S PROSE ROTS EXACTLY LIKE A HAND-WRITTEN ONE.** ⚠ The
-root `README.md`'s coverage table is NOT generated — S4 corrected it, S6 again,
-M8 again, S7 again, S9 again, S11 again. ⚠ G1 and G2 moved no coverage number,
-so it is correct as it stands.
-⚠⚠ **A PHASE LABEL CARRIES A STANDARD STATE — AND SO DOES A SENTENCE.**
-⚠ **BDF IGNORES `jac_sparsity` THE MOMENT `jac` IS CALLABLE.**
-⚠ Windows console is cp1252: **a warning glyph inside a `print()` kills a
-script.** Docstrings fine, printed text ASCII. **(TWENTY-SIX sessions running —
-G1 shipped one into `examples/dropping_funnel.py` and it died on the first run.)**
-⚠⚠ **`sed -i` REWRITES EVERY LINE ENDING IN A CRLF FILE, AND ON THIS MACHINE IT
-ALSO FAILS OUTRIGHT IN THE SCRATCHPAD.** This repo is MIXED: markdown and `.psv`
-are CRLF, and so are `element_data.py`, `solid_state.py`, `volatility.py`,
-`catalog_coverage.py`, `rate_ceiling.py`, `gas_processes.py`, `template.py`,
-`reaction.py`, `synthesis.py`, `thermochemistry.py`, `mineral_data.py`,
-`condensed.py`, `library.py`, `test_solid_state.py`, `test_critical.py`,
-`test_phase_properties.py`, `test_protocol.py`, `test_still.py`,
-`test_wait_until.py`, `build_physical_data.py`, while `vessel.py`, `surface.py`,
-`thermo.py`, `builder.py`, `world.py`, `constants.py`, `jacobian.py`,
-`tolerance_audit.py`, `hammett.py` and the newer `validation/*.py` are LF.
-**Read binary, detect `\r\n`, restore it on write, and check `git diff --stat`
-after the first edit to any file.**
-⚠ **HEREDOCS EAT ESCAPES AND CHOKE ON A LARGE BLOCK CONTAINING QUOTES.** Write
-the payload with the Write tool and splice it.
-⚠ **A GENERATOR CAN LEAK A `numpy` REPR INTO ITS OUTPUT.** Cast to `float`.
-⚠ **DO NOT NAME A LOCAL `net` IN A SCRIPT THAT ALSO HAS A `net()` HELPER.**
-⚠ An em dash in a markdown anchor will not match a `--` you typed.
-⚠ Redirecting a long Python run to a file BLOCK-BUFFERS it. Use `python -u`.
-⚠ **A CANONICAL SMILES IS NOT THE ONE YOU TYPED.**
-
-ALSO PRESERVE:
-
-Strict downward layering; numerics sees ONLY numpy arrays. NO silent
-approximations. REFUSE loudly rather than return a confident wrong number — and a
-LATENT fragility is a third case: report it, do not refuse it.
-⚠ **AND REFUSING TO *DISSOLVE* A SPECIES IS NOT REFUSING TO *PRICE* IT.**
-The setup/hot-loop split: when adding a physical model, first ask "what uniform
-array form does this collapse to?" ⚠ **G2's answer was "one that already
-exists"**, which is why it cost no RHS edit.
-`World.rig is None` exactly the old per-vessel path; `losses=None` exactly
-lossless; `precipitation=False` exactly no ionic lattice; `solid_state=False`
-exactly no crystal reacting; `surface=False` exactly no gas attacking one; an
-all-zero `order_solid` exactly the old kinetics kernel; `cell_potential=0.0`
-exactly the pre-M8 engine, bit for bit; an all-positive `nu_gas` exactly the
-pre-S9 solid-state term; `SolidStateReaction.Ea is None` exactly M6's derived
-pair; `SurfaceReaction.A is None` exactly the shared sulfide clock;
-`BoundedJacobian` with its bound lifted exactly BDF's own differencing; the Born
-term exactly zero in PURE water; **`hammett_rho = 0.0` exactly the pre-G2
-barrier, bit for bit, and `barrier_shift` returns a LITERAL `0.0` so it is exact
-rather than nearly so**; the five pH values; SAVE_VERSION stores the CONDITION,
-never the instant; every gaseous element reference state Hf = Gf = 0 EXACTLY; a
-CONDENSED reference state's ideal-gas record is a MEASUREMENT and must not be
-zero; every METAL Hf = Gf = 0 EXACTLY on the solid basis; a reference state its
-own database does not price at Hf = 0 is REFUSED; no mineral pricing differently
-under the two providers; `ion_data` and `electrolyte` never subtracted from each
-other; a declared rate order may NEVER be reversible; an `electrons` count may
-never carry declared orders; an electrode template is a WHOLE CELL, charge
-balanced on both sides; the reverse of an electrode reaction carries MINUS the
-work; an IRREVERSIBLE surface row whose `ln K` is under +20 is REFUSED; a
-solid-state row with no crystal on EITHER side is REFUSED; an EXOTHERMIC
-solid-state row with no declared kinetics is REFUSED, and a declared `Ea` below
-`dH` is REFUSED; half an Arrhenius declaration is REFUSED in both solid tables;
-the four pre-S4 solid-state rows take the raw `units` minimum, bit for bit; an
-element's `Hvap` is Clausius-Clapeyron on the vapour-pressure curve `volatility`
-actually evaluates; the reflux ratio is the ratio of two drain conductances out of
-one condenser; the fragmentation SEARCH runs only after the greedy pass has been
-REFUSED; an ion is never counted in the held-ideal flag; a rate CAP scales BOTH
-pre-exponentials by one factor; a template that moves a hydrogen ATOM must
-collapse explicit Hs; a declared catalyst is a CONSTANT OF THE MOTION; the
-tolerance audit's THREE self-check examples come out byte-identical;
-`COVERAGE_REPORT.md` and both `derived/*.psv` come out byte-identical across
-`PYTHONHASHSEED` values; the `mineral` tier is a FALLBACK consulted only after all
-three providers refuse; a dot-separated SMILES is a MIXTURE and is refused; a
-lattice may REACT and may never DISSOLVE, BOIL or MELT; `_CURATED_SOURCE.get(smi,
-_NIST)` is exactly the old shared stamp for all nine pre-S10 Antoine rows; a
-curated liquid Cp must be POSITIVE across the species' whole liquid range; the
-two hydroformylation templates share one `A`, so the n:iso ratio IS `exp(dEa/RT)`;
-**`alpha` is 0.0 on both, because Evans-Polanyi would name the wrong major
-product**; `wacker_oxidation` keeps order 1 in oxygen because the kernel has no
-availability gate; the measured physical table overrides a working Joback record
-ONLY where `DELIBERATE_OVERRIDES` names it and says what it cost; the Skraup's
-three amine slots may be three DIFFERENT molecules; `skraup_cyclisation` keeps
-order 1 in its oxidant, and its dS is pinned on BOTH standard states; a template
-that is not in `validation/rate_ceiling.py` is not audited; `MEASURED_PHYSICAL` is
-generated from `data/catalog` and never hand-edited; a corpus CAS is resolved by
-GRAPH first and then by NAME, and a name match must pass the formula cross-check;
-`CORPUS_SWEEP` and `DELIBERATE_OVERRIDES` are DISJOINT; an Antoine fit window must
-BRACKET its own boiling point; a species that leaves `BOILS_LOOSELY` must be
-removed from it; **`add_dropwise` stores the CONDITION and never the instant, and
-turns its taps through `_set_edge` rather than the event queue**; **a dropwise
-addition refuses a non-METER edge, because a drain's `k` is not in mol/s**;
-**`ran_dry` is read off what is LEFT IN THE FUNNEL and never off a delivery
-shortfall**; **the Hammett table is on the SIGMA-PLUS scale, its two PROXY rows
-are both electron ACCEPTORS and are labelled, and `meta_directing` is DECLARED
-rather than derived from the sign of sigma**; **the Hammett conversion is
-anchored at 298.15 K and NOT at the network's `T_ref`**; and **`hammett_rho` and
-`alpha` may not be declared on the same template.**

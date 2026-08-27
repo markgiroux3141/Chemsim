@@ -98,7 +98,10 @@ as one next to a hydrogen, and sigma says nothing about that.
 ## The table's provenance
 
 Brown and Okamoto (1958) for sigma-plus; Hansch, Leo and Taft, *Chem. Rev.*
-**1991**, 91, 165-195 for the two proxy rows and for `meta_directing`.
+**1991**, 91, 165-195 for the THREE proxy rows and for `meta_directing`.
+⚠ It was two until the `ammonio` row went in; the count is in the table, not
+in this sentence, and `tests/test_ring_deactivation.py` asserts the PROPERTY
+(every proxy must be an acceptor) rather than the number.
 
 ⚠ **`meta_directing` IS DECLARED AND NOT DERIVED FROM THE SIGN OF SIGMA**,
 because the obvious derivation is wrong for the halogens. Chlorine is
@@ -160,6 +163,32 @@ class Substituent:
 # first would price paracetamol's amide as an aniline. Both are in the corpus.
 _TABLE: tuple[Substituent, ...] = (
     # -- strongly deactivating, meta-directing --------------------------------
+    # ⚠⚠ THE PROTONATED AMINE, AND IT IS THE ONE ROW WHOSE TWO CONSTANTS ARE
+    # ORDERED THE WRONG WAY ROUND. Every other meta-directing group here has
+    # sigma_meta < sigma_para (nitro 0.674 / 0.790), so ``meta_directing`` picks
+    # the SMALLER of the two; -NH3+ has 0.86 / 0.60 and it picks the LARGER.
+    # That inversion is the second reason ``meta_directing`` is DECLARED and not
+    # derived -- the halogens are the first. A rule of "meta-directing iff
+    # sigma_para > sigma_meta" would call an anilinium an ortho/para director,
+    # and the observed product says otherwise: aniline nitrated in concentrated
+    # sulfuric acid gives largely META-nitroaniline, and the trimethylanilinium
+    # ion -- which has no N-H to lose and therefore cannot slip back to a free
+    # base at all -- gives about 89% meta.
+    #
+    # ⚠ A PROXY ROW, and it is labelled, for the SAME reason ``sulfo`` is: no
+    # sigma-plus is published for -NH3+ and none can be. The Brown-Okamoto scale
+    # is built from rate ratios in electrophilic substitution, and an anilinium
+    # is the deactivated case that has to be measured in strong acid where the
+    # medium's own acidity function is the variable. What makes the aqueous
+    # sigma tolerable here is the argument in the module docstring: a group with
+    # no lone pair to donate into the ring reads the same on both scales, and
+    # -NH3+ has all three of nitrogen's hydrogens and no lone pair at all.
+    #
+    # ⚠ It matches only a PROTONATED amine (at least one N-H). An aryl
+    # QUATERNARY ammonium is a different substituent whose constants this table
+    # does not source, so it falls through to ``unknown`` and is REPORTED --
+    # the aspirin-acyloxy precedent, one row down.
+    Substituent("ammonio", "[c][N+;X4;!H0]", 0.86, 0.60, True, SIGMA_PROXY),
     Substituent("nitro", "[c][N+](=O)[O-]", 0.674, 0.790, True),
     Substituent("cyano", "[c]C#N", 0.562, 0.659, True),
     # ⚠ A PROXY ROW, and it is labelled. No sigma-plus is published for -SO3H

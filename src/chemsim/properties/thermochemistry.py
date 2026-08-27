@@ -756,8 +756,9 @@ class ThermochemistryProvider:
                 "with it by 101 kJ/mol. An ion is priced from a measured pKa "
                 "against this project's own water reference: build the network "
                 "with electrolyte_provider() (or Scenario(electrolyte=True)), "
-                "and add the conjugate acid to properties/electrolyte._PAIRS "
-                "if it is not there."
+                "and add the pair to properties/electrolyte._PAIRS if it is "
+                "not there -- for a CATION the neutral member is the BASE, so "
+                "it goes in as AcidPair(<this ion>, <the neutral amine>, pKa)."
             )
 
     # ---- assembly -----------------------------------------------------------

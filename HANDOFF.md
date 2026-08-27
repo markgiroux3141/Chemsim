@@ -6059,3 +6059,201 @@ RESOLVED since the last handoff:
     `pytest --durations=25` has never been run here. **A ONE-POINT WALL-CLOCK
     ATTRIBUTION IS NOT A MEASUREMENT**: what is established is that the contention
     explanation is refuted, not that the data table is convicted.
+
+101. ✔✔ **G5 — PROTONATION: THE SPLIT WAS THE RIGHT MODEL, AND IT DOES NOT FIX
+    ANILINE.** G2 left this as the best-scoped item on the aromatic branch and
+    posed it as a design question: is an anilinium a barrier SHIFT, or a
+    DIFFERENT SPECIES with its own sigma row? **It is a different species, the
+    table row is three lines, and the thing that mattered was measuring what the
+    row BUYS before writing it.**
+
+    ⚠⚠⚠ **THE ARITHMETIC BOUND, TAKEN FIRST, REFUTES THE FIX.** Two channels run
+    in parallel and the pot's acidity weights them. The free base is **2.8184e8**
+    times benzene (σ+ −1.30) and the anilinium is **2.5704e-6** (σ_meta +0.86) —
+    a ratio of **1.10e14** — so the crossover needs
+
+        [H3O+] = Ka * k_free / k_ion = 2.630e+09 mol/L,  i.e. pH -9.42
+
+    ⚠⚠ **AND −9.42 IS NOT A WRONG NUMBER.** Real aniline gives largely META
+    product only in 90–98% sulfuric acid, whose Hammett acidity function H0 falls to
+    **roughly −8 at 90 wt% and roughly −10 at 98 wt%**. ⚠ **THE BAND IS QUOTED TO
+    ONE FIGURE ON PURPOSE** — it is recalled from a standard H0 table and was NOT
+    sourced in this repo, so the claim is that −9.42 lands INSIDE the band real
+    aniline nitration is run in, not that it matches a tabulated value. The
+    engine's own two table rows land the crossover inside it without being told
+    about it. **The split is right; the
+    flask cannot get there.**
+
+    ⚠⚠⚠ **AND THE WALL IS A SECOND MEASUREMENT NOBODY HAD TAKEN: THE POT GETS
+    LESS ACIDIC AS THE ACID GETS DRIER.**
+
+        5 + 5 mol HNO3/H2SO4 in    30 mol water   ->  pH -0.789   <- the FLOOR
+        the same acid in           10 mol water   ->  pH -0.233
+        the same acid in            2 mol water   ->  pH +4.899
+
+    Every dissociation in this project is written with water on BOTH sides — for
+    the standard-state reason in `properties/electrolyte`'s docstring — so
+    `[H2O]` is a mass-action factor and running out of water SUPPRESSES the
+    reaction that makes the proton. That is real chemistry the engine gets for
+    free (dry sulfuric acid autoprotolyses to H3SO4+/HSO4- and is not a source of
+    hydronium) and it is also the ceiling: **the reachable floor is pH −0.79, ten
+    decades above the crossover.** ⚠ **SO THE LIMIT IS RENAMED, NOT REMOVED: it
+    is not "no protonation in a barrier" any more, it is "NO ACIDITY FUNCTION" —
+    H0 is not the concentration of anything and a molarity cannot reach 1e9.**
+
+    **What the split does buy, measured in the engine:** at pH −0.667 the aniline
+    is **100.000% anilinium** and the effective rate is **380 x benzene** against
+    2.8e8. **SIX of the fourteen decades, in the right direction.** ⚠⚠ **AND THE
+    OTHER EIGHT ARE NOT IN THE PROTONATION MODEL** — the anilinium is all of the
+    aniline present and carries **1e-7 % of the rate**. Every remaining decade is
+    a FREE-BASE LEAK surviving at 1e-6 mole fraction because σ+ = −1.30 prices it
+    at 2.8e8.
+
+    ⚠⚠ **THE NEXT ITEM ON THE BRANCH IS THEREFORE NAMED AND ITS ARITHMETIC IS
+    DONE.** `rho * sum(sigma+)` = −6.5 × −1.30 = **8.45 decades**, extrapolated
+    off a line fitted on arenes with |σ+| < 0.4 (|rho·sigma| < 2.6) — a 3.25x
+    extrapolation of the abscissa. The real relation does not go there: nitration
+    of a strongly activated arene is **ENCOUNTER-CONTROLLED**, so mesitylene,
+    anisole and phenol react at one rate and the Hammett line SATURATES.
+    Measured, a declared saturation would put aniline in the engine's most acidic
+    flask at **1.35e-2 / 1.35e-1 / 1.35** x benzene for 1e4 / 1e5 / 1e6. ⚠ The
+    CONSTANT needs its own sourcing session and is NOT asserted.
+
+    ⚠ **AND NO EXISTING AUDIT CAN CATCH IT.** `detailed_balance`'s collision cap
+    compares the PRE-EXPONENTIAL; hammett moves `Ea`. With A = 1e10 and the
+    barrier clamped at zero, a shifted nitration's ceiling is 1e10 — one decade
+    UNDER the 1e11 limit — so the cap never fires on a substituent-shifted rate
+    at all. **Fragility 13 in a new suit.**
+
+    ⚠⚠⚠ **AND THE BIGGEST ACTUAL PAYOFF WAS A BUG IN A TABLE NOBODY HAD AUDITED
+    BY CATION, WHICH WAS PRINTED IN A GENERATED REPORT TWELVE TIMES.**
+    `ion_thermochemistry` anchored every pair on its **ACID**. Four rows of
+    `_PAIRS` are CATION/neutral pairs whose acid IS the ion (ammonium 9.25,
+    methylammonium 10.66, pyridinium 5.23, anilinium 4.62); `anchored(pair.acid)`
+    refused all four — loudly and correctly — and a bare `except Exception:
+    continue` swallowed it. **The table shipped 24 anions, one hard-coded
+    hydronium, and no cation at all.** The anchor is now the NEUTRAL member,
+    whichever side it is on: a neutral acid anchors its anion, a neutral base
+    anchors its cation, and the second is the first read backwards.
+
+        refused species        430 -> 419       species-ready routes    80 -> 82
+        ion-resolvable          84 -> 95       `solvay-process`   0 -> species-ready
+
+    **ELEVEN corpus species moved out of `refused`** — every ammonium salt in the
+    catalog (chloride, sulfate, bisulfate, bicarbonate, carbonate, hydroxide,
+    nitrate, ferrous ammonium sulfate) plus the three bare ions. ⚠⚠ **AND
+    `COVERAGE_REPORT.md` HAD BEEN PRINTING `refusing to price '[NH4+]'` FOR
+    TWELVE OF THEM, SESSION AFTER SESSION**, where it read as an ordinary
+    Born-domain refusal rather than as a bug in the ion table. ⚠ The refusal
+    message even said *"add the conjugate acid to `_PAIRS` if it is not there"* —
+    and it WAS there. **A refusal that names the wrong fix is worse than one that
+    names none**; the message now says that for a cation the neutral member is
+    the BASE.
+
+    ⚠ **THE 24 ANIONS ARE BIT-IDENTICAL, AND THE GROUPING OF ONE SUM IS WHY.**
+    The first draft folded the pKa term and the solvent correction into a single
+    `dG_diss` before adding it, which moved **ten of the 24 in the last bit** —
+    floating-point addition is not associative. A data table that shifts by 1e-16
+    owes `tolerance_audit.py` a ten-minute run; not shifting it is cheaper.
+
+    ⚠⚠ **AND `ammonium_dissociation` COULD NOT DEPROTONATE AN AMMONIUM.** Its
+    SMARTS was `[NX4H+]`, and a bare `H` in brackets means EXACTLY ONE hydrogen —
+    measured False against `[NH4+]`, anilinium, methylammonium and pyridinium,
+    and True only against `C[NH+](C)C`. **The template named for the ammonium ion
+    was the one ion it could not touch**, and no example caught it because
+    nothing in the corpus can put a trialkylammonium in a flask. It is replaced
+    by `amine_protonation`, written in the PROTONATION direction — because
+    discovery is FORWARD-ONLY, so a deprotonation-forward template can only find
+    an anilinium in a flask that already has one. **The `ester_hydrolysis`
+    decision again: when one direction is discoverable, the direction you need is
+    the one you declare.** ⚠ `[OX2H2;+0:2]` and not `[OX2H2:2]`: a mapped atom
+    keeps its formal charge, so the un-annotated form hands back water with a +1
+    on it, and `_element_charge_balance` then drops the rewrite — the bug's
+    symptom is a template that silently does nothing.
+
+    ⚠⚠ **THE `ammonio` ROW IS THE ONE WHOSE TWO CONSTANTS ARE ORDERED THE WRONG
+    WAY ROUND, AND IT IS THE SECOND REASON `meta_directing` IS DECLARED.** Every
+    other meta-directing group has σ_m < σ_p (nitro 0.674/0.790) so
+    `meta_directing` picks the SMALLER; −NH3+ is **0.86/0.60** and it picks the
+    LARGER. A rule of "meta-directing iff σ_p > σ_m" would call an anilinium an
+    ortho/para director. The halogens fail the same rule the other way. ⚠ It is a
+    labelled PROXY (aqueous σ), on `sulfo`'s argument: −NH3+ has all three of
+    nitrogen's hydrogens and no lone pair to donate, which is exactly the case
+    where the two scales agree — and no σ+ for it can exist, because the
+    Brown–Okamoto scale is built from substitution rates and an anilinium has to
+    be measured in acid strong enough that H0 is the variable. ⚠ An aryl
+    QUATERNARY ammonium is NOT priced from this row: it lands in `unknown` and is
+    REPORTED, on the aspirin-acyloxy precedent.
+
+    ⚠⚠ **AND A PROTONATION TEMPLATE IS OPEN-ENDED WHERE THE ION TABLE IS A
+    CURATED LIST — A NEW STRUCTURAL MISMATCH.** Nitrate an aniline and the second
+    generation is a nitroanilinium nobody curated, so the network REFUSES to
+    build. ⚠ **THE REFUSAL IS KEPT ON PURPOSE.** The fix looks like nine curated
+    pKa values, and the measurement above already prices them at **nothing** —
+    the ion channel carries 1e-7 % of the rate, so a network that built would
+    report a direct aniline nitration running at up to 1e3 x benzene. **A refusal
+    naming the missing datum beats a number wrong by three decades**: the element
+    floor's rule, applied to a pKa. ⚠ The pyridinium row is the same mismatch
+    from the other end — PRICED now and still unreachable, because an aromatic
+    ring nitrogen is X2 and `amine_protonation` matches X3. Closing it lands on
+    the Skraup, whose product is a pyridine ring in hot sulfuric acid, so it must
+    be measured there first.
+
+    ⚠⚠ **AND WHAT REAL CHEMISTRY DOES INSTEAD WAS ALREADY BUILDABLE, WHICH IS THE
+    PLAYABLE RESULT.** Nobody nitrates an aniline — you acetylate it, nitrate the
+    acetanilide, and hydrolyse the amide off. Measured, and nobody told the engine
+    that an amide is a protecting group:
+
+        benzene              sum(sigma) + 0.000   Ea 60.00 kJ/mol   k/k0 1.0000e+00
+        aniline, free base   sum(sigma) - 1.300   Ea 11.77 kJ/mol   k/k0 2.8184e+08
+        anilinium            sum(sigma) + 0.860   Ea 91.91 kJ/mol   k/k0 2.5704e-06
+        acetanilide          sum(sigma) - 0.600   Ea 37.74 kJ/mol   k/k0 7.9433e+03
+
+    Two pieces of already-declared data do it: `acylamino`'s σ+ of −0.600 against
+    `amino`'s −1.30, and an amide that does not answer `amine_protonation`'s
+    pattern. **So the acetanilide network BUILDS (21 species) where the aniline
+    one refuses**, and 1.0 mol of acetanilide + 1.5 nitric at 300 K/10 min gives
+    0.5331 mono / 0.4669 dinitro. ⚠ The isomer ratio is still flat — ortho and
+    meta come out at **0.1535 each** against a real ~90% para — which is G2's
+    other named limit, now asserted in a test so closing it breaks something.
+
+    ⚠ **NO RHS EDIT AND NO DATA-TABLE SHIFT**, so `tolerance_audit.py` is not
+    owed. Audit: `validation/protonation.py` (7 panels, **17.9 s**). Tests:
+    `tests/test_protonation.py` (29). ⚠ One pre-existing test broke and it was
+    the RIGHT one: `test_ring_deactivation` read `hammett._TABLE[0]` with an
+    `assert label == "nitro"` guard under it, the new row went in at the top of
+    the meta-directing block, and the guard caught it in one run. Position in
+    that tuple is a SMARTS-precedence decision and was never a key this test had
+    an opinion about.
+
+    ⚠ **THE SUITE: 1024 PASSED / 0 FAILED IN 22:28**, run after every
+    BEHAVIOURAL `src/` edit (995 at G2; the +29 are `tests/test_protonation.py`).
+    ⚠ Two docstring-only edits and one test RENAME landed while it ran, plus a
+    12.8 s single-file re-run on another core, so **22:28 is reported as an upper
+    bound with minor contention in it** rather than as a clean figure; the renamed
+    test was re-run green on its own.
+
+    ⚠⚠⚠ **AND `--durations=25` WAS FINALLY ATTACHED — THE PROBE NEXT_PROMPT HAD
+    SAID FOR TWO SESSIONS HAD NEVER BEEN RUN. THE COST IS CONCENTRATED, NOT
+    BROAD.**
+
+        top 25 tests                                        803.1 s of 1348.3  (59.6%)
+        tests/test_still.py, its six rows in the top 25      402.2 s            (29.8%)
+        ONE test -- test_temperature_steady_on_a_RIG_vessel  164.1 s            (12.2%)
+        test_catalysis::test_a_catalysed_esterification       74.1 s             (5.5%)
+        the burner at rtol 1e-8 (engine queue item 15)        52.5 s             (3.9%)
+        the OTHER 999 tests                                   545   s   -- 0.55 s each
+
+    ⚠⚠ **AND IT DOES NOT DIAGNOSE THE S12→S13 SLOWDOWN, WHICH IS THE POINT OF
+    SAYING SO. A DURATIONS LIST WITH NO BASELINE CANNOT ATTRIBUTE A REGRESSION** —
+    nobody has the same list from S12, so the eight minutes remain unattributed.
+    What the SHAPE says is that a per-test story is at least as plausible as the
+    standing candidate (*"S13's measured-physical table moved every trajectory's
+    stiffness"*), because a broad stiffness change should not leave 999 tests
+    averaging 0.55 s while one RIG test takes 164. **A re-ranking of two
+    hypotheses, not a measurement of either.** ⚠ The cheap next step is a
+    stash-and-rerun of `--durations=25` across S13's data commit, which is finally
+    possible now that a list exists to diff against.
+    ⚠ **One live claim was cross-checked for free**: fragility 10 and engine queue
+    item 15 both say the burner is *"~50 s at rtol 1e-8"*, and it measured
+    **52.47 s**. The claim was right, and it is 3.9% of the suite.

@@ -131,8 +131,15 @@ def test_the_barrier_ladder_is_baked_at_setup_and_is_25_kJ_per_nitro_group(therm
     for k, values in rungs.items():
         assert len(values) == 1, f"{k} nitro groups gave several barriers"
 
-    step = hammett.barrier_shift(NITRATION_RHO, hammett._TABLE[0].sigma)
-    assert hammett._TABLE[0].label == "nitro"
+    # ⚠ LOOKED UP BY LABEL AND NOT BY POSITION. This read ``_TABLE[0]`` with an
+    # ``assert label == "nitro"`` guard under it, and the guard EARNED ITS KEEP:
+    # the protonation work inserted ``ammonio`` at the top of the
+    # meta-directing block and the assertion caught it in one run. Position in
+    # that tuple is a SMARTS-precedence decision (most specific first) and is
+    # nothing this test has an opinion about, so it should never have been the
+    # key.
+    nitro = next(s for s in hammett._TABLE if s.label == "nitro")
+    step = hammett.barrier_shift(NITRATION_RHO, nitro.sigma)
     flat = {k: next(iter(v)) for k, v in rungs.items()}
     for k in (1, 2, 3):
         assert flat[k] - flat[k - 1] == pytest.approx(step, rel=1e-12)
@@ -202,11 +209,15 @@ def test_the_directing_rule_is_declared_because_the_halogens_break_the_obvious_o
     assert not table["amino"].meta_directing and table["amino"].sigma_p < 0.0
 
 
-def test_the_scale_is_sigma_plus_and_the_two_proxy_rows_are_both_acceptors():
+def test_the_scale_is_sigma_plus_and_every_proxy_row_is_an_acceptor():
     """⚠⚠ A rho IS MEANINGLESS WITHOUT ITS SIGMA SCALE -- S12's finding in
-    another suit. Two rows have no published sigma+ and use the aqueous sigma;
-    both must be ELECTRON ACCEPTORS, which is the case where the two scales
-    agree, and both must say so in their ``source``."""
+    another suit. Some rows have no published sigma+ and use the aqueous sigma;
+    EVERY one of them must be an ELECTRON ACCEPTOR, which is the case where the
+    two scales agree, and must say so in its ``source``.
+
+    ⚠ The name used to say "the two proxy rows" and G5's `ammonio` row made it
+    three. The BODY was always written over whatever the table holds, which is
+    why only the name rotted -- assert the PROPERTY, not the count."""
     proxies = [s for s in hammett._TABLE if s.source == hammett.SIGMA_PROXY]
     assert proxies, "the labelling is load-bearing; do not silently remove it"
     for s in proxies:
