@@ -2,135 +2,132 @@ We're building chemsim, an emergent chemistry simulator (game inspired by Nile
 Red) in d:\Claude Code Projects\Chemistry Simulator.
 
 **The plan is `MILESTONES.md`. Read it first — it is the authority on what to
-build and in what order.** **M0–M6, M8, M12, S1–S12 are DONE.**
+build and in what order.** **M0–M6, M8, M12, S1–S13 are DONE.**
 
 # ⚠ THE BASELINE IS MEASURED. DO NOT START WITH THE SUITE.
 
-**S12 RAN THE WHOLE SUITE AT THE END AND MEASURED 961 PASSED / 0 FAILED IN 13:20.**
+**S13 RAN THE WHOLE SUITE AT THE END AND MEASURED 965 PASSED / 0 FAILED IN 21:36.**
 Take that number and spend the time on content. ⚠ **It was run AFTER every
-`src/` edit, so it is a real baseline and not arithmetic** — the third session
-running that is true. (952 at S11; the difference is `tests/test_skraup.py`.)
+`src/` edit** — fourth session running that is true. (961 at S12; the +4 are
+S13's own new tests.) ⚠ The 21:36 against S12's 13:20 is CONTENTION, not the
+suite getting slower: S13 ran examples in another process at the same time.
 
-⚠⚠ **S12 DID NOT TOUCH THE RHS AND DID NOT TOUCH A DATA TABLE EITHER** — not one
-line of `numerics/` or `vessel/`, third milestone running, and nothing under
-`properties/`. **So `validation/tolerance_audit.py` carries NO new exposure and
-was deliberately NOT re-run.** S11's finding stands unchanged: *"NO example
-prints a quotable digit that moves"*, and `oil_of_vitriol`'s headline is still
-the fixed one (1 moved line, worst 6.60e-05).
-
-⚠ **NO EXAMPLE MOVED.** S12 added a template, a class registration, a standing
-audit, a `rate_ceiling` panel and a test file. Nothing it touched is read by an
-example, so any number you are comparing against a pre-S12 one is still current.
-
-⚠ **AND THE STANDING AUDITS ARE ALL CLEAN**, re-run at the end of S12.
+⚠⚠ **S13 REGENERATED A DATA TABLE — `physical_data.py` WENT FROM 37 SPECIES TO
+1239 — SO `tolerance_audit.py` WAS RE-RUN AND ITS RESULT HAS CHANGED.** Read the
+three warnings below before comparing any number to a pre-S13 one.
 
 ```bash
-python validation/skraup.py                   # ⚠⚠ S12's standing audit, ~10 s. NEW
-python validation/smelting.py                 # ⚠⚠ S9's standing audit, ~1 min. RUN IT FIRST
-python validation/hydroformylation.py         # ⚠ S11's, ~1 min
-python validation/wacker.py                   # ⚠ S11's other one, ~1 min
-python validation/gas_processes.py            # S7's, ~1 min
-python validation/corpus_balance.py           # S7's other one, ~20 s. READ IT before picking
-python validation/catalog_coverage.py         # ⚠ READ THE 'BOTH' LINE: 31/173, ~15 s
-python validation/game_gates.py               # the element floor's cross-check, seconds
-python tools/build_route_index.py             # the artefact nothing reads
-python validation/cell_potentials.py          # M8's standing audit, seconds
-python validation/rate_ceiling.py             # M12's, seconds. ⚠ S12 gave it a SEVENTH panel
-python validation/jacobian_bound.py           # S5's standing audit, ~1 min
+python validation/boiling_points.py            # ⚠⚠ S13's standing audit, 2 s. NEW, and READ PANEL 2
+python validation/skraup.py                    # S12's, ~10 s
+python validation/smelting.py                  # S9's, ~1 min
+python validation/hydroformylation.py          # S11's, ~1 min
+python validation/wacker.py                    # S11's other one, ~1 min
+python validation/gas_processes.py             # S7's, ~1 min
+python validation/corpus_balance.py            # S7's other one, ~20 s. READ IT before picking
+python validation/catalog_coverage.py          # ⚠ READ THE 'BOTH' LINE: 31/173, ~15 s
+python validation/physical_estimation.py       # ⚠ S13 took its panel 3 from n~20 to n=254
+python validation/game_gates.py                # the element floor's cross-check, seconds
+python tools/build_route_index.py              # the artefact nothing reads
+python validation/cell_potentials.py           # M8's standing audit, seconds
+python validation/rate_ceiling.py              # M12's, seconds
+python validation/jacobian_bound.py            # S5's standing audit, ~1 min
 python -m ruff check src tests examples validation tools
-python -m pytest -q                           # ~13 min. ONLY after touching src/
-python validation/tolerance_audit.py          # ~8 min. After touching the RHS **or any data table**
+python -m pytest -q                            # ~14–21 min. ONLY after touching src/
+python validation/tolerance_audit.py           # ~10 min. After touching the RHS **or any data table**
 ```
 
 ⚠ **THE SUITE AND THE TOLERANCE AUDIT ARE MINUTES OF SATURATED CPU ON THE USER'S
 OWN MACHINE.** Say what a long run will cost before starting one, and ask.
-`examples/plate_column.py` alone is 12 minutes, and
-`tolerance_audit.py --only oil_of_vitriol` is 19.
+`examples/plate_column.py` alone is 12 minutes.
 
 ---
 
-# ⚠⚠ START HERE: THE ENGINE AND HONESTY QUEUE — AND THE TABLE BELOW IS NOW SPENT
+# ⚠⚠⚠ THREE THINGS S13 CHANGED THAT INVALIDATE OLD NUMBERS
 
-⚠⚠ **S12 TOOK THE COVERAGE QUEUE'S LAST GOOD ROW.** Of the seven classes left in
-that table, **five are recorded refusals or engine prerequisites** and the two
-that are not (`fischer-tropsch`, `catalytic-air-oxidation`) are the hardest kind
-of content work. **This queue is no longer merely "outranking" the one below; it
-is where the remaining value is.** ⚠ Item 1 is still untouched after two
-sessions of naming it, and it is still the largest honesty item in the project.
+**1. EVERY EXAMPLE'S VOLATILITY MOVED.** The measured-physical table went from 37
+species to 1239, so **any number you are comparing against a pre-S13 one is
+stale unless S13 quoted it**. Five examples came out IDENTICAL (`esterification`,
+`lime_cycle`, `roasting_and_the_catalyst_gate`, `mercury_retort`,
+`oil_of_vitriol`); the rest moved and MILESTONES §S13 ¶7 has the table.
+⚠ `plate_column`'s heart cut is **0.8548**, not 0.8544. M2's target still MET.
 
-1. **⚠⚠⚠ 310 SPECIES ARE ESTIMATED BECAUSE NOBODY TYPED THEIR NAME. FOUND IN S11,
-   UNTOUCHED BY S12, AND IT IS THE LARGEST HONESTY ITEM ON THIS LIST.**
-   `properties/physical_data.py` is GENERATED, which reads as systematic. What it
-   is generated FROM is `CANDIDATES` in `tools/build_physical_data.py` — **a
-   hand-typed list of 37 names** (33 before S11). Anything not on it falls to
-   Joback, whether or not `chemicals` holds five experimental sources for it.
-   There is no refusal and no warning, and **the coverage audit cannot see it,
-   because the record RESOLVES.**
+**2. THE COVERAGE REPORT'S TIER COUNTS ARE NOT COMPARABLE TO ANY PRE-S13 ONES.**
+`catalog_coverage`'s two tier classifiers were matching substrings against a
+COMPOSITE provenance string and both were wrong — one overstated measured
+formation halves, the other invented a "Benson physical half" tier that does not
+exist. Fixed, and it moved counts that S13 did not otherwise touch (measured
+formation 144 → **135**, mineral 29 → **25**, ion 61 → **64**).
 
-   Measured over the whole catalog (1539 species with a graph):
+**3. `tolerance_audit.py` HAS A `KNOWN_REFUSAL` ENTRY AGAIN**, and two examples
+now print a tolerance-dependent digit where S11 found none. All three are
+diagnosed in the file. ⚠ **None of the three is a regression** — read the
+diagnosis before acting on any of them.
 
-       in physical_data.MEASURED_PHYSICAL            37
-       no CAS resolvable                           1070
-       CAS but genuinely no experimental Tb          126
-       ⚠⚠ experimental Tb available, NOT in table    310
-       ...of those, price a Tb in this engine today  229
-       mean / median / worst |error|      5.81% / 2.94% / 84.89%
-       over 2% / 5% / 10% / 20%              138 / 70 / 34 / 11
+---
 
-   Worst: arachidonic acid 819.35 against 443.15, dinitrogen tetroxide 503.28
-   against 294.30, linolenic acid 769.43 against 504.15.
+# ⚠⚠ START HERE: THE ENGINE AND HONESTY QUEUE
 
-   ⚠⚠ **AND A BOILING POINT IS NOT A DECORATION IN AN ENGINE WITH A STILL IN
-   IT.** Propene read Tb and Tc both ~17% high, which put Joback's Tc (427.64)
-   ABOVE the oxo reactor's 420 K where the real one (364.21) is 55 K below — so
-   the engine condensed **0.91 mol of "liquid propene" into a supercritical
-   flask** and read 167 bar where it was charged to 200. One candidate line fixed
-   it.
+⚠⚠ **S13 TOOK ITEM 1, WHICH HAD BEEN THE LIST'S LARGEST ITEM FOR THREE SESSIONS.**
+What is below is renumbered. **Items 1 and 2 are the two it created.**
 
-   ⚠ **THE COST OF DOING THIS AT SCALE IS STATED AND IT IS THE REASON IT IS NOT
-   DONE**: it moves every example's volatility and energy balance and owes the
-   tolerance audit plus a before/after on each example. **S11's four were done
-   one at a time with the cost measured per example**, which is the pattern to
-   follow. ⚠ `tests/test_critical.py::DELIBERATE_OVERRIDES` is the gate: an
-   addition that changes a fifth working Joback record FAILS there until you
-   write down what it cost.
+1. **⚠⚠ THE PSRK OVERFLOW IS NO LONGER "MEASURED INERT" — NEW IN S13, AND IT IS
+   THE CHEAPEST REAL ITEM ON THIS LIST.**
+   `activity.activity_coefficients` overflows `np.exp(-a / T)` for the PSRK
+   quadratic **below 4.28 K**, and has been carried for several sessions as
+   "PRE-EXISTING, measured inert". **`plate_column` now prints five
+   `RuntimeWarning` lines where it printed none**, so something in that
+   fourteen-vessel rig is evaluating an activity coefficient below 4.28 K.
 
-   ⚠⚠ **AND THE INSTRUMENT WILL BE WRONG FIRST.** The first sweep counted 360 and
-   listed borane boiling at 2823 K and methane at 4273, because
-   `chemicals.CAS_from_any("C")` reads a bare SMILES as a FORMULA and returns
-   CARBON. Use `CAS_from_any("smiles=" + smi)`. **A single-letter SMILES is also
-   an element symbol.**
+   ⚠ **MEASURED HARMLESS WHERE IT FIRES**: heart 0.8548 against 0.8544, target
+   met, replay determinism still exact at 0.000e+00 mol on all three receivers.
+   **The word to change is "inert", not the number.**
 
-   ⚠ **M11 IS THE SAME MECHANISM FROM THE OTHER END.** Its own costed starting
-   point is "10 species that need ONE measured boiling point each". They are on
-   this list. **A session that builds the CANDIDATES list properly may close M11
-   as a side effect** — worth checking before scheduling M11 separately.
+   ⚠ **WHAT IS NOT KNOWN IS *WHERE*.** The overflow threshold was measured
+   exactly (`max(-a/T) = 760` at T=4, `292` at T=10, so it fires below ~4.28 K
+   and nowhere above), but nothing has found which call passes a T that low.
+   **Find the call before designing anything** — a `np.errstate(over="raise")`
+   context around the residual term, with the state printed, is the whole probe.
+   Worth ZERO routes; take it for the honesty.
 
-2. **⚠⚠ NOTHING IN `build_phase_arrays` COMPARES T TO Tc. NEW IN S11.**
+2. **⚠⚠ `multistep_prep` PRINTS `pH = inf`, AND IT IS PRE-EXISTING.**
+   At the default tolerance the benzoate flask reports **`pH = inf`**; at rtol
+   1e-8 it reports **11.65**. The `inf` is in the pre-S13 run too — what S13
+   changed is that the tolerance audit can now SEE it, because the tight run
+   resolves it.
+
+   ⚠ **A READOUT THAT REPORTS INFINITY IS NOT AN ACCURACY PROBLEM**, and it is
+   the same mechanism as the Skraup's "exactly zero": a hydronium column the
+   loose solver clamps to a literal 0.0, and `-log10(0)` is `inf`. **S13 fixed
+   the Skraup's claim and not this one.** The fix is probably a floor on the pH
+   READOUT (the shape `is_boiling` just got), but **measure the hydronium
+   trajectory first** — if the column is genuinely reaching zero from a state
+   where it should not, that is a different bug.
+
+3. **⚠⚠ NOTHING IN `build_phase_arrays` COMPARES T TO Tc. UNCHANGED BY S13, AND
+   S13 MAKES IT MORE LIKELY TO BITE, NOT LESS.**
    A species is `condensable` or not, and that flag is a property of the SPECIES
-   rather than of the state. So a CONDENSABLE species above its critical
-   temperature still dissolves by Raoult's law against an Antoine curve
-   extrapolated past its own domain.
+   rather than of the state. A CONDENSABLE species above its critical temperature
+   still dissolves by Raoult's law against an Antoine curve extrapolated past its
+   own domain.
 
    Measured: a Wacker flask at 400 K charged with 0.20 mol of ethylene over
-   20 mol of water **dissolves 0.165958 of it — 83%, against a real ~2%**,
+   20 mol of water **dissolves 0.165958 of it — 83%, against a real ~2%** —
    because Psat reads **219.9 bar** off a curated Antoine **118 K above
-   ethylene's critical temperature of 282.35 K.** Oxygen beside it is a
-   Henry's-law solute and behaves perfectly.
+   ethylene's critical temperature of 282.35 K.**
 
-   ⚠⚠ **AND A MEASURED BOILING POINT DOES NOT FIX IT — S11 PREDICTED IT WOULD AND
-   MEASURED THAT IT DOES NOT.** 0.16588 → 0.16596, four figures unchanged,
+   ⚠⚠ **A MEASURED BOILING POINT DOES NOT FIX IT** — S11 predicted it would and
+   measured that it does not (0.16588 → 0.16596, four figures unchanged),
    because ethylene's vapour pressure comes from `volatility._CURATED_ANTOINE`
-   and **Tb does not feed that curve at all.** ⚠ **Ask which number the symptom
-   actually depends on before curating the one that looks responsible.**
+   and **Tb does not feed that curve at all**. ⚠ **S13 CONFIRMS THIS IS STILL
+   TRUE** — `validation/wacker.py` panel 4 is unchanged after the sweep.
 
-   ⚠ It makes the Wacker liquor ~40x richer in alkene than a real one, which is
-   the only place it is currently reachable. Worth ZERO routes; take it for the
-   honesty and say so. `validation/wacker.py` panel 4 is the measurement.
+   ⚠ **BUT S13 PUT 863 MORE SPECIES ON A FITTED ANTOINE CURVE**, each with a
+   fit window bracketing its own Tb, and nothing checks whether the flask is
+   above Tc when it evaluates one. The exposure grew even though the measured
+   example did not move. Worth ZERO routes; take it for the honesty.
 
-3. **⚠⚠ A METAL THAT BOILS OUT OF THE SOLID BLOCK — STILL OPEN, AND STILL THE
-   BEST-SCOPED ENGINE ITEM.** Unchanged by S11; the S10 measurement stands and is
-   reproduced here because it is what makes the item small.
+4. **⚠⚠ A METAL THAT BOILS OUT OF THE SOLID BLOCK — STILL OPEN, AND STILL THE
+   BEST-SCOPED ENGINE ITEM.** Unchanged by S11, S12 and S13.
 
    ⚠⚠ **MEASURED AFTER S10's COMMIT, BY PATCHING IRON'S VOLATILITY IN PLACE
    (Alcock's curve) AND RUNNING THERMITE INSULATED. IT WORKS:**
@@ -164,55 +161,51 @@ sessions of naming it, and it is still the largest honesty item in the project.
    ⚠⚠ **BUT THE DATA OBJECTIONS SURVIVE THE ENGINE FIX.** `[Fe]` still fails S4's
    DISAMBIGUATION test (three solid allotropes, two transitions inside thermite's
    own range) and Alcock tabulates **no sublimation curve** for iron, so zinc's
-   best cross-check cannot be run at all — **ONE check, not four.** Deciding
-   whether one is enough for a species with three allotropes is the real work and
-   it is a judgement, not a measurement.
+   best cross-check cannot be run at all — **ONE check, not four.**
 
-   ⚠ **WORTH ZERO ROUTES for iron.** ⚠⚠ **BUT MEASURE `direct-combination` FIRST:
-   it is worth +1 AND it is refused by the SAME `build_surface_arrays`
+   ⚠ **WORTH ZERO ROUTES for iron.** ⚠⚠ **BUT MEASURE `direct-combination`
+   FIRST: it is worth +1 AND it is refused by the SAME `build_surface_arrays`
    non-lattice check.** Hold that as a HYPOTHESIS — `Hg(l) + S8(s)` is not a gas
    attacking a crystal, so `SurfaceArrays`' form (extensive in the solid,
    INTENSIVE in the gas) may be wrong for it whatever the mask says.
 
-4. **⚠⚠ THE 250–450 K FIT WINDOW — AND S11 MOVED A SPECIES FROM ONE BUCKET TO
-   THE OTHER WITHOUT TOUCHING THE MECHANISM.** `CondensedProvider.get(mol,
-   T_lo=250.0, T_hi=450.0)` is an organic-solvent window and **every caller in
-   the repo takes the default.** Re-swept in S11 over each species' OWN Tm→Tb at
-   21 points: **99 compounds return a negative liquid Cp inside their own liquid
-   range** (worst carminic acid at **−21482 J/(mol K)**) and **38 more swing over
-   5x**. ⚠ S10 recorded 103 and 41 with a script that was not preserved, so the
-   difference of four may be METHOD rather than movement.
+5. **⚠⚠ THE 250–450 K FIT WINDOW — AND S13 DID NOT TOUCH IT, THOUGH IT LOOKS AS
+   IF IT SHOULD HAVE.** `CondensedProvider.get(mol, T_lo=250.0, T_hi=450.0)` is
+   an organic-solvent window and **every caller in the repo takes the default**.
+   Swept in S11 over each species' OWN Tm→Tb at 21 points: **99 compounds return
+   a negative liquid Cp inside their own liquid range** (worst carminic acid at
+   **−21482 J/(mol K)**) and **38 more swing over 5x**.
 
-   ⚠⚠ **WHAT IS CERTAIN IS THAT ETHYLENE MOVED, AND IT MOVED THE WRONG WAY ON
-   BETTER DATA.** It read **+1574 J/(mol K)** at its melting point before S11 and
-   reads **−1782** after, because a MEASURED Tc changed the Rowlinson-Bondi fit.
-   **A correlation extrapolated outside its domain does not get safer when its
-   inputs get better.** `test_the_250_450_K_FIT_WINDOW_IS_STILL_THE_GENERAL_FAULT`
-   pins both halves.
+   ⚠⚠ **AND S13 MAKES THIS ITEM MORE URGENT AND ALSO EASIER.** S11's finding was
+   that ethylene moved from **+1574 to −1782 J/(mol K)** when it gained a
+   MEASURED Tc — *a correlation extrapolated outside its domain does not get
+   safer when its inputs get better*. **S13 just gave 863 more species measured
+   Tb/Tc.** ⚠⚠ **NOBODY HAS RE-SWEPT THE 99 SINCE.** The count is a pre-S13
+   number and **the first thing this item needs is to measure it again** — it
+   could be smaller, and it could be larger, and S11's ethylene result says do
+   not assume which.
 
    * ⚠ **A negative Cp is not an accuracy problem: adding heat LOWERS the
      temperature.** S10 measured it reachable — 3.96 mol of liquid mercury gave a
      NEGATIVE TOTAL thermal mass.
-   * ⚠⚠ **DO NOT JUST WIDEN THE WINDOW.** Most of the 99 have a JOBACK Tm/Tb that
+   * ⚠⚠ **DO NOT JUST WIDEN THE WINDOW.** Many of the 99 have a JOBACK Tm/Tb that
      is itself meaningless (carminic acid "melts" at 1398 K and really
-     decomposes). **Separate the wrong output from the wrong input first** —
-     which is also **why item 1 above is upstream of this one.**
-   ⚠ Worth ZERO routes. Measured inert on every example today.
+     decomposes). **Separate the wrong output from the wrong input first** — and
+     S13 has now fixed a large part of the wrong INPUT, which is exactly why the
+     re-sweep comes first.
+   ⚠ Worth ZERO routes. Measured inert on every example as of S11.
 
-5. **⚠ `slagging` — AND S11 RE-PRICED THIS ITEM AND IT WAS PRICED TOO CHEAPLY.**
-   It was listed as "two curated minerals and one declaration". Re-queried against
-   `chemicals` 1.5.2:
+6. **⚠ `slagging` — RE-PRICED IN S11 AND IT WAS PRICED TOO CHEAPLY.**
    * **`silicon-dioxide`** is fully available — CRC Hfs −910700, Gfs −856300,
      S0s 41.5, Cps 44.4. ✔
    * **`calcium-silicate` has NO thermochemical data under ANY of its three CAS
-     numbers** (10101-39-0, 1344-95-2, 13983-17-0). ✘ **Not a curation job at
-     all.**
-   * **`iron-ii-oxide`**'s CRC standard row has **`Cps = NaN`**, confirming the
-     recorded refusal. Its `Hfs` is in CRC and WEBBOOK and its `S0s` in WEBBOOK,
-     so the same-database rule COULD be met — the crystal Cp is the blocker.
+     numbers** (10101-39-0, 1344-95-2, 13983-17-0). ✘ **Not a curation job.**
+   * **`iron-ii-oxide`**'s CRC standard row has **`Cps = NaN`**.
    **`blast-furnace` is blocked TWICE over, on SOURCES rather than on work.**
+   ⚠ **S13 DID NOT CHANGE THIS**: its sweep reads `chemicals`' Tb/Tm/Hfus/Tc/Pc
+   tables, not the solid-basis thermochemistry `mineral_data` needs.
 
-6. **⚠ THE CIS/TRANS BLIND SPOT — A REAL DATA JOB WITH A REAL TRAP.** Benson (the
+7. **⚠ THE CIS/TRANS BLIND SPOT — A REAL DATA JOB WITH A REAL TRAP.** Benson (the
    RMG group set) has no cis correction, so oleic and elaidic acid come back with
    IDENTICAL Hf and Gf and the engine reports a confident 50:50 for a real ~5:1.
    ⚠ **The data exists and is not usable as it stands:** WEBBOOK has both liquid
@@ -221,60 +214,61 @@ sessions of naming it, and it is still the largest honesty item in the project.
    sources**. But neither has an S0, so no Gf can be derived, and grafting
    Benson's original correction onto RMG-fitted group values **mixes two bases**.
    ⚠ Worth ZERO routes today. `test_the_cis_trans_pair_prices_at_exactly_zero`
-   pins the limit.
+   pins the limit. ⚠ **S13 gave both acids a measured PHYSICAL half and changed
+   nothing about this** — the blind spot is in the FORMATION half.
 
-7. **⚠ THE CURRENT BUDGET — M8's OWN NAMED GAP, AND IT IS A LAYER 4 TERM.** Two
+8. **⚠ THE CURRENT BUDGET — M8's OWN NAMED GAP, AND IT IS A LAYER 4 TERM.** Two
    electrode reactions in one cell divide nothing, so both run at full rate and
    activation selectivity washes out: k(brine)/k(water) is **4.76e+17 at 2.5 V,
    5.94 at 3.0, 1.00 at 4.0**. ⚠ Worth **ZERO new routes**.
-   `test_the_activation_selectivity_washes_out_at_high_voltage` pins the gap.
 
-8. **Pyrite** — one mineral entry from `pyrite-roasting` running, +1 on the
+9. **Pyrite** — one mineral entry from `pyrite-roasting` running, +1 on the
    intersection. ⚠ **RE-QUERIED IN S11 AND THE REFUSAL STANDS**: `Hfs` in
    WEBBOOK, `S0s` in **nothing**. This needs a SOURCE and not a workaround.
 
-9. **⚠⚠ THE BURNER — THE LIVE FRAGILITY, STILL DEMOTED AND STILL NOT DISMISSED.**
-   **~50 s at rtol 1e-8 against 0.8 s at the default.** S5 bounded the CRASH and
-   explicitly did not bound the THRASHING. BDF is struggling with a liquid layer
-   holding **1e-29 mol**, which `LAYER_REABSORB` drains toward zero without ever
-   reaching it. **The question nobody has asked is whether a layer below
-   `LAYER_EPS` should be *merged discretely* at a step boundary rather than
-   drained continuously for ever.** ⚠ `merge_phases` already does exactly that at
-   the `run` boundary. **Measure the layer-2 inventory over the failing run
-   before designing anything.** It fires only at rtol 1e-8.
+10. **⚠⚠ THE BURNER — ~50 s at rtol 1e-8 against 0.8 s at the default.** S5
+    bounded the CRASH and explicitly did not bound the THRASHING. BDF is
+    struggling with a liquid layer holding **1e-29 mol**, which `LAYER_REABSORB`
+    drains toward zero without ever reaching it. **The question nobody has asked
+    is whether a layer below `LAYER_EPS` should be *merged discretely* at a step
+    boundary rather than drained continuously for ever.** ⚠ `merge_phases`
+    already does exactly that at the `run` boundary. **Measure the layer-2
+    inventory over the failing run before designing anything.**
+    ⚠ **S13 measured `oil_of_vitriol` OUTPUT IDENTICAL across the sweep**, so
+    nothing here moved.
 
-10. **THE CORPUS BALANCE BACKLOG — 75 ROWS, AND IT IS NOT A TO-DO LIST.** S7 built
+11. **THE CORPUS BALANCE BACKLOG — 75 ROWS, AND IT IS NOT A TO-DO LIST.** S7 built
     the check and deliberately fixed nothing, on the `diels-alder-route`
-    precedent. ⚠ But **17 of the 75 are `spurious`** — a reagent written as
-    consumed that is really a catalyst — and those are the cheapest and least
-    inventive to correct. ⚠ `tools/catalog.py`'s `validate` still does NOT check
-    balance, so the corpus can grow another one silently. ⚠ One BOTH-column route
-    carries one: `perkin-route` step 1.
+    precedent. ⚠ But **17 of the 75 are `spurious`** and those are the cheapest
+    to correct. ⚠ `tools/catalog.py`'s `validate` still does NOT check balance,
+    so the corpus can grow another one silently.
 
-11. **⚠ `hydrolysis` — AND READ S3's LANDMINE FIRST.** It unlocks **exactly ONE
-    route alone, `vitriol-distillation`**, and that route's step 1 reads
-    `-> iron-ii-OXIDE` while the engine makes HEMATITE. ⚠ **That is item 5's
-    mineral again, from the other side.**
+12. **⚠ `hydrolysis`** — it unlocks **exactly ONE route alone,
+    `vitriol-distillation`**, and that route's step 1 reads `-> iron-ii-OXIDE`
+    while the engine makes HEMATITE. ⚠ **That is item 6's mineral again.**
 
-12. **M7 (dissociation as an equilibrium — ⚠ M12 took most of its case away;
-    re-scope before scheduling)**, **M9 (polymers, 12 routes)**, **M10 (the site
-    balance S1 did not build, 8 routes)**, **M11 (the unpriceable families, 16
-    routes — ⚠⚠ and see item 1: 10 of them need ONE boiling point each, which is
-    the same mechanism)**.
+13. **M7 (⚠ M12 took most of its case away; re-scope)**, **M9 (polymers, 12
+    routes)**, **M10 (the site balance S1 did not build, 8 routes)**,
+    **⚠⚠ M11 — RE-COST IT BEFORE SCHEDULING.** Its costed starting point was
+    *"10 species that need ONE measured boiling point each"*; **S13 closed eight
+    of them and the bucket now counts 2** (`performic-acid`, `phenyl-radical`,
+    neither of which has a non-estimated Tb under either key). What is left of
+    M11 is the FORMATION half — 267 species with no group value in any published
+    tabulation — which is a different problem with a different answer.
 
-13. **NUCLEATION, now that half of it is modelled.** S3 named the gap; S4 turned
+14. **NUCLEATION, now that half of it is modelled.** S3 named the gap; S4 turned
     the *deposition-needs-a-seed* half into a real bound in
     `SolidStateArrays.units`. What is still not expressible is a solid appearing
-    from NO solid — `hydride-thermal-deposition` is still a mechanism gap for
-    that reason. ⚠ **S9 leaned on the modelled half deliberately.**
+    from NO solid — `hydride-thermal-deposition` is still a mechanism gap.
 
 ---
 
 # THE COVERAGE QUEUE — **THE TOP THREE ROWS ARE GONE AND WHAT IS LEFT IS ALL REFUSALS OR ENGINE WORK**
 
 S11 took `hydroformylation` and `wacker-oxidation`; **S12 took `skraup-cyclisation`,
-which that table called the queue's best remaining row.** ⚠⚠ **What is left is
-NOT a work queue.** Five of the seven rows below are recorded REFUSALS or engine
+which that table called the queue's best remaining row. S13 took nothing off this
+table at all** — it went to the engine/honesty queue instead, and the queue above
+is still where the value is. ⚠⚠ **What is left here is NOT a work queue.** Five of the seven rows below are recorded REFUSALS or engine
 prerequisites, and the two that are neither are the hardest kind of content work.
 **Read the row, not the rank, and say which mechanic you are picking for — or
 pick off the ENGINE queue above instead, which is where the value now is.**
@@ -285,7 +279,7 @@ pick off the ENGINE queue above instead, which is where the value now is.**
 | `fischer-tropsch` | `fischer-tropsch` | +1 | `8 CO + 17 H2 -> octane + 8 H2O`, **25 slots**. Claus proves 24 works and Skraup proves the pattern generalises — but read M8 §6 on the lump that was refused. ⚠ **This is now the queue's best CONTENT row**, and its mechanic is chain growth as a lump, which is M9's problem wearing a template |
 | `molten-salt-electrolysis` | `downs-cell` | +1 | ⚠ **A MELT is not a phase this project has** — M8's own named leftover, and it is ENGINE work, not content |
 | `catalytic-air-oxidation` | `p-xylene-oxidation` | +1 | ⚠⚠ **M5 REFUSED THIS CLASS** — its four rows are at least three mechanisms. **Split it before crediting it**, and only one of the four rows is runnable |
-| `direct-combination` | `vermilion-route` | +1 | ⚠⚠ **S9 MEASURED AND REFUSED IT**, and engine queue item 3 is the only thing that could change that. **Do not re-derive this** |
+| `direct-combination` | `vermilion-route` | +1 | ⚠⚠ **S9 MEASURED AND REFUSED IT**, and engine queue item 4 is the only thing that could change that. **Do not re-derive this** |
 | ~~**`oxidative-cleavage`**~~ | `vanillin-lignin` | ⚠⚠ **S11 MEASURED IT AND REFUSED IT** | The row is `coniferyl alcohol + O2 -> vanillin + water` and **it cannot be that reaction**: a C10 monolignol makes one C8 vanillin and a C2 fragment the row does not name. It balances at **8 C10H12O3 + 7 O2 -> 10 C8H8O3 + 8 H2O** — eight aromatic rings in and TEN out. ⚠ **Do not re-derive this**; the audit prints it |
 | `fermentation` | `abe-fermentation`, `msg-route` | +1 | ⚠ **M5 REFUSED IT** as a metabolic NETWORK rather than a transformation. That refusal still stands |
 | `separation` | `coal-tar-distillation` | +1 | ⚠ **M5 REFUSED IT**: a distillation is not a reaction class, and the feedstock has no graph |
@@ -351,7 +345,7 @@ MILESTONES.md — the plan. ⚠ **§S12, §S11, §S10, §S9, §S8, §S7, §M8, �
   wrong.**
 HANDOFF.md — what exists, and the ethos to preserve. **85 is S1, 86 is S2, 87 is
   S3, 88 is S4, 89 is S5, 90 is S6, 91 is M8, 92 is S7, 93 is S8, 94 is S9,
-  95 is S10, 96 is S11, 97 is S12.**
+  95 is S10, 96 is S11, 97 is S12, **98 is S13**.**
 NEXT_SESSION.md — the invariants table at the bottom is the contract, and S7, S8,
   S9, S10, S11 and S12 each added a block to it. ⚠⚠ **S10 WITHDREW a row** and S11
   added **two more LIMITS TO REMOVE rather than invariants to keep** (the
@@ -368,6 +362,11 @@ the memory files (auto-loaded), especially chemsim-skraup-standard-state,
   chemsim-catalysis-and-bounds, chemsim-coverage-catalog, chemsim-corpus-balance
   and chemsim-generated-artefacts.
 
+⚠⚠ **AND READ MILESTONES §S13 BEFORE QUOTING ANY NUMBER OUT OF AN EXAMPLE.**
+S13 regenerated `physical_data.py` from 37 hand-typed species to 1239 generated
+ones, so every example's volatility and energy balance moved. Five came out
+IDENTICAL and §S13 ¶7 has the table for the rest.
+
 STATE: Layers 0–7 complete. The engine is open-ended (no recipes), conserves
 matter, has an element/mineral floor, a still that is a saveable protocol, a plate
 column that reaches its purity target, an ionic lattice that can leave solution, a
@@ -383,147 +382,168 @@ selectivity nobody typed**, **a catalyst that only exists if there is water to
 dissolve it in**, and **a ring closure whose OXIDANT turns into one of its own
 reagents and goes round again**. `SAVE_VERSION` is **5**.
 Coverage: **51/229 classes**, **46 templates**, **41/173 template-ready**,
-**77/173 species-ready** — and ⚠⚠ **31/173 BOTH, which is the only one of the
+**80/173 species-ready** — and ⚠⚠ **31/173 BOTH, which is the only one of the
 three a route can be judged on.**
+⚠ The corpus's **PHYSICAL half is measured for 652/1583 (41.2%)** as of S13,
+against 40 (2.5%) before; Joback fell from 964 (61%) to 333 (21%).
 
 ---
 
-# ⚠⚠ WHAT S12 TURNED OUT TO BE: +1 ON EVERY COLUMN, AND THE BUG WAS IN THE COMMENT
+# ⚠⚠ WHAT S13 TURNED OUT TO BE: 37 HAND-TYPED SPECIES BECAME 1239 GENERATED ONES, AND THE INSTRUMENT WAS WRONG FIRST
 
-**+1 class (50 → 51 of 229), +1 template-ready (40 → 41), +0 species-ready,
-+1 RUNNABLE (30 → 31) — all four predicted before the audit ran and all four came
-out.** ⚠ **NO ENGINE CODE CHANGED and NO DATA TABLE CHANGED**: not one line of
-`numerics/`, `vessel/` or `properties/`, third milestone running.
+**+0 class, +0 template-ready, +3 species-ready, +0 RUNNABLE — all four
+predicted before the audit ran.** A DATA milestone cannot add a template, so it
+cannot add a class or move the BOTH column. What it moves is whether the numbers
+the engine already reports are RIGHT.
 
 | | before | after |
 |---|---:|---:|
-| classes with a template | 50 / 229 | **51 / 229** |
-| routes template-ready | 40 / 173 | **41 / 173** |
-| routes species-ready | 77 / 173 | 77 / 173 |
-| ⚠⚠ **routes BOTH — the one to quote** | **30** | **31** |
-| templates | 45 | **46** |
+| species in `MEASURED_PHYSICAL` | 37 | **1239** |
+| ...with a measured boiling point | 20 | **896** |
+| corpus PHYSICAL half measured | 40 / 1583 (2.5%) | **652 / 1583 (41.2%)** |
+| corpus physical half Joback | 964 (60.9%) | **333 (21.0%)** |
+| routes species-ready | 77 / 173 | **80 / 173** |
+| ⚠⚠ **routes BOTH — the one to quote** | **31** | **31** |
 
-## ⚠⚠⚠ 1. THE LARGEST FINDING IS THAT MY OWN PRICED NUMBERS WERE WRONG, AND ONLY THE AUDIT CAUGHT THEM
+## ⚠⚠⚠ 1. THE LARGEST FINDING IS ABOUT S13's OWN INSTRUMENT, AND IT USED S11's FIX AS THE REASON
 
-The block comment in `synthesis.py` was written BEFORE the audit ran, off a hand
-calculation summing `ThermoData.Hf` and `.Gf` over both sides. It said
-**dH −561.63, dG298 −572.55, dS +36.65 J/(mol K)** — and then built an argument
-on the SIGN of that dS: seven molecules become nine, so dS is positive, so heating
-the flask makes the forward direction more favourable, so giving up the reverse is
-safe. Every clause of that reads like physics. Then panel 2 printed what
-`reaction_deltas` actually returns:
+S11 recorded a trap: `CAS_from_any("C")` returns **CARBON**, because a bare
+SMILES is read as a FORMULA. Its recorded fix was **"always use `smiles=`"**.
 
-|  basis | dH / kJ | dG298 / kJ | dS / J/(mol K) |
-|---|---:|---:|---:|
-| ideal gas | −561.63 | −572.55 | **+36.65** |
-| pure liquid | −725.16 | −627.05 | **−329.08** |
-| difference | **−163.53** | −54.49 | **−365.73** |
+S13 built `validation/boiling_points.py` on exactly that fix, measured the gap at
+**322 species**, wrote the number into a commit message, and generated a table.
+**The table had no aniline in it. No nitrobenzene, no quinoline.**
 
-⚠⚠ **THE TWO BASES DO NOT AGREE ON THE SIGN OF dS, AND THE EASY ONE IS THE WRONG
-ONE.** The template is `phase="liquid"`, so `reaction_deltas` puts every
-condensable species on its own pure liquid — and **nine product molecules condense
-against seven reactant ones.** *"Seven molecules become nine"* is an IDEAL-GAS
-sentence and it was being used about a liquid-phase reaction.
+    CAS_from_any("smiles=Nc1ccccc1")  -> "recognized, but it is not in the database."
+    CAS_from_any("aniline")           -> 62-53-3, Tb 457.15 K
 
-⚠ **THE CONCLUSION SURVIVED AND THE REASON FOR IT DID NOT.** Irreversible is
-still safe: **ln K 252.9 at 298 K, 154.2 at 450, 105.8 at 600**, and dG crosses
-zero only at **2204 K**. S11's rule — count the moles of GAS on each side before
-giving up a reverse — is answered here by there being no gas in the rate law at
-all. `test_the_two_standard_states_disagree_on_the_sign_of_dS` pins BOTH rows so
-the comment cannot rot back to what it started as.
+Measured: of **1069** corpus species with no graph-resolved CAS, **874 resolve by
+NAME with a matching formula and 508 of those carry a measured boiling point.**
+The gap is **830, not 322** — the instrument undercounted by 60%, and it did so by
+faithfully applying the previous session's fix.
 
-## ⚠⚠ 2. THE ROW LOOKED LIKE A BOOKKEEPING ERROR AND WAS NOT
+⚠⚠ **THE FIX FOR ONE TRAP BECAME THE NEXT TRAP.** Both keys now, graph first,
+formula cross-check as arbiter — and it earns its place: **it refuses 72 name
+matches outright**.
 
-`skraup-route` step 2 writes `aniline + acrolein + nitrobenzene + sulfuric-acid ->
-quinoline + aniline + water + sulfuric-acid`. **Aniline on both sides** is
-`corpus_balance`'s `spurious` shape and 17 rows in the corpus genuinely are that.
-This one is not: the aniline coming out is the NITROBENZENE, reduced. Each ring
-closure sheds two hydrogens and one nitroarene takes six:
+## ⚠⚠ 2. THE GAP WAS NOT EXOTIC. IT WAS THE SOLVENT IN THE FLASK
 
-    3 x  aniline + acrolein  ->  quinoline + H2O + 2 [H]
-         PhNO2 + 6 [H]       ->  PhNH2 + 2 H2O
-    ---------------------------------------------------------
-    3 aniline + 3 acrolein + PhNO2 -> 3 quinoline + PhNH2 + 5 H2O
+All priced by JOBACK, in a project whose flagship rig is a distillation column:
+**acetylene 216.60 against 189.00 (+14.60%), methanol 314.66 against 337.63
+(−6.80%, 23 K), ethanol 337.54 against 351.57 (−3.99%, 14 K)**, diethyl ether,
+n-hexane. Over the whole table **881 estimates replaced, mean 6.10%, worst
+110.94%, 437 over 2% and 68 over 20%.** ⚠ The error was UNSIGNED and UNBOUNDED —
+nothing knew which was the 3% one and which the 85% one, **because all of them
+RESOLVED**.
 
-C33H38N4O5 both sides, four aromatic rings in and four out. **7 reactant slots and
-9 product slots**, plus the acid as an eighth. Built from the electron count, and
-it balanced first time.
+## ⚠⚠ 3. A COUNT OF ABSENT SPECIES IS NOT A COUNT OF WRONG ONES
 
-## ⚠⚠ 3. THE OXIDANT'S REDUCTION PRODUCT IS A SUBSTRATE, AND THE NETWORK FOUND IT
+322 were absent from `MEASURED_PHYSICAL`; only **213** would have changed the
+resolved record. Water, O2 and HCl are all "absent" and all irrelevant —
+`_CURATED_RAW` short-circuits them. `boiling_points.would_move` resolves every
+candidate **twice, through two providers**, rather than arguing about tiers.
 
-Charge **p-toluidine** instead of aniline and change nothing else:
+## ⚠⚠ 4. THE COVERAGE AUDIT WAS READING A TIER OUT OF PROSE, AND `thermochemistry` HAD ALREADY SAID WHY THAT FAILS
 
-    Cc1ccc2ncccc2c1   6-methylquinoline    0.666667 mol
-    c1ccc2ncccc2c1    quinoline            0.333333 mol
-    Nc1ccccc1         aniline              0.000000 mol
+Its `physical_source` field carries: *"deducing it by matching on the prefix of a
+composite string is the kind of guess that goes quietly wrong the first time the
+wording changes."* `_thermo_tier` was handed the WHOLE `source`, which names both
+halves, and said `measured` if "experimental" appeared anywhere — **669 measured
+FORMATION halves where the answer is 135**, from a change that touched no
+formation data. Its twin's bare `return "benson"` default reported **659 Benson
+PHYSICAL halves**, of which there is no such thing.
 
-**Exactly 2:1, totalling the 1.0 mol of acrolein charged, with no free aniline
-left.** The three amine slots do not have to be the same molecule, so one event in
-three has to spend the aniline the nitrobenzene became. That is a real nuisance of
-the real preparation — a Skraup on a substituted aniline with nitrobenzene as the
-oxidant contaminates its product with the parent quinoline — and nobody declared
-it.
+⚠ **A DEFAULT AT THE BOTTOM OF A MATCHER IS A GUESS.** Both split on structure
+now, take `physical_source` as the FIELD it is, and **raise** on an unrecognised
+provenance. ⚠ The fix found a pre-existing overcount (144 → 135) and needed a
+new `compilation` tier for 47 YAWS/WIKIDATA values.
 
-## ⚠⚠ 4. AN OPEN FLASK LOSES 98% OF THE YIELD, AND THAT IS THE PREPARATION'S OWN REASON
+## ⚠⚠ 5. A FIT WINDOW THAT COULD EXCLUDE THE BOILING POINT IT WAS BRACKETING
 
-A real Skraup makes its acrolein in situ from glycerol and never charges it. The
-textbook reason is that neat acrolein polymerises. The other half, measured:
+`volatility.py` fitted over `max(0.30*Tc, Tb-120, 150.0)`, so methane's window
+opened **38 K ABOVE its own Tb**: **+16.50%** at the normal boiling point, nitric
+oxide **+14.53%**. ⚠ **PRE-EXISTING AND INVISIBLE** — the check that exists for
+exactly this walked `MEASURED_PHYSICAL` and both are in `_CURATED_RAW`. One line.
 
-    k_vent      quinoline   acrolein left
-    0 (sealed)   1.000000       0.000000
-    1e-3         0.919592       0.000000
-    1e+0         0.061473       0.000000
-    1e+3         0.016883       0.000000
+## ⚠ 6. WHAT IT COST, MEASURED BY RUNNING ALL FIFTEEN EXAMPLES
 
-Acrolein boils at **314 K** and the reaction runs at 450. Nothing declares that;
-it is the vapour-pressure curve against the vent conductance, the same mechanic
-that gives the Claus train its sulfur condenser. ⚠ **AND IT NAMES A LIMITATION:
-this project has no reflux head that returns a vapour to the pot**, so a reaction
-at reflux has to be modelled as a SEALED flask, and the audit prints the 13.7 bar
-at 450 K that buys rather than hiding it.
+`esterification`, `lime_cycle`, `roasting_and_the_catalyst_gate`,
+`mercury_retort`, `oil_of_vitriol` **IDENTICAL**. Worst movers: `multistep_prep`
+yield **84.0% → 82.7%**, `fractional_distillation` 11.8%, `workshop` 8.7%,
+`wait_until` **the boil at 1353 s → 1418 s**, `vessel` structurally (still
+boiling where it had gone dry). ⚠⚠ **`plate_column`'s HEART is 0.8548 against
+0.8544 — M2's target still MET**, replay determinism still exact.
 
-## ⚠ 5. THE DECLARATIONS, EACH OF WHICH WAS A CHOICE
+⚠⚠ **`named_routes` LOST FOUR `MIXES STANDARD STATES` WARNINGS AND GAINED A
+BARRIER GUARD.** The engine had been saying *"do not read this reaction's
+equilibrium constant"* about DDT isomers, dinitrotoluenes and the stearic/oleic
+pair; they have a liquid standard-state shift now. And `ester_hydrolysis`'s
+declared Ea of 70 kJ/mol is below aspirin hydrolysis's dH of 75.6, so a guard
+that was already there raised it — `aspirin-impurity` reports **59.2% where it
+reported 99.8%**. Nobody changed a barrier.
 
-* `orders=(1,1,0,0,0,0,1,1)` — first order in the amine, the enal, the oxidant and
-  the acid. **Every species it consumes keeps order 1**, S11's rule, and here
-  obeying it costs NOTHING: a real Skraup does slow as its oxidant is spent.
-  (Contrast the Wacker, where the same rule forces an oxygen order the real law
-  says is zero.) Declared orders, therefore **not reversible**. `alpha = 0.0`:
-  one reaction, not a family being ranked.
-* **The acid is `ACID_CATALYST` (hydronium), not `sulfuric-acid`** — the choice
-  `esterification` and `alkene_dehydration` already make, and it makes
-  `electrolyte_provider()` a requirement, which is the Wacker's gate again. A
-  flask with no acid makes **exactly zero**.
-* **Ea 80 kJ/mol, A 3.0e6** (3.0e7 declared, after `CATALYST_REFERENCE`). An
-  APPARENT barrier over a four-step sequence, fitted to the one thing the
-  preparation reports. One minute at 350/400/420/450/480 K: **1.85% / 36.55% /
-  69.70% / 98.40% / 100.00%**.
-* **The oxidant is stoichiometric**: 0.10 / 0.20 mol of nitrobenzene cap the yield
-  at exactly 3x and the acrolein sits there.
+## ⚠⚠ 7. AND THE TOLERANCE AUDIT'S "CANNOT BE SWEPT" WAS NOT A REGRESSION
 
-## 6. THE SMALL THINGS
+`named_routes` raises at rtol 1e-8 now. Measured on both data bases:
 
-* ⚠ **A TEMPLATE THAT IS NOT IN `rate_ceiling.py` IS NOT AUDITED**, and "it is
-  obviously small" is not a measurement. It got a panel: **2.90e-18 of the
-  bimolecular ceiling**. Its crossing column is meaningless for the Deacon's
-  reason — a fourth-order `A` is in L^3/(mol^3 s).
-* `validation/skraup.py` is a new standing audit, ~10 s, seven panels. The class
-  is credited on an INTEGRATION, not on the coverage table — the S1 standard.
-* `COVERAGE_REPORT.md` and both `derived/*.psv` re-checked byte-identical across
-  `PYTHONHASHSEED`.
-* ⚠ **A `⚠` inside a `print()` did NOT ship this time.** Twenty-six sessions.
+    basis            default (1e-6)   rtol 1e-7   rtol 1e-8
+    pre-S13 Joback   1.000000 mol     RAISES      1.000000 mol
+    S13 measured     1.000000 mol     RAISES      RAISES
+
+⚠⚠ **A ONE-POINT TOLERANCE SWEEP CANNOT TELL "NEWLY BROKEN" FROM "ALREADY BROKEN
+AT A POINT IT DOES NOT SAMPLE."** The fragility was one decade CLOSER to the
+default than this audit tests, before S13. In `KNOWN_REFUSAL` with the numbers.
+
+## ⚠ 8. FIVE TESTS MOVED AND EACH ONE WAS A FINDING
+
+* S12's *"a flask with no acid makes exactly zero"* was **one word too strong**.
+  Water autoprotolyses; the flask holds ~4e-29 mol of hydronium and makes
+  ~2.4e-25 mol of quinoline in ten hours, flat thereafter. The literal `0.0` was
+  the solver clamping a column that never left the floor.
+* A documented `temperature_steady` trap **went below the default tolerance**.
+  Ethanol's Joback Tb made the flask ~2x too volatile at 298 K, so the opening
+  swing was **−24 K/s**; it is **−1.42 K/s** now, and BDF at the default no
+  longer resolves it. ⚠ `max_step` does NOT recover it; **rtol 1e-9 does**.
+* `is_boiling` read a flask integrated to its own boiling point as **NOT
+  boiling** — **−1.110e-15 bar** below ambient. A root is zero to solver
+  precision. The readout gained a 1e-12 relative floor.
+* The provenance test's own illustration turned inside out: **no catalog species
+  has a measured formation half on a Joback physical one any more.**
+* Benzoic acid's molar volume got **worse** — 96 → 87.4 mL/mol against a real
+  ~96.5 — because a measured Tb brings a FEDORS Vc (326.43) where Joback's
+  (343.50) was closer to the literature's ~341. **Taken anyway and written
+  down**: a record may not mix two group-contribution methods.
+
+## 9. THE SMALL THINGS
+
+* `validation/boiling_points.py` is a new standing audit, **2 seconds**, written
+  to stay useful once the gap is closed: panel 2 measures what the CORRECTION was
+  worth through `ThermochemistryProvider(measured_physical=False)`.
+* `physical_estimation.py` panel 3 — the one INDEPENDENT check in the chain —
+  went from n≈20 to **n=254**, and the design held: measured Tc/Pc mean
+  |Δω| **0.029**, Wilson-Jasperson **0.121**.
+* **It closed eight tenths of M11 as a side effect**: the "needs only a boiling
+  point" bucket went **10 → 2**. ⚠⚠ RE-COST M11 before scheduling it.
+* `COVERAGE_REPORT.md` and both `derived/*.psv` byte-identical across
+  `PYTHONHASHSEED`. `critical_data.py` byte-identical.
+* ⚠ **A `⚠` inside a `print()` DID ship** in the first draft and was caught
+  before the first run. Twenty-seven sessions.
 
 ---
 
 # ⚠ THE FRAGILITIES
 
-**1. ⚠⚠ 310 SPECIES HAVE A MEASURED BOILING POINT THIS ENGINE IS NOT USING (S11).**
-229 price a Tb today, mean error 5.81%, worst 84.89%. Engine queue item 1.
+**1. ✔✔ CLOSED IN S13 — THE HAND-TYPED LIST.** `MEASURED_PHYSICAL` is generated
+from `data/catalog` now: 37 species → **1239**, 20 measured boiling points →
+**896**, corpus physical half measured 2.5% → **41.2%**. ⚠ What replaced it as a
+fragility is item 15 below, and it is smaller.
 
 **2. ⚠⚠ NOTHING COMPARES T TO Tc (S11).** A condensable species above its critical
 temperature still dissolves by Raoult's law against an extrapolated Antoine curve.
-Ethylene is ~40x too soluble in the Wacker liquor. Engine queue item 2.
-**A LIMIT to remove, not an invariant.**
+Ethylene is ~40x too soluble in the Wacker liquor. Engine queue item 3.
+**A LIMIT to remove, not an invariant.** ⚠ **S13 put 863 more species on a fitted
+Antoine curve and did NOT add a Tc check**, so the exposure grew even though the
+measured example did not move.
 
 **3. ⚠⚠ THE WACKER'S OXYGEN ORDER IS FIRST AND SHOULD BE ZERO (S11).** The kernel
 has no availability gate. Measured at 1.00 / 1.92 / 3.53 / 5.85x.
@@ -531,10 +551,11 @@ has no availability gate. Measured at 1.00 / 1.92 / 3.53 / 5.85x.
 
 **4. ⚠⚠ A LATTICE MAY REACT AND MAY NEVER BOIL — HALF CLOSED BY S10.** What
 remains is thermite: nothing caps the temperature, and iron cannot make zinc's
-move. **Engine queue item 3**, worth ZERO routes.
+move. **Engine queue item 4**, worth ZERO routes.
 
 **5. ⚠⚠ THE BURNER IS STILL ~50 s AT rtol 1e-8 AGAINST 0.8 s AT THE DEFAULT.** The
-crash is bounded; the thrashing is not. **Engine queue item 9.**
+crash is bounded; the thrashing is not. **Engine queue item 10.** ⚠ S13 measured
+`oil_of_vitriol` OUTPUT IDENTICAL across its whole sweep, so nothing here moved.
 
 **6. ⚠⚠ NO CURRENT BUDGET (M8).** Selectivity washes out above ~2.7 V.
 
@@ -566,7 +587,7 @@ has no sites to saturate.
 
 **14. ⚠⚠ 99 CORPUS ROWS HAVE A NEGATIVE LIQUID HEAT CAPACITY (S10, re-swept S11).**
 Plus 38 swinging over 5x. ⚠ **S11 moved ethylene from +1574 to −1782 by giving it
-a MEASURED Tc** — better data, same window, worse number. **Engine queue item 4.**
+a MEASURED Tc** — better data, same window, worse number. **Engine queue item 5.**
 
 **15. ⚠ NUCLEATION, HALF modelled.** A solid can only grow where one already is.
 
@@ -588,9 +609,35 @@ RE-QUERIED IN S11.** FeO has no crystal Cp in CRC; pyrite has `Hfs` in WEBBOOK a
 `S0s` in nothing; **calcium silicate has nothing at all under any of its three CAS
 numbers.** All three refusals follow rules worth keeping.
 
-**UNCHANGED: `psi = np.exp(-a / T)` in `activity.activity_coefficients` overflows
-for the PSRK quadratic `H2O <-> N2` pair below 4.28 K.** PRE-EXISTING, **measured
-inert**.
+**21. ⚠⚠ THE PSRK OVERFLOW IS NO LONGER "MEASURED INERT" (S13).**
+`psi = np.exp(-a / T)` in `activity.activity_coefficients` overflows below
+**4.28 K** (measured exactly: `max(-a/T)` is 760 at T=4 and 292 at T=10).
+`plate_column` now prints **five `RuntimeWarning` lines where it printed none**.
+⚠ **Measured HARMLESS where it fires** — heart 0.8548 vs 0.8544, target met,
+replay exact. **The word to change is "inert", not the number.** Nothing has yet
+found WHICH call passes a T that low. **Engine queue item 1.**
+
+**22. ⚠⚠ `multistep_prep` PRINTS `pH = inf` (pre-existing, newly VISIBLE in S13).**
+At the default tolerance the benzoate flask reports `pH = inf`; at rtol 1e-8,
+11.65. Same mechanism as the Skraup's "exactly zero": a hydronium column the
+loose solver clamps to a literal 0.0. **Engine queue item 2.**
+
+**23. ⚠ `named_routes` CANNOT BE SWEPT at rtol 1e-8 (S13) — AND IT IS NOT NEW.**
+The PRE-S13 data raises too, at **rtol 1e-7**, one decade closer to the default
+than the audit samples. Diagnosed in `KNOWN_REFUSAL`; the default-tolerance
+answer is confirmed on both bases.
+
+**24. ⚠ THE 31 SPECIES THAT MISS THE BOILS-AT-1-ATM BAR (S13).** 858 of 889 clear
+1.5%; the 31 that do not are NAMED in `BOILS_LOOSELY` with their residuals, and
+**eight are pre-existing** — water +2.57%, SO2, SO3, HF, formaldehyde, nitric
+acid, the nitrite pair, and zinc. Nearly all are polar or associating and boil
+between 250 and 375 K. ⚠⚠ **Zinc is S10's own −0.96% in TEMPERATURE read as
++12.61% in PRESSURE**; a bar in one is not a bar in the other.
+
+**25. ⚠ BENZOIC ACID'S MOLAR VOLUME GOT WORSE IN S13** — 96 → 87.4 mL/mol against
+a real ~96.5 — because a measured Tb brings a FEDORS Vc (326.43) where Joback's
+(343.50) was closer to the literature's ~341. Taken deliberately: a record may not
+mix two group-contribution methods, and Fedors' 7.7% mean error is MEASURED.
 
 ⚠ **AND THE BLOCK-ORDER TRAP STILL HOLDS:** the state vector is
 `pack(n_liquid, n_liquid2, n_gas, n_solid, T)` — **liquid2 is SECOND, not last.**
@@ -602,10 +649,58 @@ TRAPS SPECIFIC TO THIS ARC:
 ⚠ BOUND A MECHANISM ARITHMETICALLY AGAINST THE ACTUAL SIMULATED STATE BEFORE
 WRITING CODE. Twenty-two times now. ⚠ **AND THE SOLVER IS PART OF THE ARITHMETIC**
 (M8).
-⚠⚠ **A GENERATED FILE IS ONLY AS SYSTEMATIC AS ITS INPUT LIST.** S11: 310 species
-are priced by Joback not because a measurement is missing but because
-`tools/build_physical_data.py`'s `CANDIDATES` is 33 hand-typed names. **The file
-looks generated from the outside and is a transcription on the inside.**
+⚠⚠ **A GENERATED FILE IS ONLY AS SYSTEMATIC AS ITS INPUT LIST.** S11 found it,
+S13 closed it: `physical_data.py` was generated from 37 hand-typed names, so 830
+corpus species with a measured boiling point fell to Joback. **The file looked
+generated from the outside and was a transcription on the inside**, and nothing
+could see the difference **because a Joback record RESOLVES** — it answers every
+question put to it, confidently, in the wrong place.
+⚠⚠⚠ **AND THE FIX FOR ONE TRAP CAN BE THE NEXT TRAP. S13's OWN INSTRUMENT WAS
+WRONG FIRST, AND IT WAS WRONG BY OBEYING S11.** S11 recorded "a bare SMILES is
+read as a FORMULA — always use `smiles=`". S13 did, and generated a table with no
+aniline, no nitrobenzene and no quinoline in it: **`chemicals`' SMILES index does
+not contain them**, while `CAS_from_any("aniline")` answers instantly. It reported
+the gap as 322 where it is 830. **NEITHER KEY ALONE IS ENOUGH** — graph first,
+then the NAME, with the formula cross-check as the arbiter (it refuses 72).
+⚠⚠ **A COUNT OF THINGS THAT ARE MISSING IS NOT A COUNT OF THINGS THAT ARE WRONG.**
+322 species were absent from the measured table and only **213** would have
+changed a resolved record; water, oxygen and hydrogen chloride are "absent" and
+irrelevant, because a higher tier short-circuits them. **Resolve it twice through
+two providers rather than arguing about tiers.**
+⚠⚠ **A TIER READ OUT OF PROSE GOES WRONG THE MOMENT THE WORDING CHANGES — AND
+THE FIELD THAT EXISTS TO PREVENT THAT MAY ALREADY SAY SO.**
+`catalog_coverage._thermo_tier` matched substrings against a COMPOSITE provenance
+string naming both halves of a record, and after S13's sweep reported **669
+measured FORMATION halves where the answer is 135**, from a change that touched no
+formation data. `ThermoData.physical_source` had carried a comment predicting
+exactly this since the day it was added. ⚠ **AND A DEFAULT AT THE BOTTOM OF A
+MATCHER IS A GUESS**: its twin's bare `return "benson"` invented 659 "Benson
+physical halves", a tier this engine does not have.
+⚠⚠ **A BAR MEASURED OVER NINE SPECIES IS A BAR MEASURED OVER NINE SPECIES.** The
+boils-at-1-atm check held 20 records to 1.5%; pointed at all three tables that
+carry a Tb it holds **889**, and 8 of the 31 that miss are PRE-EXISTING and were
+invisible because the check walked the wrong list.
+⚠⚠ **A BAR IN TEMPERATURE AND A BAR IN PRESSURE ARE NOT THE SAME BAR.** Zinc's
+curated curve is **−0.96% in T** (S10's own recorded number) and **+12.61% in P**
+at the same point. Quoting one against the other manufactures a regression.
+⚠⚠ **A ONE-POINT TOLERANCE SWEEP CANNOT TELL "NEWLY BROKEN" FROM "ALREADY BROKEN
+AT A POINT IT DOES NOT SAMPLE."** `named_routes` went from "2 lines moved" to
+"CANNOT BE SWEPT" after S13 — and the PRE-S13 data raises too, at rtol 1e-7, one
+decade CLOSER to the default. **Rebuild the same state on BOTH data bases before
+calling a tolerance result new.**
+⚠⚠ **A DOCUMENTED BEHAVIOUR CAN BE RESTING ON A WRONG NUMBER MAKING IT BIG ENOUGH
+TO SEE.** The hotplate's opening evaporative swing was −24 K/s on Joback's ethanol
+and is −1.42 K/s on the measured one, and `temperature_steady` no longer fires on
+it at the default tolerance. ⚠ `max_step` does NOT recover it — the loose error
+control smooths the spike OUT of the computed solution — but **rtol 1e-9 does**.
+⚠ **A ROOT IS ZERO TO SOLVER PRECISION, AND THE LAST BIT IS NOT PHYSICS.** A
+readout compared with `>=` against the same expression a terminal event roots on
+will disagree with it about half the time. `is_boiling` read **−1.110e-15 bar**
+and said "not boiling".
+⚠ **A BETTER RECORD CAN MAKE ONE NUMBER WORSE, AND THE ANSWER IS TO WRITE IT
+DOWN.** Benzoic acid's measured Tb brings a Fedors Vc; Joback's was closer to the
+literature. Taken anyway, because a record may not mix two group-contribution
+methods and Fedors' error is MEASURED.
 ⚠⚠ **ASK WHICH NUMBER THE SYMPTOM ACTUALLY DEPENDS ON BEFORE CURATING THE ONE
 THAT LOOKS RESPONSIBLE.** S11 curated ethylene's boiling point to fix a flask
 dissolving 83% of its ethylene, and measured 0.16588 → 0.16596 — **four figures
@@ -666,7 +761,8 @@ already existed.
 point would fix a solubility and it did not.**
 ⚠ **PREDICT THE NUMBER BEFORE YOU MEASURE IT.** S3 +2/+0; S4 +1/+1; S6 predicted
 14 and measured 16; M8 three for three; S7 five for five; S9 four for four; S10
-four for four and all four ZERO; **S11 four for four; S12 four for four.**
+four for four and all four ZERO; **S11 four for four; S12 four for four; S13 four
+for four — +0 class, +0 template-ready, +3 species-ready, +0 BOTH.**
 ⚠ **VERIFY A CREDIT BY RUNNING IT, NOT BY READING THE CODE THAT WOULD RUN IT.**
 ⚠ **AND VERIFY A BIT-IDENTICAL CLAIM AGAINST THE EXAMPLE SET, NOT AN ARGUMENT.**
 ⚠ **A CONSTANT'S UNITS ARE WHAT MAKE ITS VALUE DEFENSIBLE.**
@@ -681,9 +777,10 @@ diffed; S4's rate-ceiling audit made a claim about a table it does not read; S6'
 target column had been understating itself since M3; M8's new audit found a
 pre-existing ion-table error; S7 found the coverage audit pricing a species the
 engine refuses; S9 found a source comment CITING an audit check that never
-existed; S10's `game_gates` panel INVENTED a 90 kJ/mol error; **and S11's
+existed; S10's `game_gates` panel INVENTED a 90 kJ/mol error; **S11's
 boiling-point sweep read methane's boiling point as carbon's and counted 360 where
-the answer is 310.**
+the answer is 310; and S13's own sweep, built on the fix for that, counted 322
+where the answer is 830 and generated a table with no aniline in it.**
 ⚠ AN INVARIANT MEASURED ACROSS A BOUNDARY FLUX IS NOT AN INVARIANT. Seal it first.
 ⚠ A GREEN SUITE IS NOT EVIDENCE THE INVARIANTS TABLE HOLDS.
 ⚠ **A GENERATED FILE NOTHING READS IS THE ONE THAT ROTS.** Regenerate all three
@@ -775,4 +872,10 @@ measured physical table overrides a working Joback record ONLY where
 slots may be three DIFFERENT molecules, so a substituted aniline makes the parent
 quinoline too; **`skraup_cyclisation` keeps order 1 in its oxidant, and its dS is
 pinned on BOTH standard states because the comment got the sign wrong once**; and
-**a template that is not in `validation/rate_ceiling.py` is not audited.**
+**a template that is not in `validation/rate_ceiling.py` is not audited**;
+**`MEASURED_PHYSICAL` is generated from `data/catalog` and never hand-edited**;
+**a corpus CAS is resolved by GRAPH first and then by NAME, and a name match must
+pass the formula cross-check**; **`CORPUS_SWEEP` and `DELIBERATE_OVERRIDES` are
+DISJOINT**, so a hand addition can never hide inside the batch; **an Antoine fit
+window must BRACKET its own boiling point**; and **a species that leaves
+`BOILS_LOOSELY` must be removed from it rather than left as a stale excuse**.
