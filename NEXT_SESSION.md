@@ -810,9 +810,30 @@ old number.**
 | **four provenance tiers upgrade** | ethylene `joback -> measured`; propylene, butyraldehyde and isobutyraldehyde `joback -> benson` | `data/catalog/derived/species_roles.psv`. A measured Tb lets Benson's formation half assemble where Joback's was standing in — the part of S11's data work a coverage report CAN see |
 | the whole suite | **952 passed / 0 failed in 13:15**, run AFTER every `src/` edit, and run TWICE — the first read 951/1 and 952/0 would have been ARITHMETIC | `python -m pytest -q`. ⚠ `tolerance_audit.py` re-run too, because a DATA table changed: **NO example prints a quotable digit that moves**, and the three self-check examples are OUTPUT IDENTICAL at speedup 1.00 |
 
+
 ⚠⚠ **TWO ROWS ABOVE ARE LIMITS TO REMOVE, NOT INVARIANTS TO KEEP**: the Wacker's
 oxygen order, and ethylene's solubility. Both are marked.
 
+**S12 — the Skraup, whose oxidant becomes one of its own reagents. ⚠ NO ENGINE
+CODE CHANGED (no `numerics/`, no `vessel/`) and NO DATA TABLE either, third
+milestone running — so `tolerance_audit.py` carries no new exposure and was NOT
+re-run. ⚠⚠ THE ROW TO READ FIRST IS THE SECOND ONE: the source comment's own
+hand-priced numbers were wrong, and the audit is what caught them.**
+
+| row | value | how it is pinned |
+|---|---|---|
+| **the Skraup flask** — 1 L sealed, 450 K, 1 h; 3.0 aniline, 1.0 acrolein, 1.0 nitrobenzene, 0.2 hydronium, 5.0 water | **quinoline 1.000000 mol**, acrolein 0.000000, nitrobenzene 0.666667, aniline 2.333333, water 6.666667, hydronium 0.200000 | `validation/skraup.py` panel 3; `tests/test_skraup.py`. Stoichiometry checked AGAINST the oxidant (`1 - q/3`, `3 - 2q/3`, `5 + 5q/3`), not assumed |
+| ⚠⚠ **THE TWO STANDARD STATES DISAGREE ON THE SIGN OF dS** | ideal gas **dH -561.63, dG298 -572.55, dS +36.65**; pure liquid **dH -725.16, dG298 -627.05, dS -329.08**. Difference **-163.53 kJ/mol** in dH | `test_the_two_standard_states_disagree_on_the_sign_of_dS` pins BOTH rows. The template is `phase="liquid"`, so **NINE product molecules condense against SEVEN reactant ones** — and *"seven molecules become nine"* is an IDEAL-GAS sentence. ⚠ **The gas-basis numbers were written into `synthesis.py`'s comment first, off a hand calculation** |
+| **irreversible is safe — for the other reason** | ln K **252.9 at 298 K, 178.5 at 400, 154.2 at 450, 105.8 at 600**; dG crosses zero at **2204 K** | same test. dS is NEGATIVE, so dG gets LESS negative as the flask is heated — it simply has 725 kJ/mol to spend. S11's count-the-gas-moles rule is answered here by there being no gas in the rate law at all |
+| **7 reactant slots and 9 product slots**, plus the acid as an eighth | `3 aniline + 3 acrolein + PhNO2 -> 3 quinoline + PhNH2 + 5 water`, C33H38N4O5 both sides, four aromatic rings in and four out | `test_the_row_is_three_anilines_and_one_nitrobenzene`. ⚠ **The aniline on the right is the NITROBENZENE, reduced** — not `_maybe_catalyse`'s case and not `corpus_balance`'s `spurious` case |
+| ⚠⚠ **a substituted aniline makes the PARENT quinoline too, at exactly 2:1** | p-toluidine alone in: **6-methylquinoline 0.666667, quinoline 0.333333, free aniline 0.000000**, totalling the 1.0 mol of acrolein charged | `test_a_substituted_aniline_makes_the_parent_quinoline_too`. The oxidant's reduction product is ITSELF a substrate, because the three amine slots need not be the same molecule. **Nobody declared it**, and it is a real nuisance of the real preparation |
+| ⚠ **an OPEN flask loses 98% of the yield** | quinoline against `k_vent` 0 / 1e-3 / 1e0 / 1e3: **1.000000 / 0.919592 / 0.061473 / 0.016883** | `validation/skraup.py` panel 5, `test_an_open_flask_loses_its_acrolein_before_it_can_react`. Acrolein boils at **314 K** and the flask is at 450. ⚠ **This is the other half of why the preparation makes its acrolein in situ**, and it is the vapour-pressure curve rather than a declaration |
+| **the acid is the gate** | no acid at all: **exactly 0.0 mol** of quinoline | `test_a_flask_with_no_acid_does_nothing`. Spelled as `ACID_CATALYST` (hydronium), so the network needs `electrolyte_provider()` — the Wacker's gate again |
+| **the oxidant is stoichiometric, not catalytic** | 0.10 / 0.20 mol PhNO2 cap the yield at **0.300000 / 0.600000** = exactly 3x, with the acrolein left over | `test_the_oxidant_is_stoichiometric_and_starving_it_caps_the_yield` |
+| **the temperature is the clock** | one minute at 350 / 400 / 420 / 450 / 480 K: **1.85% / 36.55% / 69.70% / 98.40% / 100.00%**, at 0.88 / 4.10 / 6.70 / 13.66 / 26.73 bar | panel 4. ⚠ The pressure column is the price of having **no reflux head**: `k_vent=0` IS the condenser here, and it is printed rather than hidden |
+| **every slot it consumes keeps order 1** | `orders=(1,1,0,0,0,0,1,1)`; per-species totals aniline 1.0, acrolein 1.0, nitrobenzene 1.0, hydronium 1.0 | `test_every_species_it_consumes_keeps_at_least_order_one`, read off the CONCRETE reaction where the three amine slots collapse onto one species. ⚠ Unlike the Wacker, **obeying S11's rule here costs nothing**: a real Skraup does slow as its oxidant is spent |
+| **the Skraup's pre-exponential, audited** | **2.90e-18 of the bimolecular ceiling** at 298 K | `validation/rate_ceiling.py` gained a Skraup panel, because a template not in that file is not audited. ⚠ Its crossing column is meaningless for this row — a fourth-order `A` is in L^3/(mol^3 s), the Deacon caveat again |
+| the whole suite | **961 passed / 0 failed in 13:20**, run AFTER every `src/` edit | `python -m pytest -q`. ⚠ 952 + 9 would have given the same number, which is exactly why it was RUN and not computed. ⚠⚠ `tolerance_audit.py` deliberately NOT re-run: no RHS and no data table changed, so it carries no new exposure |
 
 # Still open
 

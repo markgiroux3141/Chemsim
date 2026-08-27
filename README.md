@@ -443,22 +443,22 @@ python validation/catalog_coverage.py  # the audit
 
 | | |
 |---|---|
-| formation half measured or Benson | **740 / 1583 (47%)** |
-| ... of which priced as a LATTICE, on the solid basis | 30 |
-| formation half falls back to Joback | 399 (25%) |
+| formation half measured or Benson | **741 / 1583 (47%)** |
+| ... of which priced as a LATTICE, on the solid basis | 29 |
+| formation half falls back to Joback | 398 (25%) |
 | refused | 444 (28%), of which ~166 are charged organics the Born model correctly declines |
 | UNIFAC-decomposable (can enter an LLE) | 828 (52%) |
 | routes species-ready | **77 / 173** (was 49) |
-| reaction classes with a template | **50 / 229** (was 12) |
-| routes template-ready | 40 / 173 (was 7) |
-| ⚠⚠ **routes template-ready AND species-ready — the one to quote** | **30 / 173** |
+| reaction classes with a template | **51 / 229** (was 12) |
+| routes template-ready | 41 / 173 (was 7) |
+| ⚠⚠ **routes template-ready AND species-ready — the one to quote** | **31 / 173** |
 
-⚠⚠ **40 IS NOT WHAT COULD RUN; 30 IS.** The three readiness columns answer
+⚠⚠ **41 IS NOT WHAT COULD RUN; 31 IS.** The three readiness columns answer
 INDEPENDENT questions and the smallest does not bound the others: a route needs a
-template for every step **and** a price for every species. **10 of the 40
+template for every step **and** a price for every species. **10 of the 41
 template-ready routes have a refused species** — `pyrite-roasting`, `tnt-route`,
 `superphosphate` and seven more. Nothing computed the intersection until S6.
-⚠ And 30 is an **upper bound on what runs**, not a measured count: a class is
+⚠ And 31 is an **upper bound on what runs**, not a measured count: a class is
 credited when a template would fire on the right substrate at all, and
 `pyrite-roasting` is the standing proof that this is not the same as running.
 

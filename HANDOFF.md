@@ -5541,6 +5541,106 @@ the measurements that justify them.
     point changed the conversion. **Third session running.**
 
 
+
+97. ✔✔ **S12 — THE SKRAUP, AND THE COMMENT THAT PRICED ITS OWN REACTION ON THE
+    WRONG STANDARD STATE.** 2026-08-26.
+    **+1 class (50 -> 51 of 229), +1 template-ready (40 -> 41), +0 species-ready,
+    +1 RUNNABLE (30 -> 31). All four predicted before the audit ran; all four
+    came out.** 45 -> 46 templates. ⚠ **NO ENGINE CODE CHANGED and NO DATA TABLE
+    EITHER** — not one line of `numerics/` or `vessel/`, third milestone running,
+    so `tolerance_audit.py` carries no new exposure and was not re-run.
+
+    ⚠⚠ **THE ROW LOOKED LIKE A BOOKKEEPING ERROR AND WAS NOT.** `skraup-route`
+    step 2 reads `aniline + acrolein + nitrobenzene + sulfuric-acid -> quinoline
+    + aniline + water + sulfuric-acid`, with **aniline on both sides**. That is
+    `corpus_balance`'s `spurious` shape — a reagent written as consumed that is
+    really a catalyst — and 17 rows in the corpus genuinely are that. This one is
+    not: **the aniline coming out is the NITROBENZENE, reduced.** Each ring
+    closure sheds two hydrogens and one nitroarene takes six, which forces the
+    multiple `3 aniline + 3 acrolein + PhNO2 -> 3 quinoline + PhNH2 + 5 water` —
+    C33H38N4O5 on both sides, four aromatic rings in and four out. **Seven
+    reactant slots and nine product slots**, plus the acid as an eighth. The
+    SMARTS was built from the electron count and balanced first time.
+
+    ⚠⚠⚠ **AND THE LARGEST FINDING IS ABOUT THE COMMENT I WROTE BEFORE RUNNING
+    THE AUDIT.** The block comment in `synthesis.py` priced the reaction by hand,
+    summing `ThermoData.Hf` and `.Gf` over both sides: **dH -561.63, dG298
+    -572.55, dS +36.65 J/(mol K)** — and then built an ARGUMENT on that sign.
+    Seven molecules become nine, so dS is positive, so heating the flask makes
+    the forward direction more favourable, so giving up the reverse is safe.
+    Every clause of that reads like physics. Then the audit printed what
+    `reaction_deltas` actually returns:
+
+                        dH / kJ    dG298 / kJ    dS / J/(mol K)
+        ideal gas       -561.63       -572.55           +36.65
+        pure liquid     -725.16       -627.05          -329.08
+        difference      -163.53        -54.49          -365.73
+
+    **THE TWO BASES DO NOT AGREE ON THE SIGN OF dS, AND THE EASY ONE IS THE WRONG
+    ONE.** The template is `phase="liquid"`, so `reaction_deltas` puts every
+    condensable species on its own pure liquid — and **nine product molecules
+    condense against seven reactant ones**. *"Seven molecules become nine"* is an
+    IDEAL-GAS sentence, and it was being used about a liquid-phase reaction.
+    ⚠ **The conclusion survived and the reason for it did not**: ln K on the
+    basis the engine actually uses is **252.9 at 298 K and still 105.8 at 600**,
+    and dG crosses zero only at **2204 K**. S11's rule — count the moles of GAS
+    on each side before giving up a reverse — is answered here by there being no
+    gas in the rate law at all. **A PHASE LABEL CARRIES A STANDARD STATE**, S1's
+    lesson, arriving this time inside a comment rather than inside a rate law.
+    `test_the_two_standard_states_disagree_on_the_sign_of_dS` pins BOTH rows.
+
+    ⚠⚠ **THE OXIDANT'S REDUCTION PRODUCT IS ITSELF A SUBSTRATE, AND THE NETWORK
+    FOUND THAT WITHOUT BEING TOLD.** Charge **p-toluidine** instead of aniline
+    and change nothing else, and the flask makes **6-methylquinoline 0.666667 mol
+    and PLAIN QUINOLINE 0.333333 mol** — exactly 2:1, totalling the 1.0 mol of
+    acrolein charged, with **no free aniline left at all**. The nitrobenzene is
+    reduced to aniline and the aniline goes round again as a substrate, because
+    the template's three amine slots do not have to be the same molecule, so one
+    event in three has to spend one. That is a real nuisance of the real
+    preparation — a Skraup on a substituted aniline with nitrobenzene as the
+    oxidant contaminates its product with the parent quinoline — and **nobody
+    declared it.**
+
+    ⚠⚠ **AND THE PREPARATION'S OWN ODDITY FELL OUT OF THE FLASK.** A real Skraup
+    makes its acrolein in situ from glycerol and never charges it; the textbook
+    reason is that neat acrolein polymerises. Here is the other half, measured:
+    acrolein boils at **314 K** and this reaction runs at 450, so an open flask
+    loses it. Quinoline against `k_vent` 0 / 1e-3 / 1e0 / 1e3: **1.000000 /
+    0.919592 / 0.061473 / 0.016883** — **an open flask loses 98% of the yield**,
+    and nothing declares that. It is the vapour-pressure curve against the vent
+    conductance, the same mechanic that gives the Claus train its sulfur
+    condenser. ⚠ It is also why the audit's flask is SEALED: this project has no
+    reflux head that returns a vapour to the pot, so `k_vent=0` IS the condenser,
+    and the 13.7 bar that buys at 450 K is printed rather than hidden.
+
+    ⚠ **THE DECLARATIONS, EACH OF WHICH WAS A CHOICE.** `orders=(1,1,0,0,0,0,1,1)`
+    — first order in the amine, the enal, the oxidant and the acid, so every
+    species the reaction consumes keeps at least order 1 and nitrobenzene is not
+    driven negative. **Unlike the Wacker, obeying S11's rule here costs nothing**:
+    a real Skraup DOES slow as its oxidant is spent. Declared orders, therefore
+    not reversible — `claus_comproportionation`'s rule. `alpha = 0.0`: this is one
+    reaction, not a family being ranked. The acid is spelled as `ACID_CATALYST`
+    (hydronium), not as `sulfuric-acid`, which is the choice `esterification` and
+    `alkene_dehydration` already made and which makes `electrolyte_provider()` a
+    requirement — the Wacker's gate again. **A flask with no acid makes exactly
+    zero.** Ea 80 kJ/mol is an APPARENT barrier over a four-step sequence, fitted
+    to the one thing the preparation reports: at one minute, **1.85% / 36.55% /
+    69.70% / 98.40% / 100.00%** at 350 / 400 / 420 / 450 / 480 K.
+
+    ⚠ `validation/skraup.py` is a new standing audit (~10 s, seven panels) and the
+    class is credited on an INTEGRATION rather than on the coverage table, which
+    is the S1 standard. ⚠ `validation/rate_ceiling.py` gained a Skraup panel too,
+    because **a template that is not in that file is not audited** and "it is
+    obviously small" is not a measurement — 2.90e-18 of the bimolecular ceiling,
+    with the crossing column meaningless for it because a fourth-order `A` is in
+    L^3/(mol^3 s), the Deacon caveat again. `COVERAGE_REPORT.md` and both
+    `derived/*.psv` re-checked byte-identical across `PYTHONHASHSEED`.
+
+    **The whole suite: 961 passed / 0 failed in 13:20**, run after every `src/`
+    edit. ⚠ 952 + 9 would have given the same number, which is exactly why it
+    was RUN rather than computed. ⚠⚠ `tolerance_audit.py` was deliberately NOT
+    re-run: nothing under `numerics/`, `vessel/` or `properties/` changed, so it
+    carries no new exposure — and saying so is part of the measurement.
 IMMEDIATE NEXT TASK: see **`MILESTONES.md`**, which is the plan of record as of
 2026-08-22 and supersedes the ordering below. It is derived from `data/catalog`
 (1,583 compounds, 173 routes) plus four measured capability probes, and it

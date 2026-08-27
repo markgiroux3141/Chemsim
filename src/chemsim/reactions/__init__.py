@@ -36,6 +36,8 @@ from chemsim.reactions.synthesis import (
     hydroformylation_branched,
     hydroformylation_linear,
     oxo_chemistry,
+    quinoline_chemistry,
+    skraup_cyclisation,
     wacker_chemistry,
     wacker_oxidation,
     condensation_chemistry,
@@ -127,10 +129,13 @@ __all__ = [
     "hydroformylation_linear",
     "hydroformylation_branched",
     "wacker_oxidation",
+    # S12 -- the Skraup, see reactions/synthesis.py
+    "skraup_cyclisation",
     "syngas_generation_chemistry",
     "claus_chemistry",
     "oxo_chemistry",
     "wacker_chemistry",
+    "quinoline_chemistry",
     "chlorine_recovery_chemistry",
     # M8 -- the electrode templates, see reactions/electrochemistry.py
     "water_electrolysis",

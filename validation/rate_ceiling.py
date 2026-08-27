@@ -206,6 +206,21 @@ def networks() -> dict:
         ["C=CC", "[C-]#[O+]", "[H][H]"], S.oxo_chemistry(),
         thermo=THERMO, max_species=40,
     )
+    # S12, on the same standing instruction: a template that is not in this
+    # file is not audited, and "it is obviously small" is not a measurement.
+    #
+    # ⚠ THE CROSSING COLUMN IS NOT A PHYSICAL STATEMENT FOR THIS ROW EITHER.
+    # ``skraup_cyclisation`` is fourth order as declared (amine, enal, oxidant,
+    # acid), so its ``A`` is in L^3/(mol^3 s) and ``COLLISION_LIMIT`` is in
+    # L/(mol s) -- the Deacon caveat above, again. What the column IS good for
+    # here is confirming the pre-exponential is nowhere near a limit of any
+    # kind: it is 3.0e7 against 1e11, four orders below, and there is no reverse
+    # to derive because a declared rate order may never be reversible.
+    out["Skraup"] = build_network(
+        ["Nc1ccccc1", "C=CC=O", "O=[N+]([O-])c1ccccc1", "[OH3+]",
+         "O=S(=O)([O-])O", "O"],
+        S.quinoline_chemistry(), thermo=THERMO, max_species=40,
+    )
     return out
 
 

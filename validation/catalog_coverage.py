@@ -435,6 +435,25 @@ TEMPLATE_CLASSES = {
     # So this credit is only real in an AQUEOUS flask, and `validation/wacker.py`
     # builds one rather than asserting it.
     "wacker-oxidation": "wacker_oxidation",
+    # ---------------------------------------------------------------------
+    # S12 -- the Skraup, and the first class whose OXIDANT becomes one of its
+    # own reagents.
+    # ---------------------------------------------------------------------
+    # ⚠⚠ `skraup-route` STEP 2 WRITES ANILINE ON BOTH SIDES AND IT IS NOT
+    # `_maybe_catalyse`'s case and not `corpus_balance`'s `spurious` one either.
+    # The aniline coming out is the NITROBENZENE oxidant, reduced. The row is
+    # real and it balances only at the threefold multiple the electron count
+    # forces:
+    #
+    #     3 aniline + 3 acrolein + PhNO2 -> 3 quinoline + PhNH2 + 5 water
+    #
+    # Seven reactant slots and nine product slots, plus the acid on both sides.
+    #
+    # ⚠ CREDITED ON AN INTEGRATION AND NOT ON THIS TABLE: `validation/skraup.py`
+    # charges a real Vessel and reads the quinoline out of it, with the
+    # stoichiometry checked against the oxidant rather than assumed. That is the
+    # S1 standard.
+    "skraup-cyclisation": "skraup_cyclisation",
     # ⚠⚠ S9 SPLIT `catalytic-gas-oxidation`, AND IT WAS A FALSE CREDIT ON TWO OF
     # ITS THREE ROWS -- found while RANKING the queue rather than while building
     # anything, which is the second time a class has come apart under that check.

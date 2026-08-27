@@ -90,7 +90,7 @@ phase behaviour and the example for it says so.
 from __future__ import annotations
 
 from chemsim.reactions.library import (
-    _kinetics, _maybe_catalyse, _surface_kinetics,
+    ACID_CATALYST, _kinetics, _maybe_catalyse, _surface_kinetics,
 )
 from chemsim.reactions.template import ReactionTemplate
 
@@ -1341,6 +1341,143 @@ def wacker_oxidation(
 
 
 # ---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
+# S12 -- THE SKRAUP, AND THE FIRST TEMPLATE WHOSE OXIDANT IS ALSO ITS PRODUCT
+# ---------------------------------------------------------------------------
+# ⚠⚠ **THE CATALOG ROW HAS ANILINE ON BOTH SIDES AND IT IS NOT THE `spurious`
+# PATTERN.** `corpus_balance`'s `spurious` bucket is for a reagent written as
+# consumed that is really a catalyst; here the aniline on the right is a
+# DIFFERENT molecule from the aniline on the left -- it is what the nitrobenzene
+# oxidant BECOMES when it is reduced. The row is real, and reading the class name
+# instead of the row would have thrown it away:
+#
+#     skraup-route 2 | aniline + acrolein + nitrobenzene + sulfuric-acid
+#                    -> quinoline + aniline + water + sulfuric-acid
+#
+# ⚠⚠ **AND THE STOICHIOMETRY IS WHAT MAKES IT A SEVEN-SLOT TEMPLATE.** Each
+# quinoline is an aniline plus an acrolein minus one water, and the ring it
+# closes is a DIHYDRO-quinoline that has to lose two hydrogens to aromatise.
+# Nitrobenzene takes six of them:
+#
+#     3 x  aniline + acrolein  ->  quinoline + H2O + 2 [H]
+#          PhNO2 + 6 [H]       ->  PhNH2 + 2 H2O
+#     ----------------------------------------------------
+#     3 aniline + 3 acrolein + nitrobenzene -> 3 quinoline + aniline + 5 water
+#
+# C33H38N4O5 on both sides, four aromatic rings in and four out. The threefold
+# multiple is not decorative: a graph rewrite cannot write 1/3 of a nitrobenzene,
+# exactly as `claus_comproportionation` cannot write 3/8 of a sulfur crown.
+#
+# ⚠⚠ **PRICED OFF THIS PROJECT'S OWN TABLES -- AND IT HAD TO BE PRICED TWICE,
+# BECAUSE A PHASE LABEL CARRIES A STANDARD STATE:**
+#
+#                     dH / kJ    dG298 / kJ    dS / J/(mol K)
+#     ideal gas       -561.63       -572.55           +36.65
+#     pure liquid     -725.16       -627.05          -329.08
+#
+# ⚠⚠ **THE TWO BASES DO NOT AGREE ON THE SIGN OF dS, AND THE EASY ONE IS THE
+# WRONG ONE.** Seven molecules become nine, so counting molecules gives a
+# POSITIVE dS and an argument that heating the flask makes the forward direction
+# more favourable. That argument is about a gas-phase reaction and this is not
+# one: `phase="liquid"` makes `reaction_deltas` put every condensable species on
+# its own pure liquid, and NINE product molecules condense against SEVEN reactant
+# ones. It is worth 163.53 kJ/mol in dH and it flips dS. **The gas-basis numbers
+# were written into this comment first, off a hand calculation, and the audit
+# caught them.**
+#
+# ⚠ **IRREVERSIBLE IS SAFE ANYWAY, FOR THE OTHER REASON.** ln K on the basis the
+# engine actually uses is **252.9 at 298 K, 154.2 at 450 and 105.8 at 600**, and
+# dG reaches zero only at **2204 K**. S11's rule -- count the moles of GAS on
+# each side before giving up a reverse, because hydroformylation's three-gas-to-
+# one equilibrium turns over at a reachable temperature and irreversible lied by
+# a factor of 6000 -- is answered here by there being no gas in the rate law at
+# all. (A declared rate order may never be reversible in any case -- see
+# `claus_comproportionation` -- but that rule is not what makes this one honest.)
+#
+# ⚠ **EVERY SLOT THE TEMPLATE CONSUMES KEEPS ORDER 1**, which is S11's other
+# rule and the reason nitrobenzene carries an exponent at all: the kinetics
+# kernel has no availability gate, so an order-0 reactant keeps reacting after it
+# has run out and is driven negative. Here that costs nothing to be honest about
+# -- a real Skraup DOES slow as its oxidant is spent -- unlike the Wacker, where
+# the same rule forces a first order in oxygen that the real rate law says is
+# zero.
+#
+# ⚠ Ea 80 kJ/mol: the apparent barrier of the acid-catalysed Michael addition /
+# cyclisation sequence, literature band ~60-90 kJ/mol for conjugate additions of
+# an aromatic amine. It is an APPARENT barrier over a four-step sequence and is
+# declared as such. A is fitted to the one thing the preparation actually
+# reports: a Skraup at violent reflux is over in an hour or two, not a day and
+# not a second.
+
+
+def skraup_cyclisation(
+    A: float = 3.0e6, Ea: float = 80_000.0,
+    catalyst: str | None = ACID_CATALYST,
+) -> ReactionTemplate:
+    """3 aniline + 3 acrolein + nitrobenzene -> 3 quinoline + aniline + 5 water.
+
+    The Skraup synthesis: the oldest quinoline ring closure there is, and the one
+    whose reputation is that it goes off like a bomb if you do not moderate it.
+
+    ⚠ **SEVEN REACTANT SLOTS AND NINE PRODUCT SLOTS**, plus the sulfuric acid on
+    both sides, which `_maybe_catalyse` writes in as an eighth. See the block
+    comment above for where the threefold multiple comes from -- it is the
+    oxidant's own stoichiometry, not a fudge.
+
+    ⚠ **THE TEMPLATE IS GENERAL IN THE ANILINE AND IN THE ENAL, AND SPECIFIC IN
+    THE OXIDANT.** The aniline slot matches any primary aromatic amine with a
+    free ortho position, and the enal slot any CH2=CH-CHO; the oxidant slot is
+    written as a nitroarene because that is the only reductant-of-six-hydrogens
+    this corpus has, and because a general "any oxidant" slot would have no
+    stoichiometry at all. So a substituted aniline gives the substituted
+    quinoline and the corresponding substituted aniline comes back out -- which
+    is right, and is also why the three aniline slots do NOT have to be the same
+    molecule.
+
+    ⚠ **DECLARED ORDERS, THEREFORE NOT REVERSIBLE.** Mass action on seven slots
+    would put [aniline]^3 [acrolein]^3 [PhNO2] in the rate law, which at bench
+    concentrations is zero to a dozen digits -- `claus_comproportionation`'s
+    argument with a smaller number in it. Declared first order in the amine, the
+    enal, the oxidant and the acid. Giving up the reverse costs nothing: on the
+    pure-liquid basis this template actually runs on, ln K is +252.9 at 298 K and
+    still +105.8 at 600 K. ⚠ Read the block comment for why the obvious
+    seven-molecules-to-nine entropy argument is about the WRONG standard state.
+
+    ⚠ **THE ACID IS EXPLICIT, AND IT IS SPELLED AS THE HYDRONIUM IT MAKES.**
+    The catalog row writes `sulfuric-acid` on both sides; this project writes an
+    acid catalyst as ``ACID_CATALYST`` -- the same choice `esterification`,
+    `ether_condensation` and `alkene_dehydration` already make, and the honest
+    one, because it is the proton that catalyses this rather than the sulfate.
+    A flask with no acid in it does nothing at all, which is the correct answer
+    for a Skraup.
+    """
+    b = [1 + 12 * i for i in range(3)]
+    amines = [
+        f"[N;H2;+0:{k}][c:{k+1}]1[c;H1:{k+2}][c:{k+3}][c:{k+4}][c:{k+5}]"
+        f"[c:{k+6}]1"
+        for k in b
+    ]
+    enals = [f"[C;H2:{k+7}]=[C;H1:{k+8}][C;H1:{k+9}]=[O;+0:{k+10}]" for k in b]
+    quinolines = [
+        f"[n;+0:{k}]1[c;H1:{k+7}][c;H1:{k+8}][c;H1:{k+9}][c;H0:{k+2}]2"
+        f"[c:{k+3}][c:{k+4}][c:{k+5}][c:{k+6}][c;H0:{k+1}]12"
+        for k in b
+    ]
+    waters = [f"[O;H2;+0:{k+10}]" for k in b]
+    nitro_in = ("[O;+0:41]=[N;+1:40]([O;-1:42])[c:43]1[c:44][c:45][c:46]"
+                "[c:47][c:48]1")
+    nitro_out = ("[N;H2;+0:40][c:43]1[c:44][c:45][c:46][c:47][c:48]1"
+                 ".[O;H2;+0:41].[O;H2;+0:42]")
+    lhs = ".".join(x for pair in zip(amines, enals) for x in pair)
+    rhs = ".".join(x for pair in zip(quinolines, waters) for x in pair)
+    return ReactionTemplate(
+        name="skraup_cyclisation",
+        smarts=_maybe_catalyse(f"{lhs}.{nitro_in}>>{rhs}.{nitro_out}", catalyst),
+        A=_kinetics(A, catalyst), Ea=Ea, phase="liquid",
+        orders=((1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0) if catalyst
+                else (1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0)),
+    )
+
 # bundles
 # ---------------------------------------------------------------------------
 # Small on purpose. ``alcohol_chemistry`` is one bundle because its five templates
@@ -1495,3 +1632,21 @@ def chlorine_recovery_chemistry() -> list[ReactionTemplate]:
 def bleach_chemistry() -> list[ReactionTemplate]:
     """Halogen disproportionation. ⚠ Needs ``dissociation_templates()`` beside it."""
     return [halogen_disproportionation()]
+
+def quinoline_chemistry() -> list[ReactionTemplate]:
+    """The Skraup ring closure alone. ⚠ ONE template, and it needs FOUR things.
+
+    Aniline, acrolein, nitrobenzene and sulfuric acid, all four in one liquid.
+    Leave the acid out and the flask does nothing; leave the nitrobenzene out and
+    it does nothing either, because the dihydroquinoline has nowhere to put its
+    two hydrogens and this template does not write one.
+
+    ⚠ **THE ACROLEIN IS NOT SUPPOSED TO BE CHARGED.** `skraup-route` step 1 makes
+    it in situ out of glycerol, which is the whole reason the preparation uses
+    glycerol at all -- neat acrolein is a lachrymator that polymerises in the
+    bottle, and generating it slowly is what keeps the Skraup from running away.
+    That step is `library.alcohol_dehydration`'s class and is not in this bundle,
+    because a bundle that carried both would also carry every other dehydration
+    the flask can reach.
+    """
+    return [skraup_cyclisation()]

@@ -2,48 +2,40 @@ We're building chemsim, an emergent chemistry simulator (game inspired by Nile
 Red) in d:\Claude Code Projects\Chemistry Simulator.
 
 **The plan is `MILESTONES.md`. Read it first — it is the authority on what to
-build and in what order.** **M0–M6, M8, M12, S1–S11 are DONE.**
+build and in what order.** **M0–M6, M8, M12, S1–S12 are DONE.**
 
 # ⚠ THE BASELINE IS MEASURED. DO NOT START WITH THE SUITE.
 
-**S11 RAN THE WHOLE SUITE AT THE END AND MEASURED 952 PASSED / 0 FAILED IN
-13:15.** ⚠ It was run TWICE: the first run read 951/1 and the failure was a
-standing test whose pinned number S11's own data change had moved
-(`test_the_250_450_K_FIT_WINDOW_IS_STILL_THE_GENERAL_FAULT` — see engine queue
-item 4). **952/0 would have been arithmetic, so it was re-run as one clean pass
-rather than reported as a sum.** Take that number and spend the time on content. ⚠ **It was run AFTER
-every `src/` edit, so it is a real baseline and not arithmetic** — the second
-session running that is true. (932 at S10; +19 from `test_hydroformylation.py`
-(11) and `test_wacker.py` (8), plus one added and one rewritten in
-`test_critical.py` and one rewritten in `test_phase_properties.py`.)
+**S12 RAN THE WHOLE SUITE AT THE END AND MEASURED 961 PASSED / 0 FAILED IN 13:20.**
+Take that number and spend the time on content. ⚠ **It was run AFTER every
+`src/` edit, so it is a real baseline and not arithmetic** — the third session
+running that is true. (952 at S11; the difference is `tests/test_skraup.py`.)
 
-⚠⚠ **S11 DID NOT TOUCH THE RHS EITHER** — not one line of `numerics/` or
-`vessel/`, second milestone running. **But it DID change
-`properties/physical_data.py`, and two examples moved because of it**, so
-`validation/tolerance_audit.py` WAS re-run and its finding is:
-*"NO example prints a quotable digit that moves"*, unchanged.
-⚠⚠ **AND `oil_of_vitriol`'s WRONG HEADLINE IS FIXED — engine queue item 6 is
-CLOSED**, at 1 moved line and worst 6.60e-05.
+⚠⚠ **S12 DID NOT TOUCH THE RHS AND DID NOT TOUCH A DATA TABLE EITHER** — not one
+line of `numerics/` or `vessel/`, third milestone running, and nothing under
+`properties/`. **So `validation/tolerance_audit.py` carries NO new exposure and
+was deliberately NOT re-run.** S11's finding stands unchanged: *"NO example
+prints a quotable digit that moves"*, and `oil_of_vitriol`'s headline is still
+the fixed one (1 moved line, worst 6.60e-05).
 
-⚠ **THE TWO EXAMPLES THAT MOVED, AND THEY MOVED BECAUSE ETHYLENE GOT A MEASURED
-BOILING POINT**: `competing_pathways`'s worst number goes 0.20380 → 0.20485
-(0.5%) and `named_routes` reports ethanol-hydration at **2.7% instead of 2.9%**.
-Both were measured before/after, example by example. **If you are comparing
-against a pre-S11 number in either of those, this is why.**
+⚠ **NO EXAMPLE MOVED.** S12 added a template, a class registration, a standing
+audit, a `rate_ceiling` panel and a test file. Nothing it touched is read by an
+example, so any number you are comparing against a pre-S12 one is still current.
 
-⚠ **AND THE STANDING AUDITS ARE ALL CLEAN**, re-run at the end of S11.
+⚠ **AND THE STANDING AUDITS ARE ALL CLEAN**, re-run at the end of S12.
 
 ```bash
+python validation/skraup.py                   # ⚠⚠ S12's standing audit, ~10 s. NEW
 python validation/smelting.py                 # ⚠⚠ S9's standing audit, ~1 min. RUN IT FIRST
-python validation/hydroformylation.py         # ⚠ S11's, ~1 min. NEW
-python validation/wacker.py                   # ⚠ S11's other one, ~1 min. NEW
+python validation/hydroformylation.py         # ⚠ S11's, ~1 min
+python validation/wacker.py                   # ⚠ S11's other one, ~1 min
 python validation/gas_processes.py            # S7's, ~1 min
 python validation/corpus_balance.py           # S7's other one, ~20 s. READ IT before picking
-python validation/catalog_coverage.py         # ⚠ READ THE 'BOTH' LINE: 30/173, ~15 s
+python validation/catalog_coverage.py         # ⚠ READ THE 'BOTH' LINE: 31/173, ~15 s
 python validation/game_gates.py               # the element floor's cross-check, seconds
 python tools/build_route_index.py             # the artefact nothing reads
 python validation/cell_potentials.py          # M8's standing audit, seconds
-python validation/rate_ceiling.py             # M12's, seconds. ⚠ S11 gave it a SIXTH panel
+python validation/rate_ceiling.py             # M12's, seconds. ⚠ S12 gave it a SEVENTH panel
 python validation/jacobian_bound.py           # S5's standing audit, ~1 min
 python -m ruff check src tests examples validation tools
 python -m pytest -q                           # ~13 min. ONLY after touching src/
@@ -57,10 +49,17 @@ OWN MACHINE.** Say what a long run will cost before starting one, and ask.
 
 ---
 
-# ⚠⚠ START HERE: THE ENGINE AND HONESTY QUEUE — IT STILL OUTRANKS THE TABLE BELOW
+# ⚠⚠ START HERE: THE ENGINE AND HONESTY QUEUE — AND THE TABLE BELOW IS NOW SPENT
 
-1. **⚠⚠⚠ 310 SPECIES ARE ESTIMATED BECAUSE NOBODY TYPED THEIR NAME. NEW IN S11,
-   AND IT IS THE LARGEST HONESTY ITEM ON THIS LIST.**
+⚠⚠ **S12 TOOK THE COVERAGE QUEUE'S LAST GOOD ROW.** Of the seven classes left in
+that table, **five are recorded refusals or engine prerequisites** and the two
+that are not (`fischer-tropsch`, `catalytic-air-oxidation`) are the hardest kind
+of content work. **This queue is no longer merely "outranking" the one below; it
+is where the remaining value is.** ⚠ Item 1 is still untouched after two
+sessions of naming it, and it is still the largest honesty item in the project.
+
+1. **⚠⚠⚠ 310 SPECIES ARE ESTIMATED BECAUSE NOBODY TYPED THEIR NAME. FOUND IN S11,
+   UNTOUCHED BY S12, AND IT IS THE LARGEST HONESTY ITEM ON THIS LIST.**
    `properties/physical_data.py` is GENERATED, which reads as systematic. What it
    is generated FROM is `CANDIDATES` in `tools/build_physical_data.py` — **a
    hand-typed list of 37 names** (33 before S11). Anything not on it falls to
@@ -271,20 +270,23 @@ OWN MACHINE.** Say what a long run will cost before starting one, and ask.
 
 ---
 
-# THE COVERAGE QUEUE — **STILL ALL +1, AND THE TWO BEST ROWS ARE GONE**
+# THE COVERAGE QUEUE — **THE TOP THREE ROWS ARE GONE AND WHAT IS LEFT IS ALL REFUSALS OR ENGINE WORK**
 
-S11 took `hydroformylation` and `wacker-oxidation`, which were the queue's top
-two rows for mechanic value. What is left is thinner. **Pick for the MECHANIC,
-and say which you are picking for.**
+S11 took `hydroformylation` and `wacker-oxidation`; **S12 took `skraup-cyclisation`,
+which that table called the queue's best remaining row.** ⚠⚠ **What is left is
+NOT a work queue.** Five of the seven rows below are recorded REFUSALS or engine
+prerequisites, and the two that are neither are the hardest kind of content work.
+**Read the row, not the rank, and say which mechanic you are picking for — or
+pick off the ENGINE queue above instead, which is where the value now is.**
 
 | class | its route | worth | what it is |
 |---|---|---:|---|
-| ⚠⚠ **`skraup-cyclisation`** | `skraup-route` | **+1, and it is now the queue's best row** | aniline + acrolein -> quinoline. ⚠ Step 1 (`dehydration`) is already covered, so this is genuinely the last class the route needs, and S11 CHECKED the row rather than leaving it as a warning. **Aniline on both sides is NOT the `spurious` pattern** — the nitrobenzene oxidant is REDUCED to aniline. **It balances at `3 aniline + 3 acrolein + 1 nitrobenzene -> 3 quinoline + 1 aniline + 5 water`, four aromatic rings in and four out.** That is the real Skraup stoichiometry and it is what the SMARTS has to carry: **7 reactant slots and 9 product slots** (Claus proves 24 works). ⚠ Every species resolves, and `sulfuric-acid` on both sides is `_maybe_catalyse`'s own case |
-| ~~**`oxidative-cleavage`**~~ | `vanillin-lignin` | ⚠⚠ **S11 MEASURED IT AND REFUSED IT** | The row is `coniferyl alcohol + O2 -> vanillin + water` and **it cannot be that reaction**: a C10 monolignol makes one C8 vanillin and a C2 fragment the row does not name. `corpus_balance` passes it because it balances at **8 C10H12O3 + 7 O2 -> 10 C8H8O3 + 8 H2O** — eight aromatic rings in and TEN out. Naming the missing product would be inventing chemistry inside the corpus. ⚠ **Do not re-derive this**; the audit prints it now |
-| `fischer-tropsch` | `fischer-tropsch` | +1 | `8 CO + 17 H2 -> octane + 8 H2O`, **25 slots**. The Claus template proves 24 works — but read M8 §6 on the lump that was refused |
-| `molten-salt-electrolysis` | `downs-cell` | +1 | ⚠ **A MELT is not a phase this project has** — M8's own named leftover, and it is engine work |
+| ~~**`skraup-cyclisation`**~~ | `skraup-route` | ✔ **DONE IN S12, +1** | 7 reactant slots and 9 product slots. See MILESTONES §S12 — and read its §2 before pricing ANY liquid-phase template by hand |
+| `fischer-tropsch` | `fischer-tropsch` | +1 | `8 CO + 17 H2 -> octane + 8 H2O`, **25 slots**. Claus proves 24 works and Skraup proves the pattern generalises — but read M8 §6 on the lump that was refused. ⚠ **This is now the queue's best CONTENT row**, and its mechanic is chain growth as a lump, which is M9's problem wearing a template |
+| `molten-salt-electrolysis` | `downs-cell` | +1 | ⚠ **A MELT is not a phase this project has** — M8's own named leftover, and it is ENGINE work, not content |
 | `catalytic-air-oxidation` | `p-xylene-oxidation` | +1 | ⚠⚠ **M5 REFUSED THIS CLASS** — its four rows are at least three mechanisms. **Split it before crediting it**, and only one of the four rows is runnable |
 | `direct-combination` | `vermilion-route` | +1 | ⚠⚠ **S9 MEASURED AND REFUSED IT**, and engine queue item 3 is the only thing that could change that. **Do not re-derive this** |
+| ~~**`oxidative-cleavage`**~~ | `vanillin-lignin` | ⚠⚠ **S11 MEASURED IT AND REFUSED IT** | The row is `coniferyl alcohol + O2 -> vanillin + water` and **it cannot be that reaction**: a C10 monolignol makes one C8 vanillin and a C2 fragment the row does not name. It balances at **8 C10H12O3 + 7 O2 -> 10 C8H8O3 + 8 H2O** — eight aromatic rings in and TEN out. ⚠ **Do not re-derive this**; the audit prints it |
 | `fermentation` | `abe-fermentation`, `msg-route` | +1 | ⚠ **M5 REFUSED IT** as a metabolic NETWORK rather than a transformation. That refusal still stands |
 | `separation` | `coal-tar-distillation` | +1 | ⚠ **M5 REFUSED IT**: a distillation is not a reaction class, and the feedstock has no graph |
 
@@ -294,6 +296,10 @@ coefficient vector conserves the elements, and element conservation does not
 forbid rearranging carbon skeletons — so a row can PASS and still not be the
 reaction it is written as. `vanillin-lignin` is the standing example and it cost
 S11 a template. **A pass there is not permission to write a SMARTS.**
+⚠⚠ **AND S12 IS THE CONVERSE AND IS EQUALLY IMPORTANT**: `skraup-route` step 2
+looked like the `spurious` pattern, passed the balance check, and was REAL. The
+audit prints both rows side by side now. **The check cannot decide either way;
+only reading the chemistry can.**
 
 ⚠⚠ **AND THE EIGHT THE REPORT STILL PROMISES THAT THE BALANCE AUDIT KILLS.** Do
 not start any of these without reading `corpus_balance.py`'s output on it:
@@ -322,8 +328,11 @@ repo-local `user.name`/`user.email` if that should be yours.
 
 Start by reading, in order:
 
-MILESTONES.md — the plan. ⚠ **§S11, §S10, §S9, §S8, §S7, §M8, §S1, §S3, §S4, §S5 and
-  §S6 are the ones to read**: **S11 found that a species is estimated because
+MILESTONES.md — the plan. ⚠ **§S12, §S11, §S10, §S9, §S8, §S7, §M8, §S1, §S3, §S4, §S5 and
+  §S6 are the ones to read**: **S12 found that its own source comment had priced
+  its own reaction on the WRONG STANDARD STATE — the same reaction is dS +36.65
+  as an ideal gas and dS −329.08 as a liquid, and the argument built on the sign
+  was about a basis the template does not use**; S11 found that a species is estimated because
   nobody typed its name — `physical_data.py` is generated from a hand-typed list
   of 33 — that a SELECTIVITY is a rate ratio between two templates racing for one
   substrate, that Evans-Polanyi names the WRONG major product when kinetics fight
@@ -342,9 +351,9 @@ MILESTONES.md — the plan. ⚠ **§S11, §S10, §S9, §S8, §S7, §M8, §S1, §
   wrong.**
 HANDOFF.md — what exists, and the ethos to preserve. **85 is S1, 86 is S2, 87 is
   S3, 88 is S4, 89 is S5, 90 is S6, 91 is M8, 92 is S7, 93 is S8, 94 is S9,
-  95 is S10, 96 is S11.**
+  95 is S10, 96 is S11, 97 is S12.**
 NEXT_SESSION.md — the invariants table at the bottom is the contract, and S7, S8,
-  S9, S10 and S11 each added a block to it. ⚠⚠ **S10 WITHDREW a row** and S11
+  S9, S10, S11 and S12 each added a block to it. ⚠⚠ **S10 WITHDREW a row** and S11
   added **two more LIMITS TO REMOVE rather than invariants to keep** (the
   Wacker's oxygen order; ethylene's solubility). ⚠ Read the two warnings above it
   before trusting any row.
@@ -353,178 +362,156 @@ data/catalog/README.md — the reaction-class taxonomy, including S9's two split
   S7's of `combustion`, M8's of `electrolysis`, S3's of `thermal-decomposition`
   and S4's decision NOT to un-split `roasting-to-metal`; plus
   `data/catalog/COVERAGE_REPORT.md`.
-the memory files (auto-loaded), especially chemsim-competing-templates,
-  chemsim-physical-data-sourcing, chemsim-vaporising-metal,
-  chemsim-declared-rate-orders, chemsim-catalysis-and-bounds,
-  chemsim-coverage-catalog, chemsim-corpus-balance and
-  chemsim-generated-artefacts.
+the memory files (auto-loaded), especially chemsim-skraup-standard-state,
+  chemsim-competing-templates, chemsim-physical-data-sourcing,
+  chemsim-vaporising-metal, chemsim-declared-rate-orders,
+  chemsim-catalysis-and-bounds, chemsim-coverage-catalog, chemsim-corpus-balance
+  and chemsim-generated-artefacts.
 
 STATE: Layers 0–7 complete. The engine is open-ended (no recipes), conserves
 matter, has an element/mineral floor, a still that is a saveable protocol, a plate
 column that reaches its purity target, an ionic lattice that can leave solution, a
 solvent mixture that says when it was never modelled, an energy balance it can
-report the way it reports a mass one, 45 templates, a reaction that happens INSIDE
+report the way it reports a mass one, 46 templates, a reaction that happens INSIDE
 a crystal, a gas that ATTACKS a crystal, a catalyst you have to actually put in
 the flask, a route that nothing declares, a Jacobian that cannot be probed outside
 its own state, a dial that decomposes things in the order their chemistry says
 they should, four inorganic gas processes whose whole behaviour is their
 reversibility, three smelters that take ore, coke and air to metal, a retort that
 DISTILS its metal off, **two templates that RACE for one alkene and hand back a
-selectivity nobody typed**, and **a catalyst that only exists if there is water to
-dissolve it in**. `SAVE_VERSION` is **5**.
-Coverage: **50/229 classes**, **45 templates**, **40/173 template-ready**,
-**77/173 species-ready** — and ⚠⚠ **30/173 BOTH, which is the only one of the
+selectivity nobody typed**, **a catalyst that only exists if there is water to
+dissolve it in**, and **a ring closure whose OXIDANT turns into one of its own
+reagents and goes round again**. `SAVE_VERSION` is **5**.
+Coverage: **51/229 classes**, **46 templates**, **41/173 template-ready**,
+**77/173 species-ready** — and ⚠⚠ **31/173 BOTH, which is the only one of the
 three a route can be judged on.**
 
 ---
 
-# ⚠⚠ WHAT S11 TURNED OUT TO BE: +2 ON THE INTERSECTION, AND ONE FINDING BIGGER THAN BOTH
+# ⚠⚠ WHAT S12 TURNED OUT TO BE: +1 ON EVERY COLUMN, AND THE BUG WAS IN THE COMMENT
 
-**+2 classes (48 → 50 of 229), +2 template-ready (38 → 40), +0 species-ready,
-+2 RUNNABLE (28 → 30) — all four predicted before the audit ran and all four came
-out.** ⚠ **NO ENGINE CODE CHANGED**: not one line of `numerics/` or `vessel/`,
-second milestone running.
+**+1 class (50 → 51 of 229), +1 template-ready (40 → 41), +0 species-ready,
++1 RUNNABLE (30 → 31) — all four predicted before the audit ran and all four came
+out.** ⚠ **NO ENGINE CODE CHANGED and NO DATA TABLE CHANGED**: not one line of
+`numerics/`, `vessel/` or `properties/`, third milestone running.
 
 | | before | after |
 |---|---:|---:|
-| classes with a template | 48 / 229 | **50 / 229** |
-| routes template-ready | 38 / 173 | **40 / 173** |
+| classes with a template | 50 / 229 | **51 / 229** |
+| routes template-ready | 40 / 173 | **41 / 173** |
 | routes species-ready | 77 / 173 | 77 / 173 |
-| ⚠⚠ **routes BOTH — the one to quote** | **28** | **30** |
-| templates | 43 | **45** |
+| ⚠⚠ **routes BOTH — the one to quote** | **30** | **31** |
+| templates | 45 | **46** |
 
-## ⚠⚠ 1. A SELECTIVITY IS A RATE RATIO, AND THE THERMODYNAMICS POINT THE WRONG WAY
+## ⚠⚠⚠ 1. THE LARGEST FINDING IS THAT MY OWN PRICED NUMBERS WERE WRONG, AND ONLY THE AUDIT CAUGHT THEM
 
-`hydroformylation`'s two catalog rows are ONE reaction with TWO regiochemistries.
-Two SMARTS differing only in which alkene carbon takes the formyl group, racing
-for one propene. **ONE number is fitted** — 4.8 kJ/mol of barrier difference, set
-so `exp(dEa/RT)` = 4.0 at the row's own 420 K. Everything else is a prediction.
+The block comment in `synthesis.py` was written BEFORE the audit ran, off a hand
+calculation summing `ThermoData.Hf` and `.Gf` over both sides. It said
+**dH −561.63, dG298 −572.55, dS +36.65 J/(mol K)** — and then built an argument
+on the SIGN of that dS: seven molecules become nine, so dS is positive, so heating
+the flask makes the forward direction more favourable, so giving up the reverse is
+safe. Every clause of that reads like physics. Then panel 2 printed what
+`reaction_deltas` actually returns:
 
-⚠⚠ **AND THE ENGINE'S OWN TABLES SAY THE BRANCHED PRODUCT SHOULD WIN**: it is
-9.35 kJ/mol more exothermic and takes 2.33 of every 3.33 molecules at
-equilibrium, while the real reactor makes the LINEAR one four to one. **So
-Evans-Polanyi had to be switched OFF and that is a declaration, not an
-omission** — any `alpha > 0` hands the more exothermic route the lower barrier
-and names the wrong major product with confidence.
-
-Measured, 1 L at 200 bar / 420 K / 0.1 mol cobalt / 1 h: **94.32% converted,
-n:iso 3.9523**, conservation clean, carbon closure exact.
-
-## ⚠⚠ 2. NOBODY DECLARED A MAXIMUM OPERATING TEMPERATURE AND THE FLASK HAS ONE
-
-    T / K      380     400     420     450     480     520
-    n:iso     4.569   4.234   3.952   3.543   1.867   0.760
-    kinetic   4.569   4.235   3.953   3.607   3.329   3.035
-
-Up to ~450 K the flask IS the exponential, to three figures. Above it the two
-REVERSE reactions get inside the reactor's own hour and the stable branched
-product starts winning; the conversion turns over in the same place. **A real
-cobalt oxo reactor sits at 410–450 K.**
-
-## ⚠⚠ 3. IRREVERSIBLE WOULD HAVE LIED BY A FACTOR OF 6000, AND IT WAS MEASURED
-
-Three moles of gas become one, so ln K goes +2.31 at 420 K to **−7.46 at 600**.
-One hour, each temperature's own charge:
-
-| | 1 bar, reversible | 1 bar, IRREVERSIBLE | 200 bar, reversible |
+|  basis | dH / kJ | dG298 / kJ | dS / J/(mol K) |
 |---|---:|---:|---:|
-| 420 K | 0.469% | 0.470% | 93.1% |
-| 500 K | 1.475% | 20.202% | 91.0% |
-| **600 K** | **0.013%** | **77.933%** | 53.3% |
+| ideal gas | −561.63 | −572.55 | **+36.65** |
+| pure liquid | −725.16 | −627.05 | **−329.08** |
+| difference | **−163.53** | −54.49 | **−365.73** |
 
-`alkene_hydrogenation`'s "irreversible is a claim about temperature" argument does
-NOT transfer. **Count the moles of gas on each side before declaring
-irreversible.**
+⚠⚠ **THE TWO BASES DO NOT AGREE ON THE SIGN OF dS, AND THE EASY ONE IS THE WRONG
+ONE.** The template is `phase="liquid"`, so `reaction_deltas` puts every
+condensable species on its own pure liquid — and **nine product molecules condense
+against seven reactant ones.** *"Seven molecules become nine"* is an IDEAL-GAS
+sentence and it was being used about a liquid-phase reaction.
 
-## ⚠⚠ 4. AND THE PAIR CROSSES FROM KINETIC TO THERMODYNAMIC CONTROL UNAIDED
+⚠ **THE CONCLUSION SURVIVED AND THE REASON FOR IT DID NOT.** Irreversible is
+still safe: **ln K 252.9 at 298 K, 154.2 at 450, 105.8 at 600**, and dG crosses
+zero only at **2204 K**. S11's rule — count the moles of GAS on each side before
+giving up a reverse — is answered here by there being no gas in the rate law at
+all. `test_the_two_standard_states_disagree_on_the_sign_of_dS` pins BOTH rows so
+the comment cannot rot back to what it started as.
 
-    t         1 h    10 h   4 days  6 weeks  1 year  11 years  settled
-    n:iso    3.952  3.944   3.863    3.204    1.188    0.513    0.513
-    GAS      3.304  3.296   3.229    2.678    0.993    0.4286   0.4283
+## ⚠⚠ 2. THE ROW LOOKED LIKE A BOOKKEEPING ERROR AND WAS NOT
 
-`K(n)/K(iso)` is **0.4283** and the HEADSPACE lands on it to four figures, through
-reverse barriers (`Ea - dH`) nobody typed. ⚠⚠ **The INVENTORY ratio settles at
-0.513 instead**, because the reactor holds ~1.7 mol of LIQUID product and butanal
-is the less volatile. **AN EQUILIBRIUM CONSTANT IS A STATEMENT ABOUT PARTIAL
-PRESSURES: read it against the headspace, never against the total moles.**
+`skraup-route` step 2 writes `aniline + acrolein + nitrobenzene + sulfuric-acid ->
+quinoline + aniline + water + sulfuric-acid`. **Aniline on both sides** is
+`corpus_balance`'s `spurious` shape and 17 rows in the corpus genuinely are that.
+This one is not: the aniline coming out is the NITROBENZENE, reduced. Each ring
+closure sheds two hydrogens and one nitroarene takes six:
 
-## ⚠⚠ 5. THE WACKER — AND AN ION CATALYST GATES ON THE SOLVENT, NOT ON ITSELF
+    3 x  aniline + acrolein  ->  quinoline + H2O + 2 [H]
+         PhNO2 + 6 [H]       ->  PhNH2 + 2 H2O
+    ---------------------------------------------------------
+    3 aniline + 3 acrolein + PhNO2 -> 3 quinoline + PhNH2 + 5 H2O
 
-`[Cu+2]` is priced from `ion_data` and `thermochemistry` refuses a charged species
-by name, so a flask without `electrolyte_provider()` **REFUSES** rather than
-running slowly. ⚠ **And it refuses at the `Vessel`, not at `build_network`** —
-a network is a GRAPH question and succeeds, naming the ion; pricing is one layer
-down. Measured: **40.1% in one minute, 98.2% in ten** at 400 K over 0.02 mol of
-Cu(II), against a real one-stage reactor's 30–40% per pass.
-⚠ And its first-order copper loading is RIGHT rather than provisional: the
-missing site balance is a statement about a SURFACE, and there are none in a
-liquor.
+C33H38N4O5 both sides, four aromatic rings in and four out. **7 reactant slots and
+9 product slots**, plus the acid as an eighth. Built from the electron count, and
+it balanced first time.
 
-## ⚠⚠ 6. ONE THING IN THAT TEMPLATE IS DELIBERATELY WRONG, WITH THE PRICE MEASURED
+## ⚠⚠ 3. THE OXIDANT'S REDUCTION PRODUCT IS A SUBSTRATE, AND THE NETWORK FOUND IT
 
-The real Wacker rate law is **ZERO order in oxygen**. It cannot be declared that
-way: the kinetics kernel has **no availability gate** (`_avail` serves the solid
-block only), so a reactant at order zero keeps reacting after it runs out and is
-driven negative. Cost, measured: acetaldehyde in 60 s goes **1.00 / 1.92 / 3.53 /
-5.85x** as the oxygen charge doubles, where a real reactor gives 1.00 throughout.
-⚠ **NOT an invariant to preserve — a LIMIT to remove.**
+Charge **p-toluidine** instead of aniline and change nothing else:
 
-## ⚠⚠⚠ 7. A SPECIES IS ESTIMATED BECAUSE NOBODY TYPED ITS NAME — 310 OF THEM
+    Cc1ccc2ncccc2c1   6-methylquinoline    0.666667 mol
+    c1ccc2ncccc2c1    quinoline            0.333333 mol
+    Nc1ccccc1         aniline              0.000000 mol
 
-Engine queue item 1, and it was found by a failing reactor rather than by an
-audit. See there for the table and the cost. The two things to carry:
+**Exactly 2:1, totalling the 1.0 mol of acrolein charged, with no free aniline
+left.** The three amine slots do not have to be the same molecule, so one event in
+three has to spend the aniline the nitrobenzene became. That is a real nuisance of
+the real preparation — a Skraup on a substituted aniline with nitrobenzene as the
+oxidant contaminates its product with the parent quinoline — and nobody declared
+it.
 
-* ⚠⚠ **A GENERATED FILE IS ONLY AS SYSTEMATIC AS ITS INPUT LIST.** This project
-  already knows that a generated file NOTHING READS rots. This is the other half:
-  a generated file whose SOURCE is hand-typed is not a survey, it is a
-  transcription, and it looks identical from the outside.
-* ⚠⚠ **AND THE SCOPING GUARD THAT BLOCKED THE FIX WAS RIGHT TO EXIST AND WRONG TO
-  SAY "NEVER".** `test_the_measured_table_never_overrides_a_working_joback_record`
-  failed and was RIGHT to; but its own stated reason — "the moment it stops being
-  true the azeotrope, the boiling points and the crop sizes all move at once" —
-  **is a call for measurement, not a reason never to do it.** It is now
-  `DELIBERATE_OVERRIDES`, naming the four records replaced with what each cost,
-  and still refusing anything unnamed.
+## ⚠⚠ 4. AN OPEN FLASK LOSES 98% OF THE YIELD, AND THAT IS THE PREPARATION'S OWN REASON
 
-## ⚠⚠ 8. ENGINE QUEUE ITEM 6 IS CLOSED, AND **NOT** BY RAISING `REPORT_ABS`
+A real Skraup makes its acrolein in situ from glycerol and never charges it. The
+textbook reason is that neat acrolein polymerises. The other half, measured:
 
-The obvious fix was to raise `REPORT_ABS` above 2.9e-05. It is the wrong one:
-`REPORT_ABS` is SYMMETRIC, so raising it would blind the audit to a small quantity
-**GROWING** as well as shrinking, and a residual growing under refinement is the
-defect the whole file exists to catch. The fix is a SECOND floor,
-`CONVERGING_ABS`, applied only when the tight run's value is SMALLER.
-**Direction is the information the old test threw away.**
+    k_vent      quinoline   acrolein left
+    0 (sealed)   1.000000       0.000000
+    1e-3         0.919592       0.000000
+    1e+0         0.061473       0.000000
+    1e+3         0.016883       0.000000
 
-⚠ And the number came out of a measurement the project already had rather than
-out of the audit: `NEXT_SESSION.md` records that same column swinging **2.5e-09
-to 4.5e-04 under an INERT 0.5% N2 nudge.**
+Acrolein boils at **314 K** and the reaction runs at 450. Nothing declares that;
+it is the vapour-pressure curve against the vent conductance, the same mechanic
+that gives the Claus train its sulfur condenser. ⚠ **AND IT NAMES A LIMITATION:
+this project has no reflux head that returns a vapour to the pot**, so a reaction
+at reflux has to be modelled as a SEALED flask, and the audit prints the 13.7 bar
+at 450 K that buys rather than hiding it.
 
-**PREDICTED BEFORE THE 19-MINUTE RUN AND ALL FOUR CAME OUT:** 5 moved lines → 1;
-worst 0.9985 → **6.60e-05**; the headline flips to "(below 0.1%)"; and
-`CONVERGING_ABS` fires on **ZERO tokens across all twelve cheap examples**, which
-is the safety measurement that mattered.
+## ⚠ 5. THE DECLARATIONS, EACH OF WHICH WAS A CHOICE
 
-## ⚠ 9. THE ONE `rate_ceiling` ROW WHOSE CROSSING TEMPERATURE IS A REAL STATEMENT
+* `orders=(1,1,0,0,0,0,1,1)` — first order in the amine, the enal, the oxidant and
+  the acid. **Every species it consumes keeps order 1**, S11's rule, and here
+  obeying it costs NOTHING: a real Skraup does slow as its oxidant is spent.
+  (Contrast the Wacker, where the same rule forces an oxygen order the real law
+  says is zero.) Declared orders, therefore **not reversible**. `alpha = 0.0`:
+  one reaction, not a family being ranked.
+* **The acid is `ACID_CATALYST` (hydronium), not `sulfuric-acid`** — the choice
+  `esterification` and `alkene_dehydration` already make, and it makes
+  `electrolyte_provider()` a requirement, which is the Wacker's gate again. A
+  flask with no acid makes **exactly zero**.
+* **Ea 80 kJ/mol, A 3.0e6** (3.0e7 declared, after `CATALYST_REFERENCE`). An
+  APPARENT barrier over a four-step sequence, fitted to the one thing the
+  preparation reports. One minute at 350/400/420/450/480 K: **1.85% / 36.55% /
+  69.70% / 98.40% / 100.00%**.
+* **The oxidant is stoichiometric**: 0.10 / 0.20 mol of nitrobenzene cap the yield
+  at exactly 3x and the acrolein sits there.
 
-Every other reverse it flags is high-order, so the ceiling comparison is M8's unit
-error and the column is only good for RANKING. `hydroformylation_linear_rev` is
-`butanal -> propene + CO + H2`: **one molecule falling apart**, so its `A` really
-is in 1/s. It is **2.0e26 and 1.2e27**, crossing at **969.4 / 966.8 K** — the
-third appearance of an **entropy of gas-making in a pre-exponential**
-(dS_rev = +251.6, so `exp(dS/R)` is 1.4e13 by itself). ⚠ The brief predicted
-~824 K off a 1e13 ceiling and the audit's own constant put it 145 K higher; **the
-measured number stands.**
+## 6. THE SMALL THINGS
 
-## 10. THE SMALL THINGS
-
-* ⚠ **A COLUMN THAT ANSWERS ONE QUESTION CANNOT ANSWER THE NEXT ONE**, again: the
-  oxo audit's panel 3 printed only the actual n:iso at first and read as if the
-  ARRHENIUS ratio had collapsed. It prints the kinetic column beside it now.
-* ⚠ **The oxo audit's own prose rotted TWICE inside this session** — once when
-  reversibility changed the 480/520 K numbers, once when propene's boiling point
-  changed the conversion. **Third session running.**
-* ⚠ A `⚠` inside a `print()` nearly shipped again. Docstrings fine, printed text
-  ASCII. **TWENTY-FIVE sessions running.**
+* ⚠ **A TEMPLATE THAT IS NOT IN `rate_ceiling.py` IS NOT AUDITED**, and "it is
+  obviously small" is not a measurement. It got a panel: **2.90e-18 of the
+  bimolecular ceiling**. Its crossing column is meaningless for the Deacon's
+  reason — a fourth-order `A` is in L^3/(mol^3 s).
+* `validation/skraup.py` is a new standing audit, ~10 s, seven panels. The class
+  is credited on an INTEGRATION, not on the coverage table — the S1 standard.
+* `COVERAGE_REPORT.md` and both `derived/*.psv` re-checked byte-identical across
+  `PYTHONHASHSEED`.
+* ⚠ **A `⚠` inside a `print()` did NOT ship this time.** Twenty-six sessions.
 
 ---
 
@@ -583,14 +570,20 @@ a MEASURED Tc** — better data, same window, worse number. **Engine queue item 
 
 **15. ⚠ NUCLEATION, HALF modelled.** A solid can only grow where one already is.
 
-**16. ⚠ LIQUID MERCURY IS 99.85% HELD IDEAL.**
+**16. ⚠⚠ THERE IS NO REFLUX HEAD (S12).** Nothing returns a vapour to the pot,
+so a reaction at reflux must be modelled as a SEALED flask -- and that buys a
+real pressure (13.7 bar for the Skraup at 450 K). ⚠ Measured cost of getting it
+wrong: an OPEN Skraup flask loses **98% of its yield** because acrolein boils at
+314 K. **Reported, and the audit prints the pressure rather than hiding it.**
 
-**17. ⚠ THE FLAT COLUMN IS STILL FLAT, AND THAT IS CORRECT.**
+**17. ⚠ LIQUID MERCURY IS 99.85% HELD IDEAL.**
 
-**18. ⚠ THE ELEMENT FLOOR'S SOLID HALF IS CURATED AND ITS GAS HALF IS STILL
+**18. ⚠ THE FLAT COLUMN IS STILL FLAT, AND THAT IS CORRECT.**
+
+**19. ⚠ THE ELEMENT FLOOR'S SOLID HALF IS CURATED AND ITS GAS HALF IS STILL
 REFUSED.** 33 compounds remain refused as bare elements and none blocks a route.
 
-**19. ⚠ `iron-ii-oxide`, `pyrite` AND `calcium-silicate` ARE ALL SOURCE-BLOCKED,
+**20. ⚠ `iron-ii-oxide`, `pyrite` AND `calcium-silicate` ARE ALL SOURCE-BLOCKED,
 RE-QUERIED IN S11.** FeO has no crystal Cp in CRC; pyrite has `Hfs` in WEBBOOK and
 `S0s` in nothing; **calcium silicate has nothing at all under any of its three CAS
 numbers.** All three refusals follow rules worth keeping.
@@ -650,9 +643,11 @@ NEED NOT.**
 ⚠ **CHECK WHETHER A NEW WRONGNESS IS A NEW CLASS OR A NEW MEMBER.**
 ⚠⚠ **A RECORDED REFUSAL CAN BE RIGHT ABOUT ITS MEASUREMENT AND WRONG ABOUT ITS
 SCOPE.**
-⚠⚠ **READ THE CATALOG ROW, NOT THE CLASS NAME.** S11: `skraup-route` step 2 has
-ANILINE ON BOTH SIDES, because the oxidant is reduced to it — and that row is
-REAL. `vanillin-lignin`'s, next to it on the same queue, is not.
+⚠⚠ **READ THE CATALOG ROW, NOT THE CLASS NAME.** S11 flagged `skraup-route` step
+2 for having ANILINE ON BOTH SIDES; **S12 built it and the row is REAL** — the
+oxidant is reduced to it. `vanillin-lignin`'s, next to it on the same queue, is
+not. ⚠⚠ **THE SAME SURFACE FEATURE MEANT OPPOSITE THINGS ON TWO ADJACENT ROWS,
+AND NEITHER THE CLASS NAME NOR THE BALANCE CHECK COULD TELL THEM APART.**
 ⚠⚠ **AND A BALANCE CHECK IS A NECESSARY CONDITION, NOT A SUFFICIENT ONE.**
 `corpus_balance` asks whether ANY positive coefficient vector conserves the
 elements. `vanillin-lignin` passes at **8 rings in and 10 out**. **Element
@@ -671,7 +666,7 @@ already existed.
 point would fix a solubility and it did not.**
 ⚠ **PREDICT THE NUMBER BEFORE YOU MEASURE IT.** S3 +2/+0; S4 +1/+1; S6 predicted
 14 and measured 16; M8 three for three; S7 five for five; S9 four for four; S10
-four for four and all four ZERO; **S11 four for four.**
+four for four and all four ZERO; **S11 four for four; S12 four for four.**
 ⚠ **VERIFY A CREDIT BY RUNNING IT, NOT BY READING THE CODE THAT WOULD RUN IT.**
 ⚠ **AND VERIFY A BIT-IDENTICAL CLAIM AGAINST THE EXAMPLE SET, NOT AN ARGUMENT.**
 ⚠ **A CONSTANT'S UNITS ARE WHAT MAKE ITS VALUE DEFENSIBLE.**
@@ -696,7 +691,12 @@ catalog artefacts and check them across `PYTHONHASHSEED`.
 ⚠⚠ **AND A GENERATED FILE'S PROSE ROTS EXACTLY LIKE A HAND-WRITTEN ONE.** ⚠ The
 root `README.md`'s coverage table is NOT generated — S4 corrected it, S6 again, M8
 again, S7 again, S9 again, S11 again.
-⚠ **A PHASE LABEL CARRIES A STANDARD STATE.** So does a BASIS.
+⚠⚠ **A PHASE LABEL CARRIES A STANDARD STATE — AND SO DOES A SENTENCE.** S12: the
+same reaction is **dS +36.65** as an ideal gas and **dS −329.08** as a liquid,
+163.53 kJ/mol apart in dH, because `phase="liquid"` condenses NINE products
+against SEVEN reactants. *"Seven molecules become nine, so dS is positive"* is
+an ideal-gas sentence that reads like a physical fact. **Price a template with
+`reaction_deltas`, never by summing `Hf` and `Gf` by hand.** So does a BASIS.
 ⚠ **BDF IGNORES `jac_sparsity` THE MOMENT `jac` IS CALLABLE.**
 ⚠ Windows console is cp1252: **a warning glyph inside a `print()` kills a
 script.** Docstrings fine, printed text ASCII. (TWENTY-FIVE sessions running.)
@@ -771,4 +771,8 @@ n:iso ratio IS `exp(dEa/RT)` and a test says so**; **`alpha` is 0.0 on both,
 because Evans-Polanyi would name the wrong major product**; **`wacker_oxidation`
 keeps order 1 in oxygen because the kernel has no availability gate**; and **the
 measured physical table overrides a working Joback record ONLY where
-`DELIBERATE_OVERRIDES` names it and says what it cost.**
+`DELIBERATE_OVERRIDES` names it and says what it cost**; the Skraup's three amine
+slots may be three DIFFERENT molecules, so a substituted aniline makes the parent
+quinoline too; **`skraup_cyclisation` keeps order 1 in its oxidant, and its dS is
+pinned on BOTH standard states because the comment got the sign wrong once**; and
+**a template that is not in `validation/rate_ceiling.py` is not audited.**
