@@ -72,7 +72,7 @@ def test_the_apparatus_survives_a_save_because_it_is_part_of_the_scenario():
     repo was assembled by hand in an example and could not be saved."""
     w = _still()
     blob = w.save()
-    assert blob["version"] == SAVE_VERSION == 5
+    assert blob["version"] == SAVE_VERSION == 6
     assert [e["kind"] for e in blob["scenario"]["edges"]] == [
         "vapour", "vapour", "drain"
     ]

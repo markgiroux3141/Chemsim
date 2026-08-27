@@ -79,7 +79,22 @@ from chemsim.vessel import Condition, Rig, TransferLosses, Vessel, WaitOutcome
 #    "collect the fraction boiling between 351 and 355 K" was unsayable rather
 #    than unimplemented. A version-4 save has no edges and would silently replay
 #    as an uncoupled bench, which is a different experiment; hence the bump.
-SAVE_VERSION = 5
+# 6: +``add_dropwise`` -- a scripted verb, so a version-5 reader handed a
+#    version-6 script would execute every entry BEFORE it and only then raise
+#    "unknown script entry", leaving a half-run world that looks like a
+#    completed one. A verb is a format change for the same reason ``edges``
+#    was: the failure mode of not saying so is a different experiment wearing
+#    the right name. See ``add_dropwise`` for why it could not be an Event.
+SAVE_VERSION = 6
+
+# Liquid holdup below which a dropping funnel counts as EMPTY, mol. The solver
+# is asked for atol=1e-9 per component and a meter edge drains its donor to a
+# clamped zero rather than through it (measured exact to 1e-12 at rates from
+# 0.001 to 10 mol/s), so anything at this scale is round-off and not reagent.
+# ⚠ A MOLAR FLOOR AND NOT A FRACTION OF THE CHARGE: "the funnel is empty" is a
+# statement about the funnel, and scaling it by what was put in would make the
+# same residue count as empty in a small run and as reagent in a large one.
+_DRY_MOLES = 1.0e-9
 
 
 @dataclass
@@ -601,6 +616,169 @@ class World:
                           payload={"edge": int(edge), "to": to}))
         self._seq += 1
 
+    # -- the DROPPING FUNNEL, which is a tap and a condition ----------------
+
+    def add_dropwise(
+        self,
+        edge: int,
+        rate: float,
+        watch: str,
+        until: Condition | list[Condition],
+        timeout: float,
+        close: bool = True,
+        **kw,
+    ) -> dict:
+        """Open a metered tap, run until a condition holds, then shut it.
+
+        **"Drip the acid in slowly, and stop when the pot reaches 320 K."** The
+        plumbing this rides on is not new -- a ``meter`` edge has been a dropping
+        funnel since Layer 5, it carries the donor's sensible heat, and it stops
+        of its own accord when the funnel runs dry. What was missing is the same
+        thing that was missing from a distillation before ``collect_fraction``:
+        **a way to say it that survives being saved.**
+
+        ⚠⚠ **THIS IS NOT SUGAR OVER ``wait_until`` FOLLOWED BY
+        ``now(SET_EDGE)``, AND THE DIFFERENCE IS MEASURED.** An ``Event`` carries
+        an absolute ``t``, so scheduling the tap-close after a discovered instant
+        bakes THIS run's crossing into the recipe. Measured on a nitration with a
+        1.0 mol charge, the pot reached 340 K at t=20.351135 s and the recipe
+        recorded ``set_edge`` at that timestamp; replayed against a **2.0 mol**
+        charge the same pot reached 340 K at t=31.515137, and ``schedule``
+        refused the recorded event as being in the past:
+
+            ValueError: cannot schedule 'set_edge' at t=20.35113461689465 --
+            the world is already at t=31.515137100210648
+
+        A loud refusal is the good case. The bad case is a crossing that lands a
+        hair EARLIER on the replay, where the event is still in the future and
+        the tap shuts at an instant this run never found. Either way the artifact
+        has stopped being a recipe and become a transcript -- exactly the fork
+        argued out in full on ``script``, and settled there the same way.
+
+        So this stores the CONDITION and never the instant, and both taps are
+        turned through ``_set_edge`` rather than through the queue.
+
+        Parameters
+        ----------
+        edge
+            index of the ``meter`` edge to open. ⚠ It must BE a meter edge: a
+            drain's ``k`` is a reciprocal residence time and a vapour edge's is
+            mol/(bar s), so opening one of those "at 0.01 mol/s" would be a
+            number in the wrong units wearing the right name.
+        rate
+            mol/s to open the tap to, while the addition runs.
+        watch
+            which vessel the conditions are read on. Usually the POT (drip until
+            it is hot enough) but a funnel is just as legitimate a thing to watch
+            -- ``consumed(ACID, 1e-6)`` on the funnel is "add all of it", and it
+            is a condition rather than a duration for the same reason everything
+            else here is.
+        until, timeout
+            as ``wait_until``. The timeout is required, and it is what "drip for
+            600 s" is: pass a condition that cannot fire and read ``timed_out``.
+        close
+            shut the tap at the end. ``False`` leaves it running, which is how a
+            two-stage addition is written -- drip until warm, then keep dripping
+            at a lower rate.
+
+        Returns what happened, as data. ⚠⚠ **``ran_dry`` IS READ OFF WHAT IS
+        LEFT IN THE FUNNEL, NOT OFF A SHORTFALL IN THE DELIVERY**, and the first
+        draft got that wrong in a way worth recording. The obvious test is
+        ``delivered < rate * elapsed``, and it does not survive contact with a
+        real funnel: measured on the nitration below, ``rate * elapsed`` was
+        0.40702 mol and the donor's liquid inventory fell by **0.40799** --
+        MORE, not less, because a funnel with a headspace also evaporates into
+        it. Two numbers that each have their own error term cannot be subtracted
+        to decide a third thing. ``donor_left`` is a direct measurement of the
+        question actually being asked, so that is what the flag reads.
+
+        ⚠ ``delivered`` is still reported, and it is the donor's own liquid
+        inventory falling -- which is the tap PLUS anything else that took
+        liquid out of that vessel. It is a diagnostic, not the tap's throughput.
+        A funnel emptying early is an ordinary bench event either way, and the
+        honest answer is to say so rather than to report the rate that was asked
+        for.
+        """
+        want = [until] if isinstance(until, Condition) else list(until)
+        if not want:
+            raise ValueError("add_dropwise needs at least one condition")
+        if rate <= 0.0:
+            raise ValueError(
+                f"a dropwise addition needs a positive rate, got {rate}. A tap "
+                "opened to zero delivers nothing and would sit here until the "
+                "timeout; if that is what you mean, say it with SET_EDGE"
+            )
+        if timeout <= 0.0:
+            raise ValueError(f"timeout must be positive, got {timeout}")
+        if watch not in self.vessels:
+            raise KeyError(f"no vessel {watch!r}; have {sorted(self.vessels)}")
+        c = self._edge(int(edge))
+        # ⚠ By NAME, not by ``rig_integrator``'s integer. Layer 6 already
+        # spells edges as the strings ``EDGE_KINDS`` holds, and reaching
+        # into Layer 4 for a constant to compare against would be the one
+        # place this file knew an edge kind was an int.
+        if c.kind_name != "meter":
+            raise ValueError(
+                f"edge {edge} is a {c.kind_name} edge ({c.describe()}), and a "
+                f"dropwise addition needs a METER edge. Their conductances are "
+                f"not the same quantity -- a meter's k is mol/s, a drain's is a "
+                f"reciprocal residence time and a vapour edge's is mol/(bar s) "
+                f"-- so opening this one at {rate:g} mol/s would be a number in "
+                f"the wrong units. Declare EdgeSpec(kind='meter', ...)"
+            )
+
+        self._script.append({
+            "do": "add_dropwise",
+            "edge": int(edge), "rate": float(rate), "watch": watch,
+            "until": [w.to_dict() for w in want],
+            "timeout": float(timeout), "close": bool(close),
+        })
+        return self._add_dropwise(edge, rate, watch, want, timeout, close, **kw)
+
+    def _add_dropwise(
+        self, edge, rate, watch, want, timeout, close, **kw
+    ) -> dict:
+        """``add_dropwise`` without the script entry -- what replay re-executes."""
+        c = self._edge(int(edge))
+        donor = self.vessels[c.a]
+        before = _liquid_moles(donor)
+
+        was = c.k
+        self._set_edge(edge, rate)
+        out = self._wait_until(watch, want, timeout, **kw)
+        if close:
+            self._set_edge(edge, 0.0)
+
+        left = _liquid_moles(donor)
+        delivered = before - left
+        nominal = rate * out.elapsed
+        self._log.append(
+            f"t={self.t:.1f} add_dropwise edge {edge} ({c.a}->{c.b}) at "
+            f"{rate:g} mol/s for {out.elapsed:.1f} s: {delivered:.4f} mol "
+            f"delivered; {out.describe()}"
+        )
+        return {
+            "edge": int(edge), "rate": float(rate), "from": c.a, "to": c.b,
+            "was": float(was), "elapsed": out.elapsed,
+            "fired": out.fired, "timed_out": out.timed_out,
+            "delivered": delivered, "nominal": nominal,
+            "donor_left": left,
+            # ⚠ MEASURED, not inferred from a shortfall -- see the docstring.
+            "ran_dry": left <= _DRY_MOLES,
+            "state": out.state,
+        }
+
+    def _set_edge(self, edge: int, k: float) -> None:
+        """Open or shut a tap NOW, without going through the queue.
+
+        The twin of ``_swap`` and it exists for the same reason: the instant a
+        dropwise addition ends was DISCOVERED by a root solve, and an ``Event``
+        carries an absolute ``t``. See ``add_dropwise``.
+        """
+        self._apply(Event(t=self.t, seq=self._seq, kind=SET_EDGE,
+                          payload={"edge": int(edge), "k": float(k)}))
+        self._seq += 1
+
     # -- observation ---------------------------------------------------------
 
     @property
@@ -767,6 +945,16 @@ class World:
                     float(entry["timeout"]),
                     **kw,
                 )
+            elif do == "add_dropwise":
+                # ⚠ Re-DERIVED from the condition, not replayed from a
+                # timestamp: the instant the tap shuts is a root and this run
+                # has to find its own. See ``add_dropwise``.
+                self.add_dropwise(
+                    int(entry["edge"]), float(entry["rate"]), entry["watch"],
+                    [Condition.from_dict(c) for c in entry["until"]],
+                    float(entry["timeout"]), bool(entry.get("close", True)),
+                    **kw,
+                )
             elif do == "collect_fraction":
                 # ⚠ Re-DERIVED from the band, not replayed from a timestamp: the
                 # cut points are roots and this run has to find its own.
@@ -784,6 +972,17 @@ class World:
 # vessel <-> dict. By field NAME, never by array position, so that a future
 # phase can be added without silently shifting every other field.
 # ---------------------------------------------------------------------------
+
+
+def _liquid_moles(v: Vessel) -> float:
+    """Total moles in BOTH liquid layers -- what a funnel has left to give.
+
+    Both layers, because a ``meter`` edge moves both in the proportion the donor
+    holds them (see ``rig_integrator``), so a figure taken from layer 1 alone
+    would under-report a funnel holding two.
+    """
+    st = v.state()
+    return float(sum(st.n_liquid.values()) + sum(st.n_liquid2.values()))
 
 
 def _dump_vessel(v: Vessel) -> dict:

@@ -411,8 +411,11 @@ def test_the_save_format_had_to_move_and_says_so():
     ⚠ It has moved again since, to 5, for the APPARATUS -- ``Scenario.edges``.
     Same reasoning one layer out: a v4 save has no edges and would replay as an
     uncoupled bench, i.e. a different experiment, so it is refused rather than
-    defaulted."""
-    assert SAVE_VERSION == 5
+    defaulted. And again to 6 for ``add_dropwise``, where the failure is worse:
+    an unknown SCRIPT VERB is only discovered part-way through the walk, so a
+    v5 reader would run every entry before it and stop half-way through the
+    recipe with a world that looks finished."""
+    assert SAVE_VERSION == 6
     w = _boil_world()
     w.step(1.0)
     saved = w.save()

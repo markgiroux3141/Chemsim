@@ -273,11 +273,11 @@ def test_the_save_version_refuses_an_older_layout():
     w = World(Scenario(feed_species=[WATER], templates=[],
                        vessels={"flask": spec}))
     blob = w.save()
-    assert blob["version"] == SAVE_VERSION == 5
+    assert blob["version"] == SAVE_VERSION == 6
     assert "script" in blob
     # the apparatus travels with the scenario, empty or not
     assert blob["scenario"]["edges"] == []
-    for older in (3, 4):
+    for older in (3, 4, 5):
         stale = dict(blob, version=older)
         with pytest.raises(ValueError, match="save format version"):
             World.load(stale)
