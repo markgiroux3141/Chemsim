@@ -2,68 +2,221 @@ We're building chemsim, an emergent chemistry simulator (game inspired by Nile
 Red) in d:\Claude Code Projects\Chemistry Simulator.
 
 **The plan is `MILESTONES.md`. Read it first — it is the authority on what to
-build and in what order.** **M0–M6, M8, M12, S1–S13 and G1–G6 are DONE.**
+build and in what order.** **M0–M6, M8, M12, S1–S13, G1–G6 and C1 are DONE.**
 
-⚠⚠⚠ **THE G-SERIES IS COMPLETE. THE ARC IS THE C-SERIES — CONTENT — AND G3 HANDED
-IT A WORK ORDER INSTEAD OF A BACKLOG.** `data/catalog/PLAYABLE.md` §8 names **21
-routes that are already FED from natural materials and blocked only on a template
-or a price**, and granting all 21 takes playability from **12 to 37** — the
-G-series GOAL's own ~40. The other 116 unrunnable routes move a coverage number
-and **no player can reach them** until something in the 21 lands.
-⚠⚠ **READ `data/catalog/PLAYABLE.md` §8 BEFORE PICKING A TEMPLATE.** It is the
-only ranking in the repo that is about playability rather than class coverage, and
-the two lists disagree.
+# ⚠⚠⚠ START HERE: THE FULL SUITE IS OWED AND WAS NOT RUN. RUN IT FIRST.
 
-# ⚠ THE BASELINE IS MEASURED. DO NOT START WITH THE SUITE.
-
-**G6 RAN THE WHOLE SUITE AND MEASURED 1045 PASSED / 0 FAILED IN 23:03, AND G3
-ADDED 18 WITHOUT TOUCHING `src/`.** The expected count is **1063**. Take that
-number and spend the time on content.
-⚠⚠ **G3 TOUCHED NO `src/` FILE AT ALL**, so it did not run the full suite and did
-not owe `tolerance_audit.py`. What it changed is `tools/catalog.py` (one function
-added), `validation/granularity.py` (a duplicate removed), and
-`validation/catalog_coverage.py` (a pointer paragraph). ⚠ Verified instead by the
-five suites that import those: **86 passed in 2:36**
-(`test_playable` + `test_granularity` + `test_hydroformylation` +
-`test_protonation` + `test_ui`), `granularity.py` still reporting **31 + 5**
-through the now-shared DAG walk, and `COVERAGE_REPORT.md` moving exactly **2
-lines** — which also re-confirms S3's byte-stability fix.
-⚠ So the last CLEAN full-suite figure is still G6's 23:03, and every warning in
-§S13 about `tolerance_audit.py` still stands: its last measured state is S13's.
-
-⚠ **G6 TOUCHED NO RHS AND SHIFTED NO DATA TABLE.** The encounter plateau lives at
-SETUP, exactly where `hammett_rho` does, and **everything under the plateau is
-asserted BIT-IDENTICAL** — so `tolerance_audit.py` was not owed and was NOT
-re-run. Its last measured state is S13's and every warning in §S13 about it still
-stands.
-
-⚠⚠⚠ **AND THE TWO `--durations=25` LISTS HAVE NOW BEEN DIFFED, WHICH GIVES
-THE THING TWO NEXT_PROMPTS ASKED FOR: A MEASURED NOISE FLOOR.**
-
-                        G5        G6      change
-    top 25           803.1 s   819.8 s   59.6% -> 59.3% of the suite
-    test_still x6    402.2 s   415.8 s   29.8% -> 30.1%
-    the ONE RIG test 164.1 s   176.9 s   **+7.8%**
-    catalysis         74.1 s    75.1 s   +1.4%
-    burner @rtol 1e-8 52.5 s    52.8 s   +0.7%
-    the long tail     0.55 s    0.55 s   **IDENTICAL to two decimals**
-                                         (999 tests then, 1020 now)
-
-⚠⚠ **SO THE SHAPE IS STABLE AND THE NOISE FLOOR IS ~8% ON THE BIGGEST SINGLE
-ROW AND ~1% ON THE MID ROWS.** That is what makes the list an instrument: the
-suite's +35 s between G5 and G6 is **noise plus 16.6 s of new test files** and
-must not be attributed to anything, while the S12->S13 eight minutes is **20x
-outside** the floor and remains a real unexplained regression.
-⚠ It still does NOT diagnose S12->S13 — no list exists on either side of that
-commit — and the cheap next step is unchanged: a `git stash`-and-rerun of
-`--durations=25` across S13's data commit. **What has changed is that the answer
-would now be readable, because the measurement's own repeatability is known.**
+**C1 CHANGED `src/` AND SHIPPED WITHOUT RUNNING THE SUITE. THAT WAS A DELIBERATE
+SCHEDULING CALL BY THE USER, NOT AN OVERSIGHT, AND CLEARING IT IS THIS SESSION'S
+FIRST JOB.**
 
 ```bash
-python validation/saturation.py                # ⚠ G6's, 27 s. NEW -- read panels 1, 3 and 5
-python validation/protonation.py               # G5's, 20 s. ⚠ REWRITTEN BY G6 -- panels 3 and 5
-python validation/ring_deactivation.py         # G2's, 14 s. ⚠ REWRITTEN BY G6 -- panels 1 and 5
-python validation/granularity.py               # G4's, 18 s. read panels 3 and 4
+python -m pytest -q --durations=25          # ~23 min. EXPECTED: 1081 passed / 0 failed
+```
+
+⚠ The arithmetic: G6 measured a CLEAN **1045 passed / 0 failed in 23:03**. G3
+added **18** (`test_playable`) and C1 added **18** (`test_vitriol`), so **1081**
+is the number to expect. ⚠⚠ **DO NOT take 1081 on trust and move on** — this is
+the first session in the arc to ship an unrun suite, and the whole point of the
+figure is that somebody ran it.
+⚠ **`--durations=25` IS PART OF THE COMMAND.** G5 and G6 both produced one, the
+two were diffed, and that gave the project a measured noise floor (~8% on the
+biggest single row, ~1% on the mid rows, IDENTICAL to two decimals in the
+1000-test tail). A third list keeps the instrument alive and is free.
+
+⚠⚠ **`tolerance_audit.py` IS ASSERTED NOT OWED AND C1 DID NOT RUN IT.** No RHS
+edit, no data table moved; the new template is additive and every pre-existing
+network builds the same reactions from the same constants. Its last measured
+state is still **S13's**, and every warning in §S13 about it still stands.
+
+**What C1 DID run, so it does not need repeating:** `test_vitriol` 18,
+`test_playable` 18, `test_granularity` + `test_ui` + `test_hydroformylation` +
+`test_protonation` 68 — **104 passed** — plus `validation/vitriol.py` (18 s),
+`catalog_coverage.py`, `corpus_balance.py` (headline UNCHANGED at 75
+unbalanceable across 61 routes), `granularity.py` (**32 + 5**),
+`tools/build_playable.py` and `tools/build_route_index.py`. Ruff clean.
+
+---
+
+# ⚠⚠⚠ WHAT C1 TURNED OUT TO BE
+
+**C1 was the first C-series item, taken off `data/catalog/PLAYABLE.md` §8 rather
+than off the coverage curve: oil of vitriol from green vitriol, a NATURAL
+mineral. 12 → 14 playable, 36 → 37 runnable, 52/229 → 53/236 classes, 82 → 83
+species-ready, 41 → 42 template-ready, 31 → 32 BOTH. HANDOFF §105, MILESTONES
+§C1, NEXT_SESSION's last block.**
+
+## ⚠⚠⚠ 1. THE WORK ORDER'S TWO BLOCKERS WERE BOTH WRONG, IN THE SAME DIRECTION
+
+PLAYABLE §8 priced `vitriol-distillation` at +2 and named two blockers: the
+`hydrolysis` class and a refused `iron-ii-oxide`.
+
+* **The roast has been in the engine since M6.** `properties/solid_state.py`
+  declares `2 FeSO4 -> Fe2O3 + SO2 + SO3` and it RUNS — 1.9e-07 mol at 700 K,
+  complete by 1000 K, exactly 0.05 mol of each product from 0.10 of the mineral,
+  against a catalog condition column reading *"retort, red heat"* that nobody had
+  ever told the engine.
+* **`iron-ii-oxide` WAS NEVER IN THE REACTION.** FeO does not survive red heat and
+  `mineral_data` refuses it on the crystal Cps CRC does not tabulate. So the route
+  was blocked on a datum for a species its own chemistry never makes. Correcting
+  the row alone moved species-ready **82 → 83**.
+
+⚠⚠ *A refused species in a route's BLOCKER list may be a corpus error rather
+than a curation job — look for that shape again before scheduling a data job.*
+
+⚠⚠⚠ **AND THE LANDMINE HAD BEEN WRITTEN DOWN THREE MILESTONES EARLIER WITH ITS
+TRIGGER NAMED.** S3, in `data/catalog/README.md`: *"the day `hydrolysis` is
+credited, `vitriol-distillation` goes template-ready on a step whose stated
+product does not exist in the run — whoever builds it owes this row a second
+look."* **A recorded landmine with a named trigger is the cheapest documentation
+this project writes**, and it fired exactly as designed.
+
+## ⚠⚠ 2. `hydrolysis` WAS AN OUTCOME LABEL SITTING NEXT TO SEVEN COUNTER-EXAMPLES
+
+Eight rows, the catalog's second-biggest class after `proton-transfer` — while
+the taxonomy already carried `amide-`, `ester-`, `epoxide-`, `glycoside-`,
+`nitrile-`, `isocyanate-` and `disproportionation-hydrolysis`. Everything it knew
+how to name had been named; this was the bin for the rest. Split eight ways;
+**denominator +7, numerator +1**. S7's shape: a split that lowers the headline is
+a split working.
+⚠ `oleum-hydrolysis` is the near-miss and is deliberately NOT credited —
+`[SX3]` against disulfuric acid's two `[SX4]` sulfurs, asserted.
+⚠⚠ And `furfural-route` 1's class was **DECIDED rather than derived** and then
+measured both ways: it is `pentosan-hydrolysis` and not the covered
+`glycoside-hydrolysis`, because the row is fragility 29b and no template can ever
+match it — **and it costs zero either way today**, because the route needs three
+more classes. *A false credit is cheapest to refuse before it can pay.*
+
+## ⚠⚠⚠ 3. THE CEILING IS EMERGENT AND THE CONDENSER BEATS IT
+
+`dH -97.53 kJ/mol`, `dS -146.8 J/(mol K)`, three EXPERIMENTAL formation rows, one
+division: **`ln K = 0` at 664.3 K**. Dry-gas conversion falls **46.8% → 1.6%**
+between 600 K and 800 K, and it matches the closed-form root of the same K to
+three figures at every rung — *which is the point of that check: a conversion
+falling with heat is also what a solver that stopped early looks like.*
+⚠ **With a mole of liquid water present it is 100.000% up to 600 K**, where
+`ln K` is only 1.89, because the acid boils at 610 K and leaves the gas as fast
+as it forms. **Le Chatelier, done by a phase change the template knows nothing
+about.**
+
+## ⚠⚠ 4. THE RATE LAW IS APPARENT, AND THE DECLARATION THAT WAS REFUSED IS THE INTERESTING HALF
+
+`A = 1e10` pinned at the collision limit's order; `Ea = 23.6 kJ/mol` putting
+`k(298)` at the ORDER of the reported effective gas-phase constant — ⚠ **RECALLED,
+used as an order of magnitude and NOT as a value**, which is only defensible
+because the conversion is **100.000% at A = 1e6, 1e8, 1e10 and 1e11**.
+⚠⚠ **`orders=(1.0, 2.0)` IS THE MORE CORRECT RATE LAW AND WAS REFUSED**, because
+a declared order may not be `reversible`. The choice was the right ORDER against
+the right REVERSE; the order is forgiven and the reverse is the 664 K mechanic.
+*Between two wrong-in-different-ways declarations, keep the one whose error is
+MEASURED to be invisible.*
+⚠ The LIQUID channel was built and refused too: identical conversion to six
+figures, **+2.9e-06 mol** of sulfur the projection cannot settle, and no second
+sourced constant to put on the arrow.
+
+## ⚠⚠⚠ 5. C1 DISSOLVED THE ONLY EVIDENCE FOR ONE OF G3's FOUR SCORING RULES
+
+                     shelf=target   +byproducts   +target unioned in
+    needs=roles      G3 10 / C1 11  G3 13 / C1 15  G3 14 / C1 15
+    needs=order      G3  8 / C1 10  G3 12 / C1 14  G3 12 / C1 14
+
+G3's rule 3 was justified by 13 against 14. **Every cell of the byproducts/both
+column is now equal.** The route the rule bought was `saltpetre-nitric`, whose
+sulfuric acid came from the lead chamber's fouling row, and C1 gave the acid a
+route of its own.
+⚠⚠ **THE RULE IS KEPT, AND NOT OUT OF SENTIMENT**: it is a statement about
+`route_roles` — still true, still asserted — and its measured cost is a property
+of TODAY'S corpus. *A rule justified by a difference must not be reverted the day
+the difference goes away; that is how a corrected instrument un-corrects itself.*
+
+## ⚠⚠⚠ 6. GRANTING A ROW MADE THE WORK ORDER LONGER, AND THE CHEAPEST ROW IS NOW A MINERAL
+
+    fed but unrunnable   21 -> 24        ceiling  37 -> 41
+    need NO template      2 -> 4         iron-gall-ink  +2 -> +1
+    nitrogen-dioxide     +2 -> +1        sulfuric-acid  no longer a blocker
+
+Sulfuric acid on the shelf FED four routes that were not fed before (`guncotton`,
+`hmf-route`, `phosphoric-wet`, `superphosphate`). *A work order derived from a
+fixed point is not a burndown list.*
+⚠⚠⚠ **`calcium-phosphate` IS WORTH +2 AND NEEDS NO CHEMISTRY AT ALL** — phosphate
+rock, already on the NATURAL list, refused a price, and both routes it blocks use
+only covered classes. **The cheapest row in the whole work order is now a data
+job.**
+⚠ The lever finding survived losing its own example: `nickel` and `benzaldehyde`
+block three routes each at **+1**; `aluminium` blocks **ONE** at **+2**.
+*A finding that survives having its example removed was about the shape.*
+
+## ⚠⚠⚠ 7. THE CHEAPEST REPRODUCTION OF ENGINE QUEUE ITEM 15 IN THE REPO
+
+A ONE-POT flask (green vitriol + water), default tolerance:
+
+     800 K, 2000 s     0.4 s      liquid layer 3.4e-17 mol
+     900 K,  500 s    44.4 s      liquid layer 6.6e-17 mol
+    1000 K,  200 s    > 9 MINUTES, did not finish
+
+**Six species and one template**, against the burner's 52 s on a full chamber.
+That is item 15's `LAYER_REABSORB` thrashing on a network small enough to
+instrument, and it is the first cheap handle anyone has had on it. ⚠ Not the
+template's bug: the same charge with no water is 0.3 s.
+⚠ **AND THE PANEL WAS BUILT TO CONFIRM THE 664 K CEILING AND REFUTED IT.** In
+66 bar of steam the acid is still favoured **3.35:1** at 800 K (`K·p_H2O` = 3.33);
+what kills the one pot is the sulfate moving **0.285%** in 2000 s. **The
+two-vessel apparatus is right for a reason that is half chemistry and half
+numerics**, and `validation/vitriol.py` panel 7 says so rather than telling the
+clean thermodynamic story.
+
+---
+
+# ⚠ WHERE THE WORK ORDER STANDS: `data/catalog/PLAYABLE.md` §8, RE-GENERATED
+
+**24 routes are already FED from natural materials and blocked only on a template
+or a price. Grant all 24 and playability goes 14 → 41.** Read §8 before picking
+anything; it is the only ranking in the repo tied to the GOAL, and it disagrees
+with `COVERAGE_REPORT.md`'s greedy curve.
+
+    +3  hall-heroult          molten-salt-electrolysis  -- ENGINE work (a MELT is
+                                not a phase this project has) and cryolite is
+                                refused a price. The top row is not the cheap one
+    +2  abe-fermentation      fermentation  -- M5 REFUSED this class as a
+                                metabolic network. Read that refusal first
+    +2  blast-furnace         slagging  -- blocked TWICE on SOURCES
+    +2  **calcium-phosphate** NOT A TEMPLATE AT ALL. One mineral price unlocks
+                                `phosphoric-wet` AND `superphosphate`, both of
+                                which use only covered classes. ⚠⚠ **THE CHEAPEST
+                                ROW IN THE TABLE AND IT IS A LOOKUP**
+    +1  hypochlorite-bleach   a refused `sodium-hypochlorite` price, nothing else
+    +1  pyrite-roasting       `iron-disulfide` refused -- engine queue 14's own
+                                source-blocked entry (Hfs in WEBBOOK, S0s in
+                                nothing). **RE-QUERYING IT IS NOT WORK; READ THE
+                                REFUSAL FIRST**
+    +1  x18 more
+
+⚠⚠ **`calcium-phosphate` IS THE OBVIOUS C2 AND IT SHOULD STILL BE PRICED BEFORE
+IT IS SCHEDULED.** It is phosphate rock — bone ash and apatite — and the question
+is whether `chemicals` / WEBBOOK / CRC hold an Hfs AND an S0s for the same phase.
+`pyrite`'s refusal is the standing example of that check coming back NO, and
+`chemsim-physical-data-sourcing` records that `chemicals` will hand back your own
+Joback estimate as "data". **Bound it before building it — twenty-six times now.**
+⚠ And note what C1 measured: the refusal that blocks it is a **playability**
+blocker worth +2, which is more than any single template row below `blast-furnace`.
+
+⚠⚠⚠ **AND THE HIGHEST-VALUE ITEM G3 NAMED IS NOW WORTH HALF WHAT IT WAS.**
+A step turning saltpetre into NOx was priced at +2 because it unlocked
+`lead-chamber` and then `saltpetre-nitric` off its acid. C1 gave
+`saltpetre-nitric` its acid, so **NOx is worth +1 now**. Fragility 31 still
+stands as a corpus gap — the chamber is blocked on a pinch of NO2 nothing
+reachable makes — but it is no longer the top of the file.
+
+---
+
+# THE STANDING AUDITS
+
+```bash
+python validation/vitriol.py                   # ⚠ C1's, 18 s. NEW -- read panels 3, 5 and 7
+python validation/saturation.py                # G6's, 27 s. read panels 1, 3 and 5
+python validation/protonation.py               # G5's, 20 s. REWRITTEN BY G6 -- panels 3 and 5
+python validation/ring_deactivation.py         # G2's, 14 s. REWRITTEN BY G6 -- panels 1 and 5
+python validation/granularity.py               # G4's, 18 s. ⚠ NOW 32 + 5. panels 3 and 4
 python validation/dropwise.py                  # G1's, 78 s
 python validation/boiling_points.py            # S13's, 2 s. READ PANEL 2
 python validation/skraup.py                    # S12's, ~10 s
@@ -71,23 +224,25 @@ python validation/smelting.py                  # S9's, ~1 min
 python validation/hydroformylation.py          # S11's, ~1 min
 python validation/wacker.py                    # S11's other one, ~1 min
 python validation/gas_processes.py             # S7's, ~1 min
-python validation/corpus_balance.py            # S7's other one, ~20 s. READ IT before picking
-python validation/catalog_coverage.py          # ⚠ 'BOTH' is 31/173, ~9 s. ⚠⚠ AND IT IS A
-                                               #   LOWER BOUND TOO -- G4 measured 31+5
+python validation/corpus_balance.py            # S7's other one, ~20 s. ⚠⚠ C1 measured that
+                                               #   it CANNOT decide a wrong row: the old
+                                               #   vitriol row balanced too
+python validation/catalog_coverage.py          # ⚠ 'BOTH' is 32/173, ~9 s. ⚠⚠ AND IT IS A
+                                               #   LOWER BOUND TOO -- G4 measured 32+5
 python validation/physical_estimation.py       # S13 took its panel 3 to n=254
 python validation/game_gates.py                # the element floor's cross-check, seconds
 python tools/build_playable.py                 # ⚠⚠ G3's, ~50 s. WRITES
                                                #   data/catalog/PLAYABLE.md -- it RUNS
-                                               #   the deep chain. 12/173 playable
+                                               #   the deep chain. ⚠ 14/173 playable
 python tools/build_route_index.py              # the artefact nothing reads -- ⚠ and
                                                #   PLAYABLE is the one that now HAS tests
 python validation/cell_potentials.py           # M8's standing audit, seconds
-python validation/rate_ceiling.py              # ⚠ G6 moved its fastest activated
+python validation/rate_ceiling.py              # G6 moved its fastest activated
                                                #   nitration by EIGHT DECADES
 python validation/jacobian_bound.py            # S5's standing audit, ~1 min
 python -m ruff check src tests examples validation tools
-python -m pytest -q                            # ONLY after touching src/
-python validation/tolerance_audit.py           # ~10 min. After touching the RHS **or any data table**
+python -m pytest -q --durations=25             # ⚠⚠⚠ OWED. ~23 min, expect 1081
+python validation/tolerance_audit.py           # ~10 min. ⚠ NOT owed by C1 -- see above
 ```
 
 ⚠ **THE SUITE AND THE TOLERANCE AUDIT ARE MINUTES OF SATURATED CPU ON THE USER'S
@@ -98,189 +253,31 @@ OWN MACHINE.** Say what a long run will cost before starting one, and ask.
 CONSOLE IS cp1252 AND THE WARNING GLYPH CANNOT BE PRINTED.** Every audit in this
 repo keeps `⚠` in docstrings and comments and out of `print`, and that is not a
 style choice — `python validation/x.py` dies with `UnicodeEncodeError` mid-panel.
-⚠⚠ **`validation/protonation.py` HAD EXACTLY ONE IN A PRINTED STRING AND DIED AT
-PANEL 3**, so G5's panels 4–7 could not be read on this machine at all; G6 fixed
-it. ⚠ **A `build_network` NOTICE is printed too**, so a glyph in one crashes every
+⚠⚠ **A `build_network` NOTICE is printed too**, so a glyph in one crashes every
 audit and example that reaches that reaction.
+⚠⚠ **AND IT BITES `python -` HEREDOCS TOO (C1):** a one-off probe that prints a
+line out of `NEXT_PROMPT.md` dies the same way unless `PYTHONIOENCODING=utf-8` is
+set. Cheaper to set it than to discover it.
 
----
+⚠⚠ **THE `--durations=25` LISTS ARE AN INSTRUMENT NOW, AND THE NOISE FLOOR IS
+MEASURED.** G5 against G6:
 
-# ⚠⚠⚠ WHAT G3 TURNED OUT TO BE
+                        G5        G6      change
+    top 25           803.1 s   819.8 s   59.6% -> 59.3% of the suite
+    test_still x6    402.2 s   415.8 s   29.8% -> 30.1%
+    the ONE RIG test 164.1 s   176.9 s   **+7.8%**
+    catalysis         74.1 s    75.1 s   +1.4%
+    burner @rtol 1e-8 52.5 s    52.8 s   +0.7%
+    the long tail     0.55 s    0.55 s   **IDENTICAL to two decimals**
+                                         (999 tests then, 1020 now)
 
-**G3 was the last G-series item: a generated standing audit answering the one
-question no existing artefact asks — *what can a player make, starting from
-what?* The deliverables are `tools/build_playable.py`, the generated
-`data/catalog/PLAYABLE.md` (326 lines, ~50 s because it RUNS its deepest chain)
-and `tests/test_playable.py` (18 tests). G6's history is in HANDOFF §103.**
-
-    tier 1  from the ground     8      runnable but unfed   24
-    tier 2  one step up         3      not runnable        137
-    tier 3  two steps up        1                          173
-
-## ⚠⚠⚠ 1. THE COUNT IS 12 OF 173 AND THE COUNT IS NOT THE FINDING — THE SHAPE IS
-
-**8 of the 12 are tier 1**, so two thirds of everything a player can reach
-touches nothing another route made. The GOAL asks for a *connected tech tree*;
-this corpus is a **fan of one-step routes off the ground with one thin chain
-hanging off it**. ⚠ That is a different problem from "not enough routes", it is
-not visible in any coverage number, and it is the reason the artefact had to
-exist rather than a bigger BOTH column.
-
-## ⚠⚠⚠ 2. THE ONE DEEP CHAIN RUNS THROUGH A BYPRODUCT, AND THE THIRD TIER IS A CATALYST
-
-    zinc-smelting 1400 K -> zinc 0.032793 mol AND carbon monoxide 0.054290 mol
-      copper-smelting 1500 K on that CO  ->  copper 0.039995
-      water-gas-shift  700 K on that CO  ->  hydrogen 0.053445
-        methanol-synthesis 520 K + copper in the solid block -> 0.004154
-
-The retort makes **more carbon monoxide than zinc**, nothing else a player can
-reach makes any, and **three tier-2 routes plus one tier-3 route all want it**.
-⚠⚠ **AND METHANOL IS TIER 3 FOR EXACTLY ONE REASON: ITS CATALYST.** Its CO is
-tier 1 and its hydrogen is tier 1 too (`chloralkali` throws H2 off making caustic
-soda from rock salt) — it is tier 3 only because **the copper must be smelted
-first, and smelting it needs the byproduct of smelting a different metal.** Grant
-free copper and the corpus has no third tier at all. ⚠ *A catalyst is a tech-tree
-node, and treating one as free was measured at two routes and one whole tier.*
-
-## ⚠⚠⚠ 3. FOUR SCORING RULES, ALL FOUR WRONG FIRST — AND FIXING ONE MASKED ANOTHER
-
-G4's *the target may not be CHARGED* was reused rather than re-derived: it lives
-in `catalog.route_reachable` now and **both audits call it**, so they cannot
-drift. The three new ones are **a need is decided by ORDER** (not by
-`route_roles`, under which `lime-cycle` derives an EMPTY feedstock list and is
-playable for free), **a route shelves its target AND its byproducts**, and **a
-catalyst is a feedstock**. Measured as a grid rather than a list:
-
-                      shelf=target   +byproducts   +target unioned in
-    needs=roles          10 / d2        13 / d3        14 / d3
-    needs=order           8 / d1        12 / d3      **12 / d3**
-
-⚠⚠⚠ **THE TWO CELLS BESIDE THE ANSWER ARE EQUAL, AND THAT IS THE FINDING.** Under
-the correct needs rule the fouling-row bug in rule 3 is **invisible**; it costs a
-route only under the wrong needs rule. **Had the rules been fixed in the other
-order, rule 3 would have looked like a distinction without a difference, gone in
-wrong, and started costing routes silently the moment the lead chamber became
-reachable.** ⚠ *Two suspected rules are a GRID, not a list.*
-
-## ⚠⚠ 4. THE SAME TWO CATALOG ROUTES BROKE THREE OF THE FOUR, AND G4 HAD FOUND ONE
-
-`lead-chamber` is in it twice. Row 4 — the nitrosylsulfuric acid that fouls a
-chamber — is what made G4's ROW scorer call the route blocked, and the same row
-makes `route_roles` call sulfuric acid an **intermediate**, so a products-only
-shelf does not hold the thing the route exists to make. Row 2 then wants NO2 and
-row 3 makes it, so **the catalytic NOx carrier reads as an intermediate when it is
-a starting charge** — G4's own run handed it 0.004 mol by hand and measured it
-recovered.
-⚠⚠ **AND THAT COSTS THE 18TH CENTURY ITS SULFURIC ACID.** The lead chamber is
-blocked on a *pinch* of NO2 that nothing reachable makes. Saltpetre is a natural
-material here and **there is no step that turns it into NOx** — which is
-historically exactly where the charge came from. **A CORPUS gap, not an engine
-one**, and one of the two most valuable single species in the file.
-
-## ⚠⚠ 5. WHAT RUNNING IT BOUGHT — G1's QUESTION ANSWERED THREE WAYS
-
-⚠ **THE COPPER SMELTER IS ORE-LIMITED, NOT CO-LIMITED.** Doubling the retort's CO
-moves the copper in the sixth decimal — the *opposite* of what the contention in
-§2 suggests, and only running it settled which.
-⚠ **THE CATALYST IS A GATE, NOT A MULTIPLIER.** 0.01 mol of copper already
-reaches 99.3% of the reference rate, so one ore charge is **4x** more catalyst
-than the route needs: a player must *reach* copper and need not stockpile it.
-⚠⚠ **WHAT DOES BITE IS SCALE.** Methanol converts at **7.7%** on the retort's own
-gas and **99.8%** at the corpus's declared 3 mol CO + 12 mol H2. *"Reachable" and
-"worth doing" are different questions and a static scoreboard answers only the
-first.*
-
-## ⚠⚠ 6. THE ARTEFACT HAS TESTS, AND THEY CAUGHT A REAL BUG ON THE FIRST RUN
-
-S3 found `ROUTE_INDEX.md` stale by three milestones for one reason: no audit read
-it. So `tests/test_playable.py` pins the headline, the tier shape, **all four
-rules and their wrong answers**, the lever, and that the file on disk is the one
-the current code produces. ⚠⚠ The first generator **shadowed its own output
-buffer** (`o`) inside the grid loop in §3 and wrote a **200-byte file of route
-names**; `test_the_report_on_disk_matches_the_code` caught it immediately. ⚠ It
-pins numbers rather than diffing the file, because
-`chemsim-generated-artefacts` records that a report which cannot be diffed is one
-nobody diffs.
-
-## ⚠⚠ 7. NO LEVER, AND THE FREQUENT BLOCKER IS NOT THE VALUABLE ONE
-
-The biggest single species grant is **+2** (`nitrogen-dioxide`, `aluminium`) —
-the same shape as coverage's "no lever", now measured rather than assumed.
-⚠⚠ And `sulfuric-acid` **blocks the most routes (4) and is worth +1**, because
-every route it blocks is blocked by something else too. *A histogram of blockers
-is not a work order; the fixed point is, and they disagree.*
-
-## ⚠ 8. AND THE BRIEF'S OWN RECORDED CLASSIFICATION WAS A LOOSE ONE-STEP COUNT
-
-MILESTONES recorded 7 from-the-ground / 6 one-step / 14 blocked / 4 bottle, and
-that rule credits a hop onto any route's *target* whether or not it runs.
-Re-measured on the same 31 it gives **6 / 8 (14 total)**; the strict fixed point
-gives **10 of 31** and **12 of 36**. **Eight of the thirteen hops landed on routes
-that cannot run.** ⚠ *A reachability claim has to be iterated to a fixed point or
-it is not a reachability claim* — and this is the fourth time correcting a
-coverage instrument in this project moved its own number DOWN.
-
----
-
-# ⚠⚠⚠ START HERE: THE C-SERIES, AND ITS WORK ORDER IS A TABLE
-
-⚠⚠ **READ `data/catalog/PLAYABLE.md` §8 FIRST.** It is 21 rows, ranked by what
-each is worth to playability, and it is the answer to *which template next* that
-three sessions of NEXT_PROMPT have been asking for. **Do not take the coverage
-report's greedy curve instead — the two rankings are not the same list.**
-
-    21 routes are already FED from natural materials and blocked only on a
-    template or a price.  Grant all 21 -> playability goes 12 -> 37, which is
-    the G-series GOAL's own ~40.  The other 116 move a coverage number that no
-    player can reach.
-
-**The top of the table, with what each is worth:**
-
-    +3  hall-heroult          1 class: molten-salt-electrolysis
-                                 aluminium -> thermite -> iron -> haber-bosch
-                              ⚠ but its class is the coverage queue's own ENGINE
-                                 item ("a MELT is not a phase this project has")
-                                 and its cryolite is REFUSED a price, so the top
-                                 row is NOT the cheapest row
-    +2  abe-fermentation      1 class: fermentation   ⚠ M5 REFUSED this class as
-                                 a metabolic network. Read that refusal first
-    +2  blast-furnace         1 class: slagging  ⚠ blocked TWICE on SOURCES --
-                                 calcium-silicate has no thermochemistry under
-                                 any of its three CAS numbers. Engine queue 11
-    +2  iron-gall-ink         1 class: oxidative-complexation  ⚠ no refusals, no
-                                 source problem. **The cheapest +2 in the table**
-    +2  vitriol-distillation  1 class: hydrolysis  ⚠ engine queue 17, and its
-                                 iron-ii-oxide is item 11's mineral again
-    +1  hypochlorite-bleach   NO CLASS AT ALL -- a refused price, nothing else
-    +1  pyrite-roasting       NO CLASS AT ALL -- `iron-disulfide` refused, which
-                                 is engine queue 14's own source-blocked entry
-    +1  x14 more
-
-⚠⚠ **TWO ROWS NEED NO TEMPLATE, ONLY A PRICE**, which makes a data refusal
-measurably a PLAYABILITY blocker for the first time rather than only a coverage
-one. Both are recorded in the engine queue as source-blocked, so **read the
-refusal before scheduling either** — a source that does not exist is not work.
-
-⚠⚠⚠ **AND THE HIGHEST-VALUE SINGLE THING IN THE FILE IS NOT IN THAT TABLE AT
-ALL: A STEP THAT TURNS SALTPETRE INTO NOx.** `lead-chamber` runs end to end from
-native sulfur (G4 measured it) and is blocked on a **pinch** of nitrogen dioxide
-that nothing a player can reach makes. Historically the charge came from
-saltpetre, which this corpus holds as a natural material with no step off it.
-⚠ Granting NO2 is worth **+2** (the chamber, then `saltpetre-nitric` off its
-acid) and puts **sulfuric acid** — the most-demanded blocked species in the
-corpus, 4 routes — on the shelf. ⚠⚠ **BUT IT IS A CORPUS EDIT AND NOT A
-TEMPLATE**, so price it against `corpus_balance.py` and against the S12
-precedent before writing a row: a row that *looks* spurious was real, and the
-balance check cannot decide either way.
-
-## ⚠ WHAT THE C-SERIES IS, NOW THAT IT HAS A SCOREBOARD
-
-Where *"grind out the remaining classes, including the boring ones"* lives —
-except that it is no longer a grind against 173 routes. It is the 21 rows above,
-then a re-run of `tools/build_playable.py` to see what the shelf's growth freed.
-⚠ The greedy set-cover curve in MILESTONES PART 2 is still the right instrument
-for *class* coverage and is still subject to the RUNNABLE warning printed beneath
-it. **When the two rankings disagree, PLAYABLE is the one tied to the GOAL.**
+⚠⚠ **SO THE NOISE FLOOR IS ~8% ON THE BIGGEST SINGLE ROW AND ~1% ON THE MID
+ROWS**, which is what makes the list an instrument: G6's +35 s over G5 is noise
+plus 16.6 s of new test files and must not be attributed to anything, while the
+S12->S13 eight minutes is **20x outside** the floor and remains a real unexplained
+regression. ⚠ It still does NOT diagnose S12->S13 — no list exists on either side
+of that commit — and the cheap next step is unchanged: a `git stash`-and-rerun of
+`--durations=25` across S13's data commit.
 
 ---
 
@@ -289,6 +286,11 @@ it. **When the two rankings disagree, PLAYABLE is the one tied to the GOAL.**
 ⚠⚠ **`data/catalog/PLAYABLE.md` §8 IS THE WORK ORDER NOW.** This queue is kept
 because every row is a measured, live finding — but **do not start here**, and do
 not treat a row's age as a reason to take it.
+⚠⚠⚠ **AND C1 CLOSED ONE ROW AND RE-PRICED THREE.** Item 17 (`hydrolysis`) is
+DONE; item 11's `iron-ii-oxide` turned out never to have been in
+`vitriol-distillation`'s chemistry at all; item 14's `pyrite` is still refused but
+is now one of FOUR playability blockers rather than two; and item 15 has the
+cheapest reproduction anyone has found.
 ⚠⚠ **AND G3 GAVE THIS QUEUE A NEW WAY TO BE PRICED: ASK WHAT A ROW BUYS IN
 PLAYABILITY, NOT IN ROUTES.** Three rows below already cash out there — item 11's
 `calcium-silicate` blocks `blast-furnace`, which is worth **+2**; item 14's
@@ -435,6 +437,12 @@ worth two tiers of a tech tree**, and nothing measured that until now.
     thermochemical data under ANY of its three CAS numbers** ✘ (not a curation
     job); `iron-ii-oxide`'s CRC standard row has **`Cps = NaN`**.
     **`blast-furnace` is blocked TWICE over, on SOURCES rather than on work.**
+    ⚠⚠ **C1 RESOLVED THE `iron-ii-oxide` THIRD OF THIS ROW WITHOUT CURATING
+    ANYTHING**: it was in `vitriol-distillation` only because the catalog row was
+    wrong, and the engine has always made hematite there. It is still refused, and
+    it is still named by `blast-furnace` — where it may well be right. **Check
+    whether a refused species is actually in the chemistry before pricing the
+    refusal as work.**
 
 12. **⚠ THE CIS/TRANS BLIND SPOT.** Benson (the RMG group set) has no cis
     correction, so oleic and elaidic acid come back with IDENTICAL Hf and Gf and
@@ -462,6 +470,19 @@ worth two tiers of a tech tree**, and nothing measured that until now.
     boundary rather than drained continuously for ever** — `merge_phases` already
     does exactly that at the `run` boundary. **Measure the layer-2 inventory over
     the failing run before designing anything.**
+    ⚠⚠⚠ **C1 FOUND A MUCH CHEAPER REPRODUCTION AND THAT IS THE NEWS ON THIS ROW.**
+    A one-pot flask of green vitriol and water — **six species, one template** —
+    at the DEFAULT tolerance:
+
+        800 K, 2000 s     0.4 s      liquid layer 3.4e-17 mol
+        900 K,  500 s    44.4 s      liquid layer 6.6e-17 mol
+       1000 K,  200 s    > 9 MINUTES, did not finish
+
+    ⚠ The same charge with NO water is `validation/vitriol.py` panel 1 and costs
+    0.3 s, so the water is the trigger. **This is the instrumentable version of
+    the burner**, and the layer-2 inventory the row asks for is now cheap to
+    print. ⚠ A gas-phase receiver at 700 K (above the acid's 610 K Tb) is a third
+    reproduction at **434 s**. See `validation/vitriol.py` panel 7.
 
 16. **THE CORPUS BALANCE BACKLOG — 75 ROWS, AND IT IS NOT A TO-DO LIST.** S7
     built the check and deliberately fixed nothing, on the `diels-alder-route`
@@ -469,9 +490,14 @@ worth two tiers of a tech tree**, and nothing measured that until now.
     correct. ⚠ `tools/catalog.py`'s `validate` still does NOT check balance, so
     the corpus can grow another one silently.
 
-17. **⚠ `hydrolysis`** — it unlocks **exactly ONE route alone,
-    `vitriol-distillation`**, and that route's step 1 reads `-> iron-ii-OXIDE`
-    while the engine makes HEMATITE. ⚠ **That is item 11's mineral again.**
+17. **⚠⚠ ~~`hydrolysis`~~ — CLOSED BY C1, AND BOTH HALVES OF THE ROW WERE
+    WRONG.** It was not a template-shaped thing at all: eight rows and at least
+    six mechanisms, sitting next to seven `*-hydrolysis` classes the taxonomy had
+    already named. Split eight ways; only `sulfur-trioxide-hydration` is built.
+    ⚠ And *"step 1 reads `-> iron-ii-OXIDE` while the engine makes HEMATITE"* was
+    right about the fact and wrong about the consequence — **FeO's refusal was
+    never a curation job, because FeO is not in the reaction.** The row is
+    corrected. See MILESTONES §C1 and `data/catalog/README.md`.
 
 18. **M7 (⚠ M12 took most of its case away; re-scope)**, **M9 (polymers, 12
     routes)**, **M10 (the site balance S1 did not build, 8 routes)**,
@@ -542,26 +568,31 @@ Start by reading, in order:
   the only artefact that scores against the GOAL, and it is new. §1 for the
   shape, §3 for the four scoring rules, §5 for what the runs bought, §8 for what
   to build.
-MILESTONES.md — the plan, and **§ THE G-SERIES first, which is now COMPLETE**.
-  ⚠ **§G1, §G2, §G3, §G4, §G5 and §G6 are marked DONE with what they turned out
-  to be, and G1's, G3's and G4's original briefs are kept underneath because the
-  measurements that overturned them only mean something against them** — G3's
-  brief asserted a classification the measurement disagreed with. Then §S13,
-  §S12, §S11, §S10, §S9, §S8, §S7, §M8, §S1, §S3, §S4, §S5, §S6.
+MILESTONES.md — the plan, and **§ THE C-SERIES first: §C1 is DONE and it is the
+  only worked example of what a C-series item looks like.** Then § THE G-SERIES,
+  which is COMPLETE. ⚠ **§G1, §G2, §G3, §G4, §G5 and §G6 are marked DONE with
+  what they turned out to be, and G1's, G3's and G4's original briefs are kept
+  underneath because the measurements that overturned them only mean something
+  against them.** Then §S13, §S12, §S11, §S10, §S9, §S8, §S7, §M8, §S1, §S3,
+  §S4, §S5, §S6.
 HANDOFF.md — what exists, and the ethos to preserve. **85 is S1 … 98 is S13,
-  99 is G1, 100 is G2, 101 is G5, 102 is G4, 103 is G6, 104 is G3.**
+  99 is G1, 100 is G2, 101 is G5, 102 is G4, 103 is G6, 104 is G3, 105 is C1.**
 NEXT_SESSION.md — the invariants table at the bottom is the contract, and **G1,
-  G2, G3, G4, G5 and G6 each added a block**. ⚠ Read the two warnings above it
+  G2, G3, G4, G5, G6 and C1 each added a block**. ⚠ Read the two warnings above it
   before trusting any row, and note that **G5's "no acidity function" row and
   G2's regioselectivity row are LIMITS TO REMOVE**, not invariants to keep — as
   is G3's `lead-chamber` NOx row. ⚠ **G3's block adds no ENGINE invariant**:
-  every row in it is a property of the corpus as scored.
+  every row in it is a property of the corpus as scored. ⚠⚠ **C1's block opens
+  with the fact that the full suite was not run.**
 GAME_DESIGN.md — the settled design.
-data/catalog/README.md — the reaction-class taxonomy, and ⚠ **its new paragraph
-  on why the THREE generated reports answer three different questions and are
-  routinely confused for one**; plus `data/catalog/COVERAGE_REPORT.md`.
-the memory files (auto-loaded), especially **chemsim-playable-scoreboard** and
-  **chemsim-granularity-audit**, then chemsim-protonation,
+data/catalog/README.md — the reaction-class taxonomy, ⚠ **its paragraph on why
+  the THREE generated reports answer three different questions and are routinely
+  confused for one**, and ⚠⚠ **C1's two new sections: the landmine S3 recorded
+  and C1 tripped on purpose, and the `hydrolysis` split table**; plus
+  `data/catalog/COVERAGE_REPORT.md`.
+the memory files (auto-loaded), especially **chemsim-oil-of-vitriol** and
+  **chemsim-playable-scoreboard**, then
+  **chemsim-granularity-audit**, chemsim-protonation,
   chemsim-hammett-saturation, chemsim-ring-deactivation,
   chemsim-dropping-funnel, chemsim-skraup-standard-state, chemsim-ion-transfer,
   chemsim-competing-templates, chemsim-solubility-product,
@@ -578,22 +609,25 @@ be probed outside its own state, four inorganic gas processes, three smelters, a
 retort that DISTILS its metal off, two templates that RACE for one alkene, a ring
 closure whose OXIDANT turns into one of its own reagents, a dropping funnel whose
 addition is a CONDITION and not a duration, an aromatic ring that knows what is
-already on it, an amine that PROTONATES in acid, **and a Hammett line that
-SATURATES at a sourced encounter plateau — after which an aniline in a hot mixed
-acid is finally SLOWER than benzene, which is what it is** — **and a scoreboard
-that says what a PLAYER can reach, which is 12 of 173 routes over three tiers.**
-`SAVE_VERSION` is **6**.
-Coverage: **52/229 classes** (was 51 — G4's `saponification` credit), **46
-templates**, **41/173 template-ready**, **82/173 species-ready** — and ⚠⚠ **31/173
-BOTH, which is the only one of the three a route can be judged on.**
-⚠⚠ **AND G4 MEASURED THAT 31 IS ALSO A LOWER BOUND: FIVE MORE ROUTES RUN TODAY
-AND ARE SCORED BLOCKED (31 + 5 = 36), while 137 of the remaining 142 are real
+already on it, an amine that PROTONATES in acid, a Hammett line that SATURATES at
+a sourced encounter plateau — after which an aniline in a hot mixed acid is
+finally SLOWER than benzene, which is what it is — **a scoreboard that says what
+a PLAYER can reach, and OIL OF VITRIOL MADE FROM A ROCK: green vitriol roasted at
+red heat and its trioxide caught in a cool receiver, with a 664 K ceiling nobody
+declared.** `SAVE_VERSION` is **6**.
+Coverage: **53/236 classes** (C1 split `hydrolysis` eight ways and built one of
+them), **47 templates**, **42/173 template-ready**, **83/173 species-ready** —
+and ⚠⚠ **32/173 BOTH, which is the only one of the three a route can be judged
+on.**
+⚠⚠ **AND G4 MEASURED THAT IT IS ALSO A LOWER BOUND: FIVE MORE ROUTES RUN TODAY
+AND ARE SCORED BLOCKED (32 + 5 = 37), while 137 of the remaining 141 are real
 work.** See `validation/granularity.py`.
 ⚠⚠⚠ **AND PLAYABILITY IS A THIRD NUMBER, LOWER THAN BOTH OF THOSE AND THE ONLY
-ONE TIED TO THE GOAL: 12 of 173 (G3).** 36 runnable, **12 playable from natural
-materials** — tiers 8 / 3 / 1 — and the ceiling on the declared natural list is
-**37** once the 21 fed-but-unrunnable routes land. ⚠ A route can be fully
-covered, fully indexed and unreachable. `data/catalog/PLAYABLE.md`.
+ONE TIED TO THE GOAL: 14 of 173 (G3's instrument, C1's number).** 37 runnable,
+**14 playable from natural materials** — tiers 9 / 4 / 1 — and the ceiling on the
+declared natural list is **41** once the 24 fed-but-unrunnable routes land.
+⚠ A route can be fully covered, fully indexed and unreachable.
+`data/catalog/PLAYABLE.md`.
 ⚠ The corpus's **PHYSICAL half is measured for 652/1583 (41.2%)** as of S13;
 its refusals are down to **419 of 1583** as of G5.
 
@@ -732,20 +766,23 @@ not an engine gap**, and no template would move it.
 a real ~96.5. Taken deliberately: a record may not mix two group-contribution
 methods.
 
-**30. ⚠⚠⚠ ONLY 12 OF 173 ROUTES ARE PLAYABLE, AND 8 OF THE 12 ARE TIER 1
-(G3).** The GOAL asks for a connected tech tree; the corpus is a fan of one-step
-routes off the ground with **one** three-tier chain hanging off it, and that chain
-runs through a zinc retort's **byproduct**. ⚠ Not a bug in anything — it is the
-measurement the G-series existed to get, and it is what the C-series is aimed at.
-`data/catalog/PLAYABLE.md`, asserted in `tests/test_playable.py`.
+**30. ⚠⚠⚠ ONLY 14 OF 173 ROUTES ARE PLAYABLE, AND 9 OF THE 14 ARE TIER 1
+(G3's instrument, C1's number).** The GOAL asks for a connected tech tree; the
+corpus is a fan of one-step routes off the ground with **one** three-tier chain
+hanging off it, and that chain runs through a zinc retort's **byproduct**.
+⚠ C1 added one route to each of the first two tiers, so the SHAPE did not change.
+Not a bug in anything — it is the measurement the G-series existed to get, and it
+is what the C-series is aimed at. `data/catalog/PLAYABLE.md`, asserted in
+`tests/test_playable.py`.
 
 **31. ⚠⚠ `lead-chamber` IS BLOCKED ON A PINCH OF NOx THAT NOTHING REACHABLE
-MAKES (G3).** Its carrier is catalytic — G4's run charged 0.004 mol of NO2 and
-measured it recovered — but the corpus holds saltpetre as a natural material with
-**no step that turns it into NOx**, which is historically where the charge came
-from. ⚠ **A CORPUS gap, not an engine one.** It costs the corpus its 18th-century
-sulfuric acid, and sulfuric acid is the most-demanded blocked species there is
-(4 routes). **A LIMIT to remove**, and it is a catalog row rather than a template.
+MAKES (G3), AND C1 HALVED WHAT CLOSING IT IS WORTH.** Its carrier is catalytic —
+G4's run charged 0.004 mol of NO2 and measured it recovered — but the corpus holds
+saltpetre as a natural material with **no step that turns it into NOx**, which is
+historically where the charge came from. ⚠ **A CORPUS gap, not an engine one**,
+and still a LIMIT to remove. ⚠⚠ **But it is worth +1 now, not +2**: G3's second
+point was `saltpetre-nitric` off the chamber's acid, and C1 gave that route its
+acid from a rock instead. Sulfuric acid is no longer a blocker of anything.
 
 **32. ⚠⚠ THE PLAYABILITY SCOREBOARD RESTS ON A HAND JUDGEMENT, AND IT IS
 GENEROUS (G3).** 45 species are declared NATURAL where the GOAL says ~10, so **12
@@ -760,12 +797,84 @@ says what it ran. ⚠ Methanol converts **7.7%** on the retort's own gas and
 **99.8%** at the corpus's declared charge: *"reachable" and "worth doing" are
 different questions.*
 
+**34. ⚠⚠ A ROUTE CAN BE BLOCKED ON A PRICE FOR A SPECIES THAT IS NOT IN ITS
+CHEMISTRY (C1).** `vitriol-distillation` named `iron-ii-oxide`, which the engine
+has never made there — `solid_state.py` has declared hematite since M6 — and the
+refusal read as a curation job for three milestones. ⚠ **Check whether a refused
+species is actually in the reaction before pricing its refusal as work.** Two of
+the remaining refusals in the engine queue (`calcium-silicate`, `pyrite`) have not
+been checked that way.
+
+**35. ⚠⚠ ONE OF G3's FOUR SCORING RULES NOW HAS NO MEASURABLE COST (C1).**
+Rule 3 — *a route shelves its target AND its byproducts* — was justified by 13
+against 14; every cell is equal now, because the route it bought got its sulfuric
+acid from somewhere else. **The rule is KEPT and the zero is asserted**, with the
+reason written above the grid in `tests/test_playable.py`. *A rule justified by a
+difference must not be reverted the day the difference goes away.*
+
+**36. ⚠ THE GAS-PHASE SO3 HYDRATION IS AN APPARENT BARRIER OVER A RECALLED
+CONSTANT (C1, deliberate).** The real reaction is second order in water; `A` is
+pinned at the collision limit's order and `Ea` puts `k(298)` at the ORDER of a
+literature figure that is **recalled, not sourced from anything in this repo**.
+Defensible only because the answer is 100.000% across five decades of `A` —
+`validation/vitriol.py` panel 4. ⚠ If a future template ever puts this reaction
+somewhere the rate matters, that panel has to be re-measured, not cited.
+
 ⚠ **AND THE BLOCK-ORDER TRAP STILL HOLDS:** the state vector is
 `pack(n_liquid, n_liquid2, n_gas, n_solid, T)` — **liquid2 is SECOND, not last.**
 
 ---
 
 TRAPS SPECIFIC TO THIS ARC:
+
+⚠⚠⚠ **A RECORDED LANDMINE WITH A NAMED TRIGGER IS THE CHEAPEST DOCUMENTATION
+THIS PROJECT WRITES, AND C1 IS THE PROOF (C1).** S3 wrote, three milestones
+early, *"the day `hydrolysis` is credited, `vitriol-distillation` goes
+template-ready on a step whose stated product does not exist in the run — whoever
+builds it owes this row a second look."* The session that credited `hydrolysis`
+read it, took the second look, and found that the refused species had never been
+in the reaction at all. **Write the trigger, not just the fact.**
+⚠⚠⚠ **A REFUSED SPECIES IN A ROUTE'S BLOCKER LIST MAY BE A CORPUS ERROR RATHER
+THAN A CURATION JOB (C1).** `iron-ii-oxide` blocked `vitriol-distillation` for
+three milestones and the engine has never made it there. **Check whether the
+species is in the chemistry before pricing its refusal as work** — it moved
+species-ready 82 → 83 for the cost of one line.
+⚠⚠⚠ **A WORK ORDER DERIVED FROM A FIXED POINT IS NOT A BURNDOWN LIST (C1).**
+Granting one of G3's 21 rows made the list **24** and the ceiling **37 → 41**,
+because the shelf grew and four routes that were not fed became fed. Re-run
+`tools/build_playable.py` after every content item and read §8 again; the WORTHS
+overlap and they re-price each other (`iron-gall-ink` +2 → +1, `nitrogen-dioxide`
++2 → +1, both because C1 delivered their second point first).
+⚠⚠⚠ **A RULE JUSTIFIED BY A MEASURED DIFFERENCE MUST NOT BE REVERTED THE DAY THE
+DIFFERENCE GOES AWAY (C1).** C1 dissolved the only evidence for one of G3's four
+scoring rules. The rule is a statement about `route_roles` and is still true; its
+COST is a property of today's corpus. **What changed is the number, and the number
+is now asserted as zero with the reason above it.** Reverting it is how a
+corrected instrument un-corrects itself.
+⚠⚠ **BETWEEN TWO WRONG-IN-DIFFERENT-WAYS DECLARATIONS, KEEP THE ONE WHOSE ERROR
+IS MEASURED TO BE INVISIBLE (C1).** `orders=(1.0, 2.0)` is the more correct rate
+law for SO3 + H2O and it was refused, because a declared order may not be
+reversible. The order is forgiven over five decades of `A`; the reverse is the
+664 K ceiling and the whole mechanic. **Measure both errors before choosing.**
+⚠⚠ **A SPLIT THAT LOWERS THE HEADLINE IS A SPLIT WORKING, AND THE ARGUMENT CAN BE
+THE TAXONOMY'S OWN (C1).** `hydrolysis` was not split because eight rows are eight
+mechanisms — that is a judgement — but because the same file already carried
+`amide-`, `ester-`, `epoxide-`, `glycoside-`, `nitrile-`, `isocyanate-` and
+`disproportionation-hydrolysis`. **When a taxonomy has named every case but one,
+the one is the bin.**
+⚠⚠ **A CLASS ASSIGNMENT CAN BE A FALSE CREDIT, AND THE CHEAP TIME TO REFUSE IT IS
+BEFORE IT PAYS (C1).** `furfural-route` 1 is chemically a glycoside hydrolysis and
+belongs to the COVERED class by convention; it is filed separately because the row
+can never match a template. **Measured: zero either way today.** That is exactly
+G3's masked-cell shape pointing forward, and the test asserts BOTH cells.
+⚠⚠ **A GENERATED ARTEFACT MAY NOT SPELL A COUNT IN WORDS (C1).**
+`build_playable.py` said *"four more routes fall out for free"* beside a derived
+list; one content item later the list had three in it. `len(free)` now.
+⚠ **THE cp1252 TRAP BITES `python -` HEREDOCS TOO (C1).** A throwaway probe that
+prints a line out of `NEXT_PROMPT.md` dies with `UnicodeEncodeError` unless
+`PYTHONIOENCODING=utf-8` is set. Cheaper to set it than to rediscover it.
+⚠ **AND `sed -i` STILL DESTROYS A CRLF FILE HERE.** Every edit in C1 went through
+a short Python script that reads with `newline=""` and writes the same way.
 
 ⚠⚠⚠ **A REFUSAL PRINTED IN A GENERATED AUDIT IS EVIDENCE, AND THIS ONE SAT IN THE
 REPO FOR TWELVE ROWS AND SEVERAL SESSIONS.** `COVERAGE_REPORT.md` printed

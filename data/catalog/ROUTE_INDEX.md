@@ -484,15 +484,16 @@ The same species is routinely a feedstock in one route and an intermediate in an
 
 - sulfur trioxide `sulfur-trioxide`
 
-**Products and byproducts** (2)
+**Products and byproducts** (3)
 
-- iron(II) oxide `iron-ii-oxide`
+- iron(III) oxide `iron-iii-oxide`
+- sulfur dioxide `sulfur-dioxide`
 - sulfuric acid `sulfuric-acid`
 
 | # | step | in | out | conditions | class |
 |--:|---|---|---|---|---|
-| 1 | dehydration of green vitriol | iron-ii-sulfate | iron-ii-oxide + sulfur-trioxide | retort, red heat | `sulfate-thermal-decomposition` |
-| 2 | condensation to oil of vitriol | sulfur-trioxide + water | sulfuric-acid | receiver | `hydrolysis` |
+| 1 | dry distillation of green vitriol | iron-ii-sulfate | iron-iii-oxide + sulfur-dioxide + sulfur-trioxide | retort, red heat | `sulfate-thermal-decomposition` |
+| 2 | condensation to oil of vitriol | sulfur-trioxide + water | sulfuric-acid | receiver | `sulfur-trioxide-hydration` |
 
 <a id="saltpetre-nitric"></a>
 
@@ -644,7 +645,7 @@ The same species is routinely a feedstock in one route and an intermediate in an
 | 1 | salt cake | sodium-chloride + sulfuric-acid | sodium-sulfate + hydrogen-chloride | 1100 K | `salt-metathesis` |
 | 2 | black ash | sodium-sulfate + carbon-graphite + calcium-carbonate | sodium-carbonate + calcium-sulfide + carbon-dioxide | reverberatory furnace | `carbothermic-sulfate-reduction` |
 | 3 | lixiviation | sodium-carbonate + water | sodium-carbonate + water | leaching, crystallisation | `dissolution` |
-| 4 | galligu waste weathering | calcium-sulfide + water + carbon-dioxide | calcium-carbonate + hydrogen-sulfide | tip, open air | `hydrolysis` |
+| 4 | galligu waste weathering | calcium-sulfide + water + carbon-dioxide | calcium-carbonate + hydrogen-sulfide | tip, open air | `sulfide-carbonation` |
 
 <a id="white-phosphorus"></a>
 
@@ -796,7 +797,7 @@ The same species is routinely a feedstock in one route and an intermediate in an
 | 1 | sulfur combustion | sulfur-s8 + oxygen | sulfur-dioxide | burner | `sulfur-combustion` |
 | 2 | catalytic SO2 oxidation | sulfur-dioxide + oxygen + vanadium-pentoxide | sulfur-trioxide + vanadium-pentoxide | 700-900 K, V2O5 | `catalytic-sulfur-dioxide-oxidation` |
 | 3 | absorption into oleum | sulfur-trioxide + sulfuric-acid | disulfuric-acid | absorber, 98% acid | `acid-anhydride-absorption` |
-| 4 | oleum dilution | disulfuric-acid + water | sulfuric-acid | dilution | `hydrolysis` |
+| 4 | oleum dilution | disulfuric-acid + water | sulfuric-acid | dilution | `oleum-hydrolysis` |
 
 <a id="pyrite-roasting"></a>
 
@@ -1141,7 +1142,7 @@ The same species is routinely a feedstock in one route and an intermediate in an
 | # | step | in | out | conditions | class |
 |--:|---|---|---|---|---|
 | 1 | amalgam formation | sodium-chloride + mercury | sodium-amalgam-marker + chlorine | mercury cathode | `amalgam-electrolysis` |
-| 2 | amalgam decomposition | sodium-amalgam-marker + water | sodium-hydroxide + hydrogen + mercury | denuder | `hydrolysis` |
+| 2 | amalgam decomposition | sodium-amalgam-marker + water | sodium-hydroxide + hydrogen + mercury | denuder | `amalgam-decomposition` |
 
 <a id="nitroglycerin-route"></a>
 
@@ -1908,7 +1909,7 @@ The same species is routinely a feedstock in one route and an intermediate in an
 | # | step | in | out | conditions | class |
 |--:|---|---|---|---|---|
 | 1 | carbide furnace | calcium-oxide + carbon-graphite | calcium-carbide + carbon-monoxide | electric arc, 2300 K | `carbide-formation` |
-| 2 | carbide hydrolysis | calcium-carbide + water | acetylene + calcium-hydroxide | ambient, water drip | `hydrolysis` |
+| 2 | carbide hydrolysis | calcium-carbide + water | acetylene + calcium-hydroxide | ambient, water drip | `carbide-hydrolysis` |
 
 <a id="vulcanisation"></a>
 
@@ -3040,7 +3041,7 @@ The same species is routinely a feedstock in one route and an intermediate in an
 |--:|---|---|---|---|---|
 | 1 | carbide formation | calcium-oxide + carbon-graphite | calcium-carbide + carbon-monoxide | electric furnace, 2300 K | `carbide-formation` |
 | 2 | nitrogen fixation | calcium-carbide + nitrogen | calcium-cyanamide + carbon-graphite | 1300 K | `gas-solid-fixation` |
-| 3 | hydrolysis to ammonia | calcium-cyanamide + water | ammonia + calcium-carbonate | steam | `hydrolysis` |
+| 3 | hydrolysis to ammonia | calcium-cyanamide + water | ammonia + calcium-carbonate | steam | `cyanamide-hydrolysis` |
 
 <a id="andrussow"></a>
 
@@ -4891,7 +4892,7 @@ The same species is routinely a feedstock in one route and an intermediate in an
 
 | # | step | in | out | conditions | class |
 |--:|---|---|---|---|---|
-| 1 | pentosan hydrolysis | xylose + water | xylose | dilute H2SO4, 450 K steam | `hydrolysis` |
+| 1 | pentosan hydrolysis | xylose + water | xylose | dilute H2SO4, 450 K steam | `pentosan-hydrolysis` |
 | 2 | triple dehydration | xylose + sulfuric-acid | furfural + water + sulfuric-acid | 450 K, steam stripped | `dehydration-cyclisation` |
 | 3 | decarbonylation to furan | furfural + palladium | furan + carbon-monoxide + palladium | 470 K, Pd | `decarbonylation` |
 | 4 | hydrogenation to THF | furan + hydrogen + nickel | tetrahydrofuran + nickel | 420 K, Ni | `arene-hydrogenation` |
@@ -5070,7 +5071,7 @@ The same species is routinely a feedstock in one route and an intermediate in an
 |--:|---|---|---|---|---|
 | 1 | reagent formation | bromobenzene + magnesium | grignard-phenylmagnesium-bromide | dry diethyl ether, reflux | `oxidative-insertion` |
 | 2 | carbonyl addition | grignard-phenylmagnesium-bromide + acetaldehyde | phenylethanolate-magnesium-bromide | 273 K, ether | `nucleophilic-addition` |
-| 3 | aqueous workup | phenylethanolate-magnesium-bromide + water | 1-phenylethanol + magnesium-hydroxide | dilute acid quench | `hydrolysis` |
+| 3 | aqueous workup | phenylethanolate-magnesium-bromide + water | 1-phenylethanol + magnesium-hydroxide | dilute acid quench | `organometallic-protonolysis` |
 
 <a id="wittig-route"></a>
 
@@ -5368,7 +5369,6 @@ This is the list a template library has to grow into. `validation/catalog_covera
 | class | steps | routes |
 |---|---:|---:|
 | proton-transfer | 11 | 9 |
-| hydrolysis | 8 | 8 |
 | glycoside-hydrolysis | 6 | 5 |
 | radical-polymerisation | 6 | 6 |
 | nucleophilic-substitution | 6 | 6 |
@@ -5444,12 +5444,15 @@ This is the list a template library has to grow into. `validation/catalog_covera
 | nitrosation | 1 | 1 |
 | catalytic-sulfur-dioxide-oxidation | 1 | 1 |
 | acid-anhydride-absorption | 1 | 1 |
+| oleum-hydrolysis | 1 | 1 |
 | sulfate-thermal-decomposition | 1 | 1 |
+| sulfur-trioxide-hydration | 1 | 1 |
 | hydrogen-sulfide-combustion | 1 | 1 |
 | comproportionation | 1 | 1 |
 | salt-metathesis | 1 | 1 |
 | carbothermic-sulfate-reduction | 1 | 1 |
 | dissolution | 1 | 1 |
+| sulfide-carbonation | 1 | 1 |
 | carbonate-equilibrium | 1 | 1 |
 | bicarbonate-thermal-decomposition | 1 | 1 |
 | aqueous-electrolysis | 1 | 1 |
@@ -5458,6 +5461,7 @@ This is the list a template library has to grow into. `validation/catalog_covera
 | thermal-fixation | 1 | 1 |
 | acid-displacement | 1 | 1 |
 | gas-solid-fixation | 1 | 1 |
+| cyanamide-hydrolysis | 1 | 1 |
 | catalytic-hydrogen-chloride-oxidation | 1 | 1 |
 | carbothermic-phosphate-reduction | 1 | 1 |
 | chlorate-oxygen-transfer | 1 | 1 |
@@ -5469,6 +5473,7 @@ This is the list a template library has to grow into. `validation/catalog_covera
 | roasting-to-metal | 1 | 1 |
 | metallothermic-reduction | 1 | 1 |
 | amalgam-electrolysis | 1 | 1 |
+| amalgam-decomposition | 1 | 1 |
 | deflagration | 1 | 1 |
 | ipso-nitrodesulfonation | 1 | 1 |
 | nitrolysis | 1 | 1 |
@@ -5507,6 +5512,7 @@ This is the list a template library has to grow into. `validation/catalog_covera
 | pyrolysis-dehydration | 1 | 1 |
 | wacker-oxidation | 1 | 1 |
 | alkyne-hydration | 1 | 1 |
+| carbide-hydrolysis | 1 | 1 |
 | thermal-cracking | 1 | 1 |
 | catalytic-epoxidation | 1 | 1 |
 | hydrocarbon-combustion | 1 | 1 |
@@ -5543,6 +5549,7 @@ This is the list a template library has to grow into. `validation/catalog_covera
 | alkene-hydration | 1 | 1 |
 | ether-condensation | 1 | 1 |
 | depolymerisation | 1 | 1 |
+| pentosan-hydrolysis | 1 | 1 |
 | decarbonylation | 1 | 1 |
 | arene-hydrogenation | 1 | 1 |
 | hydration-ring-opening | 1 | 1 |
@@ -5568,6 +5575,7 @@ This is the list a template library has to grow into. `validation/catalog_covera
 | hydrazinolysis | 1 | 1 |
 | ester-hydrolysis-decarboxylation | 1 | 1 |
 | oxidative-insertion | 1 | 1 |
+| organometallic-protonolysis | 1 | 1 |
 | wittig-olefination | 1 | 1 |
 | aldol-addition | 1 | 1 |
 | claisen-condensation | 1 | 1 |

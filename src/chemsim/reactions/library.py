@@ -595,6 +595,144 @@ def sulfur_combustion(
 
 
 # ---------------------------------------------------------------------------
+# C1 -- THE RECEIVER. One arrow, and the retort at the other end of it already ran
+# ---------------------------------------------------------------------------
+# ``SO3 + H2O -> H2SO4``: `vitriol-distillation` step 2, and the whole of what
+# stood between this engine and **sulfuric acid made from a rock**.
+#
+# ## WHY ONE ARROW WAS ENOUGH
+#
+# The retort half has been in the engine since M6. ``solid_state.py`` declares
+# ``2 FeSO4 -> Fe2O3 + SO2 + SO3`` -- green vitriol, i.e. melanterite, which
+# weathers out of pyrite and is on this project's declared NATURAL list -- and
+# the run below measures the residue and both gases coming off at red heat.
+# What the corpus could not do was CATCH the trioxide. So the catalog's
+# most-demanded blocked species (`sulfuric-acid`, wanted by four routes) was
+# blocked on a single condensation step in a receiver of water.
+#
+# ⚠ **AND THE ROUTE WAS ALSO BLOCKED ON A PRICE FOR A SPECIES THE ENGINE NEVER
+# MAKES.** `vitriol-distillation` step 1 read ``-> iron-ii-OXIDE``; FeO does not
+# survive red heat and ``mineral_data`` records that it was tried and refused on
+# the crystal Cps. The declaration above has always said hematite, and said in
+# its own comment that the catalog row was the wrong one. C1 corrected the row.
+# *A route can be blocked on a datum for a species that is not in its chemistry.*
+#
+# ## THE THERMOCHEMISTRY, AND THE CEILING IS EMERGENT
+#
+# From the curated ideal-gas formation data (all three species EXPERIMENTAL,
+# NIST/CODATA):
+#
+#     dH = -97.53 kJ/mol      dG(298) = -53.76 kJ/mol      dS = -146.8 J/(mol K)
+#
+#     T/K      298      350      400      500      600      664      800
+#     ln K   21.69    15.86    11.67     5.80     1.89     0.01    -2.99
+#
+# ⚠⚠ **SO THE ACID CRACKS BACK, AND NOBODY DECLARED THAT.** ``ln K = 0`` at
+# **664.3 K** = dH/dS, and in a dry gas the measured conversion falls 46.8% ->
+# 1.6% between 600 K and 800 K. **A receiver has to be COOL**, which is what a
+# receiver is. This is the same shape as the lead chamber's 600 K NOx ceiling:
+# an operating limit that came out of the formation data rather than out of a
+# rule someone wrote.
+#
+# ⚠ AND THE CONDENSER IS WHAT BEATS THE CEILING. With a mole of liquid water in
+# the flask the conversion is **100.000%** at every temperature up to 600 K, not
+# because K is large there but because sulfuric acid boils at 610 K and leaves
+# the gas phase as fast as it forms. Le Chatelier, done by a phase change the
+# template knows nothing about.
+#
+# ## THE RATE LAW IS APPARENT, AND BOTH CONSTANTS ARE FORGIVEN -- MEASURED
+#
+# ⚠ **THE REAL GAS-PHASE REACTION IS SECOND ORDER IN WATER.** SO3 + H2O over a
+# bare bimolecular barrier is slow; what actually runs in moist air is the
+# water-dimer path, ``SO3 + 2 H2O -> H2SO4 + H2O``, whose effective constant
+# RISES as it cools. So the barrier declared here is an APPARENT one standing in
+# for a termolecular mechanism, exactly as ``sulfur_dioxide_oxidation``'s 40
+# kJ/mol stands in for a reaction that really runs in a droplet.
+#
+#   * ``A = 1e10 L/(mol s)`` is pinned at the order of the gas-kinetic COLLISION
+#     LIMIT (~1e11) -- the same pin ``sulfur_combustion`` takes, and for the same
+#     reason: it is not a knob dialled until the yield looked right.
+#   * ``Ea = 23.6 kJ/mol`` then puts ``k(298)`` at 7.3e5 L/(mol s), which is the
+#     ORDER of the effective bimolecular constant reported for SO3 in water
+#     vapour (~1e-15 cm3 molecule^-1 s^-1). ⚠ **That figure is RECALLED, not
+#     sourced from anything in this repo**, so it is used as an order of
+#     magnitude and not as a value -- which is only defensible because of the
+#     next paragraph.
+#
+# ⚠⚠ **MEASURED: THE ANSWER DOES NOT DEPEND ON EITHER.** In the receiver at
+# 350 K the conversion is **100.000% at A = 1e6, 1e8, 1e10 and 1e11** -- five
+# decades, and the equilibrium is a hard attractor at every one of them. This is
+# GAME_DESIGN section 3(a)'s rule holding: a rate error is forgiven, and only bad
+# THERMO snowballs. The thermo here is three experimental rows.
+#
+# ⚠ **WHAT WAS DELIBERATELY NOT DECLARED: ``orders=(1.0, 2.0)``.** It is the more
+# correct rate law and it was refused, because ``ReactionTemplate.orders`` may not
+# be combined with ``reversible`` -- a declared order has no detailed-balance
+# partner. The trade was measured rather than assumed: the ORDER is forgiven (the
+# five decades above) and the REVERSE is the mechanic (the 664 K ceiling). The
+# reverse wins. *Between two wrong-in-different-ways declarations, keep the one
+# whose error is measured to be invisible.*
+#
+# ## AND THE LIQUID CHANNEL IS REFUSED, WITH THE MEASUREMENT
+#
+# ``phase="any"`` would run this in the flask's liquid as well as its headspace,
+# and a receiver full of water is not an obviously wrong place to put it. It was
+# built, measured and refused on two numbers:
+#
+#     phase      conv at 320-600 K     sulfur conservation at 320 K   700 K run
+#     gas             100.000%              +8.4e-15 mol                434 s
+#     liquid          100.000%              +2.9e-06 mol  (REPORTED)     13 s
+#     any             100.000%              +1.5e-06 mol  (REPORTED)     72 s
+#
+# It buys **nothing** -- the conversion is identical to six figures -- and it
+# costs a projection residual six thousand times the tolerance, because the
+# liquid-phase pseudo-first-order constant is 1.4e6 1/s against a 600 s run and
+# drives SO3 to zero inside the first microsecond. ⚠ The residual is NOT silent:
+# ``conservation_report`` names it, which is what let it be priced at all. ⚠ And
+# there is no second sourced constant to put on a liquid-phase arrow anyway; it
+# would be the gas one copied, which is how a template acquires a number nobody
+# can defend.
+#
+# ⚠⚠ **THE 434 s IS A REAL FINDING AND IT IS NOT THIS TEMPLATE'S.** A gas-only
+# receiver run at 700 K -- above sulfuric acid's 610 K boiling point, so the
+# liquid layer drains to nothing -- takes **434 seconds of wall clock** against
+# ~1 s at every temperature below it. That is engine queue item 15's shape (the
+# burner's ``LAYER_REABSORB`` thrashing) reproduced on a three-species network,
+# which makes it the cheapest reproduction of that bug anyone has. The standing
+# audit stops at 600 K and says so.
+
+
+def sulfur_trioxide_hydration(
+    A: float = 1.0e10, Ea: float = 23_600.0,
+) -> ReactionTemplate:
+    """SO3 + H2O -> H2SO4. The receiver on the end of a vitriol retort.
+
+    Written on the SMARTS: a sulfur of degree THREE carrying three terminal
+    oxygens takes up a water, and two of the three double bonds become hydroxyls.
+    ``[SX3]`` is what keeps it off everything else with a sulfonyl group in it --
+    measured against sulfuric acid itself, disulfuric acid, sulfur dioxide,
+    methanesulfonic acid and the sulfate lattice, none of which it matches. That
+    matters more than usual here: the product of this reaction contains the
+    reactant's own functional group in all but the sulfur's degree, so a looser
+    pattern would be self-feeding.
+
+    Reversible, and the reverse is the point -- see the block comment above.
+    ``ln K`` crosses zero at 664.3 K, so a receiver run hot cracks its own acid
+    back to the trioxide, and nothing declares that: it is dH/dS on three
+    experimental formation rows.
+
+    Gas phase. The liquid channel was built and REFUSED on a measurement -- it
+    buys 0.000% and costs a 2.9e-06 mol projection residual.
+    """
+    return ReactionTemplate(
+        name="sulfur_trioxide_hydration",
+        smarts="[OX1:1]=[SX3:2](=[OX1:3])=[OX1:4].[OX2H2:5]"
+               ">>[O:1]=[S:2](=[O:3])([O;H1:4])[O;H1:5]",
+        A=A, Ea=Ea, phase="gas", reversible=True,
+    )
+
+
+# ---------------------------------------------------------------------------
 # bundles
 # ---------------------------------------------------------------------------
 
@@ -680,3 +818,28 @@ def lead_chamber() -> list[ReactionTemplate]:
     shows up as a jump in that number.
     """
     return [sulfur_dioxide_oxidation(), nitric_oxide_reoxidation()]
+
+
+def vitriol_receiver() -> list[ReactionTemplate]:
+    """The one template that turns a retort's trioxide into oil of vitriol.
+
+    ⚠ **THE RETORT IS NOT IN THIS BUNDLE AND CANNOT BE.** The other half of
+    `vitriol-distillation` is a SOLID-STATE declaration, not a template --
+    ``properties/solid_state.py``'s ``sulfate-thermal-decomposition`` -- and it
+    reaches a vessel through ``build_solid_state_arrays`` rather than through
+    ``build_network``. A flask charged with green vitriol and water gets both
+    halves; a flask given this bundle and no sulfate gets nothing, and
+    ``build_network`` cannot warn about that, exactly as ``lead_chamber``'s
+    missing carrier cannot be warned about.
+
+    ⚠ **AND THE TWO HALVES WANT DIFFERENT TEMPERATURES**, which is why the
+    historical apparatus is a retort and a receiver rather than one pot. The
+    sulfate does not decompose below ~800 K and is complete by 1000 K; the acid
+    is unstable above 664 K. There is no single temperature at which this route
+    runs, and that is the mechanic. ``validation/vitriol.py`` measures both ends.
+
+    Bounded: 3 species, 2 reactions on a receiver charge. The template does not
+    regenerate its own matched group -- sulfuric acid's sulfur is ``[SX4]`` and
+    the pattern is ``[SX3]``.
+    """
+    return [sulfur_trioxide_hydration()]

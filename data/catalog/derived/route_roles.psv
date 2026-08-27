@@ -11,7 +11,7 @@ contact-process | intermediate | disulfuric-acid;sulfur-dioxide;sulfur-trioxide;
 contact-process | catalyst | vanadium-pentoxide
 vitriol-distillation | feedstock | iron-ii-sulfate;water
 vitriol-distillation | intermediate | sulfur-trioxide
-vitriol-distillation | product | iron-ii-oxide;sulfuric-acid
+vitriol-distillation | product | iron-iii-oxide;sulfur-dioxide;sulfuric-acid
 pyrite-roasting | feedstock | iron-disulfide;oxygen
 pyrite-roasting | product | iron-iii-oxide;sulfur-dioxide
 claus-process | feedstock | hydrogen-sulfide;oxygen

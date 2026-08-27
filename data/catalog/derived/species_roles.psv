@@ -16,17 +16,17 @@ chlorine | 13 | 7 | 1 | 5 | 0 | measured
 glucose | 13 | 6 | 2 | 5 | 0 | joback
 ethanol | 11 | 4 | 1 | 5 | 1 | measured
 acetone | 11 | 7 | 1 | 3 | 0 | measured
+sulfur-dioxide | 10 | 0 | 3 | 7 | 0 | measured
 carbon-graphite | 10 | 7 | 1 | 2 | 0 | mineral
 acetaldehyde | 10 | 5 | 2 | 3 | 0 | benson
-sulfur-dioxide | 9 | 0 | 3 | 6 | 0 | measured
 calcium-hydroxide | 9 | 5 | 2 | 2 | 0 | ion
 phenol | 9 | 5 | 0 | 4 | 0 | measured
 aniline | 9 | 5 | 0 | 3 | 1 | measured
 nickel | 9 | 0 | 0 | 0 | 9 | mineral
 ethylene | 9 | 8 | 0 | 1 | 0 | joback
+iron-iii-oxide | 7 | 2 | 0 | 3 | 2 | mineral
 benzene | 7 | 6 | 0 | 1 | 0 | measured
 sulfur-s8 | 6 | 5 | 0 | 1 | 0 | measured
-iron-iii-oxide | 6 | 2 | 0 | 2 | 2 | mineral
 nitrogen | 6 | 3 | 0 | 3 | 0 | measured
 iron | 6 | 2 | 0 | 2 | 2 | mineral
 formaldehyde | 6 | 5 | 1 | 0 | 0 | measured
@@ -87,7 +87,6 @@ sodium-ethoxide | 3 | 3 | 0 | 0 | 0 | refused
 ethyl-acetoacetate | 3 | 2 | 0 | 1 | 0 | benson
 sulfur-trioxide | 2 | 0 | 2 | 0 | 0 | measured
 iron-ii-sulfate | 2 | 2 | 0 | 0 | 0 | ion
-iron-ii-oxide | 2 | 0 | 1 | 1 | 0 | refused
 hydrogen-sulfide | 2 | 1 | 0 | 1 | 0 | measured
 sodium-carbonate | 2 | 0 | 0 | 1 | 1 | ion
 calcium-carbide | 2 | 0 | 2 | 0 | 0 | refused
@@ -184,6 +183,7 @@ phosphorus-pentoxide | 1 | 0 | 0 | 1 | 0 | refused
 aluminium-hydroxide | 1 | 0 | 1 | 0 | 0 | refused
 sodium-aluminate | 1 | 0 | 1 | 0 | 0 | refused
 cryolite | 1 | 0 | 0 | 0 | 1 | refused
+iron-ii-oxide | 1 | 0 | 1 | 0 | 0 | refused
 lead-sulfide | 1 | 1 | 0 | 0 | 0 | mineral
 lead-ii-oxide | 1 | 0 | 1 | 0 | 0 | mineral
 copper-sulfide | 1 | 1 | 0 | 0 | 0 | mineral

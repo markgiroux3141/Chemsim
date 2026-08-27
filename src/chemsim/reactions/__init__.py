@@ -7,9 +7,11 @@ from chemsim.reactions.library import (
     esterification,
     ether_condensation,
     lead_chamber,
+    vitriol_receiver,
     nitric_oxide_reoxidation,
     peroxide_over_oxidation,
     sulfur_combustion,
+    sulfur_trioxide_hydration,
     sulfur_dioxide_oxidation,
 )
 from chemsim.reactions.electrochemistry import (
@@ -87,9 +89,11 @@ __all__ = [
     "esterification",
     "ether_condensation",
     "lead_chamber",
+    "vitriol_receiver",
     "nitric_oxide_reoxidation",
     "peroxide_over_oxidation",
     "sulfur_combustion",
+    "sulfur_trioxide_hydration",
     "sulfur_dioxide_oxidation",
     # M5 -- the named-route templates, see reactions/synthesis.py
     "glycoside_hydrolysis",

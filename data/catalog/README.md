@@ -695,6 +695,77 @@ precedent: inventing chemistry inside an audit corpus is not allowed, and
 correcting this one means re-balancing it to 2 FeSO₄ and adding an SO₂ nobody
 wrote. Recorded rather than reproduced quietly.
 
+### ⚠⚠⚠ C1 TRIPPED THIS LANDMINE ON PURPOSE, AND THE ROW IS CORRECTED NOW
+
+The paragraph above ends *"whoever builds it owes this row a second look"*, and
+C1 is that session: it built `sulfur-trioxide-hydration`, which is the half of
+the old `hydrolysis` bucket that `vitriol-distillation` step 2 needed. **The row
+is corrected**, to the reaction the engine has declared since M6:
+
+    was   iron-ii-sulfate -> iron-ii-oxide + sulfur-trioxide
+    now   iron-ii-sulfate -> iron-iii-oxide + sulfur-dioxide + sulfur-trioxide
+
+⚠ **AND THE `diels-alder-route` PRECEDENT ABOVE DOES NOT COVER IT, WHICH IS THE
+DISTINCTION WORTH KEEPING.** That precedent forbids *inventing* chemistry inside
+the corpus — writing a product nobody sourced so that a row will balance. Here
+the product is already sourced, by a `SolidStateReaction` that has been in
+`properties/solid_state.py` for six milestones with its own written argument for
+why FeO is wrong. The corpus was disagreeing with the engine, and the engine's
+side of the disagreement is the one with a citation on it. *A corpus edit that
+copies a sourced declaration is not the same act as one that fills a gap.*
+
+⚠ Measured before making it: `validation/corpus_balance.py`'s headline is
+**unchanged at 75 unbalanceable steps across 61 routes**, and it was unchanged
+before too — the OLD row balances as well (`FeSO4 -> FeO + SO3` conserves every
+element). **So the balance audit could not have found this and cannot confirm
+it**, which is S12's finding pointing the other way: there, a row that looked
+spurious was real; here, a row that balances perfectly was wrong.
+
+⚠ What the correction moved, measured: `iron-ii-oxide` is REFUSED a price and
+`iron-iii-oxide` is not, so species-ready routes went **82 → 83** on the row
+alone. The route was blocked on a datum for a species that was never in its
+chemistry.
+
+### ⚠⚠ AND `hydrolysis` ITSELF WAS AN OUTCOME LABEL, WHICH IS WHY C1 SPLIT IT
+
+The paragraph above calls `hydrolysis` *"the 4th-best template to build"*. It was
+not a template-shaped thing at all. Eight rows sat under it and this taxonomy
+already carried `amide-`, `ester-`, `epoxide-`, `glycoside-`, `nitrile-`,
+`isocyanate-` and `disproportionation-hydrolysis`: everything it knew how to
+name had been named, and `hydrolysis` was the bin for the rest.
+
+| row | reaction | new class | covered |
+|---|---|---|:-:|
+| `contact-process` 4 | H2S2O7 + H2O -> 2 H2SO4 | `oleum-hydrolysis` | ✘ |
+| `vitriol-distillation` 2 | SO3 + H2O -> H2SO4 | `sulfur-trioxide-hydration` | ✔ |
+| `leblanc-process` 4 | CaS + H2O + CO2 -> CaCO3 + H2S | `sulfide-carbonation` | ✘ |
+| `frank-caro` 3 | CaCN2 + H2O -> NH3 + CaCO3 | `cyanamide-hydrolysis` | ✘ |
+| `castner-kellner` 2 | Na(Hg) + H2O -> NaOH + H2 + Hg | `amalgam-decomposition` | ✘ |
+| `calcium-carbide` 2 | CaC2 + H2O -> C2H2 + Ca(OH)2 | `carbide-hydrolysis` | ✘ |
+| `furfural-route` 1 | xylose + H2O -> xylose | `pentosan-hydrolysis` | ✘ |
+| `grignard-route` 3 | R-OMgBr + H2O -> R-OH | `organometallic-protonolysis` | ✘ |
+
+⚠ **THE SPLIT MOVES THE DENOMINATOR BY SEVEN AND THE NUMERATOR BY ONE** —
+`52/229 → 53/236`. That is S7's shape: a split that lowers the headline is a
+split working. Crediting all eight off one SMARTS is the false credit S1, S9 and
+G4 each measured separately.
+
+⚠ **`oleum-hydrolysis` IS THE NEAR-MISS AND IT IS DELIBERATELY NOT CREDITED.**
+`sulfur_trioxide_hydration` matches `[SX3]` with three terminal oxygens;
+disulfuric acid's two sulfurs are both `[SX4]` and it does not match — asserted
+in `tests/test_vitriol.py`. `contact-process` step 4 stays a gap, and its
+`disulfuric-acid` is refused a price anyway, so that route is blocked twice.
+
+⚠⚠ **AND ONE ROW'S CLASS WAS DECIDED RATHER THAN DERIVED.** `furfural-route`
+step 1 is chemically a glycoside hydrolysis, and this taxonomy's own convention
+would file it under the **covered** `glycoside-hydrolysis`. It is not there,
+because the row as spelled is `xylose + water -> xylose` — its products a subset
+of its reactants, one of the five rows no template can ever match — so a covered
+class would manufacture a credit for a row that cannot run. ⚠ Measured both ways:
+it costs **zero either way today**, because the route needs three more classes as
+well. *A false credit is cheapest to refuse before it can pay*, and the
+measurement of what it is worth is in `validation/vitriol.py` panel 6.
+
 ### ⚠ THE TWO GAPS COST DIFFERENT AMOUNTS, WHICH IS WHY THEY ARE TWO CLASSES
 
 * **`urea-deammoniation` is blocked on a TEMPLATE ONLY.** All three species

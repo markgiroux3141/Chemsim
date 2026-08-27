@@ -814,13 +814,18 @@ def main() -> int:
       "blocker and not just a coverage one.**")
     w("")
     ceiling, _ = closure(pool=RUNNABLE | set(FED_BUT_UNRUNNABLE))
+    # ⚠ THE COUNT IS DERIVED AND USED TO BE THE WORD "four". C1 granted one
+    # of the 21 rows and the free list dropped to three, leaving a generated
+    # report carrying a hand-typed number that disagreed with the list beside
+    # it. A generated artefact may not spell a count in words.
+    free = sorted(set(ceiling) - set(PLAYABLE) - set(FED_BUT_UNRUNNABLE))
     w("### The ceiling, and it is the goal")
     w("")
     w(f"Grant **all {len(FED_BUT_UNRUNNABLE)}** of them and the fixed point "
       f"reaches **{len(ceiling)} playable routes** at depth "
-      f"{max(ceiling.values())} — because four more routes fall out for free "
-      "once the shelf grows: "
-      f"{', '.join(f'`{r}`' for r in sorted(set(ceiling) - set(PLAYABLE) - set(FED_BUT_UNRUNNABLE)))}.")
+      f"{max(ceiling.values())} — because {len(free)} more routes fall out "
+      "for free once the shelf grows: "
+      f"{', '.join(f'`{r}`' for r in free)}.")
     w("")
     w(f"⚠⚠⚠ **THAT IS THE GOAL, AND IT IS NOW A FINITE NAMED LIST.** The G-series "
       f"goal is ~40 targets reachable from the ground; this corpus tops out at "

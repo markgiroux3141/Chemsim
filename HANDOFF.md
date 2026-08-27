@@ -6658,3 +6658,126 @@ RESOLVED since the last handoff:
     `test_protonation` + `test_ui` = **86 passed**, `granularity.py` still
     reports 31 + 5 through the shared walk, `COVERAGE_REPORT.md` moved exactly
     2 lines, ruff clean over `src tests examples validation tools`.
+
+105. ✔✔ **C1 — OIL OF VITRIOL FROM A ROCK: ONE ARROW, AND THE ROUTE WAS BLOCKED
+    ON A PRICE FOR A SPECIES THAT IS NOT IN ITS CHEMISTRY.** The first C-series
+    item, taken off `PLAYABLE.md` §8 rather than off the coverage curve.
+    **12 → 14 playable, 36 → 37 runnable, 52/229 → 53/236 classes, 82 → 83
+    species-ready, 41 → 42 template-ready, 31 → 32 BOTH.** Deliverables:
+    `reactions/library.py`'s `sulfur_trioxide_hydration` + `vitriol_receiver`,
+    the `hydrolysis` split in `route_steps.psv`, a corrected
+    `vitriol-distillation` row, `validation/vitriol.py` (7 panels, 18 s) and
+    `tests/test_vitriol.py` (18 tests).
+
+    ⚠⚠⚠ **THE HALF THE WORK ORDER CALLED A TEMPLATE WAS HALF ALREADY BUILT AND
+    HALF A CORPUS ERROR.** `vitriol-distillation` is two rows and PLAYABLE listed
+    two blockers. The roast has been declared in `properties/solid_state.py`
+    since M6 (`2 FeSO4 → Fe2O3 + SO2 + SO3`) and RUNS — nothing below 800 K,
+    complete by 1000 K, exactly 0.05 mol of each product from 0.10 of the
+    mineral, against the catalog's own *"retort, red heat"* that nobody had told
+    the engine. And the other blocker, a refused `iron-ii-oxide`, **was never in
+    the reaction**: the row named FeO, FeO does not survive red heat, and
+    `mineral_data` refuses it on the crystal Cps CRC does not tabulate.
+    *A refused species in a route's blocker list may be a corpus error rather
+    than a curation job.* Correcting the row alone moved species-ready 82 → 83.
+
+    ⚠⚠ **AND `data/catalog/README.md` HAD WRITTEN THE LANDMINE DOWN THREE
+    MILESTONES EARLIER WITH ITS TRIGGER NAMED.** S3: *"the day `hydrolysis` is
+    credited, `vitriol-distillation` goes template-ready on a step whose stated
+    product does not exist in the run — whoever builds it owes this row a second
+    look."* C1 is that session and the note worked exactly as designed. **A
+    recorded landmine with a named trigger is the cheapest documentation this
+    project writes.**
+
+    ⚠⚠ **`hydrolysis` WAS AN OUTCOME LABEL SITTING NEXT TO SEVEN
+    COUNTER-EXAMPLES.** Eight rows, the catalog's second-biggest class — and the
+    taxonomy already carried `amide-`, `ester-`, `epoxide-`, `glycoside-`,
+    `nitrile-`, `isocyanate-` and `disproportionation-hydrolysis`. Everything it
+    knew how to name had been named; this was the bin for the rest. Split into
+    `oleum-hydrolysis`, `sulfur-trioxide-hydration`, `sulfide-carbonation`,
+    `cyanamide-hydrolysis`, `amalgam-decomposition`, `carbide-hydrolysis`,
+    `pentosan-hydrolysis`, `organometallic-protonolysis`. **Denominator +7,
+    numerator +1** — S7's shape, a split that lowers the headline is one working.
+    ⚠ `oleum-hydrolysis` is the near-miss and is NOT credited: `[SX3]` against
+    disulfuric acid's two `[SX4]` sulfurs, asserted.
+
+    ⚠⚠ **ONE ROW'S CLASS WAS DECIDED RATHER THAN DERIVED, AND MEASURED BOTH
+    WAYS.** `furfural-route` 1 is chemically a glycoside hydrolysis and the
+    convention would file it under the COVERED class; it is not there because the
+    row is fragility 29b (`xylose + water -> xylose`) and no template can ever
+    match it. **Measured: zero either way today** — the route needs three more
+    classes. *A false credit is cheapest to refuse before it can pay.*
+
+    ⚠⚠⚠ **THE CEILING IS EMERGENT: `ln K = 0` AT 664.3 K.** `dH −97.53`,
+    `dS −146.8 J/(mol K)`, three EXPERIMENTAL formation rows, one division. In a
+    dry gas the conversion falls **46.8% → 1.6%** between 600 K and 800 K, and it
+    matches the closed-form root of the same K to three figures at every rung —
+    which is what tells an equilibrium from a stall. **A receiver has to be
+    COOL**, and nobody typed that.
+    ⚠ **THE CONDENSER BEATS THE CEILING, WHICH IS THE BETTER HALF.** With liquid
+    water present the conversion is **100.000% up to 600 K**, not because K is
+    large (`ln K` = 1.89) but because the acid boils at 610 K and leaves the gas
+    as fast as it forms. *Le Chatelier, done by a phase change the template knows
+    nothing about.*
+
+    ⚠⚠ **THE RATE LAW IS APPARENT AND THE TRADE WAS MEASURED.** The real gas
+    reaction is second order in water; `A = 1e10` is pinned at the collision
+    limit's order and `Ea = 23.6 kJ/mol` puts `k(298)` at the ORDER of the
+    reported effective constant — **recalled, used as an order of magnitude and
+    not as a value**, which is only defensible because the answer is 100.000% at
+    A = 1e6, 1e8, 1e10 and 1e11. ⚠ `orders=(1.0, 2.0)` is the more correct law and
+    was REFUSED: a declared order may not be reversible, so the choice was the
+    right ORDER against the right REVERSE. The order is forgiven and the reverse
+    is the mechanic. **Between two wrong-in-different-ways declarations, keep the
+    one whose error is measured to be invisible.**
+
+    ⚠⚠ **THE LIQUID CHANNEL WAS BUILT AND REFUSED ON CONSERVATION.** `phase="any"`
+    converts identically to six figures and cannot settle a **2.9e-06 mol**
+    projection residual, because its pseudo-first-order constant is 1.4e6 1/s
+    against a 600 s run. ⚠ The residual is not silent — `conservation_report`
+    names it, which is what made it priceable — and there is no second SOURCED
+    constant to put on a liquid arrow anyway.
+
+    ⚠⚠⚠ **THE CHEAPEST REPRODUCTION OF ENGINE QUEUE ITEM 15 IN THE REPO.** A
+    ONE-POT flask (vitriol + water) at the default tolerance: **800 K/2000 s in
+    0.4 s, 900 K/500 s in 44.4 s, 1000 K/200 s did not finish in NINE MINUTES.**
+    Six species, one template, a liquid layer holding 1e-17 mol — the burner's
+    `LAYER_REABSORB` thrashing on a network small enough to instrument.
+    ⚠ **And the panel was built to confirm the 664 K ceiling and did NOT**: in
+    66 bar of steam the acid is still favoured 3.35:1 at 800 K (`K·p_H2O` = 3.33),
+    and what kills the one pot is the sulfate moving 0.285% in 2000 s. **The
+    two-vessel apparatus is right for a reason that is half chemistry and half
+    numerics**, written down that way.
+
+    ⚠⚠⚠ **C1 DISSOLVED THE ONLY EVIDENCE FOR ONE OF G3's FOUR SCORING RULES.**
+    Rule 3 (*a route shelves its target AND its byproducts*) was justified by
+    13 against 14. Re-measured, the byproducts/both columns are **equal in both
+    rows** (roles 15/15, order 14/14) — the route it bought was
+    `saltpetre-nitric`, whose acid came from the lead chamber's fouling row, and
+    C1 gave the acid a route of its own. **The rule is kept**: it is a statement
+    about `route_roles`, still true and still asserted, and its measured cost is
+    a property of today's corpus. *A rule justified by a difference must not be
+    reverted the day the difference goes away.*
+
+    ⚠⚠ **AND THE WORK ORDER GOT LONGER BY GRANTING A ROW.** Fed-but-unrunnable
+    **21 → 24**, ceiling **37 → 41**, because sulfuric acid on the shelf fed
+    `guncotton`, `hmf-route`, `phosphoric-wet` and `superphosphate`. *A work order
+    derived from a fixed point is not a burndown list.* Routes needing NO template
+    went **2 → 4**, and **`calcium-phosphate` alone is worth +2 with no chemistry
+    at all** — phosphate rock is already on the NATURAL list and the engine
+    refuses to price it. **The cheapest row in the work order is now a data job.**
+    ⚠ The lever finding survived with all new numbers: `nickel` and
+    `benzaldehyde` block three routes each at +1; `aluminium` blocks ONE at +2.
+    ⚠ `iron-gall-ink` fell +2 → +1 and `nitrogen-dioxide` +2 → +1, both because C1
+    already delivered their second point.
+
+    ⚠⚠⚠ **THE FULL SUITE WAS NOT RUN, DELIBERATELY, AND IT IS OWED.** `src/`
+    changed. The last clean figure is G6's **1045 / 0 in 23:03**; with G3's 18 and
+    C1's 18 the expected count is **1081**. What WAS run: `test_vitriol` 18,
+    `test_playable` 18, `test_granularity` + `test_ui` + `test_hydroformylation` +
+    `test_protonation` 68 — **104 passed** — plus `validation/vitriol.py`,
+    `catalog_coverage.py`, `corpus_balance.py` (headline unchanged at 75/61),
+    `granularity.py` (32 + 5), `build_playable.py` and `build_route_index.py`.
+    ⚠ `tolerance_audit.py` is asserted **NOT owed**: no RHS edit, no data table
+    moved, every pre-existing network builds the same reactions from the same
+    constants. Its last measured state remains S13's.

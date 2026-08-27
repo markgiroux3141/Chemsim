@@ -11,16 +11,16 @@ lead-chamber | 4 | chamber crystal formation | nitrogen-dioxide + sulfur-dioxide
 contact-process | 1 | sulfur combustion | sulfur-s8 + oxygen | sulfur-dioxide | burner | sulfur-combustion
 contact-process | 2 | catalytic SO2 oxidation | sulfur-dioxide + oxygen + vanadium-pentoxide | sulfur-trioxide + vanadium-pentoxide | 700-900 K, V2O5 | catalytic-sulfur-dioxide-oxidation
 contact-process | 3 | absorption into oleum | sulfur-trioxide + sulfuric-acid | disulfuric-acid | absorber, 98% acid | acid-anhydride-absorption
-contact-process | 4 | oleum dilution | disulfuric-acid + water | sulfuric-acid | dilution | hydrolysis
-vitriol-distillation | 1 | dehydration of green vitriol | iron-ii-sulfate | iron-ii-oxide + sulfur-trioxide | retort, red heat | sulfate-thermal-decomposition
-vitriol-distillation | 2 | condensation to oil of vitriol | sulfur-trioxide + water | sulfuric-acid | receiver | hydrolysis
+contact-process | 4 | oleum dilution | disulfuric-acid + water | sulfuric-acid | dilution | oleum-hydrolysis
+vitriol-distillation | 1 | dry distillation of green vitriol | iron-ii-sulfate | iron-iii-oxide + sulfur-dioxide + sulfur-trioxide | retort, red heat | sulfate-thermal-decomposition
+vitriol-distillation | 2 | condensation to oil of vitriol | sulfur-trioxide + water | sulfuric-acid | receiver | sulfur-trioxide-hydration
 pyrite-roasting | 1 | pyrite roasting | iron-disulfide + oxygen | iron-iii-oxide + sulfur-dioxide | roaster, 1100 K | roasting
 claus-process | 1 | partial combustion of H2S | hydrogen-sulfide + oxygen | sulfur-dioxide + water | thermal stage | hydrogen-sulfide-combustion
 claus-process | 2 | Claus reaction | hydrogen-sulfide + sulfur-dioxide | sulfur-s8 + water | catalytic stage, alumina | comproportionation
 leblanc-process | 1 | salt cake | sodium-chloride + sulfuric-acid | sodium-sulfate + hydrogen-chloride | 1100 K | salt-metathesis
 leblanc-process | 2 | black ash | sodium-sulfate + carbon-graphite + calcium-carbonate | sodium-carbonate + calcium-sulfide + carbon-dioxide | reverberatory furnace | carbothermic-sulfate-reduction
 leblanc-process | 3 | lixiviation | sodium-carbonate + water | sodium-carbonate + water | leaching, crystallisation | dissolution
-leblanc-process | 4 | galligu waste weathering | calcium-sulfide + water + carbon-dioxide | calcium-carbonate + hydrogen-sulfide | tip, open air | hydrolysis
+leblanc-process | 4 | galligu waste weathering | calcium-sulfide + water + carbon-dioxide | calcium-carbonate + hydrogen-sulfide | tip, open air | sulfide-carbonation
 solvay-process | 1 | brine ammoniation | sodium-chloride + ammonia + water | sodium-chloride + ammonium-hydroxide | absorber | carbonate-equilibrium
 solvay-process | 2 | carbonation | ammonium-hydroxide + carbon-dioxide + sodium-chloride | sodium-bicarbonate + ammonium-chloride | Solvay tower, cold | precipitation-metathesis
 solvay-process | 3 | bicarbonate calcination | sodium-bicarbonate | sodium-carbonate + carbon-dioxide + water | calciner, 450 K | bicarbonate-thermal-decomposition
@@ -43,7 +43,7 @@ aqua-regia | 1 | aqua regia formation | nitric-acid + hydrogen-chloride | nitros
 aqua-regia | 2 | gold dissolution | gold + chlorine + hydrogen-chloride | chloroauric-acid | ambient | oxidative-dissolution
 frank-caro | 1 | carbide formation | calcium-oxide + carbon-graphite | calcium-carbide + carbon-monoxide | electric furnace, 2300 K | carbide-formation
 frank-caro | 2 | nitrogen fixation | calcium-carbide + nitrogen | calcium-cyanamide + carbon-graphite | 1300 K | gas-solid-fixation
-frank-caro | 3 | hydrolysis to ammonia | calcium-cyanamide + water | ammonia + calcium-carbonate | steam | hydrolysis
+frank-caro | 3 | hydrolysis to ammonia | calcium-cyanamide + water | ammonia + calcium-carbonate | steam | cyanamide-hydrolysis
 andrussow | 1 | ammoxidation of methane | methane + ammonia + oxygen + platinum | hydrogen-cyanide + water + platinum | 1400 K, Pt gauze | ammoxidation
 deacon-process | 1 | HCl reoxidation | hydrogen-chloride + oxygen + copper-ii-oxide | chlorine + water + copper-ii-oxide | 700 K, CuCl2 | catalytic-hydrogen-chloride-oxidation
 weldon-chlorine | 1 | pyrolusite oxidation of HCl | manganese-dioxide + hydrogen-chloride | chlorine + water + manganese-ii-chloride | warm | halide-oxidation
@@ -72,7 +72,7 @@ mercury-from-cinnabar | 1 | cinnabar roasting | mercury-sulfide + oxygen | mercu
 thermite | 1 | aluminothermic reduction | iron-iii-oxide + aluminium | iron + aluminium-oxide | ignition, 3000 K | metallothermic-reduction
 downs-cell | 1 | molten salt electrolysis | sodium-chloride | sodium + chlorine | 900 K melt, CaCl2 flux | molten-salt-electrolysis
 castner-kellner | 1 | amalgam formation | sodium-chloride + mercury | sodium-amalgam-marker + chlorine | mercury cathode | amalgam-electrolysis
-castner-kellner | 2 | amalgam decomposition | sodium-amalgam-marker + water | sodium-hydroxide + hydrogen + mercury | denuder | hydrolysis
+castner-kellner | 2 | amalgam decomposition | sodium-amalgam-marker + water | sodium-hydroxide + hydrogen + mercury | denuder | amalgam-decomposition
 gunpowder | 1 | incorporation | potassium-nitrate + sulfur-s8 + carbon-graphite | gunpowder-marker | wet-milled 75:10:15, corned and dried | formulation
 gunpowder | 2 | deflagration | gunpowder-marker | potassium-sulfate + nitrogen + carbon-dioxide + carbon-monoxide | ignition, self-oxidising | deflagration
 nitroglycerin-route | 1 | glycerol nitration | glycerol + nitric-acid + sulfuric-acid | nitroglycerin + water + sulfuric-acid | 283 K, mixed acid, stirred | esterification-nitration
@@ -173,7 +173,7 @@ acetic-anhydride-ketene | 2 | ketene absorption | ketene + acetic-acid | acetic-
 wacker-process | 1 | ethylene oxidation | ethylene + oxygen + copper-ii-ion | acetaldehyde + copper-ii-ion | PdCl2/CuCl2, 400 K | wacker-oxidation
 acetylene-acetaldehyde | 1 | mercury-catalysed hydration | acetylene + water + mercury-ii-ion | acetaldehyde + mercury-ii-ion | 370 K, HgSO4 in H2SO4 | alkyne-hydration
 calcium-carbide | 1 | carbide furnace | calcium-oxide + carbon-graphite | calcium-carbide + carbon-monoxide | electric arc, 2300 K | carbide-formation
-calcium-carbide | 2 | carbide hydrolysis | calcium-carbide + water | acetylene + calcium-hydroxide | ambient, water drip | hydrolysis
+calcium-carbide | 2 | carbide hydrolysis | calcium-carbide + water | acetylene + calcium-hydroxide | ambient, water drip | carbide-hydrolysis
 steam-cracking | 1 | thermal cracking | octane + water | ethylene + propylene + 1,3-butadiene + methane + hydrogen | 1100 K, steam diluted, 0.5 s | thermal-cracking
 ethylene-oxide-route | 1 | silver-catalysed epoxidation | ethylene + oxygen + silver | ethylene-oxide + silver | 520 K, 20 bar, Ag on alumina | catalytic-epoxidation
 ethylene-oxide-route | 2 | combustion side reaction | ethylene + oxygen | carbon-dioxide + water | same reactor, selectivity loss | hydrocarbon-combustion
@@ -278,7 +278,7 @@ starch-hydrolysis | 1 | acid or enzymatic hydrolysis | starch-unit + water | mal
 starch-hydrolysis | 2 | saccharification | maltose + water | glucose | glucoamylase, 330 K | glycoside-hydrolysis
 starch-hydrolysis | 3 | isomerisation to HFCS | glucose | fructose | glucose isomerase, 330 K | isomerisation
 invert-sugar | 1 | inversion | sucrose + water | glucose + fructose | acid or invertase | glycoside-hydrolysis
-furfural-route | 1 | pentosan hydrolysis | xylose + water | xylose | dilute H2SO4, 450 K steam | hydrolysis
+furfural-route | 1 | pentosan hydrolysis | xylose + water | xylose | dilute H2SO4, 450 K steam | pentosan-hydrolysis
 furfural-route | 2 | triple dehydration | xylose + sulfuric-acid | furfural + water + sulfuric-acid | 450 K, steam stripped | dehydration-cyclisation
 furfural-route | 3 | decarbonylation to furan | furfural + palladium | furan + carbon-monoxide + palladium | 470 K, Pd | decarbonylation
 furfural-route | 4 | hydrogenation to THF | furan + hydrogen + nickel | tetrahydrofuran + nickel | 420 K, Ni | arene-hydrogenation
@@ -328,7 +328,7 @@ acetoacetic-ester-synthesis | 2 | alkylation | acetoacetate-anion + bromoethane 
 acetoacetic-ester-synthesis | 3 | hydrolysis and decarboxylation | ethyl-2-ethylacetoacetate + water | 2-pentanone + carbon-dioxide + ethanol | dilute acid, reflux | ester-hydrolysis-decarboxylation
 grignard-route | 1 | reagent formation | bromobenzene + magnesium | grignard-phenylmagnesium-bromide | dry diethyl ether, reflux | oxidative-insertion
 grignard-route | 2 | carbonyl addition | grignard-phenylmagnesium-bromide + acetaldehyde | phenylethanolate-magnesium-bromide | 273 K, ether | nucleophilic-addition
-grignard-route | 3 | aqueous workup | phenylethanolate-magnesium-bromide + water | 1-phenylethanol + magnesium-hydroxide | dilute acid quench | hydrolysis
+grignard-route | 3 | aqueous workup | phenylethanolate-magnesium-bromide + water | 1-phenylethanol + magnesium-hydroxide | dilute acid quench | organometallic-protonolysis
 wittig-route | 1 | phosphonium salt | triphenylphosphine + iodomethane | methyltriphenylphosphonium-iodide | toluene, reflux | nucleophilic-substitution
 wittig-route | 2 | ylide generation | methyltriphenylphosphonium-iodide + n-butyllithium | ylide-methylenetriphenylphosphorane + butane | THF, 195 K | carbanion-generation
 wittig-route | 3 | olefination | ylide-methylenetriphenylphosphorane + benzaldehyde | styrene + triphenylphosphine-oxide | THF, warming to ambient | wittig-olefination

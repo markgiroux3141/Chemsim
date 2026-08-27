@@ -558,6 +558,50 @@ TEMPLATE_CLASSES = {
     # is exactly the ranking error this split exists to remove.
     "catalytic-hydrogen-chloride-oxidation": "deacon_oxidation",
     "comproportionation": "claus_comproportionation",
+    # ---------------------------------------------------------------------
+    # C1 -- `hydrolysis` WAS THE CATALOG'S SECOND-BIGGEST CLASS AND ITS LEFTOVER
+    # BIN, and the taxonomy had already named every mechanism it should have held
+    # ---------------------------------------------------------------------
+    # Eight rows sat under one label, and the argument for splitting them is not
+    # that they are eight mechanisms -- although they are -- but that this file
+    # ALREADY carries `amide-hydrolysis`, `ester-hydrolysis`, `epoxide-hydrolysis`,
+    # `glycoside-hydrolysis`, `nitrile-hydrolysis`, `isocyanate-hydrolysis` and
+    # `disproportionation-hydrolysis`. Everything the taxonomy knew how to name got
+    # named; `hydrolysis` was where the rest went. That is M1's finding -- a class
+    # must name a MECHANISM, not an outcome -- with the outcome label sitting next
+    # to seven mechanism labels of its own family.
+    #
+    #   contact-process 4      H2S2O7 + H2O -> 2 H2SO4        oleum-hydrolysis
+    #   vitriol-distillation 2 SO3 + H2O -> H2SO4             sulfur-trioxide-hydration
+    #   leblanc-process 4      CaS + H2O + CO2 -> CaCO3 + H2S sulfide-carbonation
+    #   frank-caro 3           CaCN2 + H2O -> NH3 + CaCO3     cyanamide-hydrolysis
+    #   castner-kellner 2      Na(Hg) + H2O -> NaOH + H2 + Hg amalgam-decomposition
+    #   calcium-carbide 2      CaC2 + H2O -> C2H2 + Ca(OH)2   carbide-hydrolysis
+    #   furfural-route 1       xylose + H2O -> xylose         pentosan-hydrolysis
+    #   grignard-route 3       R-OMgBr + H2O -> R-OH          organometallic-protonolysis
+    #
+    # ⚠⚠ THE SPLIT COSTS NOTHING AND CREDITS NOTHING BY ITSELF -- `hydrolysis` was
+    # not covered -- so it moves the DENOMINATOR up by seven and the numerator not
+    # at all. That is the S7 shape: a split that lowers the headline is a split
+    # working. What it buys is that ONE template can now be credited honestly
+    # instead of eight rows being credited off a template that matches one of them.
+    #
+    # ⚠⚠ AND ROW 7 IS THE ONE THAT WAS DECIDED RATHER THAN DERIVED. `furfural-route`
+    # step 1 is chemically a glycoside hydrolysis and the taxonomy's own convention
+    # would put it under the COVERED `glycoside-hydrolysis`. It is not there,
+    # because the row as spelled is fragility 29b -- `xylose + water -> xylose`, its
+    # products a SUBSET of its reactants -- so no template can ever match it, and
+    # filing it under a covered class would manufacture exactly the false credit S1
+    # and G4 each measured. **A dead row keeps an uncovered class.** Measured both
+    # ways in `validation/vitriol.py` panel 6 rather than argued.
+    #
+    # ⚠ `oleum-hydrolysis` IS NOT COVERED BY THE TEMPLATE BELOW AND THAT IS THE
+    # POINT OF SPLITTING IT OFF. `sulfur_trioxide_hydration`'s SMARTS is `[SX3]`
+    # with three terminal oxygens; disulfuric acid's two sulfurs are both `[SX4]`
+    # and it does not match -- measured. `contact-process` step 4 stays a gap, and
+    # its `disulfuric-acid` is REFUSED a price anyway, so the route is blocked
+    # twice over.
+    "sulfur-trioxide-hydration": "sulfur_trioxide_hydration",
     # the six in properties/electrolyte.py, which this map used not to know about
     "proton-transfer": "electrolyte.dissociation_templates",
     "acid-displacement": "electrolyte.dissociation_templates",
@@ -980,8 +1024,8 @@ TEMPLATE_CLASSES = {
 }
 
 # How many templates that is, counted rather than asserted -- the old text said
-# "10 templates" and ``library.py`` has 8.
-N_LIBRARY_TEMPLATES = 8
+# "10 templates" and ``library.py`` has 8. C1 makes it 9.
+N_LIBRARY_TEMPLATES = 9
 N_SYNTHESIS_TEMPLATES = 28
 N_ELECTROLYTE_TEMPLATES = 6
 # ⚠ M8 INCREMENTS THIS WHERE M3 AND M6 DELIBERATELY DID NOT, and the difference
