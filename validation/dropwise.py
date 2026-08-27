@@ -185,12 +185,21 @@ print("""
    sweep is 280.5 K to 328 K. Nobody wrote a runaway: it is q_rxn against
    UA*(T - T_env), and the drip rate is what sets q_rxn.
 
-   AND THE HONEST HALF: the PRODUCT columns barely move. Benzene is 0.609 mol
-   left at every slow setting and 0.651 at the fastest, and the mono/di split is
-   flat. That is G2's finding arriving early -- aromatic_nitration gives one A
-   and one Ea to every nitration on every substrate, so there is no stage for a
-   temperature to select between. The THERMAL mechanic works today; the
-   CHEMICAL consequence of it is what ring deactivation buys.""")
+   AND THE PRODUCT COLUMNS ARE FLAT, WHICH THEY WERE ALSO FLAT BEFORE G2 AND
+   FOR THE OPPOSITE REASON. Measured on this same sweep before ring deactivation
+   existed: nitrobenzene 0.133 at the fastest tap and 0.190 at the slowest, with
+   0.0555 mol of dinitrobenzene at EVERY setting -- one barrier for every
+   nitration, so the acid ran on past the mononitro product and temperature had
+   no stage to select between. With rho = -6.5 the same sweep gives 0.663-0.666
+   mol of nitrobenzene and 1e-5 to 4e-4 of the dinitro: the reaction now STOPS,
+   which is why the column is flat.
+
+   So the drip rate here controls the TEMPERATURE and not the product, and
+   after G2 that is the correct answer for this charge rather than a gap: 1.0 mol
+   of acid onto 1.0 mol of benzene cannot go past one substitution once the
+   second barrier is 25 kJ/mol higher. The staging G2 buys is visible where there
+   is acid to spend -- validation/ring_deactivation.py panel 3, toluene with 3.5
+   mol of it.""")
 
 # ---------------------------------------------------------------------------
 print()

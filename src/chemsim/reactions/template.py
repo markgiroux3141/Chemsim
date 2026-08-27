@@ -26,6 +26,7 @@ from rdkit import Chem
 from rdkit.Chem import AllChem
 
 from chemsim.matter import Molecule
+from chemsim.reactions import hammett
 
 
 @dataclass
@@ -237,6 +238,15 @@ class ReactionTemplate:
     orders: tuple[float, ...] | None = None
     solid_catalyst: str | None = None
     electrons: int = 0
+    # G2. The Hammett reaction constant, on the SIGMA-PLUS scale -- see
+    # ``reactions.hammett``, which carries the constants, the basis and the
+    # three things it does not model. Zero is EXACTLY the pre-G2 engine: no
+    # survey is run and the declared barrier is returned untouched.
+    hammett_rho: float = 0.0
+    # Which reactant SLOT carries the ring the substituents are read off.
+    # Slot order is SMARTS order, which is also the order ``build_network``
+    # assembles a reactant combination in.
+    hammett_slot: int = 0
     _rxn: AllChem.ChemicalReaction = field(default=None, repr=False, compare=False)
 
     # The phases a CONCRETE reaction may run in. "any" is not one of them: it is
@@ -267,6 +277,32 @@ class ReactionTemplate:
             self._check_solid_catalyst()
         if self.electrons:
             self._check_electrons()
+        if self.hammett_rho != 0.0:
+            self._check_hammett()
+
+    def _check_hammett(self) -> None:
+        """Validate a substituent-aware barrier. See ``reactions.hammett``."""
+        if self.alpha != 0.0:
+            raise ValueError(
+                f"template {self.name!r} declares BOTH alpha={self.alpha} "
+                f"and hammett_rho={self.hammett_rho}, and the two would "
+                f"price the same substituent twice by two different "
+                f"theories. alpha shifts the barrier with the REACTION "
+                f"ENTHALPY and rho shifts it with the SUBSTRATE'S "
+                f"ELECTRONICS, and on an aromatic ring those are two "
+                f"readings of one physical cause. Measured on the "
+                f"nitration network they also disagree in SIGN: benzene -> "
+                f"nitrobenzene is -141.2 kJ/mol and nitrobenzene -> "
+                f"dinitrobenzene is -268.1, so a positive alpha makes the "
+                f"DEACTIVATED ring react faster. Declare one"
+            )
+        if not 0 <= self.hammett_slot < self.n_reactant_slots:
+            raise ValueError(
+                f"template {self.name!r}: hammett_slot={self.hammett_slot} "
+                f"but this SMARTS has {self.n_reactant_slots} reactant "
+                f"slot(s). It names which reactant carries the aromatic "
+                f"ring, counted in SMARTS order from 0"
+            )
 
     def _check_electrons(self) -> None:
         """Validate an electrode reaction. See ``THE VOLTAGE GATE`` below."""
@@ -393,6 +429,29 @@ class ReactionTemplate:
         applied by ``detailed_balance``, which is where dH is already in hand.
         """
         return max(self.Ea + self.alpha * dH, 0.0)
+
+    def substituent_barrier(
+        self, reactants: tuple[Molecule, ...]
+    ) -> tuple[float, hammett.RingSurvey]:
+        """This substrate's barrier, J/mol, and what was found on its ring.
+
+        The twin of ``barrier`` for the OTHER thing a barrier can depend on.
+        ``hammett_rho == 0`` returns the declared barrier and an empty
+        survey without touching RDKit, which is what keeps every pre-G2
+        network bit-identical rather than nearly so.
+
+        ⚠ Floored at zero by ``hammett.clamp_barrier``, and that floor is
+        REACHABLE rather than defensive -- an aniline's sigma-plus_para of
+        -1.30 is worth -48 kJ/mol at rho = -6.5. The caller is expected to
+        notice when the clamp fires and say so; ``build_network`` does.
+        """
+        if self.hammett_rho == 0.0:
+            return self.Ea, hammett.RingSurvey(0.0, (), ())
+        found = hammett.survey(reactants[self.hammett_slot]._mol)
+        shifted = self.Ea + hammett.barrier_shift(
+            self.hammett_rho, found.sigma_sum
+        )
+        return hammett.clamp_barrier(shifted), found
 
     @property
     def n_reactant_slots(self) -> int:

@@ -204,12 +204,19 @@ print("""
    there is no safe rate and no unsafe one, there is a rate the cooling can
    keep up with.
 
-   AND THE HONEST HALF: the nitrobenzene column barely moves. It should. Real
-   nitration is a THREE-STAGE process precisely because each nitro group
-   deactivates the ring by four to six orders of magnitude -- and this engine
-   gives every nitration one barrier, so temperature has no stage to select
-   between. The thermal mechanic is real today; making it change the PRODUCT is
-   ring deactivation, which is G2.""")
+   AND THE NITROBENZENE COLUMN DOES NOT MOVE, WHICH IS THE RIGHT ANSWER FOR
+   THIS CHARGE. One mole of acid onto one mole of benzene has exactly one
+   substitution to make, and since G2 the ring knows it: a nitro group raises the
+   next barrier by 25 kJ/mol, so the reaction STOPS. Before G2 it did not -- the
+   same sweep left 0.13 to 0.19 mol of nitrobenzene and made 0.055 mol of
+   dinitrobenzene at every single setting, because one barrier covered every
+   nitration on every substrate.
+
+   Where the drip rate DOES pick the product is where there is acid to spend on
+   a second and third substitution. validation/ring_deactivation.py panel 3 is
+   that: toluene with 3.5 mol of nitric acid is mononitrated at 300 K in ten
+   seconds, dinitrated at 340 K, and only reaches TNT at 380 K -- the escalating
+   sequence real manufacture uses, out of three barriers 25 kJ/mol apart.""")
 
 # ---------------------------------------------------------------------------
 print()

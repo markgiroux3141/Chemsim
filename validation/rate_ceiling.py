@@ -216,6 +216,22 @@ def networks() -> dict:
     # here is confirming the pre-exponential is nowhere near a limit of any
     # kind: it is 3.0e7 against 1e11, four orders below, and there is no reverse
     # to derive because a declared rate order may never be reversible.
+    # G2. ⚠ THE ONE TEMPLATE WHOSE BARRIER IS NOT THE ONE IT DECLARES, so it is
+    # the one this audit could not previously have covered by reading a table.
+    # ``aromatic_nitration`` declares 60 kJ/mol and the ring shifts it: an
+    # activated substrate comes out LOWER, and 4-aminophenol comes out clamped
+    # at ZERO, where the rate constant is A alone. That is the case worth
+    # auditing -- a floored barrier is exactly how a pre-exponential ends up
+    # being the whole rate. It is irreversible, so there is no derived reverse.
+    out["nitration, activated"] = build_network(
+        ["Nc1ccc(O)cc1", "Oc1ccccc1", "Cc1ccccc1", "O[N+](=O)[O-]", "O"],
+        [S.aromatic_nitration()], thermo=THERMO, max_species=40,
+        max_molar_mass=300.0,
+    )
+    out["nitration, deactivated"] = build_network(
+        ["Cc1ccccc1", "O[N+](=O)[O-]", "O"], [S.aromatic_nitration()],
+        thermo=THERMO, max_species=40, max_molar_mass=300.0,
+    )
     out["Skraup"] = build_network(
         ["Nc1ccccc1", "C=CC=O", "O=[N+]([O-])c1ccccc1", "[OH3+]",
          "O=S(=O)([O-])O", "O"],

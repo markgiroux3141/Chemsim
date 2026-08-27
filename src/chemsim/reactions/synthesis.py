@@ -173,9 +173,21 @@ def glycoside_hydrolysis(
 # network; do not let it run to a fixpoint and be surprised.
 
 
+# rho -6.5 on the SIGMA-PLUS scale. Nitration of substituted benzenes in mixed
+# acid is the textbook Brown-Okamoto correlation and the reported band is -6.0 to
+# -7.3 depending on the acid strength the partial rate factors were measured in
+# (Coombes, Moodie and Schofield's 68% H2SO4 work sits near the middle of it).
+# -6.5 is taken as the middle, and what it PREDICTS is the check: nitrobenzene at
+# 2.4e-5 of benzene's rate and 2,4-dinitrotoluene at 1.4e-8 of toluene's, i.e.
+# 4.6 and 7.9 orders of magnitude, against the four to six per nitro group that
+# make TNT manufacture a three-stage process. See validation/ring_deactivation.py,
+# which measures the stages rather than asserting them.
+NITRATION_RHO = -6.5
+
+
 def aromatic_nitration(
     A: float = 1.0e10, Ea: float = 60_000.0, alpha: float = 0.0,
-    catalyst: str | None = None,
+    catalyst: str | None = None, rho: float = NITRATION_RHO,
 ) -> ReactionTemplate:
     """Ar-H + HNO3 -> Ar-NO2 + water. Electrophilic aromatic nitration.
 
@@ -183,6 +195,23 @@ def aromatic_nitration(
     pre-equilibrium is folded into the barrier -- which is what the literature
     band is measured on anyway. ``catalyst`` makes the sulfuric acid's role
     explicit in the rate law; the mixed-acid ratio is then a lever.
+
+    ⚠⚠ **``Ea`` IS BENZENE'S BARRIER AND NOT EVERY ARENE'S**, and that is G2. It
+    used to be every arene's, and the measurement that settled it is in
+    ``reactions/hammett.py``: 1.0 mol of toluene and 3.5 mol of nitric acid
+    reached **96% 2,4,6-TNT in ten seconds at room temperature**, with an endpoint
+    that did not move between 300 and 380 K. A ring already carrying three nitro
+    groups was being nitrated exactly as fast as a fresh one.
+
+    ⚠ **``rho`` IS A DECLARATION AND IT IS SCALE-SPECIFIC.** -6.5 is on the
+    sigma-plus scale; handing it aqueous sigma constants would multiply two bases
+    together. ``hammett`` carries the table, the provenance and the three things
+    the model does not do -- chiefly that it does not PROTONATE an amine, so an
+    aniline here is a free base and is priced 2.8e8 times more reactive than
+    benzene where the real thing is an anilinium ion and slower than benzene.
+
+    ⚠ Setting ``rho=0.0`` restores the pre-G2 template exactly, which is how the
+    cost of this is measured rather than argued.
 
     ⚠ Irreversible. The reverse is a nitro group leaving an arene, which does not
     happen thermally; the only real path back is ipso substitution by a different
@@ -196,6 +225,7 @@ def aromatic_nitration(
             catalyst,
         ),
         A=_kinetics(A, catalyst), Ea=Ea, alpha=alpha,
+        hammett_rho=rho, hammett_slot=0,
     )
 
 

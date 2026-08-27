@@ -28,6 +28,7 @@ import numpy as np
 from chemsim.matter import Molecule
 from chemsim.properties import ThermochemistryProvider, VolatilityProvider
 from chemsim.properties import standard_state
+from chemsim.reactions import hammett
 from chemsim.reactions import (
     ConcreteReaction,
     ReactionTemplate,
@@ -577,6 +578,43 @@ def _concrete_in_phase(
         fwd = ConcreteReaction(tmpl.name, r_smiles, p_smiles, tmpl.A, Ea, phase,
                                orders=tmpl.orders, solid_catalyst=cat,
                                electrical_work=work)
+
+    # G2. The OTHER thing a barrier can depend on: what is already on the ring.
+    # ``hammett_rho == 0`` is every template but one, costs a float comparison,
+    # and leaves the line above the last word -- so every pre-G2 network is
+    # bit-identical. ``ReactionTemplate`` refuses rho and alpha together, so the
+    # two branches can never both fire on one template.
+    if tmpl.hammett_rho != 0.0:
+        Ea, ring = tmpl.substituent_barrier(reactants)
+        fwd = ConcreteReaction(tmpl.name, r_smiles, p_smiles, tmpl.A, Ea, phase,
+                               orders=tmpl.orders, solid_catalyst=cat,
+                               electrical_work=work)
+        shift = hammett.barrier_shift(tmpl.hammett_rho, ring.sigma_sum)
+        # ⚠ TWO THINGS THAT MUST BE SAID RATHER THAN SWALLOWED, and both are the
+        # project's third case: not an error, not silence, a report.
+        if ring.unknown:
+            notices[f"{fwd.key()}|hammett"] = (
+                f"[build_network] NOTICE: template {tmpl.name!r} on "
+                f"'{' + '.join(r_smiles)}' carries a ring substituent with no "
+                f"Hammett constant in this build: {', '.join(ring.unknown)}. It "
+                f"is priced at sigma = 0, i.e. as though the ring were "
+                f"unsubstituted there, so this barrier is a LOWER bound for a "
+                f"deactivated ring and an upper bound for an activated one. See "
+                f"reactions/hammett.py for the table and its provenance."
+            )
+        if tmpl.Ea + shift < 0.0:
+            notices[f"{fwd.key()}|hammett-floor"] = (
+                f"[build_network] NOTICE: template {tmpl.name!r} on "
+                f"'{' + '.join(r_smiles)}' is activated PAST A ZERO BARRIER "
+                f"(sum sigma+ = {ring.sigma_sum:+.3f} at rho = "
+                f"{tmpl.hammett_rho:+.2f} is a shift of {shift:.0f} J/mol "
+                f"against a declared {tmpl.Ea:.0f}). Floored at zero, because a "
+                f"negative activation energy is a rate that RISES as the flask "
+                f"cools. What is left is A alone and it is not a measurement -- "
+                f"and note that an amine in mixed acid is really an anilinium "
+                f"ion, which this engine does not form. See "
+                f"hammett.clamp_barrier."
+            )
 
     if not tmpl.reversible:
         return [fwd]
