@@ -121,7 +121,7 @@ What is below is renumbered. **Items 1 and 2 are the two it created.**
    and **Tb does not feed that curve at all**. ⚠ **S13 CONFIRMS THIS IS STILL
    TRUE** — `validation/wacker.py` panel 4 is unchanged after the sweep.
 
-   ⚠ **BUT S13 PUT 863 MORE SPECIES ON A FITTED ANTOINE CURVE**, each with a
+   ⚠ **BUT S13 PUT 869 MORE SPECIES ON A FITTED ANTOINE CURVE** (889 condensable records against 20), each with a
    fit window bracketing its own Tb, and nothing checks whether the flask is
    above Tc when it evaluates one. The exposure grew even though the measured
    example did not move. Worth ZERO routes; take it for the honesty.
@@ -179,7 +179,7 @@ What is below is renumbered. **Items 1 and 2 are the two it created.**
    ⚠⚠ **AND S13 MAKES THIS ITEM MORE URGENT AND ALSO EASIER.** S11's finding was
    that ethylene moved from **+1574 to −1782 J/(mol K)** when it gained a
    MEASURED Tc — *a correlation extrapolated outside its domain does not get
-   safer when its inputs get better*. **S13 just gave 863 more species measured
+   safer when its inputs get better*. **S13 just gave 876 more species measured
    Tb/Tc.** ⚠⚠ **NOBODY HAS RE-SWEPT THE 99 SINCE.** The count is a pre-S13
    number and **the first thing this item needs is to measure it again** — it
    could be smaller, and it could be larger, and S11's ethylene result says do
@@ -541,7 +541,7 @@ fragility is item 15 below, and it is smaller.
 **2. ⚠⚠ NOTHING COMPARES T TO Tc (S11).** A condensable species above its critical
 temperature still dissolves by Raoult's law against an extrapolated Antoine curve.
 Ethylene is ~40x too soluble in the Wacker liquor. Engine queue item 3.
-**A LIMIT to remove, not an invariant.** ⚠ **S13 put 863 more species on a fitted
+**A LIMIT to remove, not an invariant.** ⚠ **S13 put 869 more species on a fitted
 Antoine curve and did NOT add a Tc check**, so the exposure grew even though the
 measured example did not move.
 
