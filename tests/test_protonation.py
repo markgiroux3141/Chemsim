@@ -246,15 +246,27 @@ def test_a_quaternary_aryl_ammonium_is_reported_and_not_guessed():
 
 
 def test_the_barrier_ladder_puts_the_anilinium_below_benzene():
-    """⚠ THE DIRECTION IS THE POINT. The free base is 2.8e8 times benzene; the
-    anilinium has to be SLOWER than benzene, and an acetanilide in between."""
-    def Ea(smi):
+    """⚠ THE DIRECTION IS THE POINT. The anilinium has to be SLOWER than
+    benzene and the two neutral amines FASTER.
+
+    ⚠⚠ AND G6 COLLAPSED THE TOP TWO RUNGS INTO ONE, WHICH IS NOT A REGRESSION.
+    An aniline asks the line for 8.45 decades and an acetanilide for 3.90, and
+    the encounter plateau is at 2.686 -- so both are above it and both are priced
+    AT it. That is what saturation means: once a ring reacts on every encounter,
+    activating it further buys no rate. ⚠ It is also why "protect the amine"
+    still works and now works for the right reason -- an amide cannot be
+    PROTONATED, rather than being intrinsically slower. The strict ladder is
+    asserted with the plateau lifted.
+    """
+    def Ea(smi, saturation=hammett.SATURATION_DECADES):
         s = hammett.survey(Molecule.from_smiles(smi)._mol)
         return hammett.clamp_barrier(
-            DECLARED_EA + hammett.barrier_shift(NITRATION_RHO, s.sigma_sum)
+            DECLARED_EA
+            + hammett.barrier_shift(NITRATION_RHO, s.sigma_sum, saturation)
         )
 
-    assert Ea(ANILINE) < Ea(ACETANILIDE) < Ea(BENZENE) < Ea(ANILINIUM)
+    assert Ea(ANILINE) == Ea(ACETANILIDE) < Ea(BENZENE) < Ea(ANILINIUM)
+    assert Ea(ANILINE, math.inf) < Ea(ACETANILIDE, math.inf) < Ea(BENZENE)
     assert Ea(BENZENE) == DECLARED_EA
     ratio = hammett.rate_ratio(NITRATION_RHO, 0.86)
     assert ratio < 1.0
@@ -307,10 +319,26 @@ def test_the_protonation_network_conserves_matter(protonation_net):
 # ---------------------------------------------------------------------------
 # 5. THE LIMIT -- asserted, so that removing it BREAKS a test
 # ---------------------------------------------------------------------------
-def test_the_crossover_acidity_is_ten_decades_below_what_the_engine_can_reach(
+def test_the_crossover_acidity_is_still_below_what_the_engine_can_reach(
     electro,
 ):
-    """⚠⚠ THE FINDING, AND IT IS ASSERTED AS A LIMIT.
+    """⚠⚠ THE LIMIT, ASSERTED -- AND G6 MOVED IT BY FIVE DECADES, WHICH IS WHY
+    THIS TEST NOW ASSERTS TWO NUMBERS INSTEAD OF ONE.
+
+    G5 measured the crossover at pH -9.42 and reported that it lands inside the
+    H0 band of the 90-98% sulfuric acid real aniline nitration is run in,
+    reading that as the engine's own arithmetic finding the right answer
+    unprompted. ⚠⚠ THAT AGREEMENT WAS A PROPERTY OF THE 8.45-DECADE
+    EXTRAPOLATION, which G6 replaced with a sourced encounter plateau: the
+    crossover is now -3.66. The bare line's -9.42 is kept below as what the
+    unsaturated model said, and what survives is the half that never depended on
+    the number -- the pot cannot reach either one.
+
+    THE ORIGINAL FINDING, KEPT BECAUSE THE MEASUREMENT THAT MOVED IT ONLY MEANS
+    SOMETHING AGAINST IT: real aniline gives largely meta product only in 90-98%
+    sulfuric acid, whose H0 falls to roughly -8 at 90 wt% and roughly -10 at 98
+    wt%. ⚠ That band is quoted to ONE FIGURE because it is recalled rather than
+    sourced here.
 
     The two channels cross at pH -9.42 -- which is not a wrong number: real
     aniline gives largely meta product only in 90-98% sulfuric acid, whose
@@ -324,22 +352,31 @@ def test_the_crossover_acidity_is_ten_decades_below_what_the_engine_can_reach(
     ⚠ When somebody gives this engine an acidity function, this test fails. That
     is the intent.
     """
-    k_free = hammett.rate_ratio(
-        NITRATION_RHO, hammett.survey(Molecule.from_smiles(ANILINE)._mol).sigma_sum
+    def crossover(saturation=hammett.SATURATION_DECADES):
+        k_free = hammett.rate_ratio(
+            NITRATION_RHO,
+            hammett.survey(Molecule.from_smiles(ANILINE)._mol).sigma_sum,
+            saturation=saturation,
+        )
+        k_ion = hammett.rate_ratio(
+            NITRATION_RHO,
+            hammett.survey(Molecule.from_smiles(ANILINIUM)._mol).sigma_sum,
+            saturation=saturation,
+        )
+        return -math.log10(10.0 ** (-PKA_ANILINIUM) * k_free / k_ion)
+
+    pH_cross = crossover()
+    assert pH_cross == pytest.approx(-3.66, abs=0.05)
+    assert crossover(math.inf) == pytest.approx(-9.42, abs=0.05), (
+        "G5's number, kept: the encounter plateau is what moved it"
     )
-    k_ion = hammett.rate_ratio(
-        NITRATION_RHO, hammett.survey(Molecule.from_smiles(ANILINIUM)._mol).sigma_sum
-    )
-    h_cross = 10.0 ** (-PKA_ANILINIUM) * k_free / k_ion
-    pH_cross = -math.log10(h_cross)
-    assert pH_cross == pytest.approx(-9.42, abs=0.05)
 
     net = build_network([NITRIC, SULFURIC, WATER], dissociation_templates(),
                         thermo=electro, max_species=40)
     best = min(_equilibrate(net, {NITRIC: 5.0, SULFURIC: 5.0, WATER: w}).pH
                for w in (40.0, 30.0, 20.0))
     assert -1.0 < best < 0.0
-    assert best - pH_cross > 8.0, "the wall has moved -- re-measure the finding"
+    assert best - pH_cross > 2.5, "the wall has moved -- re-measure the finding"
 
 
 def test_a_drier_acid_is_a_less_acidic_pot(electro):
@@ -354,11 +391,20 @@ def test_a_drier_acid_is_a_less_acidic_pot(electro):
     assert wet.pH < dry.pH - 4.0
 
 
-def test_the_split_moves_six_decades_and_leaves_eight(protonation_net):
-    """2.8e8 -> a few hundred times benzene, all of it still carried by a free
-    base at 1e-6 mole fraction. ⚠ The residual is NOT in the protonation model:
-    it is `sigma+ = -1.30` priced 8.45 decades off a line fitted on
-    |rho*sigma| < 2.6."""
+def test_the_split_moves_six_decades_and_the_plateau_closes_the_rest(
+    protonation_net,
+):
+    """⚠⚠ THE TWO HALVES TOGETHER, AND THIS IS WHERE G6 IS VISIBLE.
+
+    G5 took aniline from 2.8e8 times benzene to a few hundred times benzene and
+    measured that the remaining eight decades were NOT in the protonation model:
+    they were `sigma+ = -1.30` priced 8.45 decades off a line fitted on
+    |rho*sigma| < 2.6. ⚠ G6 prices that free base at the sourced encounter
+    plateau instead, and the effective rate crosses ONE -- aniline in the most
+    acidic flask this engine can reach is now SLOWER than benzene, which is the
+    observable. The bare-line value is asserted beside it, because the claim is
+    about the difference between the two.
+    """
     v = _equilibrate(protonation_net,
                      {ANILINE: 1.0, NITRIC: 5.0, SULFURIC: 5.0, WATER: 30.0})
     conc = v.concentrations(v.aqueous_layer())
@@ -374,10 +420,24 @@ def test_the_split_moves_six_decades_and_leaves_eight(protonation_net):
         NITRATION_RHO, hammett.survey(Molecule.from_smiles(ANILINIUM)._mol).sigma_sum
     )
     eff = (1.0 - frac) * k_free + frac * k_ion
-    assert 1e2 < eff < 1e4, eff                       # six decades gained
-    assert eff > 1.0, "still FASTER than benzene, where the truth is slower"
+    assert eff < 1.0, "aniline has to end up SLOWER than benzene"
+    assert 1e-4 < eff < 1e-2, eff
+
+    # ⚠ G5's OWN NUMBER, RE-MEASURED HERE RATHER THAN QUOTED, so that the size
+    # of what the plateau moved is asserted and not just its direction.
+    bare_free = hammett.rate_ratio(
+        NITRATION_RHO,
+        hammett.survey(Molecule.from_smiles(ANILINE)._mol).sigma_sum,
+        saturation=math.inf,
+    )
+    bare = (1.0 - frac) * bare_free + frac * k_ion
+    assert bare > 1e2
+    assert math.log10(bare / eff) > 5.0, "at least five decades of the eight"
+
+    # The ion channel matters more than it did only because the free-base
+    # channel shrank; it is still not the reaction.
     carried_by_ion = frac * k_ion / eff
-    assert carried_by_ion < 1e-8, "the ion channel is still not the reaction"
+    assert carried_by_ion < 1e-2
 
 
 def test_a_protonation_template_over_a_curated_ion_table_refuses(electro):

@@ -6354,3 +6354,186 @@ RESOLVED since the last handoff:
     `catalog_coverage.py` re-run and its diff read line by line;
     `tools/build_route_index.py` re-run and BYTE-IDENTICAL. The suite baseline
     remains G5's **1024 passed / 0 failed in 22:28**, plus this session's 9.
+
+103. ✔✔ **G6 — THE HAMMETT LINE SATURATES: A SOURCED ENCOUNTER PLATEAU, AND IT
+    IS WHAT TAKES ANILINE BELOW BENZENE.** G5 created this item, did its
+    arithmetic and deliberately did not build it because the CONSTANT needed
+    sourcing. The constant is sourced, it is declared, and the two things worth
+    carrying forward are that **the design question answered itself in a
+    measurement** and that **it cost G5 its own headline number.**
+
+    ⚠⚠⚠ **THE DESIGN QUESTION WAS "CAPPED RATIO OR ABSOLUTE ENCOUNTER CEILING",
+    AND IT WAS SETTLED BY MEASUREMENT RATHER THAN BY THE COST ARGUMENT.**
+    NEXT_PROMPT framed the ratio as the cheap-but-arguably-wrong form and
+    `min(k_hammett, k_enc)` as the physically correct one that would cost an RHS
+    edit and ten minutes of tolerance audit. **Measured over the 300–380 K band
+    the routes run in, with the plateau lifted:**
+
+        substrate       k at 300 K    k at 380 K    of a diffusion ceiling
+        benzene           0.357          56.6            5e-11 .. 2e-9
+        mesitylene        3.81e5         3.24e6          5e-5  .. 1e-4
+        aniline           8.94e7         2.41e8          1.2%  .. 0.86%
+        4-aminophenol     1.00e10        1.00e10         137%  .. 36%   <- CLAMPED
+
+    The absolute ceiling can only ever bind on the ONE case a floor already
+    catches: 4-aminophenol reaches it because `clamp_barrier` has already floored
+    its barrier at zero, which leaves `k = A = 1e10`. Everything with a positive
+    barrier is one to ten decades under. ⚠⚠ **AND `clamp_barrier` IS THEREFORE A
+    CRUDER VERSION OF THE SAME GUARD** — it pins `k` at the declared `A` rather
+    than at a diffusion rate, which nobody had noticed it was doing.
+
+    ⚠⚠ **THE DEEPER REASON, WHICH IS THE TRANSFERABLE ONE: THE OBSERVABLE IS SIX
+    DECADES BELOW ANY DIFFUSION CONSTANT, BECAUSE THIS RATE LAW IS NOT
+    ELEMENTARY.** `aromatic_nitration` is written on the arene and HNO3, so the
+    nitronium pre-equilibrium is folded into `Ea` and `k` is a stoichiometric
+    constant. An absolute ceiling in these units would have to be
+    `k_enc * [NO2+]/[HNO3]` — a property of the MEDIUM'S ACIDITY, which is
+    exactly what G5 measured this engine has nowhere to put. **So the capped
+    ratio is not the cheap approximation to the right model; it is the only one
+    of the two that can express the thing that was measured.**
+
+    ⚠⚠ **THE CONSTANT, AND THE BOUND IS THE DELIVERABLE.**
+    `hammett.SATURATION_DECADES = 2.686`, one-sided, declared per template as
+    `ReactionTemplate.hammett_saturation` for the same reason `rho` is declared
+    per template. Two sources, both new to this repo:
+
+    * **Belson & Strachan, *J. Chem. Soc., Perkin Trans. 2*, 1989, 15** — aqueous
+      nitric acid, 24–41 mol% HNO3, 293–333 K: relative rates
+      **benzene : toluene : p-xylene : mesitylene = 1 : 22 : 256 : 485** at
+      ~30 mol% and 25 °C, and *"with p-xylene and mesitylene the nitration is
+      diffusion-controlled, but not so with the others"*. log10(485) = 2.686.
+    * **Coombes, Moodie & Schofield, *J. Chem. Soc. B*, 1968, 800** — a limit
+      beyond which further activation does not increase the rate, and it IS the
+      encounter rate; at the top of their acidity range benzene's own rate comes
+      **within a sixth** of it.
+
+    ⚠⚠⚠ **AND THE SECOND SOURCE TURNED OUT TO BE THE *LOWER* BOUND, NOT A RIVAL
+    VALUE — WHICH IS THE MEASUREMENT THAT DECIDED THE NUMBER.** Benzene within a
+    sixth of encounter reads as **0.778 decades**, and applying that here caps
+    **TOLUENE at 6.0 against a measured 22** — damaging a substrate the same
+    literature says is NOT diffusion-controlled. So the honest band is **2.02
+    (toluene's own line value) to 2.69 decades**, and the declared value sits at
+    the top of it. A plateau cannot be lower than the fastest substrate that
+    does not saturate.
+
+    ⚠ **WHAT IT FIXES AND WHAT IT DOES NOT, both printed:** mesitylene
+    **1.16e6 → 485** (the datum, a 2400x correction); p-xylene 1.10e4 → 485
+    against a measured 256 (**1.9x high**, which is the factor the plateau's own
+    two data differ by); **toluene UNTOUCHED** at 105 against 22, because that
+    4.8x is `rho`'s error and a plateau is not asked to fix it.
+
+    ⚠⚠ **THE HEADLINE: ANILINE IS ON THE CORRECT SIDE OF BENZENE, AND IT TOOK
+    BOTH SESSIONS.** In the most acidic flask this engine can reach (pH −0.789),
+    channel-weighted: **1.10e3 × benzene → 1.89e-3 ×** — 5.8 decades, across the
+    line that matters, because the observable is that aniline in strong acid
+    nitrates SLOWER than benzene and gives largely meta product. G5's split
+    supplies the deactivated species; G6 stops the surviving free base being
+    priced off the end of the line. **Neither half does it alone** —
+    `validation/protonation.py` panel 5 now prints both and splits the credit.
+
+    ⚠⚠⚠ **AND IT COST G5 ITS STRONGEST CLAIM, WHICH IS RECORDED IN G5's OWN
+    AUDIT RATHER THAN QUIETLY OVERWRITTEN.** G5's headline was that the
+    free-base/anilinium crossover at **pH −9.42** lands inside the measured H0
+    band of the 90–98% sulfuric acid real aniline nitration is run in, *"without
+    being told about it"*. **That coincidence was a property of the 8.45-decade
+    extrapolation.** With the free base at a sourced plateau the crossover is
+    **−3.66**, so the pot needs 2.87 decades more acidity instead of 8.63. Both
+    cannot be right and the one with a source under it wins. **What survives of
+    G5 is the direction and the species split; what does not is the number being
+    evidence for anything.** ⚠ Asserted both ways in
+    `tests/test_protonation.py`, which now carries G5's number as the
+    plateau-lifted value.
+
+    ⚠⚠ **THE CAP IS ONE-SIDED, AND THE TWO-SIDED VERSION WAS RUN AND REFUSED.**
+    An encounter limit is a ceiling on the FAST side; nothing caps how slow a
+    deactivated ring gets, and three nitro groups really are thirteen decades
+    below benzene. Measured on G2's TNT ladder:
+
+        toluene + 3.5 HNO3      mono      di      TRI
+        one-sided, 300 K/10 s  0.6339  0.3661  0.0000   <- bit-identical to G2
+        two-sided, 300 K/10 s  0.6351  0.3304  0.0345
+        one-sided, 340 K/1 h   0.0000  0.7345  0.2655   <- bit-identical to G2
+        two-sided, 340 K/1 h   0.0000  0.0000  1.0000   <- G2's failure, restored
+
+    A cap on the MAGNITUDE would have looked more symmetrical and would have
+    undone the session before it.
+
+    ⚠⚠ **THE CORPUS COST IS ZERO, MEASURED, AND THAT WAS PREDICTED.**
+    `benzene-nitration` 1.0000, `tnt-route` 0.0643, `picric-acid-route` 0.1250
+    mol — unchanged to four decimals under every candidate plateau. ⚠ The
+    interesting row is picric: phenol's FIRST nitration is slowed **1968x** and
+    the two-hour yield does not move, because that step was never rate-limiting.
+    **A measurement of what a rate change buys is not a measurement of the rate
+    change.** G4's finding says why this was expected — 137 of the 142 routes
+    outside the BOTH column are blocked on capability or data, not on numbers.
+    ⚠ **G2's four-route cost table lived in HANDOFF and nowhere else; it is a
+    script now** (`validation/saturation.py` panel 3).
+
+    ⚠ **WHERE IT LIVES: SETUP**, exactly like `hammett_rho`. `build_network`
+    bakes the plateaued `Ea` into the kinetics array, so **no RHS edit and no
+    tolerance-audit exposure** — the tolerance audit was NOT owed and was not
+    run; its last measured state is still S13's.
+
+    ⚠⚠ **BIT-IDENTITY WAS THE ONE PLACE THIS COULD HAVE GONE WRONG QUIETLY.**
+    `barrier_shift` keeps the unsaturated expression **word for word** rather
+    than computing `d = rho * sigma_sum` and returning `-_PER_DECADE * d`:
+    floating-point multiplication is not associative, and reassociating it would
+    move the last bit of every barrier UNDER the plateau — a data-table change
+    owing ten minutes of the user's CPU. Asserted with `==` in
+    `tests/test_saturation.py`, and `math.inf` restores the bare line exactly,
+    which is how every "before" column in this session was measured.
+
+    ⚠ **A NOTICE THAT STOPPED FIRING AND A NOTICE THAT REPLACED IT.**
+    `hammett-floor` (*"activated PAST A ZERO BARRIER"*) can no longer fire on any
+    corpus substrate — the floor needs 10.51 decades and the plateau allows 2.686
+    — and a new `hammett-plateau` notice fires in its place. `clamp_barrier`
+    STAYS: the plateau is per template, so a template with a barrier under 15.3
+    kJ/mol reaches the floor immediately.
+
+    ⚠⚠ **AND ONE PRE-EXISTING BUG FOUND BY RUNNING G5's AUDIT:
+    `validation/protonation.py` CRASHED AT PANEL 3** with a
+    `UnicodeEncodeError` — a `⚠` in a *printed* string against a cp1252 console.
+    Every other audit in the repo keeps that glyph in docstrings and comments
+    only; this one had exactly one in a `print`, so **panels 4–7 could not be
+    read at all on this machine.** Fixed by the same rule (the glyph is now in
+    the module docstring), and `validation/saturation.py` was written to that
+    rule after the same crash hit it. ⚠ **The same trap bit the new
+    `hammett-plateau` NOTICE**, which is printed by `build_network` — a glyph
+    there would have crashed every audit and example that nitrates a phenol.
+
+    **DELIVERABLES.** `hammett.SATURATION_DECADES`, `hammett.saturates`,
+    `barrier_shift(..., saturation)`, `rate_ratio(..., saturation)`,
+    `ReactionTemplate.hammett_saturation` (validated: positive, `inf` allowed),
+    `aromatic_nitration(saturation=...)`, a `hammett-plateau` notice,
+    `validation/saturation.py` (six panels, 27 s) and
+    `tests/test_saturation.py` (12 tests, 7.3 s). `validation/protonation.py`,
+    `validation/ring_deactivation.py` and `validation/rate_ceiling.py` all
+    re-run and their PROSE corrected where the plateau moved their numbers;
+    `tests/test_ring_deactivation.py` and `tests/test_protonation.py` updated
+    (five assertions that were the OLD truth, three of them renamed).
+
+    **THE SUITE: 1045 PASSED / 0 FAILED IN 23:03**, run after every `src/` edit
+    with only `NEXT_PROMPT.md` and the memory files moving while it ran — so it
+    is a CLEAN figure rather than G5's upper bound. The count reconciles exactly:
+    1024 (G5) + 9 (G4's `test_granularity`, which had never been inside a
+    full-suite figure) + 12 (G6's `test_saturation`) = 1045.
+
+    ⚠⚠⚠ **AND THE SECOND `--durations=25` LIST FINALLY MADE THE FIRST ONE AN
+    INSTRUMENT.** Diffed against G5's:
+
+        top 25            803.1 -> 819.8 s      59.6% -> 59.3% of the suite
+        test_still x6     402.2 -> 415.8 s      29.8% -> 30.1%
+        the ONE RIG test  164.1 -> 176.9 s      **+7.8%**
+        catalysis          74.1 ->  75.1 s      +1.4%
+        burner @rtol 1e-8  52.5 ->  52.8 s      +0.7%
+        the long tail       0.55 ->  0.55 s     **IDENTICAL to two decimals**,
+                                                across 999 then 1020 tests
+
+    ⚠⚠ **THE NOISE FLOOR IS ~8% ON THE BIGGEST SINGLE ROW AND ~1% ON THE MID
+    ROWS, AND THE TAIL IS BIT-STABLE.** That is the number two NEXT_PROMPTs asked
+    for without getting: the suite's +35 s between G5 and G6 is noise plus 16.6 s
+    of new test files and must not be attributed to anything, while the S12->S13
+    eight minutes sits **20x outside** the floor and stays a real unexplained
+    regression. ⚠ It still does not DIAGNOSE that regression — no list exists on
+    either side of S13's data commit — but a stash-and-rerun there would now be
+    readable, because the measurement's own repeatability is known.

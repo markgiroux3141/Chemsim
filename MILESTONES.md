@@ -4322,38 +4322,124 @@ pKa values is measured to buy nothing, so the refusal stands -- the element
 floor's rule applied to a pKa.
 
 ⚠⚠ **AND THE PLAYABLE RESULT IS THE ONE REAL CHEMISTRY USES, ALREADY
-BUILDABLE:** nobody nitrates an aniline, you acetylate it first. Acetanilide's
-ring is activated by 22.3 kJ/mol against aniline's 48.2, and an amide does not
-answer `amine_protonation`'s pattern, so the acetanilide network BUILDS where the
-aniline one refuses. **Nobody told the engine that an amide is a protecting
+BUILDABLE:** nobody nitrates an aniline, you acetylate it first. An amide does
+not answer `amine_protonation`'s pattern, so the acetanilide network BUILDS where
+the aniline one refuses. **Nobody told the engine that an amide is a protecting
 group.**
+⚠ **G6 CHANGED WHY THIS WORKS AND NOT WHETHER IT DOES.** G5 wrote it as a
+BARRIER difference -- acetanilide activated by 22.3 kJ/mol against aniline's 48.2
+-- and under the encounter plateau both rings are activated by the same 15.3
+kJ/mol, because both ask the line for more than 2.686 decades. The protection is
+therefore entirely about PROTONATION, which is the real mechanism: an amide has
+no lone pair to protonate and an aniline in mixed acid is an anilinium.
 
-## ⚠⚠ WHAT IS LEFT, AND IN WHICH ORDER — SETTLED 2026-08-27 AFTER G5, G4 DONE 2026-08-27
+## ⚠⚠ WHAT IS LEFT — G3 IS THE ONLY UNBUILT G-SERIES ITEM (2026-08-27, AFTER G6)
 
     1. G4 -- the granularity audit           ✔ DONE. The answer is FIVE, and
                                                 the useful half of it is that
                                                 the number is SMALL
-    2. the HAMMETT LINE SATURATES            <- START HERE NOW. the interesting
-                                                one; G5 already did its
-                                                arithmetic (see §G5)
-    3. G3 -- PLAYABLE.md                      <- the scoreboard the GOAL needs,
-                                                and the expensive one
+    2. the HAMMETT LINE SATURATES            ✔ DONE as §G6. A sourced encounter
+                                                plateau; the design question
+                                                answered itself in a measurement
+    3. G3 -- PLAYABLE.md                      <- ALL THAT IS LEFT. the scoreboard
+                                                the GOAL needs, and the
+                                                expensive one
 
-⚠⚠ **G4 GOES FIRST FOR M1's REASON AND NOT BECAUSE IT IS THE BEST WORK.** The
-saturation item is more interesting, and G4's answer does not change its value at
-all — but G4's answer *could* change what content is worth building, and a session
-spent against an unmeasured scoreboard may be aimed at a gap that is not a gap.
-This document already records that the measurement taken first CHANGED the
-milestone in four of M0-M4's five cases, and that M1's corrected baseline went
-DOWN rather than up.
+⚠⚠ **THE ORDER WAS TAKEN AS WRITTEN AND BOTH ITEMS PAID FOR THEMSELVES IN THE
+WAY THE ARGUMENT ABOVE PREDICTED, WHICH IS WORTH RECORDING BECAUSE THE ARGUMENT
+WAS ABOUT ORDER RATHER THAN VALUE.** G4 went first for M1's reason -- a session
+spent against an unmeasured scoreboard may be aimed at a gap that is not a gap --
+and it retired the unknown by measuring that 137 of 142 routes outside the BOTH
+column are real work. G6 then spent itself on chemistry without hedging, and its
+own corpus cost came out at ZERO, which G4's number had already predicted.
+**Neither session's headline was the one its brief expected**: G4's was that FIVE
+is small, G6's was that the physically-correct-sounding model could not fire.
 
-⚠ **THE COUNTER-ARGUMENT, KEPT SO THE CHOICE STAYS A CHOICE.** The G-series exists
-because the catalog *"is a measuring instrument and was being read as a
-specification"*, and G4 is more instrument work on that same instrument — which is
-the trap §"the shape of the plan" names: *"right work, wrong scoreboard, and the
-content queue is still untouched since M5."* A session that wants to move the GAME
-rather than the number should take item 2 and leave G4. **Both are defensible; the
-requirement is to pick deliberately and say which.**
+⚠ **AND THE COUNTER-ARGUMENT THAT WAS KEPT IS NOW SPENT.** It said the G-series
+exists because the catalog *"is a measuring instrument and was being read as a
+specification"* and that more instrument work risks the trap §"the shape of the
+plan" names. The answer is in hand and **there is no remaining instrument question
+standing between this project and content work.** G3 is the exception and it is a
+different artefact: it answers *what can a player make*, which no existing report
+asks.
+
+## G6 -- The Hammett line SATURATES ✔✔ **DONE 2026-08-27** *(and the answer to its design question was a measurement, not a preference)*
+
+⚠ **NUMBERED G6 AND PLACED HERE FOR G5's REASON.** It was not in the original
+G-series list either: G5 created it, measured its arithmetic and deliberately
+did not build it because the CONSTANT needed sourcing. NEXT_PROMPT carried it as
+item 1 of the work order. Done items are kept in completion order.
+
+**WHAT IT IS.** `rho * sum(sigma+)` priced aniline **8.45 decades** above
+benzene off a line fitted on arenes with |rho·sigma| < 2.6 -- a 3.25x
+extrapolation of the abscissa -- and the real relation does not go there:
+nitration of a strongly activated arene is **ENCOUNTER-CONTROLLED**, so past a
+plateau further activation buys no rate at all.
+`hammett.SATURATION_DECADES = 2.686`, one-sided, declared per template as
+`ReactionTemplate.hammett_saturation`. **At SETUP, so no RHS edit and no
+tolerance-audit exposure**, and everything under the plateau is bit-identical.
+
+⚠⚠⚠ **THE BRIEF'S DESIGN QUESTION -- CAPPED RATIO OR ABSOLUTE ENCOUNTER CEILING
+-- ANSWERED ITSELF IN A MEASUREMENT, AND NOT THE COST ARGUMENT THE BRIEF
+EXPECTED.** `min(k_hammett, k_enc)` is the physically correct form for an
+ELEMENTARY step, and it can only ever fire on the one case a floor already
+catches: with the plateau lifted, every substrate with a positive barrier runs
+at 0.9-1.2% of a diffusion ceiling or less, and only 4-aminophenol reaches it
+*because* `clamp_barrier` has already floored its barrier at zero, leaving
+`k = A = 1e10`. ⚠⚠ **AND THE REASON IS STRUCTURAL: THIS RATE LAW IS NOT
+ELEMENTARY.** `aromatic_nitration` is written on the arene and HNO3, so the
+nitronium pre-equilibrium is folded into `Ea`; an absolute ceiling in these units
+would have to be `k_enc * [NO2+]/[HNO3]`, a property of the medium's ACIDITY --
+the thing G5 measured this engine has nowhere to put. The observable plateau
+sits **six decades below** any diffusion constant. **The capped ratio is not the
+cheap approximation to the right model; it is the only one that can express what
+was measured.**
+
+⚠⚠ **THE CONSTANT IS HAND-AUTHORED AND THE BOUND IS THE DELIVERABLE**, which is
+the licence § STATED NON-GOALS gives an A-factor. Belson & Strachan, *J. Chem.
+Soc., Perkin Trans. 2*, **1989**, 15 (aq. HNO3, 293-333 K):
+benzene : toluene : p-xylene : mesitylene = **1 : 22 : 256 : 485**, with
+p-xylene and mesitylene *diffusion-controlled and the others not*; log10(485) =
+2.686. Coombes, Moodie & Schofield, *J. Chem. Soc. B*, **1968**, 800: the limit
+exists and IS the encounter rate, with benzene within a SIXTH of it in the
+strongest acids.
+⚠⚠⚠ **AND THE SECOND SOURCE IS THE LOWER BOUND RATHER THAN A RIVAL VALUE.**
+Benzene-within-a-sixth reads as 0.778 decades and applying it caps **toluene at
+6.0 against a measured 22** -- damaging a substrate the same literature says is
+NOT diffusion-controlled. **A plateau cannot sit below the fastest substrate that
+does not saturate**, so the band is 2.02-2.69 and the declared value is its top.
+
+**THE RESULT.** mesitylene 1.16e6 -> **485** (the datum; a 2400x correction),
+p-xylene 1.10e4 -> 485 against a measured 256 (1.9x high, the factor the
+plateau's own two data differ by), toluene **untouched** at 105 against 22
+(that 4.8x is `rho`'s). ⚠⚠ **And the aniline in the engine's most acidic
+reachable flask goes from 1.10e3 x benzene to 1.89e-3 x -- 5.8 decades and
+across the line that matters**, because the observable is that aniline in strong
+acid nitrates SLOWER than benzene. **It took G5 and G6 together**: the split
+supplies the deactivated species, the plateau stops the free base being priced
+off the end of the line.
+
+⚠⚠ **THE CORPUS COST IS MEASURED AT ZERO** -- `benzene-nitration` 1.0000,
+`tnt-route` 0.0643, `picric-acid-route` 0.1250 mol, unchanged to four decimals,
+with phenol's first nitration slowed **1968x** to get there because that step was
+never rate-limiting. G4's number says why that was predictable. ⚠ **G2's
+four-route cost table is a script now** rather than a HANDOFF paragraph.
+
+⚠⚠ **AND IT COST G5 ITS HEADLINE, WHICH IS THE THING TO CARRY FORWARD.** G5
+reported the free-base/anilinium crossover at pH **-9.42** landing inside the
+real H0 band *"without being told about it"*, and read that as evidence the split
+was right. **That agreement was a property of the extrapolation**: with the free
+base at a sourced plateau the crossover is **-3.66**. The split is still the
+right model and the pot still cannot reach either number, but the coincidence was
+not evidence. **A number that agrees with reality is only evidence if the model
+behind it is inside its own domain.**
+
+⚠ The one-sided decision was measured too: a two-sided cap at the same value
+puts 0.0345 mol of trinitro in the flask in ten seconds at 300 K and finishes at
+340 K, which is G2's failure restored.
+
+See HANDOFF §103, `validation/saturation.py` (six panels, 27 s),
+`tests/test_saturation.py` (12 tests).
 
 ## G3 -- `PLAYABLE.md`, the scoreboard the goal needs
 

@@ -247,6 +247,13 @@ class ReactionTemplate:
     # Slot order is SMARTS order, which is also the order ``build_network``
     # assembles a reactant combination in.
     hammett_slot: int = 0
+    # G6. The ENCOUNTER PLATEAU the line flattens into, in DECADES of rate
+    # ratio. Declared per template for the same reason ``rho`` is -- it is a
+    # property of the REACTION and of the medium it was measured in, not a
+    # universal constant -- and defaulted to the nitration value that
+    # ``reactions.hammett`` sources and bounds. ``math.inf`` means no plateau
+    # and restores the pre-G6 engine exactly.
+    hammett_saturation: float = hammett.SATURATION_DECADES
     _rxn: AllChem.ChemicalReaction = field(default=None, repr=False, compare=False)
 
     # The phases a CONCRETE reaction may run in. "any" is not one of them: it is
@@ -295,6 +302,14 @@ class ReactionTemplate:
                 f"nitrobenzene is -141.2 kJ/mol and nitrobenzene -> "
                 f"dinitrobenzene is -268.1, so a positive alpha makes the "
                 f"DEACTIVATED ring react faster. Declare one"
+            )
+        if not self.hammett_saturation > 0.0:
+            raise ValueError(
+                f"template {self.name!r}: hammett_saturation="
+                f"{self.hammett_saturation} is the ENCOUNTER PLATEAU in decades "
+                f"of rate ratio and must be positive. Zero would say every "
+                f"activating substituent is worth nothing, which is not what a "
+                f"saturating line does; math.inf means no plateau at all"
             )
         if not 0 <= self.hammett_slot < self.n_reactant_slots:
             raise ValueError(
@@ -440,16 +455,20 @@ class ReactionTemplate:
         survey without touching RDKit, which is what keeps every pre-G2
         network bit-identical rather than nearly so.
 
-        ⚠ Floored at zero by ``hammett.clamp_barrier``, and that floor is
-        REACHABLE rather than defensive -- an aniline's sigma-plus_para of
-        -1.30 is worth -48 kJ/mol at rho = -6.5. The caller is expected to
-        notice when the clamp fires and say so; ``build_network`` does.
+        ⚠ Flattened at ``hammett_saturation`` decades of ACCELERATION (G6),
+        which is what stops an aniline's 8.45-decade extrapolation being one.
+        Everything UNDER the plateau is bit-identical to pre-G6.
+
+        ⚠ Floored at zero by ``hammett.clamp_barrier``. That floor used to be
+        REACHABLE -- 4-aminophenol was worth -82.4 kJ/mol against a declared 60
+        -- and the plateau makes it unreachable here, which ``clamp_barrier``
+        says in its own docstring rather than leaving a reader to discover.
         """
         if self.hammett_rho == 0.0:
             return self.Ea, hammett.RingSurvey(0.0, (), ())
         found = hammett.survey(reactants[self.hammett_slot]._mol)
         shifted = self.Ea + hammett.barrier_shift(
-            self.hammett_rho, found.sigma_sum
+            self.hammett_rho, found.sigma_sum, self.hammett_saturation
         )
         return hammett.clamp_barrier(shifted), found
 

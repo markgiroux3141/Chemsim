@@ -89,6 +89,7 @@ phase behaviour and the example for it says so.
 
 from __future__ import annotations
 
+from chemsim.reactions import hammett
 from chemsim.reactions.library import (
     ACID_CATALYST, _kinetics, _maybe_catalyse, _surface_kinetics,
 )
@@ -188,6 +189,7 @@ NITRATION_RHO = -6.5
 def aromatic_nitration(
     A: float = 1.0e10, Ea: float = 60_000.0, alpha: float = 0.0,
     catalyst: str | None = None, rho: float = NITRATION_RHO,
+    saturation: float = hammett.SATURATION_DECADES,
 ) -> ReactionTemplate:
     """Ar-H + HNO3 -> Ar-NO2 + water. Electrophilic aromatic nitration.
 
@@ -205,10 +207,21 @@ def aromatic_nitration(
 
     ⚠ **``rho`` IS A DECLARATION AND IT IS SCALE-SPECIFIC.** -6.5 is on the
     sigma-plus scale; handing it aqueous sigma constants would multiply two bases
-    together. ``hammett`` carries the table, the provenance and the three things
-    the model does not do -- chiefly that it does not PROTONATE an amine, so an
-    aniline here is a free base and is priced 2.8e8 times more reactive than
-    benzene where the real thing is an anilinium ion and slower than benzene.
+    together. ``hammett`` carries the table, the provenance and the things the
+    model does not do.
+
+    ⚠⚠ **AND THE LINE SATURATES (G6).** ``hammett_saturation`` defaults to
+    2.686 decades -- log10(485), the mesitylene datum of Belson & Strachan 1989,
+    the fastest nitration in that study its authors call diffusion-controlled --
+    because nitration of a strongly activated arene is ENCOUNTER-CONTROLLED and
+    further activation buys no rate. It is a HAND-AUTHORED constant with a stated
+    bound, which is the licence MILESTONES § STATED NON-GOALS gives an A-factor,
+    and ``hammett``'s docstring carries the band (2.02 to 2.69) it was chosen
+    from. Together with G5's anilinium split this puts aniline at **1.9e-3 times
+    benzene** in the most acidic flask this engine can reach, on the correct side
+    of benzene at last; the free base alone used to be 2.8e8 times it. ⚠ Setting
+    ``hammett_saturation=math.inf`` restores the bare line, which is how the cost
+    of this is measured rather than argued.
 
     ⚠ Setting ``rho=0.0`` restores the pre-G2 template exactly, which is how the
     cost of this is measured rather than argued.
@@ -225,7 +238,7 @@ def aromatic_nitration(
             catalyst,
         ),
         A=_kinetics(A, catalyst), Ea=Ea, alpha=alpha,
-        hammett_rho=rho, hammett_slot=0,
+        hammett_rho=rho, hammett_slot=0, hammett_saturation=saturation,
     )
 
 

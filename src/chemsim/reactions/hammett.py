@@ -71,6 +71,68 @@ that the Hammett ratio itself is only reproduced exactly at 298.15 K. Putting it
 in `A` instead would make the selectivity temperature-INDEPENDENT, which a staged
 process is evidence against.
 
+## ⚠⚠ THE LINE SATURATES, AND THAT IS G6
+
+A Hammett plot is a straight line fitted over a bounded abscissa, and this one is
+fitted on arenes with |sigma+| < 0.4 -- toluene, the xylenes, the halobenzenes --
+so |rho*sigma| < 2.6. Aniline's free base asks it for **8.45 decades**, a 3.25x
+extrapolation, and the real relation does not go there: **nitration of a strongly
+activated arene is ENCOUNTER-CONTROLLED**, so further activation buys no rate at
+all and the line flattens into a plateau.
+
+    Belson and Strachan, *J. Chem. Soc., Perkin Trans. 2*, **1989**, 15
+      benzene : toluene : p-xylene : mesitylene  =  1 : 22 : 256 : 485
+      at ~30 mol% HNO3 and 25 C; 24-41 mol% and 293-333 K over the study,
+      "with p-xylene and mesitylene the nitration is diffusion-controlled,
+      but not so with the others"
+
+    Coombes, Moodie and Schofield, *J. Chem. Soc. B*, **1968**, 800
+      a limit exists beyond which further activating substituents do not
+      increase the rate, and it is the rate of ENCOUNTER of the nitronium ion
+      with the arene; in the strongest acids studied benzene's own rate comes
+      within a SIXTH of that encounter rate
+
+⚠⚠⚠ **AND IT IS A CAPPED RATIO RATHER THAN AN ABSOLUTE RATE CEILING, WHICH IS
+A MEASUREMENT AND NOT A PREFERENCE.** The physically-correct-sounding form is
+``min(k_hammett, k_encounter)`` with a diffusion constant in it. **Measured, that
+branch can never fire here.** This template's rate law is written on the arene
+and HNO3, so the nitronium pre-equilibrium is folded into ``Ea`` and ``k`` is a
+stoichiometric constant rather than an elementary one -- the uncapped free base
+runs at 8.9e7 L/(mol s) at 300 K and 2.4e8 at 380, which is **0.9-1.2% of a
+Smoluchowski diffusion limit**, and ``clamp_barrier`` already bounds ``k`` above
+by ``A`` = 1e10, itself a decade under this project's ``COLLISION_LIMIT``. An
+absolute ceiling in these units would have to be ``k_enc * [NO2+]/[HNO3]``, which
+is a property of the MEDIUM'S ACIDITY -- the one thing this engine has nowhere to
+put (see ``validation/protonation.py`` panel 4). **So the observable is a
+RELATIVE plateau, and a relative plateau is what is declared.** It lives at
+SETUP, needs no RHS edit and owes no tolerance audit.
+
+⚠⚠ **THE CAP IS ONE-SIDED, AND THE TWO-SIDED VERSION WAS MEASURED AND
+REFUSED.** An encounter limit is a ceiling on the FAST side only; nothing caps
+how slow a deactivated ring gets, and 1,3,5-trinitrobenzene really is some
+thirteen decades below benzene. Measured on the TNT ladder, a two-sided cap at
+the same value gives **0.0345 mol of trinitro in ten seconds at 300 K and 1.0000
+mol at 340 K** -- it destroys the staging that is G2's whole deliverable. The
+one-sided cap leaves that ladder **bit for bit** unchanged.
+
+⚠ **WHAT THE VALUE BUYS AND WHAT IT COSTS.** mesitylene 1.16e6 -> 485 (the
+datum, a 2400x correction) and p-xylene 1.10e4 -> 485 against a measured 256
+(1.9x high -- the plateau's own two data differ by that factor). Toluene is
+**untouched**, at 105 against a measured 22; that error is ``rho``'s and the
+plateau is not asked to fix it. ⚠⚠ Toluene is also what puts a FLOOR under the
+constant: 0.778 decades -- the plateau implied by benzene being within a sixth of
+encounter in concentrated sulfuric acid -- caps toluene at 6.0 against that
+measured 22, **damaging a substrate that is measured NOT to be
+diffusion-controlled**. The honest band is therefore 2.02 (toluene's own line
+value) to 2.69 decades, and the declared value sits at the top of it.
+
+⚠ **AND THE COST TO THE CORPUS IS MEASURED AT ZERO.** `benzene-nitration`
+1.0000, `tnt-route` 0.0643 and `picric-acid-route` 0.1250 mol are unchanged to
+four decimals under every candidate cap -- including on phenol, whose first
+nitration is slowed 2000x and still completes inside the two hours. **This buys
+no route.** What it buys is the number being right where it was wrong by 2400x,
+and an aniline finally on the correct side of benzene.
+
 ## Three things this does NOT do, said plainly
 
 **1. NO REGIOSELECTIVITY.** The sum is over the substrate's ring as a whole, so
@@ -127,6 +189,24 @@ T_HAMMETT = 298.15
 
 # ln(10) * R * T_HAMMETT, J/mol per log unit -- 5708 J/mol at 25 C.
 _PER_DECADE = math.log(10.0) * R * T_HAMMETT
+
+# ⚠⚠ THE PLATEAU THE LINE FLATTENS INTO, in DECADES of rate ratio, and it is a
+# HAND-AUTHORED constant bounded against a stated observable rather than a value
+# any library holds. See the module docstring for both sources and for why it is
+# a ratio and not an absolute rate.
+#
+#   log10(485) = 2.686, the mesitylene datum of Belson & Strachan 1989 -- the
+#   fastest nitration in that study that the authors call diffusion-controlled.
+#
+# ⚠ The band it was chosen from is 2.02 to 2.69 and the reasoning is in the
+# docstring: 2.69 is the plateau's top (p-xylene, also called
+# diffusion-controlled, gives 2.41), and anything below 2.02 starts capping
+# TOLUENE, which is measured NOT to be diffusion-controlled.
+#
+# ⚠ ``math.inf`` is a legal value and means "no plateau" -- it restores the
+# pre-G6 engine exactly, which is how the cost of this is measured rather than
+# argued (``tests/test_saturation.py``).
+SATURATION_DECADES = 2.686
 
 BROWN_OKAMOTO = "sigma+ (Brown & Okamoto 1958)"
 SIGMA_PROXY = "sigma+ unpublished; aqueous sigma used (an ACCEPTOR -- see module)"
@@ -291,37 +371,80 @@ def survey(mol: Chem.Mol) -> RingSurvey:
     return RingSurvey(total, tuple(sorted(found)), tuple(sorted(set(unknown))))
 
 
-def barrier_shift(rho: float, sigma_sum: float) -> float:
+def saturates(
+    rho: float, sigma_sum: float, saturation: float = SATURATION_DECADES
+) -> bool:
+    """True if this ring is activated PAST the encounter plateau.
+
+    One-sided on purpose: only an ACCELERATION is capped. See the module
+    docstring -- a two-sided cap at this value was measured to destroy the TNT
+    staging, because nothing limits how slow a deactivated ring gets.
+    """
+    return rho * sigma_sum > saturation
+
+
+def barrier_shift(
+    rho: float, sigma_sum: float, saturation: float = SATURATION_DECADES
+) -> float:
     """J/mol to add to a barrier for a ring carrying ``sigma_sum``.
 
-    ``dEa = -ln(10) * R * T_HAMMETT * rho * sum(sigma)``. Exactly 0.0 when either
-    factor is zero, which is what makes an unsubstituted ring keep the template's
-    declared barrier BIT FOR BIT rather than nearly so.
+    ``dEa = -ln(10) * R * T_HAMMETT * rho * sum(sigma)``, flattened at
+    ``saturation`` decades of acceleration. Exactly 0.0 when either factor is
+    zero, which is what makes an unsubstituted ring keep the template's declared
+    barrier BIT FOR BIT rather than nearly so.
+
+    ⚠ **THE UNSATURATED EXPRESSION IS LEFT WORD FOR WORD**, not rewritten
+    through an intermediate. Floating-point multiplication is not associative, so
+    computing ``d = rho * sigma_sum`` and returning ``-_PER_DECADE * d`` would
+    move the last bit of every barrier under the plateau -- and a barrier is
+    baked into the kinetics array, which is the shape of trap this project has
+    paid for before (see ``chemsim-protonation``'s note on folding two terms of a
+    sum together). Everything below the plateau is bit-identical to pre-G6.
     """
     if rho == 0.0 or sigma_sum == 0.0:
         return 0.0
+    if saturates(rho, sigma_sum, saturation):
+        return -_PER_DECADE * saturation
     return -_PER_DECADE * rho * sigma_sum
 
 
 def clamp_barrier(Ea: float) -> float:
     """A barrier may not be negative, however activated the ring is.
 
-    ⚠ THIS IS REACHABLE AND IT IS NOT A DEFENSIVE FLOOR. Aniline's sigma-plus_para
-    is -1.30, so at rho = -6.5 the shift is **-48.2 kJ/mol** -- and against
-    `aromatic_nitration`'s declared 60 kJ/mol that leaves 11.8, while a phenol
-    plus an amine on one ring would go straight through zero. A negative
-    activation energy in an Arrhenius law is a rate that RISES as the flask
-    cools, which is not a slow reaction or a fast one but a wrong one.
+    ⚠⚠ **G6 MADE THIS UNREACHABLE ON THE ONE TEMPLATE THAT DECLARES A rho, AND
+    THAT IS THE HONEST DESCRIPTION OF WHAT A PLATEAU IS.** It used to be
+    reachable and was not a defensive floor: aniline's sigma-plus_para of -1.30
+    was worth **-48.2 kJ/mol** against `aromatic_nitration`'s declared 60, and
+    4-aminophenol (sum -2.220, **-82.4 kJ/mol**) went straight through zero and
+    reported it. With the encounter plateau at ``SATURATION_DECADES`` the largest
+    acceleration any ring can be given is **15.3 kJ/mol**, so the barrier bottoms
+    out at 44.7 and the floor never fires -- measured, and asserted in
+    ``tests/test_saturation.py``.
 
-    ⚠ AND THE CLAMP IS NOT THE FIX FOR THE UNDERLYING ERROR. What actually
-    happens to an aniline in mixed acid is that it protonates, and the anilinium
-    ion is deactivating -- see the module docstring's point 2. The clamp keeps the
-    arithmetic legal; the physics is still missing and is named.
+    ⚠ **THE FUNCTION STAYS, AND IT IS NOT DEAD CODE.** The plateau is per
+    template; a template declaring a rho with a barrier under 15.3 kJ/mol, or
+    lifting the plateau with ``hammett_saturation=math.inf`` to measure the cost
+    of it, reaches this floor immediately. A negative activation energy in an
+    Arrhenius law is a rate that RISES as the flask cools -- not a slow reaction
+    or a fast one but a wrong one.
+
+    ⚠ AND THE CLAMP WAS NEVER THE FIX FOR THE UNDERLYING ERROR. What happens to
+    an aniline in mixed acid is that it protonates (G5) and that the free base's
+    own reactivity saturates (G6); the clamp only ever kept the arithmetic legal.
     """
     return max(Ea, 0.0)
 
 
-def rate_ratio(rho: float, sigma_sum: float, T: float = T_HAMMETT) -> float:
-    """k / k_0 implied by a shift, for reporting. At ``T_HAMMETT`` this is exactly
-    ``10 ** (rho * sigma_sum)`` -- the Hammett relation, read back."""
-    return math.exp(-barrier_shift(rho, sigma_sum) / (R * T))
+def rate_ratio(
+    rho: float, sigma_sum: float, T: float = T_HAMMETT,
+    saturation: float = SATURATION_DECADES,
+) -> float:
+    """k / k_0 implied by a shift, for reporting.
+
+    At ``T_HAMMETT`` this is exactly ``10 ** (rho * sigma_sum)`` for a ring under
+    the plateau -- the Hammett relation, read back -- and exactly
+    ``10 ** saturation`` for one above it. ⚠ It reads back what the ENGINE
+    prices, which is the point of it: pass ``saturation=math.inf`` to read the
+    bare line instead.
+    """
+    return math.exp(-barrier_shift(rho, sigma_sum, saturation) / (R * T))

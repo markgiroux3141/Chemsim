@@ -16,6 +16,7 @@ Run: ``python validation/ring_deactivation.py``
 
 from __future__ import annotations
 
+import math
 import time
 
 from rdkit import Chem
@@ -59,39 +60,69 @@ def by_stage(v: Vessel) -> dict[int, float]:
 print(BAR)
 print("PANEL 1  THE TABLE, READ BACK AS RATE RATIOS AT rho = %+.1f" % NITRATION_RHO)
 print(BAR)
-print("""   Every row is sigma-plus (Brown & Okamoto 1958) except the two labelled
+_was = ", ".join(
+    f"{hammett.rate_ratio(NITRATION_RHO, s.sigma, saturation=math.inf):.1e}"
+    for s in hammett._TABLE if hammett.saturates(NITRATION_RHO, s.sigma)
+)
+print(f"""   Every row is sigma-plus (Brown & Okamoto 1958) except the two labelled
    PROXY, which are acceptors with no published sigma-plus and use the aqueous
    sigma -- the case where the two scales agree, argued in reactions/hammett.py.
    `k/k0` is what this template says the substituted ring's nitration rate is,
    relative to benzene's, at 298.15 K.
+
+   G6 PUT A CEILING ON THAT COLUMN, so the strongest DONORS now read one
+   number -- {10 ** hammett.SATURATION_DECADES:.0f}x, the encounter plateau -- where
+   they used to read {_was}. Nitration of a strongly
+   activated arene is encounter-controlled: past the plateau, activating the ring
+   further buys no rate. The `plateau` column says which rows are AT it, and the
+   `line` column is what the unsaturated relation asked for.
 """)
 print(f"   {'substituent':18s} {'sig_m':>7s} {'sig_p':>7s} {'directs':>9s} "
-      f"{'used':>7s} {'dEa kJ':>8s} {'k/k0':>11s}  source")
+      f"{'used':>7s} {'dEa kJ':>8s} {'k/k0':>11s} {'the line':>11s} "
+      f"{'plateau':>8s}  source")
 for sub in hammett._TABLE:
     shift = hammett.barrier_shift(NITRATION_RHO, sub.sigma)
     ratio = hammett.rate_ratio(NITRATION_RHO, sub.sigma)
+    line = hammett.rate_ratio(NITRATION_RHO, sub.sigma, saturation=math.inf)
+    at_plateau = hammett.saturates(NITRATION_RHO, sub.sigma)
     print(f"   {sub.label:18s} {sub.sigma_m:+7.3f} {sub.sigma_p:+7.3f} "
           f"{'meta' if sub.meta_directing else 'ortho/para':>9s} "
-          f"{sub.sigma:+7.3f} {shift / 1000:+8.2f} {ratio:11.3e}  "
+          f"{sub.sigma:+7.3f} {shift / 1000:+8.2f} {ratio:11.3e} "
+          f"{line:11.3e} {('AT IT' if at_plateau else ''):>8s}  "
           f"{'PROXY' if sub.source != hammett.BROWN_OKAMOTO else ''}")
 
 print("""
-   AND THE TWO PLACES IT IS MEASURABLY WRONG, because a model that only prints
-   its successes is not an audit:
+   AND WHERE IT IS MEASURABLY WRONG, because a model that only prints its
+   successes is not an audit:
 """)
 for smi, label, claim in [
-    ("Cc1ccccc1", "toluene", "measured k(toluene)/k(benzene) in mixed acid ~25"),
+    ("Cc1ccccc1", "toluene", "measured ~22 (Belson & Strachan 1989, aq. HNO3)"),
+    ("Cc1ccc(C)cc1", "p-xylene", "measured 256, and DIFFUSION-CONTROLLED"),
+    ("Cc1cc(C)cc(C)c1", "mesitylene", "measured 485, and DIFFUSION-CONTROLLED"),
     ("Nc1ccccc1", "aniline",
-     "real aniline in mixed acid is an ANILINIUM ion and is SLOWER than benzene"),
+     "the free base. Real aniline in mixed acid is an ANILINIUM and is SLOWER"),
 ]:
     s = hammett.survey(Chem.MolFromSmiles(smi))
-    print(f"   {label:10s} predicted k/k0 = "
-          f"{hammett.rate_ratio(NITRATION_RHO, s.sigma_sum):11.3e}   {claim}")
-print("""   Toluene is high by about 4x -- half an order of magnitude out of a
+    print(f"   {label:12s} k/k0 = "
+          f"{hammett.rate_ratio(NITRATION_RHO, s.sigma_sum):10.3e}   "
+          f"(the line: {hammett.rate_ratio(NITRATION_RHO, s.sigma_sum, saturation=math.inf):9.3e})"
+          f"   {claim}")
+print("""   Toluene is high by about 4.8x -- half an order of magnitude out of a
    one-parameter model whose rho is quoted over a -6.0 to -7.3 band, and the
-   direction (activating, ortho/para) is right. Aniline is wrong by eight orders
-   AND in the wrong direction, and it is not a fitting problem: this engine does
-   not protonate an amine. That is named in hammett.py and it is panel 5.""")
+   direction (activating, ortho/para) is right. It is UNDER the plateau, so G6
+   did not touch it and cannot fix it.
+
+   THE TWO DIFFUSION-CONTROLLED ROWS ARE WHERE THE PLATEAU COMES FROM, and it
+   was measured off mesitylene: 1.16e6 -> 485 is the correction, and p-xylene
+   pays for it by coming out 1.9x high, which is the factor those two measured
+   points differ by.
+
+   ANILINE IS NO LONGER THE EIGHT-DECADE CASE, AND IT TOOK BOTH SESSIONS. The
+   free base is priced at the plateau (G6) and the pot is almost entirely
+   anilinium (G5), which together put the aniline in the engine's most acidic
+   flask at about 1.9e-3 times benzene -- slower than benzene, which is the
+   observable. What is still missing is the ACIDITY FUNCTION that would decide
+   the mixture honestly; see validation/protonation.py panel 4.""")
 
 # ---------------------------------------------------------------------------
 print()
@@ -199,14 +230,20 @@ print("""
 # ---------------------------------------------------------------------------
 print()
 print(BAR)
-print("PANEL 5  THE CLAMP, WHICH IS REACHABLE, AND WHAT IS BEHIND IT")
+print("PANEL 5  THE CLAMP, WHICH G6 MADE UNREACHABLE, AND WHAT IS BEHIND IT")
 print(BAR)
 print("""   A shift can drive a barrier negative, and a negative activation energy
    is a rate that RISES as the flask cools -- not a fast reaction, a wrong one.
    `hammett.clamp_barrier` floors it at zero and `build_network` says so.
+
+   IT USED TO FIRE ON 4-AMINOPHENOL AND NOW CANNOT FIRE AT ALL HERE. The
+   encounter plateau allows at most 2.686 decades of acceleration, worth 15.3
+   kJ/mol against a declared 60, so the barrier bottoms out at 44.7. The `bare
+   Ea` column below is what the unsaturated line asked for and is kept, because
+   the floor being reachable was this panel's whole point for two sessions.
 """)
 print(f"   {'substrate':22s} {'sum sig+':>9s} {'dEa kJ':>9s} {'Ea kJ':>8s} "
-      f"{'clamped':>8s}")
+      f"{'bare Ea':>8s} {'was clamped':>11s}")
 for smi, label in [
     ("c1ccccc1", "benzene"),
     ("Cc1ccccc1", "toluene"),
@@ -219,19 +256,22 @@ for smi, label in [
     s = hammett.survey(Chem.MolFromSmiles(smi))
     shift = hammett.barrier_shift(NITRATION_RHO, s.sigma_sum)
     raw = 60_000.0 + shift
+    bare = 60_000.0 + hammett.barrier_shift(
+        NITRATION_RHO, s.sigma_sum, saturation=math.inf
+    )
     print(f"   {label:22s} {s.sigma_sum:+9.3f} {shift / 1000:+9.2f} "
-          f"{hammett.clamp_barrier(raw) / 1000:8.2f} "
-          f"{'YES' if raw < 0.0 else '':>8s}"
+          f"{hammett.clamp_barrier(raw) / 1000:8.2f} {bare / 1000:8.2f} "
+          f"{'YES' if bare < 0.0 else '':>11s}"
           + (f"   unknown: {', '.join(s.unknown)}" if s.unknown else ""))
 print("""
-   4-aminophenol goes through the floor and phenol and aniline come close.
-   THE CLAMP IS NOT THE FIX. What really happens to an amine or a phenol in
-   mixed acid is that it PROTONATES, and an anilinium ion is meta-directing and
-   strongly deactivating -- the opposite of what this table says about a free
-   base. Coupling protonation into a barrier needs a pKa and the medium's
-   acidity, and this engine has the pKa machinery (M3, the ion tables) but
-   nothing joining it to a rate. That is the next item, and it is named rather
-   than papered over.
+   4-aminophenol went through the floor on the bare line and phenol and aniline
+   came close; under the plateau all three sit at 44.67 kJ/mol.
+   THE CLAMP WAS NEVER THE FIX, and neither is the plateau on its own. What
+   really happens to an amine in mixed acid is that it PROTONATES (G5, built)
+   and that the surviving free base reacts on every encounter (G6, this
+   plateau). Both are now modelled. What is still missing is the medium's own
+   acidity: an H0 is not the concentration of anything, and a mass-action
+   molarity bottoms out at pH -0.79. That gap is named rather than papered over.
 
    Aspirin's acetoxy oxygen is the other kind of honesty: no sigma-plus for it
    is sourced here, so it is REPORTED as unknown and priced at zero rather than

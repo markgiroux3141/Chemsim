@@ -7,7 +7,9 @@ A standing audit, ~18 s. Seven panels:
   2. the pKa read straight back out of a running pot, which is the only check
      that the reversed arithmetic is the same arithmetic;
   3. the ARITHMETIC BOUND, taken before any code was written: at what acidity
-     does the anilinium channel overtake the free-base channel;
+     does the anilinium channel overtake the free-base channel. ⚠ G6 MOVED THIS
+     PANEL'S ANSWER BY FIVE DECADES and the panel says so -- the free base is
+     priced at a sourced encounter plateau now, not off the end of the line;
   4. the acidity a mass-action hydronium can actually REACH in this engine, and
      the surprise in it -- more acid with less water is LESS acidic;
   5. the split, measured in the engine: six decades of the fourteen, and where
@@ -151,26 +153,36 @@ print(f"   anilinium  -NH3+  sigma  {s_ion:+.3f}   k/k0 = {k_ion:11.4e}")
 print(f"   ratio                                  {k_free / k_ion:11.4e}\n")
 print(f"   {'pH':>6s} {'frac free base':>15s} {'free channel':>14s} "
       f"{'ion channel':>13s}   which wins")
-for pH in (7.0, 4.62, 2.0, 0.0, -2.0, -5.0, -9.42, -12.0):
+for pH in (7.0, 4.62, 2.0, 0.0, -2.0, -3.66, -5.0, -9.42, -12.0):
     h = 10.0 ** (-pH)
     f = 10.0 ** (-PKA_ANILINIUM) / (10.0 ** (-PKA_ANILINIUM) + h)
     a, bb = f * k_free, (1.0 - f) * k_ion
     print(f"   {pH:6.2f} {f:15.4e} {a:14.4e} {bb:13.4e}   "
           + (f"FREE BASE x{a / bb:.2e}" if a > bb else f"anilinium x{bb / a:.2e}"))
 h_cross = 10.0 ** (-PKA_ANILINIUM) * k_free / k_ion
+k_free_bare = hammett.rate_ratio(NITRATION_RHO, s_free, saturation=math.inf)
+h_cross_bare = 10.0 ** (-PKA_ANILINIUM) * k_free_bare / k_ion
 print(f"""
    THE CROSSOVER IS AT [H3O+] = {h_cross:.3e} mol/L, i.e. pH
-   {-math.log10(h_cross):.2f}. That is not a molarity any solution has -- and it
-   is ALSO not a wrong answer. Real aniline is nitrated to largely META product
-   only in 90-98% sulfuric acid, whose Hammett acidity function H0 falls to
-   roughly -8 at 90 wt% and roughly -10 at 98 wt%. ⚠ THAT BAND IS QUOTED TO ONE
-   FIGURE ON PURPOSE -- it is recalled from a standard H0 table and was NOT
-   sourced in this repo, so the claim is that -9.42 lands INSIDE the band real
-   aniline nitration is run in, not that it matches a tabulated value.
-   The engine's own arithmetic lands the crossover inside that band
-   without being told about it, which is the strongest thing in this audit: the
-   split is the RIGHT MODEL. What it cannot do is get there, and panel 4 is
-   why.""")
+   {-math.log10(h_cross):.2f}, which is not a molarity any solution has.
+
+   AND THIS PANEL'S NUMBER MOVED IN G6, WHICH IS RECORDED HERE RATHER THAN
+   OVERWRITTEN, BECAUSE THE OLD ONE WAS THIS AUDIT'S STRONGEST CLAIM. G5 read
+   the free base off the bare Hammett line at {k_free_bare:.4e} times benzene and
+   got a crossover at pH {-math.log10(h_cross_bare):.2f}. Real aniline is nitrated to
+   largely META product only in 90-98% sulfuric acid, whose Hammett acidity
+   function H0 falls to roughly -8 at 90 wt% and roughly -10 at 98 wt% -- a band
+   quoted to ONE FIGURE, recalled from a standard H0 table and NOT sourced in
+   this repo -- and {-math.log10(h_cross_bare):.2f} lands inside it. That agreement
+   was read as the engine's own arithmetic finding the right answer unprompted.
+
+   IT WAS A PROPERTY OF THE EXTRAPOLATION. G6 measured that -1.300 asks the line
+   for 8.45 decades where the line is fitted below 2.6, sourced the encounter
+   plateau it really saturates at, and the free base is now {k_free:.4e} times
+   benzene -- so the crossover is {-math.log10(h_cross):.2f} and the coincidence is
+   gone. Both cannot be right and the one with a source under it wins.
+   WHAT SURVIVES IS THE HALF THAT NEVER DEPENDED ON THE NUMBER: the split is the
+   RIGHT MODEL, and the pot cannot reach either crossover. Panel 4 is why.""")
 
 # ---------------------------------------------------------------------------
 print()
@@ -205,17 +217,19 @@ print(f"""
    of hydronium, it autoprotolyses to H3SO4+ and HSO4-, and an H3O+ needs a water
    to be.
 
-   AND IT IS THE WALL. The floor measured here is about pH {floor[0]:.2f}, ten
-   orders of magnitude above panel 3's crossover. A mixed acid's acidity is an
-   ACIDITY FUNCTION (H0), which is not the concentration of anything; this
-   engine's only handle on acidity is a mass-action molarity, and a molarity
-   cannot go to 1e9 mol/L. **THE LIMIT IS NOT "NO PROTONATION" ANY MORE. IT IS
+   AND IT IS THE WALL. The floor measured here is about pH {floor[0]:.2f},
+   {floor[0] - -math.log10(h_cross):.2f} orders of magnitude above panel 3's
+   crossover -- it was {floor[0] - -math.log10(h_cross_bare):.2f} before G6 sourced
+   the encounter plateau, so the wall shrank by five decades and is still a wall.
+   A mixed acid's acidity is an ACIDITY FUNCTION (H0), which is not the
+   concentration of anything; this engine's only handle on acidity is a
+   mass-action molarity, and a molarity cannot go to {h_cross:.0e} mol/L. **THE LIMIT IS NOT "NO PROTONATION" ANY MORE. IT IS
    "NO ACIDITY FUNCTION", and that is a different and much better-posed gap.**""")
 
 # ---------------------------------------------------------------------------
 print()
 print(BAR)
-print("PANEL 5  THE SPLIT, MEASURED IN THE ENGINE: SIX DECADES OF FOURTEEN")
+print("PANEL 5  THE SPLIT IN THE ENGINE: SIX DECADES, AND G6 TOOK THE REST")
 print(BAR)
 print("""   The same flasks as panel 2, with each one's aniline split by the running
    equilibrium and the two channels weighted by what is actually in the pot.
@@ -227,17 +241,26 @@ for pH, frac, _ in rows:
     print(f"   {pH:7.3f} {100 * frac:13.3f} {eff:15.4e} "
           f"{100 * frac * k_ion / eff:18.3e}%")
 eff_best = (1 - rows[-1][1]) * k_free + rows[-1][1] * k_ion
+eff_bare = (1 - rows[-1][1]) * k_free_bare + rows[-1][1] * k_ion
 print(f"""
-   2.8e8 -> {eff_best:.3g} times benzene. SIX of the fourteen decades, in the
-   right direction, on a table row and a template direction. Worth having.
+   2.8e8 -> {eff_best:.3g} times benzene, ON TWO DECLARATIONS FROM TWO SESSIONS,
+   and the split of the credit is the useful part.
 
-   AND THE OTHER EIGHT ARE NOT IN THE PROTONATION MODEL. Read the last column:
-   the anilinium is 100.000% of the aniline in the pot and carries 1e-7% of the
-   rate. Every remaining decade is a FREE-BASE LEAK -- a channel surviving at
-   1e-6 mole fraction because sigma+ = -1.30 prices it at 2.8e8. Fixing the
-   FRACTION cannot fix that; only pricing the free base differently can.
+   G5's SPLIT MOVED THE FRACTION AND WAS WORTH SIX DECADES: with the free base
+   still priced off the bare line this pot reads {eff_bare:.4e} times benzene,
+   which is FASTER than benzene and therefore still the wrong answer. The
+   anilinium is 100.000% of the aniline and was carrying 1e-7% of the rate --
+   every remaining decade was a FREE-BASE LEAK, a channel surviving at 1e-6 mole
+   fraction because sigma+ = -1.30 priced it at 2.8e8. G5 measured that fixing
+   the FRACTION could not fix that, and named pricing the free base as the item.
 
-   THE NEXT ITEM IS THEREFORE NAMED, AND ITS ARITHMETIC IS DONE HERE.
+   G6 MOVED THE PRICE AND TOOK THE REST. The free base is capped at the sourced
+   encounter plateau, so the pot lands at {eff_best:.3g} times benzene -- SLOWER
+   than benzene, which is the observable. Read the last column: the ion now
+   carries a few tenths of a percent of the rate rather than 1e-7%, and it got
+   there by the free-base channel shrinking rather than by the ion growing.
+
+   THE ITEM G5 NAMED HERE IS THE ONE THAT WAS BUILT, AND ITS ARITHMETIC IS BELOW.
    rho * sum(sigma+) = -6.5 * -1.30 = 8.45 DECADES, extrapolated from a line
    fitted on arenes with |sigma+| < 0.4 (toluene, the xylenes, the halobenzenes),
    i.e. |rho*sigma| < 2.6. It is a 3.25x extrapolation of the abscissa, and the
@@ -245,20 +268,28 @@ print(f"""
    becomes ENCOUNTER-CONTROLLED, so mesitylene, anisole and phenol all react at
    the same rate and the Hammett line SATURATES. A declared saturation would put
    aniline in the engine's most acidic flask at:""")
-for sat in (1e4, 1e5, 1e6):
-    capped = min(k_free, sat)
+for sat in (1e4, 1e5, 1e6, 10.0 ** hammett.SATURATION_DECADES):
+    capped = min(k_free_bare, sat)
     eff = (1 - rows[-1][1]) * capped + rows[-1][1] * k_ion
-    print(f"       saturation {sat:8.0e}  ->  {eff:10.4e} x benzene")
-print("""   -- against a real anilinium SLOWER than benzene. A saturation near 1e5
-   lands the aniline within a decade or two of benzene instead of eight above it,
-   on ONE declared field. The CONSTANT needs its own sourcing session (Coombes
-   and Ridd on encounter-controlled nitration) and is NOT asserted here.
+    print(f"       saturation {sat:8.0e}  ->  {eff:10.4e} x benzene"
+          + ("   <- DECLARED in G6" if sat < 1e4 else ""))
+print(f"""   -- against a real anilinium SLOWER than benzene, and THAT SESSION HAS
+   HAPPENED. G6 sourced the plateau at 10 ** {hammett.SATURATION_DECADES:.3f} =
+   {10 ** hammett.SATURATION_DECADES:.0f} times benzene -- the mesitylene datum of
+   Belson & Strachan 1989, the fastest nitration in that study its authors call
+   diffusion-controlled -- which is a decade and a half BELOW the 1e5 guessed
+   here, and it takes the aniline in this pot to
+   {(1 - rows[-1][1]) * k_free + rows[-1][1] * k_ion:.4e} times benzene. That is
+   SLOWER than benzene, which is the observable this panel said the model was
+   getting wrong. See validation/saturation.py and reactions/hammett.py; the
+   numbers printed in this audit's own tables are the post-G6 ones.
 
    AND NOTE WHICH AUDIT CANNOT CATCH THIS. `detailed_balance`'s collision cap
    compares the PRE-EXPONENTIAL against a limit; hammett moves `Ea`. With
    A = 1e10 and the barrier clamped at zero the fastest a shifted nitration can
    ever run is 1e10, one decade UNDER the 1e11 ceiling -- so the cap never fires
-   on a substituent-shifted rate at all. That is fragility 13 in a new suit.""")
+   on a substituent-shifted rate at all. That is fragility 13 in a new suit, and
+   G6 did not change it: the plateau is applied to `Ea` as well.""")
 
 # ---------------------------------------------------------------------------
 print()
@@ -283,11 +314,13 @@ print("""
    AND THE REFUSAL IS KEPT ON PURPOSE. The fix looks like nine curated pKa
    values (2-nitroaniline near -0.3, 3- near 2.5, 4- near 1.0, and the di- and
    trinitro series below zero), and panel 5 has already measured what they would
-   buy: NOTHING. The anilinium channel carries 1e-7% of the rate, so a network
-   that built would report a direct aniline nitration running through the free
-   base at up to 1e3 times benzene. A refusal that names the missing data is
-   better than a number wrong by three decades, and this is the element floor's
-   rule applied to a pKa.
+   buy: very little. A refusal that names the missing datum is better than a
+   number nobody sourced, and this is the element floor's rule applied to a pKa.
+   G6 IS THE THING THAT WOULD CHANGE THIS, and it has now happened in part: with
+   the free base at the encounter plateau the ion channel carries 0.1% of the
+   rate rather than 1e-7%, so the nine missing pKa values are worth more than
+   they were -- still not enough to matter at this pot's acidity, and the place
+   to re-measure it is panel 5's last column.
 
    The pyridinium row is the same shape from the other end: it is PRICED now
    (pKa 5.23) and still unreachable, because an aromatic ring nitrogen is X2 and

@@ -2,296 +2,228 @@ We're building chemsim, an emergent chemistry simulator (game inspired by Nile
 Red) in d:\Claude Code Projects\Chemistry Simulator.
 
 **The plan is `MILESTONES.md`. Read it first — it is the authority on what to
-build and in what order.** **M0–M6, M8, M12, S1–S13, G1, G2, G4 and G5 are DONE.**
+build and in what order.** **M0–M6, M8, M12, S1–S13, G1, G2, G4, G5 and G6 are
+DONE.**
 
-⚠⚠⚠ **THE ARC IS THE G-SERIES.** The catalog is a measuring instrument and was
-being read as a specification; the goal is a connected tech tree a player can
-walk from natural materials. **Read MILESTONES § THE G-SERIES.** Coverage is
-DEFERRED to a C-series, not cancelled.
+⚠⚠⚠ **THE ARC IS THE G-SERIES, AND G3 IS THE ONLY UNBUILT ITEM IN IT.** The
+catalog is a measuring instrument and was being read as a specification; the goal
+is a connected tech tree a player can walk from natural materials. **Read
+MILESTONES § THE G-SERIES.** Coverage is DEFERRED to a C-series, not cancelled.
 
 # ⚠ THE BASELINE IS MEASURED. DO NOT START WITH THE SUITE.
 
-**G4 TOUCHED NO `src/` FILE, SO IT OWED NO SUITE AND RAN NONE. THE BASELINE IS
-STILL G5's: 1024 PASSED / 0 FAILED IN 22:28**, plus G4's own
-`tests/test_granularity.py` (9 tests, 9.3 s, green).
+**G6 RAN THE WHOLE SUITE AND MEASURED 1045 PASSED / 0 FAILED IN 23:03.** Take that
+number and spend the time on content. ⚠ It was run AFTER every `src/` edit —
+seventh session running that is true — and **the only edits that landed while it
+ran were to `NEXT_PROMPT.md` and the memory files**, neither of which pytest
+reads, so **23:03 is a CLEAN figure** rather than G5's upper bound.
+⚠ The count reconciles exactly: 1024 (G5) + 9 (G4's `test_granularity`, never in
+a full-suite figure before) + 12 (G6's `test_saturation`) = **1045**.
 
-**G5 RAN THE WHOLE SUITE AND MEASURED 1024 PASSED / 0 FAILED IN
-22:28.** Take that number and spend the time on content. ⚠ It was run AFTER every
-BEHAVIOURAL `src/` edit — sixth session running that is true. (995 at G2; the +29
-are G5's `tests/test_protonation.py`.) ⚠ **Two DOCSTRING-ONLY edits and one test
-RENAME landed while it ran**, plus a 12.8 s single-file re-run of
-`test_ring_deactivation.py` on another core; the renamed test was re-run green on
-its own afterwards. **So 22:28 is an upper bound with minor contention in it, and
-it is being reported that way rather than as a clean figure.**
+⚠ **G6 TOUCHED NO RHS AND SHIFTED NO DATA TABLE.** The encounter plateau lives at
+SETUP, exactly where `hammett_rho` does, and **everything under the plateau is
+asserted BIT-IDENTICAL** — so `tolerance_audit.py` was not owed and was NOT
+re-run. Its last measured state is S13's and every warning in §S13 about it still
+stands.
 
-⚠⚠⚠ **AND `--durations=25` WAS FINALLY ATTACHED TO IT — THE PROBE THIS FILE HAS
-SAID FOR TWO SESSIONS HAD NEVER BEEN RUN.** The cost is **CONCENTRATED, NOT
-BROAD**:
+⚠⚠⚠ **AND THE TWO `--durations=25` LISTS HAVE NOW BEEN DIFFED, WHICH GIVES
+THE THING TWO NEXT_PROMPTS ASKED FOR: A MEASURED NOISE FLOOR.**
 
-    top 25 tests                                        803.1 s of 1348.3  (59.6%)
-    tests/test_still.py, its six rows in the top 25      402.2 s            (29.8%)
-    ONE test -- test_temperature_steady_on_a_RIG_vessel  164.1 s            (12.2%)
-    test_catalysis::test_a_catalysed_esterification       74.1 s             (5.5%)
-    the burner at rtol 1e-8 (engine queue item 15)        52.5 s             (3.9%)
-    the OTHER 999 tests                                   545   s   -- 0.55 s each
+                        G5        G6      change
+    top 25           803.1 s   819.8 s   59.6% -> 59.3% of the suite
+    test_still x6    402.2 s   415.8 s   29.8% -> 30.1%
+    the ONE RIG test 164.1 s   176.9 s   **+7.8%**
+    catalysis         74.1 s    75.1 s   +1.4%
+    burner @rtol 1e-8 52.5 s    52.8 s   +0.7%
+    the long tail     0.55 s    0.55 s   **IDENTICAL to two decimals**
+                                         (999 tests then, 1020 now)
 
-⚠⚠ **AND THIS DOES NOT DIAGNOSE THE S12->S13 SLOWDOWN, WHICH IS THE WHOLE POINT
-OF SAYING IT OUT LOUD. A DURATIONS LIST WITH NO BASELINE CANNOT ATTRIBUTE A
-REGRESSION** — nobody has the same list from S12, so the eight minutes remain
-unattributed. What the shape DOES say is that a per-test story is at least as
-plausible as the standing candidate (*"S13's measured-physical table moved every
-trajectory's stiffness"*), because a broad stiffness change should not leave 999
-tests averaging 0.55 s while one RIG test takes 164. **That is a re-ranking of two
-hypotheses, not a measurement of either.**
-⚠ The cheap next step, if the clock ever matters, is a `git stash`-and-rerun of
-`--durations=25` across S13's data commit — which is finally possible now that a
-list exists to diff against.
-⚠ **The burner row is a live cross-check that landed for free**: fragility 10 and
-engine queue item 15 both say *"~50 s at rtol 1e-8"*, and it measured **52.47 s**.
-The claim was right and it is 3.9% of the suite.
-
-⚠ **G5 TOUCHED NO RHS AND SHIFTED NO DATA TABLE — the 24 pre-existing ion-table
-anions are BIT-IDENTICAL and that is asserted in a test** — so
-`tolerance_audit.py` was not owed and was NOT re-run. Its last measured state is
-S13's and every warning in §S13 about it still stands.
+⚠⚠ **SO THE SHAPE IS STABLE AND THE NOISE FLOOR IS ~8% ON THE BIGGEST SINGLE
+ROW AND ~1% ON THE MID ROWS.** That is what makes the list an instrument: the
+suite's +35 s between G5 and G6 is **noise plus 16.6 s of new test files** and
+must not be attributed to anything, while the S12->S13 eight minutes is **20x
+outside** the floor and remains a real unexplained regression.
+⚠ It still does NOT diagnose S12->S13 — no list exists on either side of that
+commit — and the cheap next step is unchanged: a `git stash`-and-rerun of
+`--durations=25` across S13's data commit. **What has changed is that the answer
+would now be readable, because the measurement's own repeatability is known.**
 
 ```bash
-python validation/granularity.py                # ⚠ G4's, 18 s. NEW -- read panels 3 and 4
-python validation/protonation.py                # G5's, 18 s. read panels 3, 4 and 5
-python validation/ring_deactivation.py          # G2's, ~25 s. READ PANEL 3
-python validation/dropwise.py                   # G1's, 78 s
-python validation/boiling_points.py             # S13's, 2 s. READ PANEL 2
-python validation/skraup.py                     # S12's, ~10 s
-python validation/smelting.py                   # S9's, ~1 min
-python validation/hydroformylation.py           # S11's, ~1 min
-python validation/wacker.py                     # S11's other one, ~1 min
-python validation/gas_processes.py              # S7's, ~1 min
-python validation/corpus_balance.py             # S7's other one, ~20 s. READ IT before picking
-python validation/catalog_coverage.py           # ⚠ 'BOTH' is 31/173, ~9 s. ⚠⚠ AND IT IS A
-                                                #   LOWER BOUND TOO -- G4 measured 31+5
-python validation/physical_estimation.py        # S13 took its panel 3 to n=254
-python validation/game_gates.py                 # the element floor's cross-check, seconds
-python tools/build_route_index.py               # the artefact nothing reads
-python validation/cell_potentials.py            # M8's standing audit, seconds
-python validation/rate_ceiling.py               # ⚠ G2 added TWO NETWORKS to it
-python validation/jacobian_bound.py             # S5's standing audit, ~1 min
+python validation/saturation.py                # ⚠ G6's, 27 s. NEW -- read panels 1, 3 and 5
+python validation/protonation.py               # G5's, 20 s. ⚠ REWRITTEN BY G6 -- panels 3 and 5
+python validation/ring_deactivation.py         # G2's, 14 s. ⚠ REWRITTEN BY G6 -- panels 1 and 5
+python validation/granularity.py               # G4's, 18 s. read panels 3 and 4
+python validation/dropwise.py                  # G1's, 78 s
+python validation/boiling_points.py            # S13's, 2 s. READ PANEL 2
+python validation/skraup.py                    # S12's, ~10 s
+python validation/smelting.py                  # S9's, ~1 min
+python validation/hydroformylation.py          # S11's, ~1 min
+python validation/wacker.py                    # S11's other one, ~1 min
+python validation/gas_processes.py             # S7's, ~1 min
+python validation/corpus_balance.py            # S7's other one, ~20 s. READ IT before picking
+python validation/catalog_coverage.py          # ⚠ 'BOTH' is 31/173, ~9 s. ⚠⚠ AND IT IS A
+                                               #   LOWER BOUND TOO -- G4 measured 31+5
+python validation/physical_estimation.py       # S13 took its panel 3 to n=254
+python validation/game_gates.py                # the element floor's cross-check, seconds
+python tools/build_route_index.py              # the artefact nothing reads
+python validation/cell_potentials.py           # M8's standing audit, seconds
+python validation/rate_ceiling.py              # ⚠ G6 moved its fastest activated
+                                               #   nitration by EIGHT DECADES
+python validation/jacobian_bound.py            # S5's standing audit, ~1 min
 python -m ruff check src tests examples validation tools
-python -m pytest -q                             # ONLY after touching src/
-python validation/tolerance_audit.py            # ~10 min. After touching the RHS **or any data table**
+python -m pytest -q                            # ONLY after touching src/
+python validation/tolerance_audit.py           # ~10 min. After touching the RHS **or any data table**
 ```
 
 ⚠ **THE SUITE AND THE TOLERANCE AUDIT ARE MINUTES OF SATURATED CPU ON THE USER'S
 OWN MACHINE.** Say what a long run will cost before starting one, and ask.
 `examples/plate_column.py` alone is 12 minutes.
 
----
-
-# ⚠⚠⚠ WHAT G4 TURNED OUT TO BE
-
-**G4 asked how many routes are, like `benzene-nitration`, chemically runnable but
-scored blocked because the catalog spells a mechanism out in steps the engine does
-in one. THE ANSWER IS FIVE — and the value of the session is that FIVE IS SMALL.**
-
-The deliverable is `validation/granularity.py` (~18 s, five panels) and
-`tests/test_granularity.py` (9 tests, 9.3 s). **Every route counted is charged
-into a real `Vessel` and its moles are printed.** Nothing is credited on an
-argument, because S1's *"crediting a class made a FALSE route credit"* is the
-standing precedent and this session made it a THREE-time finding.
-
-## ⚠⚠⚠ 1. THE COUNT, AND EACH ONE WAS RUN
-
-    benzene-nitration        1.000000 mol nitrobenzene   340 K, 2 h
-    aniline-route            0.998860 mol aniline        470 K, 2 h, Ni charged
-    hydrogenation-margarine  1.000000 mol tristearin     450 K, 2 h, Ni charged
-    tanning-route            1.999999 mol gallic acid    360 K, 2 h
-    lead-chamber             0.104063 mol sulfuric acid  650 K burn -> 350 K chamber
-
-So the reported **31/173 understates the engine by 16%**. ⚠⚠ **BUT THE NUMBER
-THAT MATTERS IS THE OTHER ONE: 142 routes sit outside the BOTH column and only 5
-are catalog artefacts — 4%. THE BOTH COLUMN WAS NOT HIDING A CONTENT BACKLOG.**
-The other 137 are chemistry this engine cannot do or data nothing prices, and
-they can now be treated as real work rather than as possible bookkeeping. That
-retirement of an unknown is the whole deliverable, and it is M1's shape — M1
-fixed this same instrument and its corrected baseline went DOWN.
-
-## ⚠⚠⚠ 2. THE BRIEF'S OWN WORKED EXAMPLE IS NOT IN THE BUCKET THE BRIEF POINTS AT
-
-`benzene-nitration` is **species**-blocked, not template-blocked: `nitronium` and
-`arenium-benzene` are refused a price, correctly — a mechanism has them and a
-flask never holds them. **Walking the species-ready-but-not-template-ready
-bucket, which is exactly what the brief said to do, would have missed the case
-that started the audit.** Granularity has two forms:
-
-    STEP granularity     one transformation spelled as several rows whose
-                         classes have no template
-    SPECIES granularity  one transformation spelled THROUGH intermediates the
-                         engine never materialises, and those have no price
-
-## ⚠⚠ 3. THE FINDING UNDERNEATH THE COUNT: THE INSTRUMENT SCORES *ROWS*
-
-Four of the five are blocked by a row that is **not on the path to the target at
-all**:
-
-    aniline-route            rows 1 and 2 are ALTERNATIVES, read as a sequence
-    hydrogenation-margarine  row 2 is the corpus's own "trans isomer byproduct"
-    tanning-route            row 2 crosslinks collagen into a MARKER, past the target
-    lead-chamber             row 4 makes CHAMBER CRYSTALS -- the FOULING product
-
-⚠ **AND THE CORPUS SAYS SO IN ITS OWN PROSE, WHICH NOTHING HAD EVER READ.** Nine
-rows in eight routes are named `... byproduct` / `side reaction` / `alternative`,
-and five more rows in five routes have products that are a **subset** of their
-reactants — workup (crystallisation, salting out, lixiviation, kieselguhr) plus
-`furfural-route` 1, which reads `xylose + water -> xylose`. **No template can ever
-match those five, so scoring them as uncovered mechanisms counts gaps nothing can
-close.**
-
-## ⚠⚠⚠ 4. THE SCORER MADE THREE FALSE CREDITS AND RUNNING CAUGHT ALL THREE
-
-**This is the most transferable thing in the session.** A `TARGET-REACHABLE`
-scorer — does the DAG get from feedstocks to the target — first said **38**:
-
-* `bayer-process` and `contact-process` scored reachable **by BUYING the target**,
-  because in both the target is also a step-1 reactant. Bayer *purifies* bauxite;
-  the contact process recycles its own acid. ⚠⚠ **A scorer that does not forbid
-  charging the target will credit every recycle loop in the corpus.** 38 → 36.
-* `starch-hydrolysis` survived that rule and **the RUN refuted it**: zero
-  reactions, not a slow one. `starch-unit` is spelled as a single
-  α-D-glucopyranose ring and row 1 reads `starch-unit + water -> maltose` — a
-  hydrolysis making a disaccharide from a monosaccharide. From MALTOSE the same
-  template gives 0.9986 mol glucose, so the blockage is **the corpus's spelling
-  of its own FEEDSTOCK** and no engine work would move it.
-
-## ⚠⚠ 5. ONE CLASS THE INSTRUMENT HAD SIMPLY NEVER KEYED
-
-`TEMPLATE_CLASSES` credited the M5 `saponification` template under
-`ester-hydrolysis`'s name, and the catalog **also** has a class literally called
-`saponification` — so `soap-saponification` step 1 read as an uncovered mechanism
-for eight milestones. Checked the S1 way before crediting: tristearin + hydroxide
-builds 10 species and 7 `saponification` reactions, all three esters off.
-
-    reaction classes covered   51 -> 52     steps covered   114 -> 115
-    routes ONE class away      46 -> 47     from classes     36 -> 37
-    template-ready / BOTH      41 / 31      UNCHANGED
-
-⚠ **+0 routes and credited anyway**, because a class that reads as a gap sends
-work at a template that is already built.
-
-## ⚠ 6. WHAT WAS DELIBERATELY NOT DONE
-
-**The BOTH column in `COVERAGE_REPORT.md` still says 31.** That table is a
-mechanical measure of the CORPUS; the five rest on a hand judgement about five
-specific rows. Folding a judgement into a mechanical column is how M1's
-`deprotonation` credit happened. The report gained a **pointer** instead.
+⚠⚠⚠ **AND THERE IS A TRAP IN WRITING A NEW AUDIT THAT COST G6 TWO CRASHES: THE
+CONSOLE IS cp1252 AND THE WARNING GLYPH CANNOT BE PRINTED.** Every audit in this
+repo keeps `⚠` in docstrings and comments and out of `print`, and that is not a
+style choice — `python validation/x.py` dies with `UnicodeEncodeError` mid-panel.
+⚠⚠ **`validation/protonation.py` HAD EXACTLY ONE IN A PRINTED STRING AND DIED AT
+PANEL 3**, so G5's panels 4–7 could not be read on this machine at all; G6 fixed
+it. ⚠ **A `build_network` NOTICE is printed too**, so a glyph in one crashes every
+audit and example that reaches that reaction.
 
 ---
 
-# ⚠⚠⚠ START HERE: THE G-SERIES IS THE WORK ORDER
+# ⚠⚠⚠ WHAT G6 TURNED OUT TO BE
 
-⚠⚠ **READ `MILESTONES.md` § THE G-SERIES.** G1, G2, G4 and G5 are marked done
+**G6 asked what number to declare for the encounter plateau the Hammett line
+flattens into, and NEXT_PROMPT told it to ask a design question first: a capped
+RATIO or an absolute ENCOUNTER CEILING. THE MEASUREMENT ANSWERED THE QUESTION,
+AND IT ANSWERED IT DIFFERENTLY FROM THE COST ARGUMENT THAT WAS EXPECTED.**
+
+The deliverables are `hammett.SATURATION_DECADES = 2.686` with a written bound,
+`validation/saturation.py` (six panels, 27 s) and `tests/test_saturation.py`
+(12 tests, 7.3 s). **Every route is charged into a real `Vessel` and its moles
+printed** — S1's precedent, now a four-time finding.
+
+## ⚠⚠⚠ 1. THE ABSOLUTE CEILING CANNOT FIRE, SO IT WAS NEVER THE RIGHT MODEL HERE
+
+The brief called `min(k_hammett, k_enc)` *"the physically correct statement"* and
+priced it as an RHS edit plus ten minutes of tolerance audit. Measured over
+300–380 K with the plateau lifted:
+
+    substrate       k at 300 K   k at 380 K   of a diffusion ceiling
+    benzene           0.357         56.6        5e-11 .. 2e-9
+    mesitylene        3.81e5        3.24e6      5e-5  .. 1e-4
+    aniline           8.94e7        2.41e8      1.2%  .. 0.86%
+    4-aminophenol     1.00e10       1.00e10     137%  .. 36%    <- CLAMPED
+
+**It can only bind on the one case a floor already catches.** 4-aminophenol
+reaches a diffusion ceiling only because `clamp_barrier` has already floored its
+barrier at zero, leaving `k = A = 1e10`. ⚠⚠ **So `clamp_barrier` was already an
+absolute rate ceiling in disguise** — pinning `k` at the declared `A` rather than
+at a diffusion rate — and eight milestones of reading that function had not
+noticed.
+
+⚠⚠⚠ **AND THE STRUCTURAL REASON IS THE TRANSFERABLE HALF: THE OBSERVABLE IS SIX
+DECADES BELOW ANY DIFFUSION CONSTANT, BECAUSE THIS RATE LAW IS NOT ELEMENTARY.**
+`aromatic_nitration` is written on the arene and HNO3, so the nitronium
+pre-equilibrium is folded into `Ea` and `k` is a stoichiometric constant. An
+absolute ceiling in these units would have to be `k_enc * [NO2+]/[HNO3]` — a
+property of the MEDIUM'S ACIDITY, which is exactly the thing G5 measured this
+engine has nowhere to put. **The capped ratio is not the cheap approximation to
+the right model; it is the only one of the two that can express what was
+measured.** ⚠ *Ask what quantity the rate constant actually IS before importing a
+bound that belongs to a different one.*
+
+## ⚠⚠⚠ 2. THE SECOND SOURCE WAS THE LOWER BOUND, NOT A RIVAL VALUE
+
+Two sources, both new to this repo, and the second one is the one that decided
+the number:
+
+* **Belson & Strachan, *J. Chem. Soc., Perkin Trans. 2*, 1989, 15** — aqueous
+  nitric acid, 24–41 mol% HNO3, 293–333 K: **benzene : toluene : p-xylene :
+  mesitylene = 1 : 22 : 256 : 485** at ~30 mol% and 25 °C, and *"with p-xylene
+  and mesitylene the nitration is diffusion-controlled, but not so with the
+  others"*. log10(485) = **2.686**, and that is the declared value.
+* **Coombes, Moodie & Schofield, *J. Chem. Soc. B*, 1968, 800** — the limit exists
+  and IS the encounter rate; in the strongest acids benzene's own rate comes
+  **within a sixth** of it.
+
+The 1968 figure reads as **0.778 decades** and looks like a rival candidate — the
+mixed-acid medium the corpus routes actually run in. **Applying it caps TOLUENE at
+6.0 against a measured 22**, damaging a substrate the same literature says is NOT
+diffusion-controlled. ⚠⚠ **A plateau cannot sit below the fastest substrate that
+does not saturate**, so the honest band is **2.02 to 2.69 decades** and the
+declared value is its top. *Two sources that disagree may not be two candidates;
+one of them may be a bound on the other.*
+
+## ⚠⚠ 3. WHAT IT BUYS: ANILINE, AND IT TOOK G5 AND G6 TOGETHER
+
+    channel-weighted, at the engine's acidity floor of pH -0.789
+      G2 alone (free base, bare line)      2.82e8 x benzene
+      G5's split, bare line                3.81e2 x benzene   still FASTER
+      G5's split + G6's plateau            1.89e-3 x benzene  SLOWER -- correct
+
+**The observable is that aniline in strong acid nitrates slower than benzene and
+gives largely meta product, and the model is finally on that side of it.** G5
+moved the FRACTION and measured that it could not be enough; G6 moved the PRICE.
+`validation/protonation.py` panel 5 prints both and splits the credit.
+
+Also fixed: mesitylene **1.16e6 → 485**, the datum, a **2400x** correction.
+Toluene is **untouched** at 105 against 22, and that 4.8x is `rho`'s error.
+
+## ⚠⚠⚠ 4. AND IT COST G5 ITS HEADLINE, WHICH IS THE MOST USEFUL THING HERE
+
+G5's strongest claim was that the free-base/anilinium crossover at **pH −9.42**
+lands inside the measured H0 band of the 90–98% sulfuric acid real aniline
+nitration is run in, *"without being told about it"* — read as the engine's own
+arithmetic finding the right answer unprompted.
+
+**That agreement was a property of the 8.45-decade extrapolation.** With the free
+base at a sourced plateau the crossover is **−3.66**: the pot needs 2.87 decades
+more acidity than its floor instead of 8.63. ⚠ The wall is still a wall, and the
+split is still the right model — **but the number was not evidence for it.**
+⚠⚠ *A number that agrees with reality is only evidence if the model behind it is
+inside its own domain.* Asserted both ways in `tests/test_protonation.py`, with
+G5's value kept as the plateau-lifted one.
+
+## ⚠⚠ 5. THE ONE-SIDED DECISION, AND THE CORPUS COST OF ZERO
+
+A cap on `|rho * sigma|` looks more symmetrical. Measured on G2's TNT ladder it
+puts **0.0345 mol of trinitro in the flask in ten seconds at 300 K** and
+**1.0000 at 340 K** — G2's failure restored. One-sided leaves that ladder bit for
+bit. **Nothing caps how slow a deactivated ring gets.**
+
+    route                target        bare line   PLATEAU
+    benzene-nitration    nitrobenzene    1.0000     1.0000
+    tnt-route            2,4,6-TNT       0.0643     0.0643
+    picric-acid-route    picric acid     0.1250     0.1250
+
+⚠⚠ **PHENOL'S FIRST NITRATION IS SLOWED 1968x AND THE TWO-HOUR YIELD DOES NOT
+MOVE**, because that step was never rate-limiting. *A measurement of what a rate
+change buys is not a measurement of the rate change.* ⚠ G4's 137-of-142 predicted
+this: **the plateau buys no route.** What it buys is the number being right.
+⚠ G2's four-route cost table lived in HANDOFF and nowhere else; **it is a script
+now.**
+
+---
+
+# ⚠⚠⚠ START HERE: G3 IS THE LAST UNBUILT G-SERIES ITEM
+
+⚠⚠ **READ `MILESTONES.md` § THE G-SERIES.** G1, G2, G4, G5 and G6 are marked done
 there with what they actually turned out to be.
 
-## ⚠⚠⚠ THE ORDER, AND G4 HAS BEEN TAKEN OFF THE FRONT OF IT
+    1. G3 -- PLAYABLE.md    <- the scoreboard the GOAL needs, the expensive one,
+                               and now the only thing between here and the
+                               C-series
+    2. the C-series         <- content. ⚠ Nothing blocks it and it has a real
+                               slope (20 templates take template-ready 41 -> 72)
 
-    1. THE HAMMETT LINE SATURATES            <- START HERE. the interesting one,
-                                                and G5 already did its arithmetic
-    2. G3 -- PLAYABLE.md                      <- the scoreboard the GOAL needs,
-                                                and the expensive one
-       (G4 -- the granularity audit           ✔ DONE. the answer is FIVE, and
-                                                the useful half is that 5 is SMALL)
+⚠⚠ **AND THE HEDGE IS GONE.** Three sessions of standing worry — that content
+work was being aimed at gaps that are not gaps — was closed by G4 (137 of the 142
+routes outside the BOTH column are real work) and confirmed by G6 (whose corpus
+cost came out at exactly the zero G4's number predicted). **There is no remaining
+instrument question standing between this project and content**, and G3 is the
+one artefact question left, because it asks something no existing report does.
 
-⚠⚠ **G4 WENT FIRST FOR M1's REASON AND IT PAID FOR ITSELF THE WAY M1 DID — BY
-RETIRING AN UNKNOWN, NOT BY FINDING WORK.** The BOTH column was not hiding a
-content backlog: of the 142 routes outside it, **5 were bookkeeping and 137 are
-real**. So the standing worry that content sessions were being aimed at gaps that
-are not gaps is now measured and closed, and **the next session can spend itself
-on chemistry without hedging.**
-
-⚠ **AND THE COUNTER-ARGUMENT THAT WAS KEPT LAST TIME IS NOW SPENT.** It said the
-G-series exists because *"the catalog is a measuring instrument and was being read
-as a specification"* and that more instrument work risks the trap §"the shape of
-the plan" names. That was a fair objection and the answer is now in hand; **there
-is no remaining instrument question standing between this project and content
-work.** ⚠ G3 is the exception and it is a different artefact — it answers *what
-can a player make*, which no existing report asks.
-
-## ⚠⚠ ITEM 1 (RECOMMENDED START): **THE HAMMETT LINE SATURATES**
-
-G5 created this, measured its arithmetic, and deliberately did not build it
-because the CONSTANT needs sourcing.
-
-**The gap, measured.** `rho * sum(sigma+)` for aniline is −6.5 × −1.30 = **8.45
-decades**, extrapolated off a line fitted on arenes with |σ⁺| < 0.4 (toluene, the
-xylenes, the halobenzenes), i.e. **|rho·sigma| < 2.6**. That is a 3.25x
-extrapolation of the abscissa, and the real relation does not go there: nitration
-of a strongly activated arene is **ENCOUNTER-CONTROLLED**, so mesitylene, anisole
-and phenol all react at one rate and the Hammett line SATURATES.
-
-**What a declared saturation would buy, measured in the engine's most acidic
-flask:**
-
-    saturation 1e4  ->  aniline at 1.35e-2 x benzene
-    saturation 1e5  ->  aniline at 1.35e-1 x benzene
-    saturation 1e6  ->  aniline at 1.35e+0 x benzene
-
-— against a real anilinium **slower** than benzene. ⚠ A saturation near 1e5 lands
-aniline within a decade or two of benzene instead of eight above it, **on ONE
-declared field**.
-
-⚠⚠⚠ **BUT THE DESIGN QUESTION IS WHICH OF TWO THINGS IT IS, AND THEY COST
-DIFFERENT AMOUNTS. ASK THIS BEFORE WRITING ANY CODE.**
-
-* **A capped RATIO** — clamp `|rho * sum(sigma+)|` at a declared number of
-  decades. Lives at SETUP exactly like `hammett_rho`, bakes into the kinetics
-  array, **no RHS edit and no tolerance-audit exposure.** ⚠ But it asserts that
-  the ceiling is a fixed *selectivity*, so the capped substrate stays a fixed
-  multiple of benzene at every temperature — and a real encounter limit does not
-  behave that way.
-* **An absolute ENCOUNTER CEILING** — the physically correct statement. Nitration
-  of an activated arene saturates because the reaction happens on every encounter,
-  so the ceiling is a *diffusion rate* (roughly `A_enc`, weakly
-  temperature-dependent) and NOT a ratio to benzene. ⚠⚠ That is a **rate-law
-  change**: `min(k_hammett, k_enc)` cannot be baked into an `Ea` because the two
-  have different temperature dependences, so it is an RHS edit **and
-  `tolerance_audit.py` is owed** (~10 min of the user's CPU).
-
-⚠⚠ **THE RATIO IS THE CHEAP ONE AND MAY STILL BE THE RIGHT ONE — BUT SAY WHICH,
-AND SAY WHAT IT ASSERTS.** This is the project's first question (setup vs hot
-loop) landing on the aromatic branch, and G2's answer for `hammett_rho` was
-setup. ⚠ **Measure the temperature spread before choosing**: if the capped
-substrates' rates stay well under the encounter limit across the 300–380 K band
-the nitration routes actually run in, then the two forms are
-indistinguishable there and the ratio wins on cost. **That measurement is one
-script and nobody has run it.**
-
-⚠⚠ **THE WHOLE JOB IS SOURCING THE CONSTANT, AND THAT IS THE POINT.** Coombes and
-Ridd measured encounter-controlled nitration; this project's rule for a
-hand-authored kinetic constant is *bound it against a stated observable, or
-declare it hand-authored and say what bounds it* (the sulfur burner is the
-standing example). ⚠ **Do not type 1e5 because it appears above** — the number
-above is an ARITHMETIC CONSEQUENCE printed to show the shape, not a measurement.
-
-⚠⚠⚠ **AND BE HONEST THAT THIS IS A DIFFERENT KIND OF SESSION FROM G5.** The
-constant is **NOT in `chemicals`** and there is no tier-1 source for it here, so
-this cannot follow `chemsim-thermochemical-data-curation`'s *"source from
-`chemicals`, never recall"* rule — it is a LITERATURE value, and the project's
-only licence for one of those is the A-factor licence in MILESTONES § STATED
-NON-GOALS (*"absolute reaction TIME is not achievable ... bound an A against a
-stated observable, or declare it hand-authored and say what bounds it"*).
-⚠⚠ **So the deliverable is not the number, it is the number PLUS a written bound
-and a stated observable it was bounded against.** If neither can be produced
-honestly, the right outcome is a measured REFUSAL with the arithmetic above
-recorded — which is a perfectly good session result on this project and has been
-several times.
-
-⚠ **AND NO EXISTING AUDIT CAN CATCH THE GAP IT CLOSES.** `detailed_balance`'s
-collision cap compares the PRE-EXPONENTIAL against a limit; `hammett` moves `Ea`.
-With A = 1e10 and the barrier clamped at zero a shifted nitration's ceiling is
-1e10 — **one decade UNDER** the 1e11 limit — so the cap never fires on a
-substituent-shifted rate at all. Fragility 13 in a new suit.
-
-⚠ **Cost it against the four nitration routes first**, as G2 did.
-
-## ⚠ ITEM 2: **G3 — `PLAYABLE.md`, the scoreboard the goal needs**  *(the expensive one)*
+## ⚠⚠ ITEM 1: **G3 — `PLAYABLE.md`, the scoreboard the goal needs**
 
 A generated standing audit answering *what can a player make, starting from
 what?* `ROUTE_INDEX.md` knows feedstocks but not what runs; `COVERAGE_REPORT.md`
@@ -302,24 +234,34 @@ one-step-up / 14 blocked on an unmakeable intermediate / 4 from a reagent
 bottle). ⚠ **The one hand judgement in it — which compounds count as NATURAL —
 must be PRINTED, not hidden**, so it can be argued with.
 
-⚠⚠ **AND G1 GAVE IT A SECOND QUESTION TO ANSWER**: `benzene-nitration` went from
-0.1762 to 0.8000 mol on a change that touched no species and no template, so
-"what a player can make" is not a property of the corpus alone. **A PLAYABLE
-scoreboard has to RUN things**, which is what makes it different from the two
-artefacts above and also what makes it expensive.
+⚠⚠ **G1 GAVE IT A SECOND QUESTION**: `benzene-nitration` went from 0.1762 to
+0.8000 mol on a change that touched no species and no template, so "what a player
+can make" is not a property of the corpus alone. **A PLAYABLE scoreboard has to
+RUN things**, which is what makes it different from the two artefacts above and
+also what makes it expensive.
 
-⚠⚠ **AND G4 GAVE IT A FOURTH, WHICH IS THE CHEAPEST OF THE FOUR: G4's FIVE ARE
-ALREADY-RUN ROUTES A PLAYABLE SCOREBOARD MUST NOT SCORE AS BLOCKED.** More
-usefully, `validation/granularity.py`'s `reachable()` is the DAG walk G3 needs and
-it already carries the rule that took three sessions' worth of trap out of it —
+⚠⚠ **G4 GAVE IT A THIRD, THE CHEAPEST: G4's FIVE ARE ALREADY-RUN ROUTES A
+PLAYABLE SCOREBOARD MUST NOT SCORE AS BLOCKED.** More usefully,
+`validation/granularity.py`'s `reachable()` is the DAG walk G3 needs and it
+already carries the rule that took three sessions' worth of trap out of it —
 **the target may not be charged.** ⚠ Do not re-derive that; a scorer without it
 credits every recycle loop in the corpus (`bayer-process`, `contact-process`).
 
-⚠⚠ **AND G5 GAVE IT A THIRD, WHICH IS SHARPER: A ROUTE CAN BE BLOCKED ON WHETHER
-ITS NETWORK BUILDS AT ALL.** Aniline + nitric acid with electrolyte support
-REFUSES, on a nitroanilinium pKa nobody curated. That is not a species being
-unpriced and it is not a template being missing — it is a *combination* failing —
-and neither existing artefact can see it.
+⚠⚠ **G5 GAVE IT A FOURTH, WHICH IS SHARPER: A ROUTE CAN BE BLOCKED ON WHETHER ITS
+NETWORK BUILDS AT ALL.** Aniline + nitric acid with electrolyte support REFUSES,
+on a nitroanilinium pKa nobody curated. That is not a species being unpriced and
+it is not a template being missing — it is a *combination* failing — and neither
+existing artefact can see it.
+
+⚠⚠ **AND G6 GAVE IT A FIFTH, WHICH IS THE MOST AWKWARD ONE: A YIELD IS NOT A
+PROPERTY OF THE ROUTE, IT IS A PROPERTY OF THE DECLARED CONSTANTS ON THE DAY.**
+G6 changed no species, no template and no route, and moved one substrate's rate
+by 2400x while leaving all three nitration yields identical to four decimals.
+**So a scoreboard that prints yields will print numbers that move under sessions
+that were not about it** — which is fine if it says what it ran and prints its
+conditions beside every number, and misleading if it reads as a property of the
+corpus. ⚠ `validation/saturation.py` panel 3 is the shape to copy: the same route,
+run twice, under two declarations.
 
 ## The C-series — coverage, deliberately deferred
 
@@ -336,23 +278,35 @@ G-series template counts toward it.
 is a measured, live finding — but **do not start here**, and do not treat a row's
 age as a reason to take it.
 
-1. **⚠⚠ THE HAMMETT LINE DOES NOT SATURATE — NEW IN G5, AND IT IS PROMOTED TO
-   §ITEM 1 OF THE WORK ORDER ABOVE.** See that section, which carries the
-   arithmetic AND the ratio-vs-encounter-rate design question; it is not repeated
-   here.
+1. **⚠⚠ ~~THE HAMMETT LINE DOES NOT SATURATE~~ — CLOSED BY G6.** The plateau is
+   declared at 2.686 decades with two sources and a written bound; see
+   §"WHAT G6 TURNED OUT TO BE" above. ⚠ What is left of this row is one
+   deliberate non-goal: **the plateau is a fixed RATIO, so a capped substrate
+   stays a fixed multiple of benzene at every temperature.** A real encounter
+   limit is a diffusion rate with its own weak temperature dependence, and the
+   two forms are indistinguishable over 300–380 K only because this rate law's
+   `k` is six decades under any diffusion constant (measured,
+   `validation/saturation.py` panel 1). **If a future template's `k` ever
+   approaches an encounter rate in its own units, that argument has to be
+   re-measured rather than reused.**
 
-2. **⚠⚠ NO ACIDITY FUNCTION — NEW IN G5, AND IT REPLACES THE OLD "NO PROTONATION"
-   ROW.** A mixed acid's acidity is H0, which is not the concentration of
-   anything; this engine's only handle is a mass-action molarity whose measured
-   floor is **pH −0.79**. ⚠ **DO NOT BUILD THIS BEFORE ITEM 1.** Even a perfect
-   acidity function leaves the free-base leak, because the leak is in how the
-   free base is PRICED and not in how much of it there is — measured, the
-   anilinium is already 100.000% of the aniline and carries 1e-7 % of the rate.
-   ⚠ And an H0 is not a state variable this engine has anywhere to put: it is a
-   property of a MEDIUM, which is what `chemsim-ion-transfer`'s "an aqueous pKa
-   must not run in an oil" is about. **Scope it as physics, not as a table.**
+2. **⚠⚠ NO ACIDITY FUNCTION — G5's ROW, AND G6 SHRANK IT FROM 8.63 DECADES TO
+   2.87 WITHOUT CLOSING IT. IT IS NOW THE BEST-SCOPED LIMIT ON THIS BRANCH.**
+   A mixed acid's acidity is H0, which is not the concentration of anything; this
+   engine's only handle is a mass-action molarity whose measured floor is
+   **pH −0.79**, against a free-base/anilinium crossover that G6 moved to
+   **−3.66**. ⚠⚠ **AND G6 REMOVED THE REASON THIS ROW WAS DEFERRED.** G5 said
+   not to build it first because the leak was in how the free base is PRICED,
+   not in how much of it there is; the price is now sourced, so an acidity
+   function would move the mixture honestly for the first time. ⚠ It is still
+   not a table: an H0 is a property of a MEDIUM, which is what
+   `chemsim-ion-transfer`'s "an aqueous pKa must not run in an oil" is about.
+   **Scope it as physics.** ⚠ And measure what it BUYS first: 2.87 decades is a
+   long way for a molarity to travel, and the answer may be that a medium's
+   acidity cannot be a molarity at all.
 
-3. **⚠ NO REGIOSELECTIVITY IN THE SUBSTITUENT MODEL (G2), AND G5 ASSERTED IT.**
+3. **⚠⚠ NO REGIOSELECTIVITY IN THE SUBSTITUENT MODEL (G2), ASSERTED IN G5, AND
+   G6 PROMOTED IT TO THE TOP AROMATIC ITEM BY TAKING THE OTHER TWO AWAY.**
    `hammett.survey` sums over the substrate's ring as a whole, so all three
    dinitrobenzenes get the same barrier. `test_protecting_the_amine_is_emergent_and_runs`
    now asserts `ortho == approx(meta)` on the nitroacetanilides (0.1535 each
@@ -361,15 +315,26 @@ age as a reason to take it.
    match) and is discarded before the barrier is computed, which is S9's shape
    exactly. ⚠ **Price it against G4 first** — a regioselective nitration may or
    may not move any catalog row.
+   ⚠⚠ **AND G6 ADDS A WARNING THAT WAS NOT AVAILABLE BEFORE: A SITE-AWARE SUM
+   WOULD BE SMALLER THAN THE RING-WIDE ONE, SO MORE SUBSTRATES WOULD FALL BELOW
+   THE PLATEAU AND THE PLATEAU WOULD DO LESS.** The two terms interact and the
+   interaction is measurable: `saturates()` is a comparison against
+   `rho * sum(sigma+)`, and every number in `validation/saturation.py` panel 2 is
+   computed from a ring-wide sum. **Re-measure that panel as part of the
+   regioselectivity session, not after it.**
 
-4. **⚠ AN OPEN-ENDED TEMPLATE OVER A CURATED TABLE — NEW IN G5, AND THE REFUSAL
-   IS DELIBERATE.** `amine_protonation` protonates every amine a network reaches;
-   the ion table prices the typed ones. Nitrating an aniline REFUSES on
-   `[NH3+]c1ccccc1[N+](=O)[O-]`. ⚠ **Curating the nine nitroaniline pKa values is
-   MEASURED to buy nothing** (the ion channel carries 1e-7 % of the rate), so the
-   refusal stands — the element floor's rule applied to a pKa. ⚠ **The thing that
-   WOULD change this is item 1**, after which the free base no longer dominates
-   and the ion's pKa starts to matter.
+4. **⚠ AN OPEN-ENDED TEMPLATE OVER A CURATED TABLE (G5) — THE REFUSAL STILL
+   STANDS, BUT ITS ARITHMETIC MOVED IN G6 AND IS NO LONGER OVERWHELMING.**
+   `amine_protonation` protonates every amine a network reaches; the ion table
+   prices the typed ones. Nitrating an aniline REFUSES on
+   `[NH3+]c1ccccc1[N+](=O)[O-]`. ⚠⚠ G5 measured the nine nitroaniline pKa values
+   as buying nothing because the ion channel carried **1e-7 %** of the rate;
+   under the plateau **it carries 0.39 %** (`validation/protonation.py` panel 5,
+   last column) — five decades closer to mattering, still not enough at this
+   pot's acidity. ⚠ **G5 named item 1 as the thing that would change this and it
+   was right about the direction, wrong about the size.** Re-measure the last
+   column before curating anything; the refusal is the element floor's rule
+   applied to a pKa and it is cheap to keep.
 
 5. **⚠ THE PYRIDINIUM IS PRICED AND UNREACHABLE — NEW IN G5.** The ion is in the
    table (pKa 5.23); an aromatic ring nitrogen is **X2** and `amine_protonation`
@@ -574,8 +539,10 @@ be probed outside its own state, four inorganic gas processes, three smelters, a
 retort that DISTILS its metal off, two templates that RACE for one alkene, a ring
 closure whose OXIDANT turns into one of its own reagents, a dropping funnel whose
 addition is a CONDITION and not a duration, an aromatic ring that knows what is
-already on it, **an amine that PROTONATES in acid — and a measured statement of
-why that is not enough to make an aniline behave.** `SAVE_VERSION` is **6**.
+already on it, an amine that PROTONATES in acid, **and a Hammett line that
+SATURATES at a sourced encounter plateau — after which an aniline in a hot mixed
+acid is finally SLOWER than benzene, which is what it is.** `SAVE_VERSION` is
+**6**.
 Coverage: **52/229 classes** (was 51 — G4's `saponification` credit), **46
 templates**, **41/173 template-ready**, **82/173 species-ready** — and ⚠⚠ **31/173
 BOTH, which is the only one of the three a route can be judged on.**
@@ -589,29 +556,42 @@ its refusals are down to **419 of 1583** as of G5.
 
 # ⚠ THE FRAGILITIES
 
-**1. ⚠⚠ THE HAMMETT LINE DOES NOT SATURATE (G5).** `rho*sigma+` prices aniline
-8.45 decades off a line fitted on |rho·sigma| < 2.6, and real nitration of an
-activated arene is encounter-controlled. **A LIMIT to remove, and the best-scoped
-new item.** ⚠ No existing audit can see it: the collision cap compares `A` and
-hammett moves `Ea`.
+**1. ⚠⚠ THE PLATEAU IS A FIXED RATIO AND NOT A RATE (G6, deliberate).** The
+Hammett line saturates now, at a sourced 2.686 decades — but as a ratio to
+benzene, so **a capped substrate stays a fixed multiple of benzene at every
+temperature** where a real encounter limit is a diffusion rate. ⚠⚠ That is
+defensible ONLY because this template's `k` runs six decades below any diffusion
+constant across 300–380 K (measured, `validation/saturation.py` panel 1), which
+is a property of the nitronium pre-equilibrium being folded into `Ea`. **A
+template whose `k` approaches an encounter rate in its own units needs the
+argument re-measured, not reused.**
+⚠ And the audit that cannot see any of this is still blind: `detailed_balance`'s
+collision cap compares `A` while hammett moves `Ea`.
 
-**2. ⚠⚠ NO ACIDITY FUNCTION (G5).** The reachable hydronium floor is **pH −0.79**
-and the aniline crossover is at **−9.42**. H0 is a property of a MEDIUM and there
-is nowhere in this engine to put it. **A LIMIT to remove — but AFTER fragility 1**,
-because the anilinium is already 100.000% of the aniline and carries 1e-7 % of
-the rate.
+**2. ⚠⚠ NO ACIDITY FUNCTION (G5, and G6 shrank it to 2.87 decades).** The
+reachable hydronium floor is **pH −0.79** and the aniline crossover is now
+**−3.66** rather than −9.42. H0 is a property of a MEDIUM and there is nowhere in
+this engine to put it. **A LIMIT to remove, and G6 removed the reason it was
+deferred** — the free base's price is sourced now, so the mixture is the only
+wrong part left. ⚠ Measure what it buys before building it: 2.87 decades is a
+long way for a molarity to travel.
 
 **3. ⚠ AN OPEN-ENDED TEMPLATE OVER A CURATED ION TABLE (G5).** Nitrating an
-aniline REFUSES on a nitroanilinium pKa nobody curated. **The refusal is
-deliberate** — curating the nine values is measured to buy nothing.
+aniline REFUSES on a nitroanilinium pKa nobody curated. **The refusal still
+stands** — but G5's *"measured to buy nothing"* was measured against the
+unsaturated line, and under the plateau the ion channel carries **0.39 %** of
+the rate rather than 1e-7 %. Five decades closer to mattering; still not enough.
 
 **4. ⚠ THE PYRIDINIUM IS PRICED AND UNREACHABLE (G5).** An aromatic ring nitrogen
 is X2 and `amine_protonation` matches X3. Closing it lands on the Skraup.
 
-**5. ⚠ NO REGIOSELECTIVITY IN A SUBSTITUENT BARRIER (G2, asserted in G5).** All
-three dinitrobenzenes are made at one rate, and ortho == meta on the
-nitroacetanilides against a real ~90% para. The site exists at rewrite time and
-is discarded. **A LIMIT to remove.** Engine queue item 3.
+**5. ⚠⚠ NO REGIOSELECTIVITY IN A SUBSTITUENT BARRIER (G2, asserted in G5, and
+G6 MADE IT THE TOP AROMATIC ITEM).** All three dinitrobenzenes are made at one
+rate, and ortho == meta on the nitroacetanilides against a real ~90% para. The
+site exists at rewrite time and is discarded. **A LIMIT to remove.** Engine queue
+item 3. ⚠ A site-aware sum is SMALLER than the ring-wide one, so it interacts
+with the plateau: re-measure `validation/saturation.py` panel 2 inside that
+session rather than after it.
 
 **6. ⚠ A STILL AND A DRIP BENCH CANNOT BE ONE APPARATUS IN AN EXAMPLE'S BUDGET
 (G1).** The same 20 s addition costs **3.9 s of wall clock on two vessels and

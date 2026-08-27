@@ -12,6 +12,8 @@ it collapses to the old behaviour, and what it costs the corpus.
 
 from __future__ import annotations
 
+import math
+
 import numpy as np
 import pytest
 from rdkit import Chem
@@ -175,10 +177,26 @@ def test_the_anchor_is_298_K_and_not_the_networks_build_temperature(thermo):
 
 def test_the_relation_reads_back_as_the_hammett_ratio_at_the_anchor():
     """``dEa`` and ``log10(k/k0) = rho * sigma`` are the same statement, and the
-    round trip is exact at 298.15 K by construction."""
-    for sigma in (-1.3, -0.311, 0.0, 0.674, 1.348):
+    round trip is exact at 298.15 K by construction.
+
+    ⚠ G6 BOUNDED THE ABSCISSA THIS HOLDS ON. The relation reads back exactly
+    below the encounter plateau and reads back the PLATEAU above it, so -1.30 --
+    which was in this list until the plateau existed -- is now the second half of
+    the test rather than the first.
+    """
+    for sigma in (-0.311, 0.0, 0.674, 1.348):
+        assert not hammett.saturates(NITRATION_RHO, sigma)
         got = hammett.rate_ratio(NITRATION_RHO, sigma)
         assert got == pytest.approx(10.0 ** (NITRATION_RHO * sigma), rel=1e-10)
+
+    for sigma in (-1.3, -0.933, -2.220):
+        assert hammett.saturates(NITRATION_RHO, sigma)
+        assert hammett.rate_ratio(NITRATION_RHO, sigma) == pytest.approx(
+            10.0 ** hammett.SATURATION_DECADES, rel=1e-10
+        )
+        assert hammett.rate_ratio(
+            NITRATION_RHO, sigma, saturation=math.inf
+        ) == pytest.approx(10.0 ** (NITRATION_RHO * sigma), rel=1e-10)
 
 
 def test_a_rho_and_an_alpha_may_not_be_declared_together():
@@ -286,16 +304,28 @@ def test_a_ring_bond_is_not_a_substituent_and_a_biaryl_bond_is():
     assert biphenyl.unknown == (), "the bond is claimed from BOTH ends"
 
 
-def test_a_barrier_may_not_go_negative_and_the_floor_is_reachable(thermo):
-    """⚠ NOT A DEFENSIVE FLOOR. 4-aminophenol's sum(sigma+) is -2.220, worth
-    -82.4 kJ/mol against a declared 60 -- and a negative activation energy is a
-    rate that RISES as the flask cools, which is not a fast reaction but a wrong
-    one. The clamp keeps the arithmetic legal; the missing physics is that an
-    amine in mixed acid is an ANILINIUM ion, and that is named, not fixed."""
+def test_a_barrier_may_not_go_negative_and_the_plateau_made_it_unreachable(thermo):
+    """⚠⚠ THIS TEST USED TO ASSERT THAT THE FLOOR WAS REACHABLE, AND G6 MADE IT
+    UNREACHABLE -- so it asserts BOTH halves now, which is the only way the change
+    is visible from here.
+
+    4-aminophenol's sum(sigma+) is -2.220, worth -82.4 kJ/mol against a declared
+    60, and a negative activation energy is a rate that RISES as the flask cools:
+    not a fast reaction but a wrong one. ⚠ With the encounter plateau declared,
+    the most any ring can be accelerated is 2.686 decades = 15.3 kJ/mol, so the
+    barrier bottoms out at 44.7 and the clamp cannot fire on this template. The
+    clamp stays because the plateau is declared PER TEMPLATE and can be lifted.
+    """
     s = hammett.survey(Chem.MolFromSmiles("Nc1ccc(O)cc1"))
-    raw = 60_000.0 + hammett.barrier_shift(NITRATION_RHO, s.sigma_sum)
-    assert raw < 0.0, "the floor has to be reachable or the test proves nothing"
-    assert hammett.clamp_barrier(raw) == 0.0
+    bare = 60_000.0 + hammett.barrier_shift(
+        NITRATION_RHO, s.sigma_sum, saturation=math.inf
+    )
+    assert bare < 0.0, "the floor has to be reachable or the test proves nothing"
+    assert hammett.clamp_barrier(bare) == 0.0
+
+    under_plateau = 60_000.0 + hammett.barrier_shift(NITRATION_RHO, s.sigma_sum)
+    assert under_plateau > 0.0
+    assert hammett.clamp_barrier(under_plateau) == under_plateau
 
     net = build_network([c("Nc1ccc(O)cc1"), NITRIC, WATER],
                         [aromatic_nitration()], thermo=thermo, max_species=6,

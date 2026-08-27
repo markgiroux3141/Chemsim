@@ -219,10 +219,20 @@ def networks() -> dict:
     # G2. ⚠ THE ONE TEMPLATE WHOSE BARRIER IS NOT THE ONE IT DECLARES, so it is
     # the one this audit could not previously have covered by reading a table.
     # ``aromatic_nitration`` declares 60 kJ/mol and the ring shifts it: an
-    # activated substrate comes out LOWER, and 4-aminophenol comes out clamped
-    # at ZERO, where the rate constant is A alone. That is the case worth
-    # auditing -- a floored barrier is exactly how a pre-exponential ends up
-    # being the whole rate. It is irreversible, so there is no derived reverse.
+    # activated substrate comes out LOWER.
+    #
+    # ⚠⚠ G6 TOOK THE INTERESTING CASE AWAY FROM THIS PANEL, AND THAT IS WORTH
+    # SAYING RATHER THAN SILENTLY RE-MEASURING. 4-aminophenol used to come out
+    # CLAMPED AT ZERO, where the rate constant is ``A`` alone and a
+    # pre-exponential is the whole rate -- 1.0e10, one tenth of the ceiling, and
+    # the best example in this file of why the cap is on ``k`` and not on ``A``.
+    # The encounter plateau caps the acceleration at 2.686 decades, so the
+    # smallest barrier any ring can now reach is 44.7 kJ/mol and the fastest
+    # activated nitration in this network is **1.5e2 L/(mol s), 1.5e-9 of the
+    # ceiling**. The row is kept because the plateau is per-template and can be
+    # lifted, and because a network whose fastest member moved by eight decades
+    # is exactly what this audit exists to notice.
+    # It is irreversible, so there is no derived reverse.
     out["nitration, activated"] = build_network(
         ["Nc1ccc(O)cc1", "Oc1ccccc1", "Cc1ccccc1", "O[N+](=O)[O-]", "O"],
         [S.aromatic_nitration()], thermo=THERMO, max_species=40,

@@ -589,7 +589,9 @@ def _concrete_in_phase(
         fwd = ConcreteReaction(tmpl.name, r_smiles, p_smiles, tmpl.A, Ea, phase,
                                orders=tmpl.orders, solid_catalyst=cat,
                                electrical_work=work)
-        shift = hammett.barrier_shift(tmpl.hammett_rho, ring.sigma_sum)
+        shift = hammett.barrier_shift(
+            tmpl.hammett_rho, ring.sigma_sum, tmpl.hammett_saturation
+        )
         # ⚠ TWO THINGS THAT MUST BE SAID RATHER THAN SWALLOWED, and both are the
         # project's third case: not an error, not silence, a report.
         if ring.unknown:
@@ -601,6 +603,23 @@ def _concrete_in_phase(
                 f"unsubstituted there, so this barrier is a LOWER bound for a "
                 f"deactivated ring and an upper bound for an activated one. See "
                 f"reactions/hammett.py for the table and its provenance."
+            )
+        if hammett.saturates(tmpl.hammett_rho, ring.sigma_sum,
+                             tmpl.hammett_saturation):
+            notices[f"{fwd.key()}|hammett-plateau"] = (
+                f"[build_network] NOTICE: template {tmpl.name!r} on "
+                f"'{' + '.join(r_smiles)}' is activated PAST THE ENCOUNTER "
+                f"PLATEAU (sum sigma+ = {ring.sigma_sum:+.3f} at rho = "
+                f"{tmpl.hammett_rho:+.2f} asks for "
+                f"{tmpl.hammett_rho * ring.sigma_sum:.2f} decades against a "
+                f"declared plateau of {tmpl.hammett_saturation:.3f}), so it is "
+                f"priced AT the plateau and not on the line. G6: nitration of a "
+                f"strongly activated arene is encounter-controlled, so further "
+                f"activation buys no rate. The plateau is a RELATIVE one, "
+                f"bounded against measured reactivity ratios rather than an "
+                f"absolute encounter rate -- this substrate's rate is now a "
+                f"declared multiple of benzene's at every temperature. See "
+                f"reactions/hammett.py."
             )
         if tmpl.Ea + shift < 0.0:
             notices[f"{fwd.key()}|hammett-floor"] = (
