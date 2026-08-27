@@ -4323,6 +4323,32 @@ answer `amine_protonation`'s pattern, so the acetanilide network BUILDS where th
 aniline one refuses. **Nobody told the engine that an amide is a protecting
 group.**
 
+## ⚠⚠ WHAT IS LEFT, AND IN WHICH ORDER — SETTLED 2026-08-27 AFTER G5
+
+    1. G4 -- the granularity audit           <- START HERE. cheap, and it
+                                                MEASURES THE INSTRUMENT the
+                                                other two are scored against
+    2. the HAMMETT LINE SATURATES            <- the interesting one; G5 already
+                                                did its arithmetic (see §G5)
+    3. G3 -- PLAYABLE.md                      <- the scoreboard the GOAL needs,
+                                                and the expensive one
+
+⚠⚠ **G4 GOES FIRST FOR M1's REASON AND NOT BECAUSE IT IS THE BEST WORK.** The
+saturation item is more interesting, and G4's answer does not change its value at
+all — but G4's answer *could* change what content is worth building, and a session
+spent against an unmeasured scoreboard may be aimed at a gap that is not a gap.
+This document already records that the measurement taken first CHANGED the
+milestone in four of M0-M4's five cases, and that M1's corrected baseline went
+DOWN rather than up.
+
+⚠ **THE COUNTER-ARGUMENT, KEPT SO THE CHOICE STAYS A CHOICE.** The G-series exists
+because the catalog *"is a measuring instrument and was being read as a
+specification"*, and G4 is more instrument work on that same instrument — which is
+the trap §"the shape of the plan" names: *"right work, wrong scoreboard, and the
+content queue is still untouched since M5."* A session that wants to move the GAME
+rather than the number should take item 2 and leave G4. **Both are defensible; the
+requirement is to pick deliberately and say which.**
+
 ## G3 -- `PLAYABLE.md`, the scoreboard the goal needs
 
 A generated standing audit answering the question no existing artefact does:

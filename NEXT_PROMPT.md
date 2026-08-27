@@ -124,7 +124,7 @@ molarity cannot reach 1e9 mol/L. That is a better-posed gap than the one G2 name
 At pH −0.667 the aniline is **100.000% anilinium** and the effective rate is
 **380 × benzene** against 2.8e8. ⚠⚠ **And the anilinium carries 1e-7 % of it** —
 every remaining decade is a FREE-BASE LEAK surviving at 1e-6 mole fraction.
-**Fixing the FRACTION cannot fix that.** See §THE BEST-SCOPED NEW ITEM below.
+**Fixing the FRACTION cannot fix that.** See §ITEM 2 below.
 
 ## ⚠⚠⚠ 4. THE BIGGEST ACTUAL PAYOFF WAS A DEAD TABLE, PRINTED IN A GENERATED REPORT TWELVE TIMES
 
@@ -172,9 +172,71 @@ an amide is a protecting group.
 # ⚠⚠⚠ START HERE: THE G-SERIES IS THE WORK ORDER
 
 ⚠⚠ **READ `MILESTONES.md` § THE G-SERIES.** G1, G2 and G5 are marked done there
-with what they actually turned out to be. What is left, in order:
+with what they actually turned out to be.
 
-## ⚠⚠ THE BEST-SCOPED NEW ITEM: **THE HAMMETT LINE SATURATES**
+## ⚠⚠⚠ THE RECOMMENDED ORDER, AND THE REASON, BECAUSE IT IS NOT THE OBVIOUS ONE
+
+    1. G4 -- the granularity audit           <- START HERE. cheap, and it
+                                                MEASURES THE INSTRUMENT the
+                                                other two are scored against
+    2. THE HAMMETT LINE SATURATES            <- the interesting one, and G5
+                                                already did its arithmetic
+    3. G3 -- PLAYABLE.md                      <- the scoreboard the GOAL needs,
+                                                and the expensive one
+
+⚠⚠ **G4 GOES FIRST FOR M1's REASON, NOT BECAUSE IT IS THE BEST WORK.** The
+saturation item is more interesting and G4's answer does not change its value one
+bit — but G4's answer *could* change what content is worth building at all, and
+every session that spends itself against an unmeasured scoreboard is a session
+that may have been aimed at a gap that is not a gap. M1 came before the content
+work for exactly this reason, and MILESTONES records that the measurement taken
+first CHANGED the milestone in four of five cases.
+
+⚠ **THE COUNTER-ARGUMENT, STATED SO THE CHOICE IS A CHOICE:** the G-series exists
+because *"the catalog is a measuring instrument and was being read as a
+specification"*, and G4 is more instrument work on that same instrument — which is
+the trap §"the shape of the plan" names (*"right work, wrong scoreboard, and the
+content queue is still untouched since M5"*). If this session wants to move the
+GAME rather than the number, take the saturation item and leave G4. **Both are
+defensible; pick deliberately and say which.**
+
+## ⚠⚠ ITEM 1 (RECOMMENDED START): **G4 — the granularity audit**  *(possibly free routes)*
+
+How many routes are, like `benzene-nitration`, chemically runnable but scored as
+blocked because the catalog spells a mechanism out in steps the engine does in
+one? **Nobody has counted.** Until someone does, the BOTH column (**31/173**) is
+an unknown amount too low, and every content session is aimed with it.
+
+**The worked example that started this, and it is the template for the audit.**
+`benzene-nitration` is written as a three-step arenium mechanism
+(`nitronium-generation`, `electrophilic-aromatic-substitution`,
+`arenium-deprotonation`), so it scores as NOT template-ready — while the engine
+nitrates benzene quantitatively today:
+
+    benzene 1.0 + nitric acid 1.2, 340 K, 2 h
+      benzene left  0.0000     NITROBENZENE  1.0000 mol     conservation clean
+
+⚠ **THE INSTRUMENT IS `validation/catalog_coverage.py` AND IT ALREADY KNOWS WHICH
+CLASS EACH STEP WANTS**, so the question is answerable without new machinery:
+walk the routes that are species-ready but NOT template-ready, and for each ask
+whether the engine's existing templates take the OVERALL transformation even
+though no single template matches the catalog's step. ⚠⚠ **AND THAT LAST CLAUSE
+IS THE WHOLE DIFFICULTY** — it is not a string comparison, so a mechanical answer
+is not available and each candidate has to be read.
+
+⚠⚠ **RUNNABLE IS THE ONLY HONEST TEST, AND S7 ALREADY RECORDED WHY: `RUNNABLE`
+CANNOT ASK WHETHER A NUMBER IS RIGHT.** So the deliverable is a COUNT plus a
+NAMED LIST, not a re-scored headline — crediting a route because a network builds
+is exactly the false credit S1 made (`chemsim-surface-reactions`: *"crediting a
+class made a FALSE route credit"*). ⚠ If the audit wants to move the BOTH column,
+it has to say per route what it ran and what came out.
+
+⚠ **AND M1 IS THE PRECEDENT FOR THE OUTCOME BEING NEGATIVE**: M1 fixed the
+instrument and the corrected baseline went DOWN (33/377 steps), because *"a class
+must name a MECHANISM not an outcome"*. **A G4 that finds few free routes is a
+successful G4** — it retires an unknown that is currently inflating every plan.
+
+## ⚠⚠ ITEM 2: **THE HAMMETT LINE SATURATES**
 
 G5 created this, measured its arithmetic, and deliberately did not build it
 because the CONSTANT needs sourcing.
@@ -230,6 +292,19 @@ declare it hand-authored and say what bounds it* (the sulfur burner is the
 standing example). ⚠ **Do not type 1e5 because it appears above** — the number
 above is an ARITHMETIC CONSEQUENCE printed to show the shape, not a measurement.
 
+⚠⚠⚠ **AND BE HONEST THAT THIS IS A DIFFERENT KIND OF SESSION FROM G5.** The
+constant is **NOT in `chemicals`** and there is no tier-1 source for it here, so
+this cannot follow `chemsim-thermochemical-data-curation`'s *"source from
+`chemicals`, never recall"* rule — it is a LITERATURE value, and the project's
+only licence for one of those is the A-factor licence in MILESTONES § STATED
+NON-GOALS (*"absolute reaction TIME is not achievable ... bound an A against a
+stated observable, or declare it hand-authored and say what bounds it"*).
+⚠⚠ **So the deliverable is not the number, it is the number PLUS a written bound
+and a stated observable it was bounded against.** If neither can be produced
+honestly, the right outcome is a measured REFUSAL with the arithmetic above
+recorded — which is a perfectly good session result on this project and has been
+several times.
+
 ⚠ **AND NO EXISTING AUDIT CAN CATCH THE GAP IT CLOSES.** `detailed_balance`'s
 collision cap compares the PRE-EXPONENTIAL against a limit; `hammett` moves `Ea`.
 With A = 1e10 and the barrier clamped at zero a shifted nitration's ceiling is
@@ -238,7 +313,7 @@ substituent-shifted rate at all. Fragility 13 in a new suit.
 
 ⚠ **Cost it against the four nitration routes first**, as G2 did.
 
-## ⚠ G3 — `PLAYABLE.md`, the scoreboard the goal needs
+## ⚠ ITEM 3: **G3 — `PLAYABLE.md`, the scoreboard the goal needs**  *(the expensive one)*
 
 A generated standing audit answering *what can a player make, starting from
 what?* `ROUTE_INDEX.md` knows feedstocks but not what runs; `COVERAGE_REPORT.md`
@@ -261,13 +336,6 @@ REFUSES, on a nitroanilinium pKa nobody curated. That is not a species being
 unpriced and it is not a template being missing — it is a *combination* failing —
 and neither existing artefact can see it.
 
-## ⚠ G4 — the granularity audit *(possibly free routes)*
-
-How many routes are, like `benzene-nitration`, chemically runnable but scored as
-blocked because the catalog spells a mechanism out in steps the engine does in
-one? **Nobody has counted.** Until someone does, the BOTH column is an unknown
-amount too low.
-
 ## The C-series — coverage, deliberately deferred
 
 Where *"grind out the remaining classes, including the boring ones"* lives. The
@@ -283,8 +351,10 @@ G-series template counts toward it.
 is a measured, live finding — but **do not start here**, and do not treat a row's
 age as a reason to take it.
 
-1. **⚠⚠ THE HAMMETT LINE DOES NOT SATURATE — NEW IN G5, AND IT IS PROMOTED TO THE
-   G-SERIES ABOVE.** See that section; it is not repeated here.
+1. **⚠⚠ THE HAMMETT LINE DOES NOT SATURATE — NEW IN G5, AND IT IS PROMOTED TO
+   §ITEM 2 OF THE WORK ORDER ABOVE.** See that section, which carries the
+   arithmetic AND the ratio-vs-encounter-rate design question; it is not repeated
+   here.
 
 2. **⚠⚠ NO ACIDITY FUNCTION — NEW IN G5, AND IT REPLACES THE OLD "NO PROTONATION"
    ROW.** A mixed acid's acidity is H0, which is not the concentration of
