@@ -4043,6 +4043,165 @@ nothing says so.
 
 ---
 
+# ⚠⚠ THE G-SERIES -- THE GAME ARC, ADDED 2026-08-27 ON A DIRECTION CHANGE
+
+⚠⚠ **THE CATALOG IS A MEASURING INSTRUMENT AND WAS BEING READ AS A
+SPECIFICATION.** 173 named industrial routes is an excellent yardstick for *does
+the engine cover chemistry*. It is a poor target list for a game: nobody wants to
+replay the Solvay process, all 173 is ~100 sessions, and the last 60 are
+polymers, fermentation networks and spatial models -- the least interesting
+chemistry in the corpus.
+
+⚠ **AND THE SCOREBOARD MISMEASURES IN BOTH DIRECTIONS**, which is why seven good
+sessions looked like stagnation:
+
+* it **overstates**, because a runnable route need not be *reachable*. Measured
+  2026-08-27: of the 31 routes in the BOTH column, **only 13 connect to natural
+  materials.** 14 are blocked on an intermediate the engine cannot make and 4
+  start from a reagent bottle nothing in the corpus fills.
+* it **understates**, because it scores the CATALOG's granularity rather than the
+  ENGINE's ability. `benzene-nitration` is written as a three-step arenium
+  mechanism (`nitronium-generation`, `electrophilic-aromatic-substitution`,
+  `arenium-deprotonation`) and therefore scores as not-template-ready -- while
+  the engine nitrates benzene quantitatively TODAY:
+
+      benzene 1.0 + nitric acid 1.2, 340 K, 2 h
+        benzene left  0.0000     NITROBENZENE  1.0000 mol     conservation clean
+
+⚠ **THE CONTENT SLOPE IS NOT AN ASYMPTOTE, AND THE EARLIER READING OF IT WAS
+TAKEN OVER THE WRONG SESSIONS.** S7-S13 averaged +1.6 routes/session, but every
+one of those seven was an ENGINE or DATA session; none was a content session.
+The greedy set-cover curve is the real content slope: **20 templates take
+template-ready 41 -> 72**, and the RUNNABLE column converts at roughly half, so
+**20 templates is about 31 -> 46 runnable.** At the demonstrated content rate
+(S11 built two templates, S12 built one) that is 10-20 sessions. ⚠ There is still
+**no lever** -- 46 routes are one class away, from 36 DIFFERENT classes -- so it
+is a grind with a real slope, not a breakthrough waiting to happen.
+
+## ⚠⚠ THE GOAL, STATED, SO THAT WORK CAN BE SCORED AGAINST IT
+
+> **A connected tech tree: ~10 natural starting materials to ~40 targets, every
+> one reachable from the ground, with the 1800s aromatic branch lit up.**
+
+⚠ **COVERAGE IS NOT CANCELLED, IT IS DEFERRED.** The C-series (below, unwritten)
+is where "add the boring reactions until the corpus is covered" lives, and the
+G-series does nothing that makes it harder -- every template the G-series builds
+counts for coverage too. The decision is about ORDER, not about scope.
+
+## G1 -- The dropping funnel, and the first playground  *(the fastest testable slice)*
+
+⚠⚠ **THE TARGET VIGNETTE, IN THE USER'S OWN WORDS**: toss a handful of materials
+in a vessel, heat it, drip an acid in -- and *if you drip too much at once it
+heats up and changes the reaction*, so you have to cool it and add slowly -- then
+collect the vapour, run it through a condenser, and take the drops in a
+temperature range.
+
+⚠ **MEASURED AGAINST THE ENGINE, 2026-08-27. EXACTLY ONE MECHANIC IS MISSING:**
+
+| the vignette | the engine |
+|---|---|
+| a handful of materials in a vessel | ✔ `Vessel.charge` |
+| heat it up | ✔ `Q_input` / `SET_HEAT` |
+| **drip an acid in slowly** | **MISSING** |
+| too fast -> it heats up -> the reaction changes | ✔ emergent, once a feed exists |
+| cool it down | ✔ `SET_ENVIRONMENT`, `UA` |
+| collect the vapour, condense it | ✔ `Rig` vapour + drain edges |
+| take the drops in a temperature range | ✔ `collect_fraction(enter, leave)` -- M2 |
+
+⚠ **`ingress` IS NOT THE MECHANIC AND MUST NOT BE STRETCHED INTO IT.** It is
+mol/s into the HEADSPACE, it is a constant, and it models an air leak. A dropping
+funnel adds to LIQUID LAYER 1, carries SENSIBLE HEAT, and RUNS OUT.
+
+**The build, and it is small:**
+
+1. `VesselConditions.feed` -- an (n,) mol/s vector added to the **liquid layer 1**
+   block of the RHS, beside where `ingress` is added to the vapour block.
+2. `VesselConditions.feed_T` -- the temperature of what is being added, so the
+   energy equation gets `sum(feed * Cp) * (feed_T - T)`. ⚠ **THIS TERM IS THE
+   WHOLE POINT**: without it, dripping ice-cold acid warms the flask exactly as
+   fast as dripping boiling acid, and the "cool it and add slowly" mechanic is
+   cosmetic.
+3. **THE RESERVOIR IS NOT STATE.** A funnel that runs out looks like a new state
+   block and must not become one -- see the block-order trap. It is a DURATION:
+   `total / rate`, derived, with the feed set back to zero afterwards. That is
+   also what makes it a RECIPE rather than a script, and it composes with
+   `wait_until` for free ("drip until the pot reaches 340 K, then stop").
+4. A `SET_FEED` event so a drip saves and replays. **SAVE_VERSION 5 -> 6.**
+
+⚠ **IT TOUCHES THE RHS**, so: `feed=None` must reproduce the current engine BIT
+FOR BIT, and `tolerance_audit.py` is owed. S9's bit-identical test is the template.
+
+⚠ **THE PLAYGROUND ITSELF SHOULD USE A FAMILY THAT ALREADY RACES**, and one
+exists: `competing_pathways`' five templates on ethanol / acetic acid / air. Its
+ester yield is measured at **85.6% at 420 K falling to 6.4% at 510 K**, so
+temperature genuinely selects the product -- and both feedstocks are
+**from-the-ground** (fermentation, then vinegar). ⚠⚠ **DO NOT BUILD IT ON
+NITRATION -- MEASURED AND REFUSED, SEE G2.**
+
+## G2 -- Ring deactivation, so nitration is a PROCESS and not an EVENT
+
+⚠⚠ **THE OBVIOUS DEMO REACTION WAS TESTED FIRST AND IT DOES NOT WORK.** Nitration
+is the canonical add-slowly-or-it-runs-away reaction in all of chemistry, so it
+was the natural choice for G1. Measured, 1.0 toluene + 3.5 nitric acid, staged by
+nitro count:
+
+      T/K      t/s  toluene     mono       di      tri
+      300       10   0.0008   0.0098   0.0278   0.9616
+      300      100   0.0000   0.0000   0.0000   1.0000
+      340       10   0.0000   0.0000   0.0000   1.0000
+      380     1000   0.0000   0.0000   0.0000   1.0000
+
+**96% TRINITRO IN TEN SECONDS AT ROOM TEMPERATURE, AND THE ENDPOINT DOES NOT MOVE
+WITH TEMPERATURE AT ALL.** There is no stage to catch and nothing for an addition
+rate to control.
+
+⚠ **THE CAUSE IS EXACT AND IT IS ONE LINE**: `aromatic_nitration(A=1.0e10,
+Ea=60_000.0, alpha=0.0)` gives **one A and one Ea to every nitration on every
+substrate**, so 2,4-dinitrotoluene nitrates exactly as fast as toluene. In
+reality each nitro group deactivates the ring by 4-6 orders of magnitude, which is
+precisely why TNT manufacture is a THREE-STAGE process with escalating acid and
+temperature.
+
+⚠⚠ **AND THE CHEAP FIX IS THE WRONG ONE. DO NOT JUST RAISE `alpha`.** S11
+measured that Evans-Polanyi names the WRONG major product when kinetics fight
+thermodynamics, and set `alpha = 0.0` on both hydroformylation templates for
+exactly that reason. A substituent effect on an aromatic ring is an ELECTRONIC
+property of the substrate, not a function of the reaction enthalpy, and dressing
+one up as the other would be the `chemsim-competing-templates` trap again.
+
+⚠ What this is really asking for is a **substituent-aware barrier** -- a term that
+reads the ring's existing substituents and shifts Ea. That is new capability and
+it is worth scoping properly. ⚠⚠ **AND IT IS THE HIGHEST-VALUE ITEM IN THE
+G-SERIES**, because the same missing effect gates the whole 1800s aromatic tree:
+dyes, explosives and painkillers all live on selective substitution, and the
+engine currently cannot tell a deactivated ring from a fresh one.
+
+## G3 -- `PLAYABLE.md`, the scoreboard the goal needs
+
+A generated standing audit answering the question no existing artefact does:
+**what can a player make, starting from what?** `ROUTE_INDEX.md` knows feedstocks
+but not what runs; `COVERAGE_REPORT.md` knows what runs but never asks whether a
+feedstock is obtainable. Neither answers *"what can I make from a rock?"*
+
+⚠ The classification is already written and measured (7 from-the-ground / 6
+one-step-up / 14 blocked on an unmakeable intermediate / 4 from a reagent bottle).
+⚠ **The one hand judgement in it -- which compounds count as NATURAL -- must be
+printed, not hidden**, so it can be argued with.
+
+## G4 -- The granularity audit  *(possibly free routes)*
+
+How many routes are, like `benzene-nitration`, chemically runnable but scored as
+blocked because the catalog spells a mechanism out in steps the engine does in
+one? **Nobody has counted.** Until someone does, the BOTH column is an unknown
+amount too low, and content work may be being aimed at gaps that are not gaps.
+
+## The C-series -- coverage, deliberately deferred
+
+Where "grind out the remaining classes, including the boring ones" lives. The
+greedy curve in PART 2 is its work order, subject to the RUNNABLE-column warning
+printed beneath it. ⚠ Nothing in the G-series blocks it and every G-series
+template counts toward it.
+
 # ⚠ STATED NON-GOALS — the things that are NOT coming, and what they cost
 
 This section exists because the audit that produced M10 and M11 also found three
