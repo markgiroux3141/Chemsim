@@ -566,6 +566,51 @@ TEMPLATE_CLASSES = {
     # at 470 K. **The distinction is measured, not asserted.**
     "alkene-isomerisation": "alkene_isomerisation",
     "oxidative-cleavage": "oxidative_cleavage",
+    # ---------------------------------------------------------------------
+    # C4 -- THE CLASS M5 REFUSED, AND IT WAS AN OUTCOME LABEL OVER FIVE
+    # MECHANISMS
+    # ---------------------------------------------------------------------
+    # M5 refused `fermentation` as *"a metabolic NETWORK, not a
+    # transformation"*, and `PLAYABLE.md` §8b priced it as the biggest single
+    # class left at **+2 playable**. The refusal was right about the LABEL and
+    # not about the chemistry: five rows, five mechanisms, and M1's rule --
+    # *a class must name a MECHANISM, not an outcome* -- says what to do about
+    # it. `route_steps.psv` names five classes now:
+    #
+    #   solventogenic-fermentation      abe-fermentation 1          BUILT
+    #   homolactic-fermentation         lactic-acid-pla 1           BUILT
+    #   aerobic-overflow-fermentation   citric-acid-fermentation 1  gap
+    #   amino-acid-fermentation         msg-route 1                 gap
+    #   secondary-metabolite-fermentation  penicillin-route 1       gap
+    #
+    # ⚠⚠⚠ **AND THE SPLIT IS WHAT MAKES THE CREDIT HONEST, BECAUSE THE +2 WAS
+    # ALWAYS GOING TO BE A FALSE CREDIT WITHOUT IT.** A template written off
+    # `abe-fermentation` cannot make citric acid, glutamic acid or penicillin G
+    # out of a sugar; crediting the old five-row class off it would have
+    # template-readied four routes that `build_network` cannot run -- G4's
+    # *only RUNNING it said so*, arriving before the run for once because the
+    # rows were read first. **The headline cost is +4 on the DENOMINATOR** (236
+    # classes to 240) against +2 covered, which is S7's rule again: *a split
+    # that lowers the headline is a split working.*
+    #
+    # ⚠⚠ **AND THE LUMP THAT MADE M5's REFUSAL LOOK RIGHT WAS AN ARTEFACT OF
+    # THE ROW'S FORMATTING.** `abe-fermentation` is written 1:1 and balances
+    # only at `5 C6H12O6 -> 2 acetone + 2 butanol + 2 ethanol + 12 CO2 + 8 H2`
+    # -- five sugars in, six carbon skeletons out, which is indeed not a graph
+    # rewrite. It is three reactions on one line. Split them and each balances
+    # exactly on ONE glucose:
+    #
+    #   glucose        -> 2 ethanol + 2 CO2              C6H12O6 both sides
+    #   glucose        -> 1-butanol + 2 CO2 + H2O        C6H12O6 both sides
+    #   glucose + H2O  -> acetone + 3 CO2 + 4 H2         C6H14O7 both sides
+    #
+    # ⚠ CREDITED ON AN INTEGRATION AND NOT ON THIS TABLE, to the S1 standard:
+    # `validation/fermentation.py` charges a real Vessel with glucose and water
+    # and reads acetone out of it, with the solvent slate checked against the
+    # reported 3:6:1 and the CO2:H2 ratio checked against a number nothing was
+    # fitted to.
+    "solventogenic-fermentation": "acetonic_fermentation",
+    "homolactic-fermentation": "homolactic_fermentation",
     # ⚠⚠ S9 SPLIT `catalytic-gas-oxidation`, AND IT WAS A FALSE CREDIT ON TWO OF
     # ITS THREE ROWS -- found while RANKING the queue rather than while building
     # anything, which is the second time a class has come apart under that check.

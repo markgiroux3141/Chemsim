@@ -473,32 +473,41 @@ def test_the_PAIR_is_worth_more_than_the_sum_of_its_parts():
         return len(bp.closure(pool=pool)[0])
 
     both = playable(set())
-    assert both == 18
-    assert playable({"alkene-isomerisation"}) == 17          # -1: cleavage only
-    assert playable({"oxidative-cleavage"}) == 16            # -2: neither route
-    assert playable({"alkene-isomerisation", "oxidative-cleavage"}) == 16
+    assert both == 20                                        # C4's baseline
+    assert playable({"alkene-isomerisation"}) == 19          # -1: cleavage only
+    assert playable({"oxidative-cleavage"}) == 18            # -2: neither route
+    assert playable({"alkene-isomerisation", "oxidative-cleavage"}) == 18
 
-    # read forwards from the pre-C3 baseline of 16: +0, +1, +2
+    # ⚠⚠ READ AS DIFFERENCES, NOT AS LEVELS -- which is why this test
+    # survived C4 with four numbers changed and its FINDING untouched. C4 added
+    # two playable routes elsewhere, so every level above moved by +2 and every
+    # difference below is identical to C3's. **A test that pins a claim about a
+    # difference must assert the difference.**
     base = playable({"alkene-isomerisation", "oxidative-cleavage"})
     assert playable({"oxidative-cleavage"}) - base == 0
     assert playable({"alkene-isomerisation"}) - base == 1
     assert both - base == 2
 
 
-def test_the_work_order_shrank_and_the_ceiling_did_not_move():
+def test_vanillin_feeds_nothing_and_that_is_still_true():
     """⚠ C1 granted one row and the list GREW 21 -> 24. C2 granted two and it
     shrank to 22. C3 granted two and it shrank to 20, with the ceiling UNCHANGED
     at 41 for the second session running: **vanillin feeds nothing.**
 
     *A work order derived from a fixed point is not a burndown list.*
+
+    ⚠⚠⚠ **C4 IS THE COUNTER-EXAMPLE, AND IT IS WHY THIS TEST WAS RENAMED.**
+    It granted one class and the list GREW 20 -> 23 while the ceiling moved
+    41 -> 45 -- the first ceiling move since C1 -- because a fermentation's
+    products feed four other routes. So "the work order shrank" was never the
+    claim worth pinning; **"vanillin feeds nothing" was**, and that is what is
+    asserted here. The list and ceiling numbers live in `test_playable.py`,
+    which is the file that owns them.
     """
     import build_playable as bp
 
-    assert len(bp.FED_BUT_UNRUNNABLE) == 20
     assert "vanillin-eugenol" not in bp.FED_BUT_UNRUNNABLE
     assert "vanillin-lignin" not in bp.FED_BUT_UNRUNNABLE
-    ceiling, _ = bp.closure(pool=bp.RUNNABLE | set(bp.FED_BUT_UNRUNNABLE))
-    assert len(ceiling) == 41
     # nothing new became FED, because vanillin is not a reagent anywhere
     assert not any("vanillin" in bp.needs(r) for r in bp.routes)
 

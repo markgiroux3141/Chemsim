@@ -116,6 +116,81 @@ called "alkoxide formation" and reads `phenol + NaOH → sodium-phenoxide`. It i
 turn on reading the row instead of the name.
 
 
+
+### ⚠⚠⚠ C4: `fermentation` was the fifth outcome label, and its lump was a LINE BREAK
+
+M5 refused `fermentation` as *"a metabolic **network**, not a transformation"* and
+left it as one class over five rows. It is the same fault as `acid-base` and
+`combustion` above, with one extra twist: **the row the class is sold on looked
+like a lumped network because three reactions were written on one line.**
+
+| was | steps | became | why |
+|---|---:|---|---|
+| `fermentation` | 5 | `solventogenic-fermentation` (1) | `abe-fermentation`: anaerobic clostridial ABE. **BUILT** — three templates, one per branch |
+| | | `homolactic-fermentation` (1) | `lactic-acid-pla`: two lactates per hexose and **no gas at all**. **BUILT** |
+| | | `aerobic-overflow-fermentation` (1) | `citric-acid-fermentation`: a mould, O₂ consumed, overflow of a blocked TCA cycle. Gap |
+| | | `amino-acid-fermentation` (1) | `msg-route`: overflow **plus reductive amination** — a nitrogen source in the equation. Gap |
+| | | `secondary-metabolite-fermentation` (1) | `penicillin-route`: biosynthesis on a **fed precursor** (phenylacetic acid). Gap |
+
+⚠⚠⚠ **THE SPLIT IS WHAT MADE THE CREDIT HONEST, AND THE FALSE CREDIT WAS FOUND
+BY READING THE ROWS RATHER THAN BY RUNNING ANYTHING.** A template written off
+`abe-fermentation` cannot make citric acid, glutamic acid or penicillin G out of
+a sugar. Crediting the old five-row class off it would have made four routes
+template-ready that `build_network` cannot run — G4's *only RUNNING it said so*,
+arriving **before** the run for once. ⚠⚠ **The headline cost is +4 on the
+DENOMINATOR (236 → 240) against +2 covered**, which is S7's rule: *a split that
+lowers the headline is a split working.*
+
+⚠⚠ **AND THE LUMP WAS NOT A NETWORK.** `abe-fermentation` 1 is written 1:1 and
+balances only at `5 C6H12O6 -> 2 acetone + 2 butanol + 2 ethanol + 12 CO2 +
+8 H2` — five sugars in and six carbon skeletons out. Split into the branches it
+actually is, each balances **exactly on ONE glucose**:
+
+    glucose        -> 2 ethanol + 2 CO2            C6H12O6 both sides, EXACT
+    glucose        -> 1-butanol + 2 CO2 + H2O      C6H12O6 both sides, EXACT
+    glucose + H2O  -> acetone + 3 CO2 + 4 H2       C6H14O7 both sides, EXACT
+
+⚠⚠⚠ **SO `corpus_balance` NOW HAS TWO STANDING EXAMPLES OF A ROW THAT PASSES AND
+IS NOT ITS OWN REACTION, AND THEY NEED OPPOSITE ANSWERS.** `vanillin-lignin` is
+short a **PRODUCT** and is deliberately left wrong, because the missing fragment
+is a mixture in lignin liquor. `abe-fermentation` was short a **LINE BREAK** and
+could just be split. *A coefficient vector cannot tell those apart; only reading
+the chemistry can.* Both rows are inside the BOTH column now.
+
+⚠ **THE ROW THAT IS NOT IN THIS SPLIT IS THE ONE THE CORPUS ALREADY DID RIGHT.**
+`ethanol-fermentation` never carried `fermentation`: its four steps are
+`glycoside-hydrolysis`, `glycolysis`, `decarboxylation` and
+`biological-reduction`. **The corpus asks for a LUMP by labelling five rows
+`fermentation` and asks for a mechanism by labelling those four**, and reading
+that distinction is what said a lump was the honest template here rather than a
+shortcut.
+
+### ⚠ And a spelling in the compound files can select a DATA TIER (C4)
+
+Not a taxonomy point, but it lives in these files. **146 of 1583 compound rows
+spell a stereocentre**, and for **31** of them flattening the SMILES changes
+which source prices the compound — because the property tables are keyed by
+canonical SMILES and the two halves of a record are keyed the **opposite way
+round**:
+
+* the **PHYSICAL** tables carry the chiral spelling. Sorbitol reaches a measured
+  Tb chiral (704.0 K) and falls to Joback flat (888.2 K) — **184 K apart**. 29
+  rows are that shape: limonene, the pinenes, camphene, menthol, borneol,
+  linalool, camphor, carvone, menthone, fenchone, xylitol, lindane.
+* the **FORMATION** table carries the FLAT spelling. `lactic-acid` flat reaches
+  an experimental record; the corpus's `C[C@H](O)C(=O)O` misses it and falls to
+  Benson, 107 K apart in Tb.
+
+⚠⚠ **A spelling carries no thermochemical information at all** — no estimator
+here tells one enantiomer from another (S7, re-measured on lactic acid in C4) —
+**so for these 31 compounds the data tier is an orthographic accident.** The fix
+is a stereo-insensitive **FALLBACK** in the provider's lookup (S6's rule: a
+fallback, never an override), which touches every number in the project and is
+therefore a session of its own. `validation/fermentation.py` panel 8 measures it;
+`tests/test_fermentation.py` pins the 146 so a data session has to come here and
+say what it changed.
+
+
 ## Why pipe-separated
 
 Chemical names are full of commas (`2,4-dinitrophenol`) and free of pipes.

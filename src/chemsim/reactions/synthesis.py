@@ -1755,6 +1755,315 @@ def oxidative_cleavage(
     )
 
 
+# ---------------------------------------------------------------------------
+# C4 -- FERMENTATION, AND THE CLASS WAS AN OUTCOME LABEL OVER FIVE MECHANISMS
+# ---------------------------------------------------------------------------
+# M5 refused `fermentation` as *"a metabolic NETWORK, not a transformation"*, and
+# `PLAYABLE.md` §8b priced it as the biggest single class left at **+2**. Both
+# were right, and the way through is M1's rather than M10's: **the class was an
+# OUTCOME LABEL.** Its five rows are five mechanisms --
+#
+#   abe-fermentation 1        glucose -> acetone + butanol + ethanol + CO2 + H2
+#                             anaerobic clostridial SOLVENTOGENESIS
+#   lactic-acid-pla 1         glucose -> lactic acid
+#                             anaerobic HOMOLACTIC glycolysis, no gas at all
+#   citric-acid-fermentation 1  sucrose + O2 -> citric acid + water
+#                             AEROBIC OVERFLOW of a blocked TCA cycle
+#   msg-route 1               glucose + NH3 + O2 -> glutamic acid + CO2 + water
+#                             aerobic overflow plus REDUCTIVE AMINATION
+#   penicillin-route 1        glucose + (NH4)2SO4 + PhCH2COOH -> penicillin G
+#                             SECONDARY-METABOLITE biosynthesis on a fed precursor
+#
+# -- so `route_steps.psv` names five now, on S7's `combustion` precedent and M5's
+# own `catalytic-hydrogenation` one. Two of the five are built here; three are
+# named gaps, and each is a gap with a yes/no answer instead of a fifth of one.
+#
+# ⚠⚠⚠ **AND C3's LESSON HELD A SECOND TIME: READ EVERY ROW BEFORE COSTING THE
+# CLASS.** The row `PLAYABLE.md` sells the class on is `abe-fermentation`, and
+# NEXT_PROMPT recorded it as written 1:1 and balancing only at
+#
+#       5 C6H12O6 -> 2 acetone + 2 butanol + 2 ethanol + 12 CO2 + 8 H2
+#
+# with the verdict *"five glucoses in and six carbon skeletons out is not a graph
+# rewrite"*. **That verdict is about the LUMP, and the lump is not the
+# mechanism.** Clostridial solventogenesis is three independent branches off one
+# pyruvate node, and each branch balances EXACTLY on ONE glucose:
+#
+#       glucose         -> 2 ethanol + 2 CO2                  C6H12O6  both sides
+#       glucose         -> 1-butanol + 2 CO2 + H2O            C6H12O6  both sides
+#       glucose + H2O   -> acetone + 3 CO2 + 4 H2             C6H14O7  both sides
+#
+# **So the 5:2:2:2:12:8 vector was an artefact of writing three reactions on one
+# line.** Nothing here consumes five sugars; three templates race for one, and
+# the solvent slate is a RATE RATIO between them -- S11's finding, arriving at a
+# corpus row that had been refused for being a network.
+#
+# ⚠⚠ **THE ATOM MAP IS GLYCOLYSIS's, NOT AN ARBITRARY REPARTITION.** Glucose
+# C3/C4 are the carbons that leave as the pyruvate carboxyls, so they are the CO2
+# in every branch; C2/C5 are the pyruvate carbonyls and C1/C6 the methyls, so
+# ethanol's CH2OH comes off C2 and C5 and its CH3 off C1 and C6. The butanol
+# chain is the Claisen condensation's, C6-C5-C1-C2 with the thioester carbon
+# (C2) reduced to the CH2OH, and acetone is that chain less its carboxyl.
+# **Every terminal oxygen in every product is the oxygen that carbon already
+# carried**, which is what makes the maps checkable rather than decorative.
+#
+# ⚠ AND THE ONE PLACE THE MAP HAS NO PREFERENCE IS THE CO2 OXYGENS: a carboxyl
+# carbon leaving as CO2 needs a second oxygen, and it is taken from whichever
+# hydroxyl is spare. That is a genuine arbitrary choice and it is stated rather
+# than hidden -- nothing downstream can distinguish two oxygens of a CO2.
+#
+# ⚠⚠⚠ **EVERY ONE OF THESE MIXES STANDARD STATES, AND THE FLASK IS STILL SAFE.**
+# Glucose's vapour pressure at 298 K is below `standard_state.PSAT_FLOOR_BAR`
+# (its Tb is an unanchored 825.6 K estimate on a sugar that decomposes), so it
+# gets no liquid shift while its products all do, and `build_network` prints M5's
+# MIXES STANDARD STATES notice on all four reactions. **Measured, the two
+# conventions differ by 64-219 kJ/mol in dH and FLIP THE SIGN of dS** (the
+# ethanolic branch: dH -170.67 / dS +466.41 on the ideal-gas basis, dH -296.18 /
+# dS -32.26 on the pure-liquid one). ⚠ What that costs is the EQUILIBRIUM
+# CONSTANT and nothing else: every branch is irreversible here, and dG is between
+# -121 and -353 kJ/mol on either basis, so the SIGN is not in doubt by two orders
+# of magnitude. **Do not quote a K for a fermentation in this project.** That is
+# C3's `vanillin-lignin` notice arriving on a substrate rather than a co-product.
+#
+# ⚠⚠⚠ **AND M10's CHEAP VERSION IS REFUTED, WHICH IS THE ENGINE FINDING.**
+# MILESTONES §M10 scopes the Michaelis-Menten plateau as *"a declared order of
+# ZERO in the substrate ... needs no kernel change"*. **It needs one.** The
+# kinetics kernel has no availability gate outside the solid block -- `_avail` in
+# `numerics/vessel_integrator.py` -- so an order-zero reactant keeps reacting
+# after it runs out and is driven negative. `wacker_oxidation` and
+# `hydrogen_sulfide_combustion` each pay a documented cost to avoid exactly that,
+# and the substrate of a fermentation is the one slot where the saturated limit
+# would have to sit. **So these four declare NO orders at all**: one glucose per
+# reaction, plain mass action, first order, and the plateau is not delivered.
+# M10 stays open and its cheap door is now measured shut.
+#
+# ⚠⚠ **THE ORGANISM IS NOT A SPECIES, AND THAT IS THIS SESSION'S HONEST HOLE.**
+# Every other gate in this project is a mechanism you can charge -- an acid, a
+# base, a lattice, a voltage. A fermentation's gate is ALIVE, the corpus has no
+# graph for a Clostridium, and `_maybe_catalyse` needs one. So these templates
+# take a `catalyst` parameter and default it to None, and the consequence is
+# stated rather than tuned away: **a flask of sterile sugar water ferments.**
+# ⚠ The same hole is under all eight of M10's biological routes; it is not
+# specific to this one, and it is the reason `Ea` below is an APPARENT barrier
+# over twenty enzymatic steps rather than any real transition state.
+#
+# THE KINETICS, AND WHICH PART OF IT IS FITTED
+#
+# Ea 55 kJ/mol for all four: the apparent barrier of a batch fermentation, which
+# is what a Q10 of ~2 near 310 K is. A is fitted, per branch, to the one thing
+# the preparation reports -- `skraup_cyclisation`'s bargain. Two things are fitted
+# and one is not:
+#
+#   FITTED  the batch time. 77.6% conversion in 48 h and 89.5% in 72 h at 310 K
+#           in the reference flask, which is an ABE batch.
+#   FITTED  the SOLVENT SLATE. acetone:butanol:ethanol comes out 2.40:3.75:1.00
+#           by mole at 48 h against the classical 3:6:1 by MASS (2.38:3.73:1 by
+#           mole). ⚠⚠ **This is a fitted ratio and NOT a predicted one**, and the
+#           reason is not laziness: a real solvent slate is set by the organism's
+#           regulation and its pH, and Evans-Polanyi on three branches that
+#           differ by 220 kJ/mol in dH would predict a slate of nothing but
+#           butanol. **Selectivity between two chemical templates is derivable in
+#           this project (S11); selectivity between two metabolic branches is
+#           not.** Say so rather than hiding a fit behind an alpha.
+#   NOT     the FERMENTATION GAS. CO2:H2 falls out at 62:38 by mole against a
+#           reported ~60:40, and nothing was aimed at it: H2 comes only from the
+#           acetonic branch, so the gas ratio is a consequence of the solvent
+#           slate and the three stoichiometries. ⚠ It is the one number here that
+#           checks the model rather than being fed by it.
+#
+# ⚠ AND TWO INVARIANTS HOLD EXACTLY IN THE FLASK, which is the balance above
+# showing up as a property of the run: **H2 is 4:1 with the acetone** and CO2 is
+# 3:2:2 on the three branches, to the last digit at every row of the trajectory.
+#
+# ⚠⚠ THE ONE THING THE WATER SLOT COSTS. The acetonic branch consumes a water and
+# the butanolic makes one, and S11's rule -- every slot a template consumes keeps
+# order 1 -- puts water in the acetonic rate law and not the others. So the
+# solvent slate DRIFTS with the water content: 2.31:3.75:1 at the first step and
+# 2.42:3.75:1 at 96 h in the same flask. **Measured, stated, and not corrected**,
+# because the alternative is order zero in water and that is the trap two
+# paragraphs up.
+#
+# ⚠ A SEALED FERMENTER IS A BOMB, AND THE ENGINE SAYS SO WITHOUT BEING TOLD.
+# 0.5 mol of glucose in a sealed 2 L flask reaches **24.7 bar** at 96 h, from its
+# own CO2 and H2. Real fermenters vent; `k_vent` is the knob and
+# `validation/fermentation.py` panel 6 runs it both ways.
+#
+# ⚠⚠ AND EVERY YIELD HERE IS AN UPPER BOUND, for the reason C3's was: there is no
+# END to the fermentation except running out of sugar. A real ABE batch stalls
+# near 20 g/L of butanol because butanol dissolves the organism that makes it,
+# and **nothing in this engine can express a product poisoning its own catalyst**
+# when the catalyst is not in the flask.
+
+_FERMENTATION_EA = 55_000.0
+
+# The hexopyranose the three branches share. ⚠ NARROW IN EXACTLY ONE PLACE THAT
+# MATTERS: the anomeric carbon must carry an -OH (`[CH:5]([OX2H:6])`), so a
+# GLYCOSIDE does not match -- sucrose is inert to all four of these and has to be
+# inverted first, by `glycoside_hydrolysis`, which is what `ethanol-fermentation`
+# step 1 and a brewer both do. ⚠ It fires on glucose and mannose (measured) and
+# NOT on fructose, because the corpus spells fructose as a FURANOSE: a five-ring
+# sugar is a different pattern and this one does not reach it. That is S7's
+# pyranose/furanose finding -- *"the corpus spells one as a pyranose and the other
+# as a furanose"* -- costing a substrate rather than an equilibrium constant.
+_HEXOPYRANOSE = (
+    "[OX2H:1][CH2:2][CH:3]1[OX2:4][CH:5]([OX2H:6])[CH:7]([OX2H:8])"
+    "[CH:9]([OX2H:10])[CH:11]1[OX2H:12]"
+)
+# ⚠ THE SAME RING WITH ITS FOUR STEREOCENTRES SPELLED AS "either", AND IT IS NOT
+# COSMETIC. RDKit's rule is that chirality specified in the reactant template and
+# absent from the product template is REMOVED from the product; unspecified at
+# both ends, it is INHERITED. `homolactic_fermentation` makes a new stereocentre
+# out of a sugar carbon, so with the plain pattern above it emits ONE
+# L-lactic acid and ONE D- -- two species where the corpus has one. `[@,@@]`
+# matches either configuration and suppresses both, which is C3's isoeugenol
+# decision (*"nothing here can price the difference"*) reached through a
+# stereocentre instead of a double bond. The three ABE branches make no
+# stereocentre and use the plain pattern.
+_HEXOPYRANOSE_ANY = (
+    "[OX2H:1][CH2:2][C;H1;@,@@:3]1[OX2:4][C;H1;@,@@:5]([OX2H:6])"
+    "[C;H1;@,@@:7]([OX2H:8])[C;H1;@,@@:9]([OX2H:10])[C;H1;@,@@:11]1[OX2H:12]"
+)
+
+
+def ethanolic_fermentation(
+    A: float = 1.2e3, Ea: float = _FERMENTATION_EA, catalyst: str | None = None,
+) -> ReactionTemplate:
+    """glucose -> 2 ethanol + 2 CO2. Gay-Lussac's equation, and the oldest
+    applied chemistry in the catalog.
+
+    ⚠ One of the three clostridial branches, and also the whole of a brewer's
+    fermentation -- but NOT the class the catalog gives `ethanol-fermentation`,
+    which spells its four steps out as `glycolysis`, `decarboxylation` and
+    `biological-reduction` and is a different, finer job. **This is the lumped
+    branch, and the corpus asks for the lump by labelling five rows
+    `fermentation` while labelling those four by mechanism.**
+
+    ⚠ Irreversible. dG is -287 kJ/mol on the pure-liquid basis and -310 on the
+    ideal-gas one; carrying a reverse would buy stiffness and nothing else. See
+    the block comment on why no K may be quoted for either number.
+    """
+    return ReactionTemplate(
+        name="ethanolic_fermentation",
+        smarts=_maybe_catalyse(
+            _HEXOPYRANOSE
+            + ">>[CH3:5][CH2:7][OH:8].[CH3:2][CH2:3][OH:4]"
+              ".[O:6]=[C:9]=[O:10].[O:1]=[C:11]=[O:12]",
+            catalyst,
+        ),
+        A=_kinetics(A, catalyst), Ea=Ea, phase="liquid",
+    )
+
+
+def butanolic_fermentation(
+    A: float = 9.0e3, Ea: float = _FERMENTATION_EA, catalyst: str | None = None,
+) -> ReactionTemplate:
+    """glucose -> 1-butanol + 2 CO2 + H2O. The B of ABE, and the majority branch.
+
+    ⚠ The carbon chain is the Claisen condensation's: two acetyl units meet
+    methyl-to-carbonyl, so the butanol is glucose C6-C5-C1-C2 and the -OH is the
+    oxygen C2 was already carrying. **The bond this template forms between C5 and
+    C1 is a bond a real acetoacetyl-CoA forms**, which is the whole reason the map
+    is worth writing down.
+
+    ⚠ It MAKES a water, so a fermentation dilutes its own liquor slightly -- and
+    that water is in `acetonic_fermentation`'s rate law, which is why the solvent
+    slate drifts. See the block comment.
+    """
+    return ReactionTemplate(
+        name="butanolic_fermentation",
+        smarts=_maybe_catalyse(
+            _HEXOPYRANOSE
+            + ">>[CH3:2][CH2:3][CH2:5][CH2:7][OH:8]"
+              ".[O:6]=[C:9]=[O:10].[O:1]=[C:11]=[O:12].[OH2:4]",
+            catalyst,
+        ),
+        A=_kinetics(A, catalyst), Ea=Ea, phase="liquid",
+    )
+
+
+def acetonic_fermentation(
+    A: float = 1.4e2, Ea: float = _FERMENTATION_EA, catalyst: str | None = None,
+) -> ReactionTemplate:
+    """glucose + H2O -> acetone + 3 CO2 + 4 H2. The A of ABE, and the ONLY
+    source of hydrogen in the flask.
+
+    ⚠⚠ **THIS IS THE BRANCH THE WHOLE PROCESS WAS RUN FOR.** Weizmann's
+    fermentation was scaled in 1916 for the ACETONE, to gelatinise cordite;
+    the butanol was the by-product nobody wanted until it became a lacquer
+    solvent. `abe-fermentation`'s catalog target is propanone accordingly.
+
+    ⚠ Acetone is the butanol chain less its carboxyl carbon: acetoacetate
+    decarboxylase takes glucose C2 off as the third CO2 and leaves C6-C5-C1 with
+    C5's oxygen -- the ring oxygen -- as the ketone. **The carbonyl oxygen of the
+    acetone is the pyranose ring oxygen**, which is a satisfying place for it to
+    end up and is what the map says.
+
+    ⚠⚠ **THE WATER SLOT IS REAL STOICHIOMETRY AND NOT PADDING.** Without it the
+    equation is short one oxygen (C6H12O6 -> C3H6O + 3 CO2 + 4 H2 is O6 -> O7),
+    and S11's rule then keeps it at order 1 in the rate law, which is the one
+    asymmetry between the three branches. Order zero would be the honest rate law
+    and is refused -- see the block comment's M10 paragraph.
+
+    ⚠ Its four H2 are 4:1 with the acetone at every point of every trajectory,
+    and that is what makes the flask's CO2:H2 ratio a consequence rather than a
+    knob.
+    """
+    return ReactionTemplate(
+        name="acetonic_fermentation",
+        smarts=_maybe_catalyse(
+            _HEXOPYRANOSE
+            + ".[OX2H2:13]>>[CH3:2][CH0:3](=[O:4])[CH3:5]"
+              ".[O:8]=[C:7]=[O:6].[O:10]=[C:9]=[O:1].[O:12]=[C:11]=[O:13]"
+              ".[H][H].[H][H].[H][H].[H][H]",
+            catalyst,
+        ),
+        A=_kinetics(A, catalyst), Ea=Ea, phase="liquid",
+    )
+
+
+def homolactic_fermentation(
+    A: float = 1.0e3, Ea: float = _FERMENTATION_EA, catalyst: str | None = None,
+) -> ReactionTemplate:
+    """glucose -> 2 lactic acid. `lactic-acid-pla` step 1, and the only
+    fermentation in the corpus that makes no gas at all.
+
+    ⚠ **HOMOlactic, and the corpus's row is the homolactic one.** Two lactates
+    per hexose and nothing else: no CO2, no H2, no ethanol. A heterolactic
+    organism would give lactate + ethanol + CO2 and is a different mechanism with
+    no row here.
+
+    ⚠⚠ **IT MAKES GEOMETRY-FREE LACTIC ACID -- `CC(O)C(=O)O` -- AND THE CORPUS
+    SPELLS `C[C@H](O)C(=O)O`.** That is C3's isoeugenol decision at a
+    stereocentre, and it needed `_HEXOPYRANOSE_ANY` to reach: RDKit inherits an
+    unspecified chirality, so the plain pattern emits one L-lactic and one D-
+    from the same sugar -- two species where the corpus has one and where no
+    estimator here can tell them apart.
+
+    ⚠⚠⚠ **AND MEASURING IT FOUND SOMETHING WORSE THAN A CONVENTION: THE CORPUS'S
+    SPELLING PRICES OFF A DIFFERENT TIER.** `CC(O)C(=O)O` resolves to an
+    EXPERIMENTAL formation record; `C[C@H](O)C(=O)O` misses it and falls through
+    to Benson, and their boiling points differ by **107 K** (398.1 against
+    505.5). The tables are keyed by canonical SMILES and a stereocentre changes
+    the key, so **a corpus row spelled with stereochemistry can silently lose its
+    own measured data.** See `validation/fermentation.py` panel 8, which counts
+    how many corpus compounds that is.
+
+    ⚠ NOT in `fermentation_chemistry`. A clostridial flask does not make lactate
+    in quantity, and a bundle carrying this beside the ABE three would report a
+    slate no organism produces.
+    """
+    return ReactionTemplate(
+        name="homolactic_fermentation",
+        smarts=_maybe_catalyse(
+            _HEXOPYRANOSE_ANY
+            + ">>[CH3:5][CH1:7]([OH:8])[CH0:9](=[O:10])[OH:6]"
+              ".[CH3:2][CH1:3]([OH:4])[CH0:11](=[O:12])[OH:1]",
+            catalyst,
+        ),
+        A=_kinetics(A, catalyst), Ea=Ea, phase="liquid",
+    )
+
+
 # bundles
 # ---------------------------------------------------------------------------
 # Small on purpose. ``alcohol_chemistry`` is one bundle because its five templates
@@ -1909,6 +2218,38 @@ def chlorine_recovery_chemistry() -> list[ReactionTemplate]:
 def bleach_chemistry() -> list[ReactionTemplate]:
     """Halogen disproportionation. ⚠ Needs ``dissociation_templates()`` beside it."""
     return [halogen_disproportionation()]
+
+
+def fermentation_chemistry(catalyst: str | None = None) -> list[ReactionTemplate]:
+    """The ABE fermentation: three branches RACING for one sugar.
+
+    ⚠⚠ **A BUNDLE OF THREE, AND THE THREE ARE THE ROUTE.** `abe-fermentation` is
+    one catalog step written as one lumped equation; the mechanism is three
+    branches off the same pyruvate node, and the solvent slate is the RATIO of
+    their three rates. **Any one of them alone runs to completion on the same
+    sugar and reports a slate no fermenter has ever given.** That is S11's
+    competing-templates finding on a corpus row M5 had refused for being a
+    metabolic network.
+
+    ⚠ Charge glucose and water. Nothing else is needed and nothing else gates it
+    -- which is the hole: see the block comment above `ethanolic_fermentation`
+    on the organism not being a species. Pass a `catalyst` SMILES to gate all
+    three on a charged species once the corpus has one to charge.
+
+    ⚠ **NO `dissociation_templates()`, AND FOR ONCE THE REASON IS NOT A pKa.**
+    Nothing here is an acid or a base; the network is five neutral species and
+    the ionic set would only add work. ⚠ `homolactic_fermentation` IS an acid
+    and is deliberately not in this bundle -- see its docstring.
+
+    ⚠⚠ **AND IT WILL FERMENT A SEALED FLASK TO 25 BAR.** Two of the three
+    branches make CO2 and one makes four H2 as well, so the headspace is the
+    product. Give the vessel a `k_vent` unless the pressure is the point.
+    """
+    return [
+        ethanolic_fermentation(catalyst=catalyst),
+        butanolic_fermentation(catalyst=catalyst),
+        acetonic_fermentation(catalyst=catalyst),
+    ]
 
 
 def vanillin_chemistry(base: str | None = "[OH-]") -> list[ReactionTemplate]:

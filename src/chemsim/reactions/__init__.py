@@ -36,6 +36,11 @@ from chemsim.reactions.synthesis import (
     chlorine_recovery_chemistry,
     claus_chemistry,
     claus_comproportionation,
+    acetonic_fermentation,
+    butanolic_fermentation,
+    ethanolic_fermentation,
+    fermentation_chemistry,
+    homolactic_fermentation,
     hydroformylation_branched,
     hydroformylation_linear,
     oxidative_cleavage,
@@ -138,6 +143,12 @@ __all__ = [
     "wacker_oxidation",
     # S12 -- the Skraup, see reactions/synthesis.py
     "skraup_cyclisation",
+    # C4 -- fermentation: the class M5 refused, see reactions/synthesis.py
+    "ethanolic_fermentation",
+    "butanolic_fermentation",
+    "acetonic_fermentation",
+    "homolactic_fermentation",
+    "fermentation_chemistry",
     # C3 -- vanillin: the class S11 refused, see reactions/synthesis.py
     "alkene_isomerisation",
     "oxidative_cleavage",

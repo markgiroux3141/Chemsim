@@ -2,324 +2,417 @@ We're building chemsim, an emergent chemistry simulator (game inspired by Nile
 Red) in d:\Claude Code Projects\Chemistry Simulator.
 
 **The plan is `MILESTONES.md`. Read it first — it is the authority on what to
-build and in what order.** **M0–M6, M8, M12, S1–S13, G1–G6, C1, C2 and C3 are DONE.**
+build and in what order.** **M0–M6, M8, M12, S1–S13, G1–G6 and C1–C4 are DONE.**
 
 # ⚠⚠⚠ START HERE: THE SUITE IS GREEN AND NOTHING IS OWED
 
-    1128 passed / 0 failed in 24:54        <- run ALONE, nothing else on the box
+    1159 passed / 0 failed in 26:09        <- run ALONE, nothing else on the box
 
 ```bash
-python -m pytest -q --durations=25          # ~25 min. expect 1128
+python -m pytest -q --durations=25          # expect 1159
 ```
 
-⚠⚠ **AND C2's LESSON WAS ACTED ON.** C2 regenerated every artefact, wrote the
-headlines into the docs by hand, and did not run `tests/test_playable.py` —
-**7 failures, every one a number it had already measured.** C3 regenerated
-`COVERAGE_REPORT.md`, `PLAYABLE.md` and `ROUTE_INDEX.md` **and ran the tests that
-pin them in the same breath**: six `test_playable` assertions moved and are
-corrected with their reasons, one of them by changing an **operator** rather than
-a number (see §7 below). The full suite then found nothing further.
+⚠⚠ **AND C3's DISCIPLINE WAS KEPT, WHICH IS WHY THAT LINE IS GREEN.** C4
+regenerated `COVERAGE_REPORT.md`, `PLAYABLE.md` and `ROUTE_INDEX.md` **and ran
+the tests that pin them in the same breath**: six `test_playable` assertions and
+two `test_vanillin` ones moved, and one `test_vanillin` test was **RENAMED**
+rather than re-numbered — see §8 below, which is the most transferable thing in
+this file.
 
 ⚠ **`tolerance_audit.py` IS NOT OWED.** No RHS edit, no data-table edit. Its last
 measured state is still C2's, recorded in HANDOFF §106.
 
-## ⚠⚠⚠ AND THE CLOCK REFUTED C2's *"+30% THAT NOTHING EXPLAINS"*
+## ⚠⚠ THE CLOCK: C3's ~20% SPREAD IS CONFIRMED, AND THE PER-TEST NUMBER IS THE ONLY INSTRUMENT
 
-**C3 has 31 MORE tests than C2 and ran 300 SECONDS FASTER**, with no change to
-anything either number could depend on:
+**C4 has 31 more tests than C3 and ran 75 seconds longer**, with nothing that
+either number depends on having changed in the rig, the still or the burner:
 
-                        G6        C2        C3     C2->C3    G6->C3
-    total / s         1383.0    1795.0    1494.6    -16.7%     +8.1%
-    tests               1045      1097      1128     +2.8%     +7.9%
-    the ONE RIG test   176.9     199.3     163.2    -18.1%     -7.7%
-    catalysis           75.1      91.5      73.5    -19.7%     -2.2%
-    burner @1e-8        52.8      64.8      51.0    -21.3%     -3.4%
-    SECONDS PER TEST  1.3234    1.6363    1.3250   -19.0%    **+0.12%**
+                        G6        C2        C3        C4     C3->C4
+    total / s         1383.0    1795.0    1494.6    1569.5     +5.0%
+    tests               1045      1097      1128      1159     +2.7%
+    the ONE RIG test   176.9     199.3     163.2     156.2     -4.3%
+    catalysis           75.1      91.5      73.5      81.0    +10.2%
+    burner @1e-8        52.8      64.8      51.0      52.9     +3.7%
+    SECONDS PER TEST  1.3234    1.6363    1.3250    1.3542     +2.2%
 
-⚠⚠⚠ **PER-TEST, C3 IS WITHIN 0.12% OF G6 AND C2 WAS 24% ABOVE BOTH.** Every
-big row came back to within 2-8% of G6. **So C2's regression was the MACHINE and
-not the code**, and C2's own rule — *a plausible cause measured once is a guess*
-— applies to the timing claim it wrote about itself.
+⚠⚠⚠ **PER TEST, G6 / C3 / C4 ARE 1.3234 / 1.3250 / 1.3542 s AND C2 SAT AT
+1.6363.** Three sessions inside 2.4% of each other and one 24% above all three.
+**C3's re-pricing holds: C2's *"+30% that nothing explains"* was the machine, and
+the ~8%/~1% noise floor recorded before it was measured on two quiet runs.**
 
-⚠⚠ **WHICH MEANS THE RECORDED NOISE FLOOR IS WRONG AND WAS MEASURED ON QUIET
-RUNS.** *"~8% on the biggest single row and ~1% on the mid rows"* came from G5
-against G6; the observed between-run spread on this box is **~20% on every big
-row**. ⚠ **Re-price the S12->S13 "regression" accordingly**: it was called
-*"20x outside the floor and a real unexplained regression"* on the strength of
-that floor, and against a ~20% spread an eight-minute gap on a ~23-minute suite
-is no longer clearly outside it. **Neither has been bisected, and now neither
-should be believed without a controlled repeat on the same box in the same
-session.** *A wall clock compared across sessions is not an instrument.*
+⚠⚠ **AND INDIVIDUAL BIG ROWS STILL MOVE 4-10% WITH NO CAUSE** -- catalysis
++10.2% here while the rig test went **down** 4.3% in the same run. So **one row's
+change is not a signal**; the per-test total is the figure worth comparing, and the
+`--durations` list is a per-row DIFF rather than a regression alarm.
+⚠ The S12->S13 eight minutes is still unbisected and still should not be believed
+without a controlled repeat. The `git stash`-and-rerun across S13's data commit
+remains the cheap step and the only thing that could settle it.
+⚠ **A wall clock compared across SESSIONS is not an instrument; the same box in
+the same session is.**
 
 ---
 
-# ⚠⚠⚠ WHAT C3 TURNED OUT TO BE
+# ⚠⚠⚠ WHAT C4 TURNED OUT TO BE
 
-**C3 is the third C-series item, and it did not come off `PLAYABLE.md` §8's
-ranking — it came off a REFUSAL.** `oxidative-cleavage` was attempted in S11 and
-refused; C3 read the refusal, found it was about one of the class's two rows, and
-built it. **16 → 18 playable, 39 → 41 runnable, 53/236 → 55/236 classes, 42 → 44
-template-ready, 34 → 36 BOTH. Species-ready UNCHANGED at 85 — no data row.**
-HANDOFF §107, MILESTONES §C3, NEXT_SESSION's last block.
+**C4 took `PLAYABLE.md` §8b's top row — its ONLY +2 — and there is no +2 row
+left.** `fermentation` had been refused by M5 as *"a metabolic NETWORK, not a
+transformation"*, and NEXT_PROMPT had recorded the row it is sold on as balancing
+only at 5:2:2:2:12:8, *"which is not a graph rewrite"*. **Both were right and
+neither was about the mechanism.** 18 → 20 playable, 41 → 42 runnable, 55/236 →
+**57/240** classes, 44 → 45 template-ready, 36 → **37 BOTH**. Species-ready
+UNCHANGED at 85 — no data row, no engine code. HANDOFF §108, MILESTONES §C4,
+NEXT_SESSION's last block.
 
-## ⚠⚠⚠ 1. A CLASS WAS REFUSED ON THE EVIDENCE OF ONE OF ITS TWO ROWS
+## ⚠⚠⚠ 1. THE LUMP WAS A LINE BREAK
 
-S11 went to build `oxidative-cleavage`, read `vanillin-lignin` step 1, found that
-a C10 monolignol cannot make one C8 vanillin and a water, and **refused the
-class** — on the ground that naming the missing C2 fragment would be inventing
-chemistry inside the corpus. **It was right about the row.** The class has two:
+`abe-fermentation` step 1 is written 1:1 and balances only at
 
-    isoeugenol + O2 -> vanillin + acetaldehyde     C10H12O4 both sides, EXACT
-    coniferyl  + O2 -> vanillin + glycolaldehyde   C10H12O5 both sides, EXACT
-    coniferyl  + O2 -> vanillin + water            C10H12O5 -> C8H10O4    NO
+    5 C6H12O6 -> 2 acetone + 2 butanol + 2 ethanol + 12 CO2 + 8 H2
 
-`vanillin-eugenol` step 2 balances 1:1 and **names its C2 fragment**. So the
-template is written off that row — and applied to coniferyl alcohol it produces
-the fragment the lignin row omits, which is **`glycolaldehyde`, a compound
-`07-carbonyls.psv` has carried all along**. *The mechanism supplies the fragment
-and the corpus supplies its name; nothing is invented.*
+— five sugars in and six carbon skeletons out. **It is three reactions written on
+one line.** Clostridial solventogenesis is three branches off one pyruvate node
+and each balances EXACTLY on one glucose:
 
-⚠⚠⚠ **THAT IS THREE SESSIONS RUNNING.** C1 — a route blocked on a price for a
+    glucose        -> 2 ethanol + 2 CO2            C6H12O6 both sides, EXACT
+    glucose        -> 1-butanol + 2 CO2 + H2O      C6H12O6 both sides, EXACT
+    glucose + H2O  -> acetone + 3 CO2 + 4 H2       C6H14O7 both sides, EXACT
+
+**Nothing consumes five sugars.** The 5:2:2:2:12:8 vector was the arithmetic of
+the LINE, not of any chemistry, and every atom map is glycolysis's own: C3/C4
+leave as the pyruvate carboxyls in every branch, ethanol's CH2OH comes off C2 and
+C5, the butanol chain is the Claisen condensation's C6-C5-C1-C2, and **every
+terminal oxygen in every product is the oxygen that carbon already carried.**
+
+⚠⚠⚠ **THAT IS FOUR SESSIONS RUNNING.** C1 — a route blocked on a price for a
 species **not in its chemistry**. C2 — a route blocked on a price **in a
-different table**. C3 — a class **refused on the evidence of one of its rows**.
-**Read every row of a class before refusing the class**, and print the refusal
-before costing it. ⚠ The cost of not doing so here was **two playable routes for
-two SMARTS strings and no new data**.
+different table**. C3 — a class refused on the evidence of **one of its two
+rows**. C4 — a class refused on the evidence of **its row's FORMATTING**. *Read
+the mechanism, not the line.* ⚠ The cost of not doing so here was two playable
+routes for four SMARTS strings and no new data.
 
-⚠ **AND THE CORPUS ROW WAS LEFT WRONG ON PURPOSE**, which is the half of S11's
-reason that stands: on coniferyl alcohol the mechanism is unambiguous, but the
-catalog row is about alkaline **lignin liquor**, where the C2 fragment is a
-mixture depending on which monolignol reacted. Writing one name in would
-over-commit the corpus in exactly the way S11 declined to.
+## ⚠⚠⚠ 2. AND `corpus_balance` NOW HAS TWO STANDING EXAMPLES THAT NEED OPPOSITE ANSWERS
 
-## ⚠⚠ 2. AND THE ROW S11 REFUSED IS NOW INSIDE THE HEADLINE
+Both are rows that PASS the balance test and are not the reaction they are
+written as, and both are inside the BOTH column the project quotes:
 
-`vanillin-lignin` was outside the BOTH column when S11 wrote its panel; C3
-covered its only class, so **`corpus_balance`'s own standing example of a row
-that PASSES the balance test and is not the reaction it is written as is now
-counted in the number the project quotes.** The one row that audit FLAGS inside
-BOTH is `perkin-route`; the row that is actually wrong is the one it cannot see.
-The panel is rewritten rather than remembered.
+* **`vanillin-lignin`** is short a **PRODUCT**, and C3 left it wrong on purpose —
+  in lignin liquor the missing C2 fragment is a mixture.
+* **`abe-fermentation`** was short a **LINE BREAK**, and C4 just split it.
 
-## ⚠⚠⚠ 3. AN EQUILIBRIUM IS EXACT ON THE LIQUID AND NOT ON THE INVENTORY
+⚠⚠⚠ **A COEFFICIENT VECTOR CANNOT TELL THOSE APART**, and neither can the audit.
+Its last panel prints both now. **Only reading the chemistry can** — and S12 is
+the third case, where a row that looked like the `spurious` pattern turned out
+real.
 
-C3's first flask read an isoeugenol:eugenol ratio of **15362** where `kf/kb` is
-**2677.83**, and that 5.7x was nearly written into a template comment as
-chemistry.
+## ⚠⚠⚠ 3. THE CLASS HAD TO BE SPLIT FIVE WAYS OR THE +2 WAS A FALSE CREDIT
 
-    liquor / L   TOTAL ratio   LIQUID ratio   eug in gas   iso in gas
-         0.082      10993.93        2677.83       60.14%       22.27%
-         0.730       2866.67        2677.83       10.25%        2.12%
+| row | mechanism | C4 |
+|---|---|---|
+| `abe-fermentation` 1 | `solventogenic-fermentation` | **BUILT** (3 templates) |
+| `lactic-acid-pla` 1 | `homolactic-fermentation` | **BUILT** |
+| `citric-acid-fermentation` 1 | `aerobic-overflow-fermentation` | gap |
+| `msg-route` 1 | `amino-acid-fermentation` | gap |
+| `penicillin-route` 1 | `secondary-metabolite-fermentation` | gap |
 
-**The liquid ratio is `kf/kb` to the last digit** — detailed balance was never in
-question, and it agrees exactly with the van 't Hoff extrapolation off dH and
-dG298. The allyl isomer is ~5x the more volatile, so a share of the eugenol sits
-where no rate law can reach it, and **the smaller the liquor, the bigger the
-lie.**
+A template written off `abe-fermentation` cannot make citric acid, glutamic acid
+or penicillin G out of a sugar. **Crediting the old five-row class off it would
+have template-readied four routes `build_network` cannot run** — G4's *only
+RUNNING it said so*, arriving **before** the run for once, because the rows were
+read first. ⚠⚠ **The headline cost is +4 on the DENOMINATOR (236 → 240) against
++2 covered**, which is S7's rule: *a split that lowers the headline is a split
+working.*
 
-⚠⚠⚠ **`state().total()` IS THE RIGHT NUMBER FOR A YIELD AND THE WRONG ONE FOR AN
-EQUILIBRIUM.** A rate law is written on one phase; read the equilibrium on that
-phase or not at all. Same shape as *"energy_terms lies unless given the run's own
-boundary state"* — and it is general to every reversible liquid-phase template in
-this project, not to this one.
+⚠ **AND THE ROW THAT IS NOT IN THE SPLIT IS THE ONE THE CORPUS ALREADY DID
+RIGHT.** `ethanol-fermentation` never carried the class: its four steps are
+`glycoside-hydrolysis`, `glycolysis`, `decarboxylation`,
+`biological-reduction`. **The corpus asks for a LUMP by labelling five rows
+`fermentation` and asks for a MECHANISM by labelling those four**, and reading
+that distinction is what said a lump was honest here rather than lazy.
 
-## ⚠⚠⚠ 4. §8 RANKS ROUTES AND A SESSION BUILDS TEMPLATES — SO THERE IS A §8b NOW
+## ⚠⚠⚠ 4. §M10's CHEAP VERSION IS MEASURED SHUT, AND IT FAILS WORSE THAN ITS OWN DOCSTRINGS SAY
 
-The work order's `worth` column grants a **route**. A C-series session grants a
-**class**. Measured, they disagree at the top of the table:
+§M10 scopes the Michaelis-Menten plateau as *"a declared order of ZERO in the
+substrate IS the saturated limit ... needs no kernel change"*, and a fermentation
+substrate is the one slot it would sit in. **It needs one.** Two docstrings in
+this project say an order-zero reactant *"is driven negative"*. Run past the end
+of the sugar (`validation/fermentation.py` panel 5):
 
-| §8 row | its worth | grant its CLASS instead |
-|---|---:|---|
-| `hall-heroult` | **+3** — the top row | **still not runnable**: cryolite is refused a price too. The class lands +1, on `downs-cell` |
-| `blast-furnace` | **+2** | **+0 runnable, +0 playable**: three refused species |
-| `abe-fermentation` | **+2** | +3 runnable, +2 playable — the only one of the three a template can buy |
+    orders               t/h      glucose        EtOH    EtOH/max
+    mass action (ours)  1500     0.015087     0.96983       0.970
+    (0.0,) -- M10's      200     0.382801     0.23440       0.234
+    (0.0,) -- M10's     1100     0.000000     1.27577       1.276  IMPOSSIBLE
+    (0.0,) -- M10's     1500     0.000000     1.79388       1.794  IMPOSSIBLE
+    (0.0,) -- M10's     3000     REFUSED, RuntimeError at -1.74 mol
 
-**A row's worth assumes every OTHER blocker away, and a template only removes one
-of them.** **9 of the 20 rows cannot be bought by a template at any price**, and
-only **7 of the 23** missing classes are worth a single point.
-`tools/build_playable.py` generates both tables now; **read §8b, not §8, when
-picking a template.**
+⚠⚠⚠ **THE SUBSTRATE IS CLAMPED AT ZERO IN THE REPORTED STATE WHILE THE PRODUCTS
+GROW PAST THE STOICHIOMETRIC CEILING, AND THE RUN REPORTS SUCCESS FOR ~1900
+SIMULATED HOURS.** 1.79 mol of ethanol out of 0.5 mol of glucose is 3.6x what
+that sugar can give. **`state()` does not go negative — it HIDES the negative,
+and the products are where the violation shows.**
 
-⚠⚠⚠ **AND THE PAIR C3 BUILT IS SUPER-ADDITIVE, WHICH C3's OWN PROBE HID.**
-`alkene-isomerisation` alone is **+0**; `oxidative-cleavage` alone **+1**;
-together **+2**, because `vanillin-eugenol` needs both while `vanillin-lignin`
-needs only the second. The scouting probe printed its pair table `[:12]` and that
-row fell off the bottom, so the session went in expecting +1 and delivered +2.
-*A probe that truncates its own output can hide the row it was written to find.*
+⚠⚠ **AND `conservation_report()` IS THE ONLY WITNESS, AND ITS LABEL MIS-SIZES
+WHAT IT FOUND:**
 
-## ⚠⚠⚠ 5. §8b's DETECTOR FOUND A LIVE FALSE CREDIT — THEN HAD ONE OF ITS OWN
+    non-negative projection created 1 species' worth of ROUND-OFF it could not
+    settle against a positive holding: <glucose> 3.97e-01 mol
 
-`route_reachable` blocks a route whose **reactant** has no molecular graph
-(`coal-gas` is correctly dead) and **does not look at one the route MAKES**. So:
+**Four tenths of a mole, called "round-off".** The guard is load-bearing and
+correct; its wording is calibrated for the case it was written for. *Same shape
+as "energy_terms lies unless given the run's own boundary state" and
+"state().total() is right for a YIELD and wrong for an EQUILIBRIUM": the check
+exists, is right, and its own prose under-reports what it caught.* ⚠ **M10 stays
+OPEN** — a saturating form needs the denominator, or the kernel needs the
+`_avail` gate the solid block already has.
 
-* **`oxidative-complexation` is scored +1 on `iron-gall-ink`**, whose product
-  `iron-gallate-marker` the corpus deliberately does not spell. **Build it and
-  the route goes template-ready and `build_network` has no graph to make its
-  product from.** ⚠ The trigger is written into `data/catalog/README.md` in C1's
-  and C2's landmine form.
-* the same shape sits at **+0** on `castner-kellner` / `sodium-amalgam-marker`.
-* ⚠⚠ **and the detector's first version blamed `pyrolysis`/`coal-gas` too**,
-  where the marker is on the LEFT and the route was already dead. **A
-  false-credit detector needs the same does-it-actually-run check as everything
-  it audits.**
+## ⚠⚠ 5. WHAT IS FITTED IS DECLARED FITTED, AND ONE NUMBER IS NOT
 
-## ⚠⚠ 6. THE FLASK IS AN AUTOCLAVE, AND TWO CLAIMS WERE WRITTEN THEN MEASURED FALSE
+Reference flask: 0.5 mol glucose in 10 mol water — ~0.19 L of a 2.6 M mash — in a
+sealed 2 L vessel at **310 K**.
 
-0.73 L of alkaline liquor in a 2 L vessel at 470 K under **~30 bar of its own
-steam**, which is what an alkaline oxidation digester is:
+     t/h   glucose     EtOH     BuOH  acetone      CO2       H2   conv%   A:B:E
+    12.0   0.34598  0.02335  0.08755  0.05480   0.3628   0.2192  30.80  2.35:3.75:1
+    48.0   0.11223  0.05830  0.21863  0.13999   0.9155   0.5600  77.55  2.40:3.75:1
+    96.0   0.02459  0.07125  0.26719  0.17260   1.1234   0.6904  95.08  2.42:3.75:1
 
-    T / K   t / h   P / bar   vanillin   yield
-      400     4.0     15.67   0.000432    0.43%
-      440     4.0     21.73   0.026878   26.88%
-      470     4.0     29.29   0.093150   93.15%
-      490     4.0     38.19   0.099985   99.98%
+**FITTED:** the batch time (77.6% in 48 h is an ABE batch) and the **solvent
+slate** — the classical 3:6:1 by MASS is 2.38:3.73:1 by mole, and three
+pre-exponentials were set to it.
 
-⚠ **Acetaldehyde is 1:1 with the vanillin at every row** — the balance in §1
-showing up as an invariant of the run. ⚠ **The isomerisation is
-rate-determining** (94.65% in 4 h alone against the cleavage's 97% in 1 h), so
-the intermediate never accumulates. ⚠⚠ **There is no over-oxidation channel, so
-every yield is an UPPER BOUND** against a real 60-80%.
+⚠⚠ **EVANS-POLANYI WAS REFUSED HERE, AND THAT IS THE SESSION'S DESIGN DECISION.**
+Three branches that differ by **220 kJ/mol** in dH would predict a slate of
+nothing but butanol. A real slate is the organism's regulation and its pH.
+**Selectivity between two CHEMICAL templates is derivable in this project (S11);
+selectivity between two METABOLIC branches is not** — and saying so is worth more
+than hiding a fit behind a plausible alpha.
 
-⚠⚠ **AND THE BASE IS THE GATE IN A PLACE NEITHER TEMPLATE NAMES.** Zero hydroxide
-gives **exactly zero** vanillin. `oxidative_cleavage` declares no catalyst and
-would cleave any isoeugenol present; there is none, because the step that MAKES
-isoeugenol is the base-catalysed one. *A two-template route is gated by whichever
-step comes first, and neither template says so on its own.*
+⚠⚠⚠ **NOT FITTED, AND IT IS THE ONE NUMBER THAT CHECKS THE MODEL: THE
+FERMENTATION GAS IS CO2 61.94% / H2 38.06% AGAINST A REPORTED ~60/40.** H2 comes
+**only** from the acetonic branch, so the gas ratio is a consequence of the
+solvent slate and the three stoichiometries, and nothing was aimed at it.
 
-**The two claims C3 wrote and then refuted:**
+⚠ Two invariants hold to solver precision at every point: **H2/acetone is exactly
+4.000000000000**, CO2 is `3A + 2B + E` to nine figures.
 
-1. **The bundle does NOT need `dissociation_templates()` — it must not be given
-   them.** Copied from `wacker_chemistry` and the opposite of the truth: eugenol
-   IS a phenol, so `phenol_dissociation` fires on it and `build_network` refuses
-   the whole network for want of an **eugenolate pKa**. G5's *an open-ended
-   rewrite over a curated table will find the edge of the table*, met on an amine
-   there and a phenol here. **The refusal is KEPT.**
-2. **Ea 110 kJ/mol was 8x too fast, and the arithmetic that chose it assumed a
-   ONE-LITRE liquid** where the flask's liquor is 0.73 L. Corrected to **115**,
-   calibrated against the flask. *An apparent barrier calibrated against a rate
-   must be calibrated against the rate the FLASK computes, not the envelope.*
+⚠ **THE SOLVENT SLATE DRIFTS, AND IT IS THE WATER SLOT.** 2.31:3.75:1 at the
+first step and 2.42:3.75:1 at 96 h, because the acetonic branch consumes a water
+and has it in its rate law while the other two do not (S11's rule: every slot a
+template consumes keeps order 1). **Measured, stated, not corrected** — the
+alternative is order zero in water, and §4 is what that does.
 
-⚠ **And the pre-build arithmetic was on the wrong standard state.** Both
-templates are `phase="liquid"`: the isomerisation is dH **−21.80** on the
-ideal-gas basis and **−56.56** on the pure-liquid one, with the sign of dS
-flipping (+20.45 → −54.72 J/K) — **and their ln K at 470 K agrees to 2%, which is
-a coincidence and not a licence.**
+## ⚠⚠ 6. THE ORGANISM IS NOT A SPECIES, AND THAT IS THE SESSION'S HOLE
 
-## ⚠ 7. THE TREE MOVED OFF BEING MOSTLY GROUND-LEVEL, AND AN ASSERTION CHANGED OPERATOR
+Every other gate in this project is a mechanism you can charge: an acid, a base,
+a lattice, a voltage, a pinch of NO2. **A fermentation's gate is ALIVE.** The
+corpus has no graph for a Clostridium and `_maybe_catalyse` needs one, so the
+four templates take a `catalyst=` parameter, default it to None, and **a flask of
+sterile sugar water ferments.** ⚠ The hole is under all eight of M10's biological
+routes and it is a **LIMIT TO REMOVE**, not an invariant — an inventory item for
+a culture is a GAME_DESIGN answer, not an engine one. It is also why `Ea` is an
+APPARENT barrier over twenty enzymatic steps.
 
-Tiers are **9 / 8 / 1**. Tier 1 has not grown since C1; tiers 2 and 3 have, 6+1
-to 8+1. **G3's claim was that MOST playable routes are tier 1 — a strict majority
-— and it is now exactly HALF**, so `test_the_tech_tree_is_a_shallow_bush` asserts
-`==` where it asserted `>`. ⚠ Both vanillin routes land in tier 2 and **not on
-sulfuric acid**: their feedstocks are natural (clove oil, wood lignin) and what
-has to be MADE is the **caustic soda**, so rule 3 — *a catalyst is a feedstock* —
-is what puts vanillin one hop up. The bush is still 3 tiers and tier 3 is still
-one route.
+⚠ **EVERY YIELD IS AN UPPER BOUND, FOR C3's REASON WITH A NEW MECHANISM.** A real
+ABE batch stalls near 20 g/L of butanol because **butanol dissolves the organism
+that makes it**, and nothing here can express a product poisoning its own
+catalyst when the catalyst is not in the flask.
 
-## ⚠ 8. WHAT C3 DID NOT DO, SAID OUT LOUD
+⚠ A sealed fermenter reaches **24.7 bar** at 96 h on its own CO2 and H2 and
+nothing told it to. Vented it sits at 1.01 bar with the **conversion unchanged to
+1%**, because no branch is reversible. *A hazard, not a ceiling* — unlike the
+vanillin digester, where 30 bar of steam is what makes the route go.
 
-* **The lignin row runs and its ln K may not be read.** Coniferyl alcohol has no
-  vapour-pressure curve, so `build_network` prints M5's MIXES STANDARD STATES
-  notice on it. ⚠ **A second, independent reason the eugenol row was the right
-  one to build from: all four of its species carry a curve. S11 picked the row
-  that is worse in both ways.**
-* **The product's double-bond geometry is not declared.** cis, trans and
-  geometry-free isoeugenol price at Hf −216.705 / Gf −49.315, identical to three
-  decimals — S7's `oleic -> elaidic` re-measured, and here the same fact
-  **licenses** the omission where there it refused a class. ⚠ It makes no
-  spurious cycle, because **discovery is FORWARD-ONLY** (M5): charge the corpus's
-  trans isomer and the isomerisation is not in the network at all.
-* **No over-oxidation, no vanillic acid, no polymerisation.**
-  `peroxide_over_oxidation` exists and is deliberately NOT in the bundle, because
-  a bundle carrying it would also oxidise the acetaldehyde.
-* **The `fermentation` row was NOT taken**, and it is §8b's top row at **+2**.
-  M5 refused it as *"a metabolic network, not a transformation"* and MILESTONES
-  §M10 already scopes the cheap version — **a declared order of ZERO in the
-  substrate IS the saturated Michaelis-Menten limit, and needs no kernel
-  change.** ⚠⚠ **BUT ITS ROW IS §2's SHAPE ALL OVER AGAIN, MEASURED:**
-  `glucose -> acetone + 1-butanol + ethanol + CO2 + H2` is written **1:1** and
-  balances only at
+⚠ **TWO SUBSTRATE REFUSALS, AND ONLY ONE OF THEM IS RIGHT.** Sucrose is inert to
+all four templates (the anomeric carbon must carry an -OH), so **a brewer has to
+invert the sugar first** and `ethanol-fermentation` step 1 is load-bearing rather
+than decorative. Fructose is inert too and that one is a corpus limit: **the
+corpus spells fructose a FURANOSE** and this is a six-ring pattern. *S7's
+pyranose/furanose finding, costing a SUBSTRATE this time rather than an
+equilibrium constant.* Mannose IS eaten, correctly.
 
-      5 C6H12O6 -> 2 acetone + 2 butanol + 2 ethanol + 12 CO2 + 8 H2
+⚠⚠ Every branch prints M5's **MIXES STANDARD STATES** notice: glucose's vapour
+pressure at 298 K is below the standard-state floor (its Tb is an unanchored
+825.6 K estimate on a sugar that decomposes) while its products all shift. dH
+differs by **64–219 kJ/mol** between conventions and **the sign of dS FLIPS**
+(+466.41 → −32.26 J/K). **It costs the K and nothing else**: dG is −121 to −353
+on either basis. **Do not quote a K for a fermentation in this project.** C3's
+notice, arriving on a SUBSTRATE.
 
-  so `corpus_balance` PASSES it and its 1:1 reading is not the reaction — exactly
-  the weak test that let S11 refuse a class for the wrong scope. **Five glucoses
-  in and six carbon skeletons out is not a graph rewrite**, and crediting the
-  class off a lumped label is the false credit S1, S9 and G4 each measured.
-  ⚠ **Read M5's refusal, §M10, and this row's own balance vector together before
-  taking it** — and note that the +2 is real whatever the mechanism turns out to
-  be, so the question is what an honest `fermentation` template can be, not
-  whether it is worth building.
+## ⚠⚠⚠ 7. A STEREOCENTRE TURNED UP A KEYING BUG NOTHING WAS LOOKING FOR
+
+`homolactic_fermentation` makes a **new stereocentre** out of a sugar carbon, and
+RDKit **inherits** an unspecified chirality — so the plain pattern emits one
+L-lactic acid and one D- from the same glucose, two species where the corpus has
+one. Spelling the four ring centres `[C;H1;@,@@:n]` removes it (RDKit's own rule:
+specified in the reactant template and absent from the product template ⇒
+REMOVED). **That is C3's isoeugenol decision reached through a stereocentre.**
+
+Measuring it went somewhere else entirely:
+
+    corpus rows whose SMILES carries a stereo marker     146
+    ... which PRICE OFF A DIFFERENT SOURCE when flat      31
+          the PHYSICAL half is what moved                 30
+          the FORMATION half is what moved                 2
+
+⚠⚠⚠ **THE TWO HALVES OF A `ThermoData` ARE KEYED THE OPPOSITE WAY ROUND WITH
+RESPECT TO STEREOCHEMISTRY.**
+
+* the **PHYSICAL** tables carry the **chiral** spelling. Sorbitol reaches a
+  measured Tb chiral (YAWS, 704.0 K) and falls to **Joback at 888.2 K** flat —
+  **184 K away**. 29 rows are that shape: limonene, the pinenes, camphene,
+  menthol, borneol, linalool, camphor, carvone, menthone, fenchone, xylitol,
+  lindane.
+* the **FORMATION** table carries the **FLAT** spelling. `lactic-acid` flat
+  reaches an **experimental** record; the corpus's `C[C@H](O)C(=O)O` misses it
+  and falls to **Benson**, 107 K apart in Tb.
+
+⚠⚠⚠ **SO FOR 31 COMPOUNDS THE DATA TIER IS SELECTED BY AN ORTHOGRAPHIC
+ACCIDENT** — and a spelling carries no thermochemical information at all, because
+no estimator here tells one enantiomer from another (S7, re-measured).
+⚠⚠ **NOT FIXED, AND THIS IS THE ONE ROW C4 HANDS FORWARD AS A JOB.** The fix is a
+stereo-insensitive **FALLBACK** in the provider's lookup — S6's rule, *a fallback
+and never an override* — and it touches every number this project produces, so it
+is a session of its own with the full suite behind it. `validation/fermentation.py`
+panel 8 measures it; `tests/test_fermentation.py` pins the 146 so a data session
+has to come and say what it changed.
+
+## ⚠⚠⚠ 8. THE CEILING MOVED, THE WORK ORDER GREW, AND A TEST HAD TO BE RENAMED
+
+| session | granted | fed-but-unrunnable | ceiling | playable |
+|---|---|---:|---:|---:|
+| G3 | — | 21 | 37 | 12 |
+| C1 | 1 route | **24** | **41** | 14 |
+| C2 | 2 rows | 22 | 41 | 16 |
+| C3 | 2 classes | 20 | 41 | 18 |
+| **C4** | **1 class** | **23** | **45** | **20** |
+
+⚠⚠⚠ **THE CEILING IS NOT A CONSTANT, AND TWO SESSIONS OF IT SITTING STILL WERE A
+PROPERTY OF WHAT THEY BUILT.** A fermentation puts acetone, ethanol, butanol and
+— through `acetic-fermentation` — acetic acid on the shelf, which FEEDS four
+routes that were not fed before: `acetic-anhydride-ketene`, `chloral-route`,
+`mercury-fulminate-route`, `white-lead-route`. **The goal a session is measured
+against moves with the session.**
+
+⚠⚠⚠ **AND A TEST THAT PINNED C3's OWN NUMBERS WAS FALSIFIED IN BOTH HALVES.**
+`test_the_work_order_shrank_and_the_ceiling_did_not_move` is now
+`test_vanillin_feeds_nothing_and_that_is_still_true` — the claim that was actually
+worth pinning — and the list and ceiling numbers live in `test_playable.py`, the
+file that owns them. ⚠⚠ By contrast
+`test_the_PAIR_is_worth_more_than_the_sum_of_its_parts` survived with **four
+numbers changed and its finding untouched**, because it asserts DIFFERENCES.
+**A test that pins a claim about a difference must assert the difference; a test
+that pins a level will be re-numbered by the next session that moves it, and the
+claim will quietly become someone else's arithmetic.**
+
+⚠⚠ **THE SECOND ROUTE IS BOUGHT BY A BRANCH THAT IS NOT THE TARGET, AND IT MOVED
+A RULE'S EVIDENCE.** `abe-fermentation`'s catalog target is propanone; what
+unblocks `acetic-fermentation` is the **ethanol**, the minority branch at a
+seventh of the butanol. So it is a route bought by a BYPRODUCT, and the
+target-only shortfall in `test_playable.py` **moved 4 → 5 for the first time in
+five sessions** — the same mechanism as the zinc retort's carbon monoxide.
+⚠ *That is the opposite of the fouling rule one test above it, whose only
+evidence C1 dissolved and which is kept on a measured zero. A rule kept on a zero
+difference and a rule kept on a growing one are different bets, and both are
+printed.*
+
+⚠ Tiers are **10 / 9 / 1**. C3 crossed G3's *"most are tier 1"* into exactly
+half; C4 added one to each of the first two tiers, so the equality HELD through a
+session not aimed at it. **Tier 3 is still one route, five sessions running.**
+
+## ⚠ 9. WHAT C4 DID NOT DO, SAID OUT LOUD
+
+* **The three aerobic rows are not built.** `citric-acid-fermentation` balances
+  at `sucrose + 3 O2 -> 2 citric + 3 H2O` (1:1 in its own sugar) and `msg-route`
+  only at `2 glucose + 2 NH3 + 3 O2 -> 2 glutamate + 2 CO2 + 6 H2O`, because one
+  hexose wants one-and-a-half O2. **Both are honest lumps**, a smaller sin than
+  the one C4 undid — but **neither is fed, so neither buys a playable route.**
+* **`homolactic_fermentation` buys +0 playability, measured rather than assumed.**
+  `lactic-acid-pla` needs a polymerisation as well. It was built for the class and
+  for §7's stereo finding. ⚠ It is deliberately **NOT** in
+  `fermentation_chemistry`: a clostridial flask does not make lactate in
+  quantity, and a bundle carrying it beside the ABE three would report a slate no
+  organism produces.
+* **`tools/build_playable.py`'s §8b table was lifted to module level** as
+  `CLASS_WORTH` / `CLASS_GAPS`, so a test can assert it. C3 generated it inside
+  the writer, and *a generated table nothing asserts is a table that rots* —
+  `ROUTE_INDEX.md` went three milestones that way.
+* **`ethylene` was re-priced from +2 to +1 by a session that never touched it**,
+  leaving `aluminium` the sole +2 single-species grant in §7. *A content item
+  re-prices a lever it never went near — re-run `tools/build_playable.py` after
+  every one.*
 ---
 
-# ⚠ C2, IN ONE PARAGRAPH (the full record is MILESTONES §C2 / HANDOFF §106)
+# ⚠ C3, IN ONE PARAGRAPH (the full record is MILESTONES §C3 / HANDOFF §107)
 
-**Phosphate rock digested in oil of vitriol: 14 → 16 playable, no class and no template, two one-line data rows.** ⚠⚠⚠ The work order named a MINERAL and the block was phosphoric acid's **third pKa** in `properties/electrolyte.py`; measured as a 2x2, the pKa row moved every compound that moved and the mineral row moved NONE of the score — while the mineral row is the only reason the rock is not INERT at 0.0000%. **A score and a run come out of different tables and neither implies the other.**
-
-⚠⚠ **AND ITS LIVE LEFTOVERS:** the default tolerance is **56x wrong** on that flask at one knob setting and exact at another (and the tight run is 15x FASTER — *a non-monotonic sweep is a solver, not chemistry*); **an acid cannot attack a crystal** (no acid term, no surface-area term, so the rock digests on a vessel knob); **five lattices have a Ksp and cannot be put in a flask, all five on `[S-2]`**, with the landmine and its trigger in `data/catalog/README.md`; and `T_MIN = 1.0` is what MANUFACTURES engine queue item 6's sub-4 K temperature. ⚠ C2's own overflow fix crashed three examples with the whole suite GREEN — `max(log(x), 0)` is not `log(max(x, 1))` where the log is undefined, and a vessel may declare `k_diss = 0.0`.
+**Vanillin from clove oil: 16 → 18 playable, two SMARTS strings, no data.** The
+class `oxidative-cleavage` had been refused in S11 after reading ONE of its two
+rows; the other balances 1:1 and **names its C2 fragment**, and applied to
+coniferyl alcohol the template names the lignin row's missing fragment as
+`glycolaldehyde`, which the corpus already had. ⚠⚠⚠ Its sharpest finding is
+numerical and general: **an equilibrium is exact on the LIQUID and not on the
+INVENTORY** — C3's first flask read a ratio of 15362 where `kf/kb` is 2677.83,
+and the 5.7x was the HEADSPACE. *`state().total()` is the right number for a
+yield and the wrong one for an equilibrium.* ⚠⚠ It also built §8b, because **§8
+ranks ROUTES and a session buys CLASSES**, and its own scouting probe printed a
+pair table `[:12]` and hid the super-additive row it was written to find.
 
 ---
 
 # ⚠ WHERE THE WORK ORDER STANDS: `data/catalog/PLAYABLE.md` §8b, RE-GENERATED
 
-**20 routes are already FED from natural materials and blocked only on a template
-or a price. Grant all 20 and playability goes 18 → 41.**
+**23 routes are already FED from natural materials and blocked only on a template
+or a price. Grant all 23 and playability goes 20 → 45.**
 
-⚠⚠⚠ **READ §8b, NOT §8.** §8 ranks what a **ROUTE** is worth if granted; a
-session builds a **TEMPLATE**, which grants a **CLASS**. C3 measured them
-disagreeing at the top of the table, so both are generated now. **This is the
-per-class table, and it is the whole shopping list:**
+⚠⚠⚠ **READ §8b, NOT §8**, and note what C4 did to the shape of it:
 
-    +2  fermentation                abe-fermentation
     +1  dehydration-cyclisation     hmf-route          (+2 runnable)
     +1  biological-transformation   tyrian-purple-route
     +1  direct-combination          vermilion-route
-    +1  molten-salt-electrolysis    downs-cell   (NOT hall-heroult -- see below)
+    +1  molten-salt-electrolysis    downs-cell   (NOT hall-heroult)
     +1  oxidative-complexation      iron-gall-ink   <- ⚠⚠ A FALSE CREDIT
     +1  pyrolysis                   wood-distillation  (NOT coal-gas)
-    +0  the other sixteen classes
+    +0  the other twenty-three classes
 
-⚠⚠⚠ **THE +0 ROWS ARE NOT CHEAP, THEY ARE DEAD ENDS AT THIS PRICE.** Sixteen of
-the 23 missing classes buy **nothing** — either their route needs a second class
-as well, or it needs a species the engine refuses. **9 of the 20 rows cannot be
-bought by a template at any price**: `bayer-process`, `blast-furnace`,
-`calcium-carbide`, `coal-gas`, `frank-caro`, `guncotton`, `gunpowder`,
-`hall-heroult`, `white-phosphorus`.
+⚠⚠⚠ **THERE IS NO +2 ROW ANY MORE. C4 TOOK IT, AND THE TABLE IS NOW FLAT.** Six
+classes tied at +1 and 23 at +0. **The cheap end of the C-series is over: from
+here every row buys one route or none**, and picking between six equal rows is a
+judgement about which chemistry is worth having rather than an arithmetic.
 
-⚠⚠⚠ **§8's TOP TWO ROWS ARE JOINT GRANTS PRICED AS SINGLE ONES.**
-`hall-heroult` is **+3** as a route and its class buys **+1** — granting
-`molten-salt-electrolysis` leaves it unrunnable, because its cryolite is refused
-a price too, and the point lands on `downs-cell`. `blast-furnace` is **+2** as a
-route and granting `slagging` moves **nothing at all**. **A row's worth assumes
-every OTHER blocker away, and a template only removes one of them.**
+⚠⚠⚠ **AND TEN OF THE ROWS CANNOT BE BOUGHT BY A TEMPLATE AT ANY PRICE** — grant
+every class each one is missing and a refused species still blocks it:
+`bayer-process`, `blast-furnace`, `calcium-carbide`, `coal-gas`, `frank-caro`,
+`guncotton`, `gunpowder`, `hall-heroult`, `mercury-fulminate-route`,
+`white-phosphorus`. **They are joint grants priced as though they were single
+ones.**
 
-⚠⚠ **AND ONE ROW OF THE TABLE ABOVE IS A LIVE FALSE CREDIT.**
+⚠⚠ **AND ONE ROW OF THE TABLE ABOVE IS A LIVE FALSE CREDIT, UNCHANGED SINCE C3.**
 `oxidative-complexation` scores +1 on `iron-gall-ink`, whose product
-`iron-gallate-marker` the corpus deliberately does not spell. **It will go
-template-ready and `build_network` will have no graph to make the product from.**
-Landmine and trigger in `data/catalog/README.md`. ⚠ Same shape at +0 on
+`iron-gallate-marker` the corpus deliberately does not spell. **Build it and the
+route goes template-ready and `build_network` has no graph to make the product
+from.** Landmine and trigger in `data/catalog/README.md`. ⚠ Same shape at +0 on
 `castner-kellner` / `sodium-amalgam-marker`.
 
-⚠⚠⚠ **AND THE BLOCKER NAMED IN THE TABLE MAY NOT BE THE BLOCKER — THREE FOR
-THREE.** §8's `refused species` column comes from `catalog_coverage`'s tier,
-which knows a species is unpriced and does **not** know which table the price
-would go in, nor whether the species is in the corpus at all.
+⚠⚠⚠ **AND THE BLOCKER NAMED IN THE TABLE MAY NOT BE THE BLOCKER — FOUR FOR
+FOUR.** §8's `refused species` column comes from `catalog_coverage`'s tier, which
+knows a species is unpriced and does **not** know which table the price would go
+in, nor whether the species is in the corpus at all.
 
 * **C1** said `iron-ii-oxide`; the species **was not in the reaction**.
 * **C2** said `calcium-phosphate` (a mineral); the block was a **pKa** in
   `properties/electrolyte.py`.
-* **C3** was not in the table at all: `oxidative-cleavage` was a **REFUSED
-  CLASS**, and the refusal was about **one of its two rows**.
+* **C3** was not in the table at all: a **REFUSED CLASS**, and the refusal was
+  about one of its two rows.
+* **C4** was in the table at the top, and its blocker was neither a species nor a
+  missing mechanism: it was **the class NAME and the row's LINE BREAK.**
 
 *Print the refusal and read what it says before costing it; read every row of a
-class before refusing the class; and check whether the species is even a corpus
-row — the column prints an em dash for three routes that name a compound the
-corpus has no graph for.*
+class before refusing the class; read the row as a MECHANISM and not as a line;
+and check whether the species is even a corpus row.*
 
 ⚠⚠ **AND CHECK BOTH HALVES OF A DATA JOB, BECAUSE THEY ARE DIFFERENT TABLES.**
 A pKa (or an `ion_data` row) makes a route **SCORE**; a `MineralRecord` gives a
 lattice a **Ksp** so it can actually dissolve. C2 measured them one at a time and
-they were disjoint.
+they were disjoint. ⚠ C4 adds a third split of the same kind: **the FORMATION
+half and the PHYSICAL half of one compound's record resolve independently, and
+they disagree about stereochemistry** (§7).
 
 ⚠⚠⚠ **THE TWO "NEEDS NO TEMPLATE AT ALL" ROWS ARE BOTH SOURCE-BLOCKED, AND C2
 MEASURED BOTH.** `calcium-silicate`, `pyrite` and `sodium-hypochlorite` **do not
@@ -328,10 +421,10 @@ one tabulation is what makes them refusals rather than entries. ⚠ **There is n
 cheap data row left in the table.** *A data job is only cheap when the data is
 there.*
 
-⚠⚠ **THE NOx ITEM IS STILL WORTH +1**, unchanged by C2 or C3. Fragility 31
+⚠⚠ **THE NOx ITEM IS STILL WORTH +1**, unchanged by C2, C3 or C4. Fragility 31
 stands: the lead chamber is blocked on a pinch of NO2 nothing reachable makes.
-⚠ `ethylene` and `aluminium` remain the joint-biggest single SPECIES grants at
-**+2** each (`PLAYABLE.md` §7). **A content item can re-price a lever it never
+⚠ **`aluminium` is now the ONLY +2 single-species grant** — `ethylene` fell to +1
+in C4 without being touched. **A content item can re-price a lever it never
 touched — re-run `tools/build_playable.py` after every one.**
 
 ---
@@ -339,7 +432,11 @@ touched — re-run `tools/build_playable.py` after every one.**
 # THE STANDING AUDITS
 
 ```bash
-python validation/vanillin.py                  # ⚠⚠ C3's, ~2 min. NEW -- read panels
+python validation/fermentation.py               # ⚠⚠ C4's, ~30 s. NEW -- read panels
+                                               #   1, 4, 5 and 8. ⚠⚠⚠ PANEL 5 REFUTES
+                                               #   M10's own cheap version, and PANEL 8
+                                               #   is about the PROVIDER, not fermentation
+python validation/vanillin.py                  # ⚠ C3's, ~2 min. read panels
                                                #   1, 3, 7 and 9. ⚠⚠⚠ PANEL 7 is the
                                                #   session's sharpest finding and is general
                                                #   to every reversible liquid template here
@@ -351,7 +448,7 @@ python validation/vitriol.py                   # C1's, 18 s. read panels 3, 5 an
 python validation/saturation.py                # G6's, 27 s. read panels 1, 3 and 5
 python validation/protonation.py               # G5's, 20 s. REWRITTEN BY G6 -- panels 3 and 5
 python validation/ring_deactivation.py         # G2's, 14 s. REWRITTEN BY G6 -- panels 1 and 5
-python validation/granularity.py               # G4's, 20 s. ⚠ NOW 36 + 5. panels 3 and 4
+python validation/granularity.py               # G4's, 20 s. ⚠ NOW 37 + 5. panels 3 and 4
 python validation/dropwise.py                  # G1's, 78 s
 python validation/boiling_points.py            # S13's, 2 s. READ PANEL 2
 python validation/skraup.py                    # S12's, ~10 s
@@ -364,18 +461,21 @@ python validation/corpus_balance.py            # S7's other one, ~20 s. ⚠⚠ C
                                                #   vitriol row balanced too. ⚠⚠⚠ AND ITS
                                                #   LAST PANEL IS REWRITTEN BY C3: its standing
                                                #   example, `vanillin-lignin`, is INSIDE the
-                                               #   BOTH column now. ⚠ `abe-fermentation` is
-                                               #   the same shape -- written 1:1, balances
-                                               #   only at 5:2:2:2:12:8
-python validation/catalog_coverage.py          # ⚠ 'BOTH' is 36/173, ~9 s. ⚠⚠ AND IT IS A
+                                               #   BOTH column now. ⚠⚠⚠ AND C4 ADDED
+                                               #   A SECOND -- `abe-fermentation`, written
+                                               #   1:1 and balancing only at 5:2:2:2:12:8 --
+                                               #   and the two need OPPOSITE answers
+python validation/catalog_coverage.py          # ⚠ 'BOTH' is 37/173, ~9 s. ⚠⚠ AND IT IS A
                                                #   LOWER BOUND TOO -- G4's rule gives 36+5
 python validation/physical_estimation.py       # S13 took its panel 3 to n=254
 python validation/game_gates.py                # the element floor's cross-check, seconds
-python tools/build_playable.py                 # ⚠⚠ G3's, ~56 s. WRITES
+python tools/build_playable.py                 # ⚠⚠ G3's, ~50 s. WRITES
                                                #   data/catalog/PLAYABLE.md -- it RUNS
-                                               #   the deep chain. ⚠ 18/173 playable.
+                                               #   the deep chain. ⚠ 20/173 playable.
                                                #   ⚠⚠⚠ C3 ADDED §8b, THE PER-CLASS WORK
-                                               #   ORDER, AND A FALSE-CREDIT DETECTOR
+                                               #   ORDER AND A FALSE-CREDIT DETECTOR; C4
+                                               #   LIFTED IT TO `CLASS_WORTH` SO A TEST CAN
+                                               #   ASSERT IT, AND ITS TOP ROW IS +1 NOW
 python tools/build_route_index.py              # the artefact nothing reads -- ⚠ and
                                                #   PLAYABLE is the one that now HAS tests
 python validation/cell_potentials.py           # M8's standing audit, seconds
@@ -383,13 +483,13 @@ python validation/rate_ceiling.py              # G6 moved its fastest activated
                                                #   nitration by EIGHT DECADES
 python validation/jacobian_bound.py            # S5's standing audit, ~1 min
 python -m ruff check src tests examples validation tools
-python -m pytest -q --durations=25             # ~30 min, expect 1128. ⚠⚠ C3 OWES THIS
-                                               #   RUN. ⚠ C2's "+25% from a concurrent job"
-                                               #   was REFUTED by re-running it
+python -m pytest -q --durations=25             # ~25 min, expect 1159. ⚠⚠ C4 RAN IT
+                                               #   and it is GREEN. ⚠ C2's "+25% from a
+                                               #   concurrent job" was REFUTED by re-running
 python validation/tolerance_audit.py           # ~10 min. ⚠⚠ C2 OWED it (RHS edit),
                                                #   RAN it, and it CAUGHT a crash the whole
-                                               #   green test suite missed. ⚠ C3 does NOT
-                                               #   owe it: no RHS and no data-table edit
+                                               #   green test suite missed. ⚠ NEITHER C3
+                                               #   NOR C4 owes it: no RHS, no data table
 ```
 
 ⚠ **THE SUITE AND THE TOLERANCE AUDIT ARE MINUTES OF SATURATED CPU ON THE USER'S
@@ -441,7 +541,8 @@ regression alarm.
 
 # ⚠ THE ENGINE AND HONESTY QUEUE — **REFERENCE, NOT THE WORK ORDER**
 
-⚠⚠ **`data/catalog/PLAYABLE.md` §8 IS THE WORK ORDER NOW.** This queue is kept
+⚠⚠ **`data/catalog/PLAYABLE.md` §8b IS THE WORK ORDER NOW** (§8 ranks routes; §8b
+ranks the CLASSES a session actually buys). This queue is kept
 because every row is a measured, live finding — but **do not start here**, and do
 not treat a row's age as a reason to take it.
 ⚠⚠⚠ **AND C1 CLOSED ONE ROW AND RE-PRICED THREE.** Item 17 (`hydrolysis`) is
@@ -722,7 +823,8 @@ third time.
 | `direct-combination` | `vermilion-route` | +1 | ⚠⚠ **S9 MEASURED AND REFUSED IT**; engine queue item 9 is the only thing that could change that. **Do not re-derive this.** ⚠ C3 scouted it WITHOUT RUNNING IT and adds two things, both read out of the code rather than measured in a flask. (1) The route makes **cinnabar**, one of C2's five `[S-2]` lattices that cannot be put in a flask through the ionic path — but `SurfaceArrays` prices a lattice off `mineral_data` on the SOLID basis and never touches an ion pKa (`cinnabar-roasting` already charges it), **so C2's sulfide landmine looks like it does NOT fire here.** ⚠⚠ Its trigger in `data/catalog/README.md` is correctly scoped — *"a metal sulfide **in solution**"* — but its own SECTION HEADING says *"a sulfide route will score and not run"*, and every one-line paraphrase of it in this file and in the memory notes drops the three words that matter. **A landmine is only as well-scoped as its shortest restatement** (2) What blocks it instead is that a `SurfaceReaction` solid participant MUST be a `mineral_data` lattice and **there is no `sulfur` MineralRecord** — native sulfur is the molecular `S1SSSSSSS1`. ⚠ Both claims want a flask before anybody costs the row |
 | ~~`oxidative-cleavage`~~ | `vanillin-eugenol`, `vanillin-lignin` | ✔✔ **BUILT IN C3** | ⚠⚠⚠ **S11 REFUSED IT AFTER READING ONE OF ITS TWO ROWS.** The refusal was right about `vanillin-lignin` — that row balances at **8 C10H12O3 + 7 O2 -> 10 C8H8O3 + 8 H2O**, eight rings in and TEN out — and `vanillin-eugenol` step 2 is the same class, balances **exactly 1:1**, and **names its C2 fragment**. The template is written off that row and names the lignin row's missing fragment as `glycolaldehyde`, which the corpus already had. **Read every row of a class before refusing the class** |
 | ~~`alkene-isomerisation`~~ | `vanillin-eugenol` | ✔✔ **BUILT IN C3** | ⚠ Not S7's refused `isomerisation`, and the difference is measured: that class died on `oleic -> elaidic` pricing at **dH = dG = 0.000 exactly**, no estimator here telling a cis alkene from a trans one. This is a CONSTITUTIONAL isomerisation — the allyl migrating into conjugation — at dH **−56.56** kJ/mol and ln K **+7.89** at 470 K. ⚠ The pair is SUPER-ADDITIVE: +0 alone, +1 for its partner alone, **+2 together** |
-| `fermentation` | `abe-fermentation`, `msg-route` | **+2 playable** | ⚠ **M5 REFUSED IT** as a metabolic NETWORK rather than a transformation — and it is **§8b's top row**, the biggest single class left. ⚠⚠ MILESTONES §M10 already scopes the cheap version (*a declared order of ZERO in the substrate IS the saturated Michaelis-Menten limit, no kernel change*), but C3 measured the row itself: `glucose -> acetone + butanol + ethanol + CO2 + H2` is written **1:1** and balances only at **5:2:2:2:12:8** — `corpus_balance` PASSES it and five glucoses in with six carbon skeletons out is not a graph rewrite. **The same weak test that let S11 refuse a class for the wrong scope** |
+| ~~`fermentation`~~ | `abe-fermentation`, `lactic-acid-pla` | ✔✔ **BUILT IN C4 (SPLIT FIVE WAYS)** | ⚠⚠⚠ **M5 REFUSED IT as a metabolic NETWORK and §8b priced it at +2, and both were about the LABEL.** Five rows, five mechanisms, so `route_steps.psv` names five classes now -- `solventogenic-` and `homolactic-fermentation` built, `aerobic-overflow-`, `amino-acid-` and `secondary-metabolite-fermentation` named gaps. ⚠⚠ **The 5:2:2:2:12:8 lump was three reactions on ONE LINE**; split, each balances exactly on one glucose. ⚠ The split cost **+4 on the denominator against +2 covered**, and without it the credit would have template-readied four routes `build_network` cannot run |
+| `aerobic-overflow-fermentation`, `amino-acid-fermentation`, `secondary-metabolite-fermentation` | `citric-acid-fermentation`, `msg-route`, `penicillin-route` | **+0 playable** | ⚠⚠ **C4's three leftovers, and none is FED**, so none buys a playable route. ⚠ `citric-acid-fermentation` balances at `sucrose + 3 O2 -> 2 citric + 3 H2O` (1:1 in its own sugar) and `msg-route` only at `2 glucose + 2 NH3 + 3 O2 -> 2 glutamate + 2 CO2 + 6 H2O`, because one hexose wants one-and-a-half O2. **Both are honest lumps**; the penicillin row is a fed-precursor biosynthesis and is not |
 | `separation` | `coal-tar-distillation` | +1 | ⚠ **M5 REFUSED IT**: a distillation is not a reaction class, and the feedstock has no graph |
 
 ⚠⚠ **AND READ `corpus_balance.py`'s LAST PANEL BEFORE PICKING ANY OF THEM.** The
@@ -752,9 +854,9 @@ repo-local `user.name`/`user.email` if that should be yours.
 
 Start by reading, in order:
 
-⚠⚠ **`data/catalog/PLAYABLE.md` FIRST, AND §8 OF IT IS THE WORK ORDER.** It is
+⚠⚠ **`data/catalog/PLAYABLE.md` FIRST, AND §8b OF IT IS THE WORK ORDER.** It is
   the only artefact that scores against the GOAL, and it is new. §1 for the
-  shape, §3 for the four scoring rules, §5 for what the runs bought, §8 for what
+  shape, §3 for the four scoring rules, §5 for what the runs bought, §8b for what
   to build.
 MILESTONES.md — the plan, and **§ THE C-SERIES first: §C1, §C2 and §C3 are
   DONE and they are the only worked examples of what a C-series item looks like.
@@ -769,9 +871,10 @@ HANDOFF.md — what exists, and the ethos to preserve. **85 is S1 … 98 is S13,
   99 is G1, 100 is G2, 101 is G5, 102 is G4, 103 is G6, 104 is G3, 105 is C1,
   106 is C2, 107 is C3.**
 NEXT_SESSION.md — the invariants table at the bottom is the contract, and **G1,
-  G2, G3, G4, G5, G6, C1, C2 and C3 each added a block**. ⚠ **C3's block opens
-  with what it ran and what it still owes**, and C2's with what was wrong with
-  the suite run that discharged C1's debt. ⚠ Read the two warnings above it
+  G2, G3, G4, G5, G6, C1, C2, C3 and C4 each added a block**. ⚠⚠ **C4's block
+  opens with what it ran, what it does NOT owe, and the one test it RENAMED**;
+  C3's with what it ran and owed, and C2's with what was wrong with the suite run
+  that discharged C1's debt. ⚠ Read the two warnings above it
   before trusting any row, and note that **G5's "no acidity function" row and
   G2's regioselectivity row are LIMITS TO REMOVE**, not invariants to keep — as
   is G3's `lead-chamber` NOx row. ⚠ **G3's block adds no ENGINE invariant**:
@@ -785,8 +888,9 @@ data/catalog/README.md — the reaction-class taxonomy, ⚠ **its paragraph on w
   own landmine with its trigger named -- a sulfide route will SCORE and refuse
   to BUILD**; plus
   `data/catalog/COVERAGE_REPORT.md`.
-the memory files (auto-loaded), especially **chemsim-phosphate-rock**,
-  **chemsim-oil-of-vitriol** and **chemsim-playable-scoreboard**, then
+the memory files (auto-loaded), especially **chemsim-fermentation**,
+  **chemsim-vanillin** and **chemsim-playable-scoreboard**, then
+  chemsim-phosphate-rock, chemsim-oil-of-vitriol,
   **chemsim-granularity-audit**, chemsim-protonation,
   chemsim-hammett-saturation, chemsim-ring-deactivation,
   chemsim-dropping-funnel, chemsim-skraup-standard-state, chemsim-ion-transfer,
@@ -813,28 +917,35 @@ declared** — **and PHOSPHATE ROCK DIGESTED IN OIL OF VITRIOL, whose blocker wa
 a pKa in a table nobody was looking at** — **and VANILLIN FROM CLOVE OIL, in a
 30-bar alkaline digester: the allyl isomerises into conjugation over hydroxide
 and air cleaves the side chain off, from a class that had been REFUSED on the
-evidence of one of its two rows.** `SAVE_VERSION` is **6**.
-Coverage: **55/236 classes**, **50 templates** (44 reaction + 6 dissociation,
+evidence of one of its two rows** — **and THE ABE FERMENTATION, three branches
+RACING for one sugar at blood heat, from a class refused as a metabolic network
+whose lump turned out to be a LINE BREAK.** `SAVE_VERSION` is **6**.
+Coverage: **57/240 classes**, **54 templates** (48 reaction + 6 dissociation,
 COUNTED — the same paragraph used to say 46 in one place and 47 in another, and
 both were stale; *a hand-maintained count drifts exactly the way a generated one
-does*), **44/173 template-ready**,
-**85/173 species-ready** — and ⚠⚠ **36/173 BOTH, which is the only one of the
-three a route can be judged on.** ⚠ C3 added NO data row and NO engine code: two
-SMARTS strings and two `TEMPLATE_CLASSES` entries, which is why species-ready did
-not move.
+does*), **45/173 template-ready**,
+**85/173 species-ready** — and ⚠⚠ **37/173 BOTH, which is the only one of the
+three a route can be judged on.** ⚠ C4 added NO data row and NO engine code: four
+SMARTS strings, a five-way class split and two `TEMPLATE_CLASSES` entries, which
+is why species-ready did not move. ⚠⚠ **AND THE DENOMINATOR GREW BY FOUR**,
+because the split is what makes the credit honest — S7's rule: *a split that
+lowers the headline is a split working.*
 ⚠⚠ **AND G4 MEASURED THAT IT IS ALSO A LOWER BOUND: FIVE MORE ROUTES RUN TODAY
-AND ARE SCORED BLOCKED (36 + 5 = 41), while the remaining rows are real work.**
+AND ARE SCORED BLOCKED (37 + 5 = 42), while the remaining rows are real work.**
 See `validation/granularity.py`.
 ⚠⚠⚠ **AND PLAYABILITY IS A THIRD NUMBER, LOWER THAN BOTH OF THOSE AND THE ONLY
-ONE TIED TO THE GOAL: 18 of 173 (G3's instrument, C3's number).** 41 runnable,
-**18 playable from natural materials** — tiers **9 / 8 / 1** — and the ceiling on
-the declared natural list is **41** once the 20 fed-but-unrunnable routes land.
-⚠⚠ **C3 IS THE FIRST SESSION TO MOVE THE TREE OFF BEING MOSTLY GROUND-LEVEL: 9
-of 18 is exactly HALF**, where G3's assertion was a strict majority, so
-`test_the_tech_tree_is_a_shallow_bush` asserts `==` where it asserted `>`. ⚠ It
-is a threshold crossed by arithmetic and not a tree appearing — still 3 tiers,
-and tier 3 is still one route. ⚠ Both vanillin routes are tier 2 because their
-CATALYST is caustic soda; their feedstocks are natural.
+ONE TIED TO THE GOAL: 20 of 173 (G3's instrument, C4's number).** 42 runnable,
+**20 playable from natural materials** — tiers **10 / 9 / 1** — and the ceiling on
+the declared natural list is **45** once the 23 fed-but-unrunnable routes land.
+⚠⚠⚠ **C4 MOVED THAT CEILING FOR THE FIRST TIME SINCE C1 (41 → 45), AND THE WORK
+ORDER GREW 20 → 23 WHILE THE ANSWER GREW 18 → 20** — a fermentation's products
+feed four routes that were not fed before. **The goal a session is measured
+against is not a constant.** ⚠⚠ The exact-half tier-1 share HELD: C3 crossed
+G3's *"most are tier 1"* into half, and C4 added one to each of the first two
+tiers, so it is 10 of 20. ⚠ Still 3 tiers, and **tier 3 is still one route,
+five sessions running.** ⚠ `abe-fermentation` is TIER 1 (glucose is natural);
+`acetic-fermentation` is tier 2 on its ETHANOL, which is not
+`abe-fermentation`'s declared target.
 ⚠ A route can be fully covered, fully indexed and unreachable.
 `data/catalog/PLAYABLE.md`.
 ⚠ The corpus's **PHYSICAL half is measured for 652/1583 (41.2%)** as of S13;
@@ -843,6 +954,14 @@ its refusals are down to **416 of 1583** as of C2 and did not move in C3.
 ---
 
 # ⚠ THE FRAGILITIES
+
+**0a. ⚠⚠⚠ A FLASK OF STERILE SUGAR WATER FERMENTS (C4).** The four fermentation templates have **no gate**, because a fermentation's gate is ALIVE and the corpus has no graph for a Clostridium. Every other gate here is chargeable -- an acid, a base, a lattice, a voltage, a pinch of NO2 -- and `_maybe_catalyse` needs a species. The `catalyst=` parameter is there for the day the corpus has one to charge. ⚠⚠ The hole is under all **eight** of M10's biological routes, and it is a **LIMIT TO REMOVE**: an inventory item for a culture is a GAME_DESIGN answer, not an engine one.
+
+**0b. ⚠⚠⚠ AN ORDER-ZERO REACTANT MANUFACTURES MATTER AND THE RUN REPORTS SUCCESS (C4).** No availability gate exists outside the solid block, so the substrate is **clamped at 0.0 in the reported state while the products grow past the stoichiometric ceiling** -- 1.79 mol of ethanol out of 0.5 mol of glucose, for ~1900 simulated hours before the hard guard refuses. ⚠⚠ **`conservation_report()` sees every mole and calls four tenths of one "round-off it could not settle"**: the check is load-bearing and its own label is calibrated for the case it was written for. ⚠ No template in the repo declares a zero order today and `test_no_fermentation_template_declares_an_order` keeps it that way; **M10's cheap door is measured shut.**
+
+**0c. ⚠⚠ A STEREO SPELLING SELECTS A DATA TIER, AND THE TWO HALVES OF A RECORD DISAGREE ABOUT IT (C4).** The property tables are keyed by canonical SMILES: the **PHYSICAL** tables carry the chiral spelling (sorbitol reaches a measured Tb chiral and **Joback 184 K away** flat) and the **FORMATION** table carries the flat one (lactic acid reaches an experimental record flat and **Benson** chiral). **31 of the 146 stereo-spelled corpus rows price off a different source depending on an orthographic accident**, and a spelling carries no thermochemical information at all. ⚠ The fix is a stereo-insensitive **FALLBACK** in the lookup (S6's rule) and it touches every number this project produces, so it is a session of its own.
+
+**0d. ⚠ EVERY FERMENTATION YIELD IS AN UPPER BOUND, BY A MECHANISM NOTHING HERE CAN EXPRESS (C4).** A real ABE batch stalls near 20 g/L of butanol because **butanol dissolves the organism that makes it**, and a product cannot poison a catalyst that is not in the flask. Same shape as C3's missing over-oxidation channel, different cause.
 
 **1. ⚠⚠ THE PLATEAU IS A FIXED RATIO AND NOT A RATE (G6, deliberate).** The
 Hammett line saturates now, at a sourced 2.686 decades — but as a ratio to

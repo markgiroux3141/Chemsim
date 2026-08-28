@@ -151,9 +151,11 @@ NOT_NATURAL_NOTES = [
      "the reagent bottle. Nothing in 173 industrial routes makes any of them, "
      "and they block four named syntheses -- see the fourth bucket."),
     ("`ethanol` and `acetic-acid`",
-     "both are fermentation products and `fermentation` is a class M5 refused "
-     "as a metabolic network rather than a transformation. They are natural in "
-     "a brewery and not in this engine."),
+     "both are fermentation products, and C4 built the fermentation that makes "
+     "them: they are on the shelf now as MADE species rather than natural "
+     "ones -- `abe-fermentation` at tier 1 and `acetic-fermentation` at tier "
+     "2. The judgement stands and its REASON has changed, which is exactly "
+     "the rot this file is generated to avoid."),
 ]
 
 # ---------------------------------------------------------------------------
@@ -295,6 +297,38 @@ for rid in sorted(RUNNABLE - set(PLAYABLE)):
 # the work order -------------------------------------------------------------
 UNRUNNABLE = set(routes) - RUNNABLE
 FED_BUT_UNRUNNABLE = sorted(r for r in UNRUNNABLE if needs(r) <= SHELF)
+
+# ⚠⚠ THE PER-CLASS WORK ORDER (8b), AT MODULE LEVEL SO A TEST CAN READ IT.
+# C3 generated it inside the writer; C4 lifted it out, because the numbers it
+# produces are the ones a session is graded on and a generated table nothing
+# asserts is a table that rots (`ROUTE_INDEX.md`, three milestones).
+CLASS_GAPS: dict[str, set[str]] = {}
+for _rid in FED_BUT_UNRUNNABLE:
+    for _s in route_steps(_rid):
+        if _s.cls not in TC:
+            CLASS_GAPS.setdefault(_s.cls, set()).add(_rid)
+
+
+def grant_classes(extra):
+    """Runnable and playable sets with these class names granted for free."""
+    tc2 = set(TC) | set(extra)
+    run2 = {rid for rid in routes
+            if cat.route_reachable(steps, rid, routes[rid].target,
+                                   priced, tc2, compounds)}
+    return run2, closure(pool=run2)[0]
+
+
+def _class_worth():
+    rows = []
+    for c in sorted(CLASS_GAPS):
+        run2, play2 = grant_classes([c])
+        rows.append((len(play2) - len(PLAYABLE), len(run2) - len(RUNNABLE),
+                     c, sorted(CLASS_GAPS[c])))
+    rows.sort(key=lambda t: (-t[0], -t[1], t[2]))
+    return rows
+
+
+CLASS_WORTH = _class_worth()
 
 
 # ---------------------------------------------------------------------------
@@ -833,25 +867,7 @@ def main() -> int:
     # The route column is still the right ranking for "what is this row worth".
     # This one is the right ranking for "what is a template worth", and it is
     # the one a C-series session is actually shopping in.
-    gaps: dict[str, set[str]] = {}
-    for rid in FED_BUT_UNRUNNABLE:
-        for s in route_steps(rid):
-            if s.cls not in TC:
-                gaps.setdefault(s.cls, set()).add(rid)
-
-    def grant_classes(extra):
-        tc2 = set(TC) | set(extra)
-        run2 = {rid for rid in routes
-                if cat.route_reachable(steps, rid, routes[rid].target,
-                                       priced, tc2, compounds)}
-        return run2, closure(pool=run2)[0]
-
-    crows = []
-    for cls in sorted(gaps):
-        run2, play2 = grant_classes([cls])
-        crows.append((len(play2) - len(PLAYABLE), len(run2) - len(RUNNABLE),
-                      cls, sorted(gaps[cls])))
-    crows.sort(key=lambda t: (-t[0], -t[1], t[2]))
+    crows = CLASS_WORTH
 
     w("### ⚠⚠ 8b. The same table asked the way a SESSION spends it: per CLASS")
     w("")

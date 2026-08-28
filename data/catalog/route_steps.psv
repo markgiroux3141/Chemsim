@@ -146,7 +146,7 @@ sulfa-drug-route | 3 | ammonolysis | 4-acetamidobenzenesulfonyl-chloride + ammon
 sulfa-drug-route | 4 | deprotection | 4-acetamidobenzenesulfonamide + water + hydrogen-chloride | sulfanilamide + acetic-acid | dilute HCl, reflux | amide-hydrolysis
 prontosil-route | 1 | diazotisation | sulfanilamide + sodium-nitrite + hydrogen-chloride | sulfanilamide-diazonium + water + sodium-chloride | 278 K | diazotisation
 prontosil-route | 2 | azo coupling | sulfanilamide-diazonium + m-phenylenediamine | prontosil + hydrogen-chloride | cold, buffered | azo-coupling
-penicillin-route | 1 | fermentation | glucose + ammonium-sulfate + phenylacetic-acid | penicillin-g + carbon-dioxide + water | Penicillium, deep tank, 300 K | fermentation
+penicillin-route | 1 | fermentation | glucose + ammonium-sulfate + phenylacetic-acid | penicillin-g + carbon-dioxide + water | Penicillium, deep tank, 300 K | secondary-metabolite-fermentation
 penicillin-route | 2 | enzymatic deacylation | penicillin-g + water | 6-apa + phenylacetic-acid | penicillin acylase, pH 8 | amide-hydrolysis
 penicillin-route | 3 | reacylation | 6-apa + 4-hydroxyphenylglycine | amoxicillin + water | enzymatic or chemical coupling | amide-coupling
 aspirin-impurity | 1 | ester hydrolysis | aspirin + water | salicylic-acid + acetic-acid | humidity, months | ester-hydrolysis
@@ -264,15 +264,15 @@ ethanol-fermentation | 4 | reduction to ethanol | acetaldehyde | ethanol | alcoh
 ethanol-fermentation | 5 | fusel oil byproducts | isoleucine | isoamyl-alcohol + carbon-dioxide + ammonia | Ehrlich pathway | biological-transformation
 ethanol-hydration | 1 | acid-catalysed hydration | ethylene + water + phosphoric-acid | ethanol + phosphoric-acid | 570 K, 70 bar, H3PO4 on silica | alkene-hydration
 ethanol-hydration | 2 | ether byproduct | ethanol + ethanol + phosphoric-acid | diethyl-ether + water + phosphoric-acid | same reactor, 410 K | ether-condensation
-abe-fermentation | 1 | clostridial fermentation | glucose | acetone + 1-butanol + ethanol + carbon-dioxide + hydrogen | Clostridium acetobutylicum, 310 K | fermentation
-citric-acid-fermentation | 1 | mould fermentation | sucrose + oxygen | citric-acid + water | Aspergillus niger, pH 2, 300 K | fermentation
+abe-fermentation | 1 | clostridial fermentation | glucose | acetone + 1-butanol + ethanol + carbon-dioxide + hydrogen | Clostridium acetobutylicum, 310 K | solventogenic-fermentation
+citric-acid-fermentation | 1 | mould fermentation | sucrose + oxygen | citric-acid + water | Aspergillus niger, pH 2, 300 K | aerobic-overflow-fermentation
 citric-acid-fermentation | 2 | recovery as the calcium salt | citric-acid + calcium-hydroxide | calcium-citrate + water | lime precipitation | precipitation
 citric-acid-fermentation | 3 | acidification | calcium-citrate + sulfuric-acid | citric-acid + calcium-sulfate | filter off gypsum | acid-displacement-precipitating
-lactic-acid-pla | 1 | lactic fermentation | glucose | lactic-acid | Lactobacillus, 320 K | fermentation
+lactic-acid-pla | 1 | lactic fermentation | glucose | lactic-acid | Lactobacillus, 320 K | homolactic-fermentation
 lactic-acid-pla | 2 | oligomerisation | lactic-acid | lactic-oligomer-marker + water | 470 K, vacuum | polycondensation
 lactic-acid-pla | 3 | depolymerisation to lactide | lactic-oligomer-marker + tin-iv-chloride | lactide + tin-iv-chloride | 500 K, vacuum, Sn octoate | depolymerisation
 lactic-acid-pla | 4 | ring-opening polymerisation | lactide + tin-iv-chloride | pla-unit + tin-iv-chloride | 460 K, melt ROP | ring-opening-polymerisation
-msg-route | 1 | glutamate fermentation | glucose + ammonia + oxygen | glutamic-acid + carbon-dioxide + water | Corynebacterium, biotin-limited | fermentation
+msg-route | 1 | glutamate fermentation | glucose + ammonia + oxygen | glutamic-acid + carbon-dioxide + water | Corynebacterium, biotin-limited | amino-acid-fermentation
 msg-route | 2 | neutralisation | glutamic-acid + sodium-hydroxide | monosodium-glutamate + water | pH 7 | proton-transfer
 starch-hydrolysis | 1 | acid or enzymatic hydrolysis | starch-unit + water | maltose | alpha-amylase, 360 K | glycoside-hydrolysis
 starch-hydrolysis | 2 | saccharification | maltose + water | glucose | glucoamylase, 330 K | glycoside-hydrolysis

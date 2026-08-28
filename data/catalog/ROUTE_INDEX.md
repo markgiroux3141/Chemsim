@@ -3476,7 +3476,7 @@ The same species is routinely a feedstock in one route and an intermediate in an
 
 | # | step | in | out | conditions | class |
 |--:|---|---|---|---|---|
-| 1 | fermentation | glucose + ammonium-sulfate + phenylacetic-acid | penicillin-g + carbon-dioxide + water | Penicillium, deep tank, 300 K | `fermentation` |
+| 1 | fermentation | glucose + ammonium-sulfate + phenylacetic-acid | penicillin-g + carbon-dioxide + water | Penicillium, deep tank, 300 K | `secondary-metabolite-fermentation` |
 | 2 | enzymatic deacylation | penicillin-g + water | 6-apa + phenylacetic-acid | penicillin acylase, pH 8 | `amide-hydrolysis` |
 | 3 | reacylation | 6-apa + 4-hydroxyphenylglycine | amoxicillin + water | enzymatic or chemical coupling | `amide-coupling` |
 
@@ -4797,7 +4797,7 @@ The same species is routinely a feedstock in one route and an intermediate in an
 
 | # | step | in | out | conditions | class |
 |--:|---|---|---|---|---|
-| 1 | clostridial fermentation | glucose | acetone + 1-butanol + ethanol + carbon-dioxide + hydrogen | Clostridium acetobutylicum, 310 K | `fermentation` |
+| 1 | clostridial fermentation | glucose | acetone + 1-butanol + ethanol + carbon-dioxide + hydrogen | Clostridium acetobutylicum, 310 K | `solventogenic-fermentation` |
 
 <a id="citric-acid-fermentation"></a>
 
@@ -4826,7 +4826,7 @@ The same species is routinely a feedstock in one route and an intermediate in an
 
 | # | step | in | out | conditions | class |
 |--:|---|---|---|---|---|
-| 1 | mould fermentation | sucrose + oxygen | citric-acid + water | Aspergillus niger, pH 2, 300 K | `fermentation` |
+| 1 | mould fermentation | sucrose + oxygen | citric-acid + water | Aspergillus niger, pH 2, 300 K | `aerobic-overflow-fermentation` |
 | 2 | recovery as the calcium salt | citric-acid + calcium-hydroxide | calcium-citrate + water | lime precipitation | `precipitation` |
 | 3 | acidification | calcium-citrate + sulfuric-acid | citric-acid + calcium-sulfate | filter off gypsum | `acid-displacement-precipitating` |
 
@@ -4857,7 +4857,7 @@ The same species is routinely a feedstock in one route and an intermediate in an
 
 | # | step | in | out | conditions | class |
 |--:|---|---|---|---|---|
-| 1 | glutamate fermentation | glucose + ammonia + oxygen | glutamic-acid + carbon-dioxide + water | Corynebacterium, biotin-limited | `fermentation` |
+| 1 | glutamate fermentation | glucose + ammonia + oxygen | glutamic-acid + carbon-dioxide + water | Corynebacterium, biotin-limited | `amino-acid-fermentation` |
 | 2 | neutralisation | glutamic-acid + sodium-hydroxide | monosodium-glutamate + water | pH 7 | `proton-transfer` |
 
 <a id="furfural-route"></a>
@@ -5295,7 +5295,7 @@ The same species is routinely a feedstock in one route and an intermediate in an
 
 | # | step | in | out | conditions | class |
 |--:|---|---|---|---|---|
-| 1 | lactic fermentation | glucose | lactic-acid | Lactobacillus, 320 K | `fermentation` |
+| 1 | lactic fermentation | glucose | lactic-acid | Lactobacillus, 320 K | `homolactic-fermentation` |
 | 2 | oligomerisation | lactic-acid | lactic-oligomer-marker + water | 470 K, vacuum | `polycondensation` |
 | 3 | depolymerisation to lactide | lactic-oligomer-marker + tin-iv-chloride | lactide + tin-iv-chloride | 500 K, vacuum, Sn octoate | `depolymerisation` |
 | 4 | ring-opening polymerisation | lactide + tin-iv-chloride | pla-unit + tin-iv-chloride | 460 K, melt ROP | `ring-opening-polymerisation` |
@@ -5375,7 +5375,6 @@ This is the list a template library has to grow into. `validation/catalog_covera
 | precipitation-metathesis | 5 | 5 |
 | electrophilic-aromatic-nitration | 5 | 3 |
 | polycondensation | 5 | 5 |
-| fermentation | 5 | 5 |
 | ester-hydrolysis | 5 | 5 |
 | carbanion-generation | 5 | 5 |
 | roasting | 4 | 4 |
@@ -5501,6 +5500,7 @@ This is the list a template library has to grow into. `validation/catalog_covera
 | nitro-partial-hydrogenation | 1 | 1 |
 | bamberger-rearrangement | 1 | 1 |
 | sulfonamide-formation | 1 | 1 |
+| secondary-metabolite-fermentation | 1 | 1 |
 | amide-coupling | 1 | 1 |
 | haloform | 1 | 1 |
 | radical-halogenation | 1 | 1 |
@@ -5548,7 +5548,11 @@ This is the list a template library has to grow into. `validation/catalog_covera
 | biological-reduction | 1 | 1 |
 | alkene-hydration | 1 | 1 |
 | ether-condensation | 1 | 1 |
+| solventogenic-fermentation | 1 | 1 |
+| aerobic-overflow-fermentation | 1 | 1 |
+| homolactic-fermentation | 1 | 1 |
 | depolymerisation | 1 | 1 |
+| amino-acid-fermentation | 1 | 1 |
 | pentosan-hydrolysis | 1 | 1 |
 | decarbonylation | 1 | 1 |
 | arene-hydrogenation | 1 | 1 |

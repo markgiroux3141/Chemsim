@@ -47,8 +47,8 @@ def bp():
 # ---------------------------------------------------------------------------
 # 1. THE HEADLINE
 # ---------------------------------------------------------------------------
-def test_the_answer_is_eighteen_playable_three_tiers_deep(bp):
-    """18 of 173, and the corpus's deepest chain is still 3 tiers.
+def test_the_answer_is_twenty_playable_three_tiers_deep(bp):
+    """20 of 173, and the corpus's deepest chain is still 3 tiers.
 
     ⚠ G3 measured 12 of 36 runnable. C1 built ``sulfur_trioxide_hydration`` and
     corrected the ``vitriol-distillation`` rows, which put oil of vitriol on the
@@ -62,11 +62,20 @@ def test_the_answer_is_eighteen_playable_three_tiers_deep(bp):
     class S11 refused after reading one of its two rows. Both land in tier 2 as
     well, and **not** on sulfuric acid: their feedstocks (clove-oil eugenol,
     wood lignin) are natural and what they have to be GIVEN is caustic soda.
+
+    ⚠⚠⚠ **C4 BUILT THE FERMENTATION AND IT IS THE FIRST TIER-1 ROUTE ADDED
+    SINCE C1.** `abe-fermentation` needs only glucose, which is on the natural
+    list, so it is ground-level -- and the ethanol it makes as its MINORITY
+    branch carries `acetic-fermentation` up to tier 2 behind it. ⚠⚠ **The
+    class M5 refused as "a metabolic NETWORK" was an outcome label over five
+    mechanisms**, and the split is what made the credit honest.
     """
     assert len(bp.routes) == 173
-    assert len(bp.PLAYABLE) == 18
+    assert len(bp.PLAYABLE) == 20
     assert max(bp.PLAYABLE.values()) == 3
-    assert len(bp.RUNNABLE) == 41
+    assert len(bp.RUNNABLE) == 42
+    assert bp.PLAYABLE["abe-fermentation"] == 1
+    assert bp.PLAYABLE["acetic-fermentation"] == 2
     assert bp.PLAYABLE["vitriol-distillation"] == 1
     assert bp.PLAYABLE["saltpetre-nitric"] == 2
     assert bp.PLAYABLE["phosphoric-wet"] == 2
@@ -82,7 +91,7 @@ def test_the_answer_is_eighteen_playable_three_tiers_deep(bp):
 
 
 def test_the_tech_tree_is_a_shallow_bush(bp):
-    """9 of the 18 are tier 1 -- they touch nothing another route made.
+    """10 of the 20 are tier 1 -- they touch nothing another route made.
 
     The GOAL asks for a connected tech tree. This is the measurement that says it
     is not one yet, and it is the reason the file exists. ⚠ C1 added one route
@@ -97,19 +106,26 @@ def test_the_tech_tree_is_a_shallow_bush(bp):
     ground-level.** ⚠ The honest reading is that this is a threshold crossed
     by arithmetic and not a tree appearing: nine one-hop routes off the ground is
     still nine, and tier 3 is still a single route.
+
+    ⚠⚠ **AND C4 ADDED ONE TO EACH OF THE FIRST TWO TIERS, SO THE EXACT HALF
+    HELD THROUGH A SESSION THAT WAS NOT AIMED AT IT.** 10 of 20. That is a
+    coincidence twice over and is asserted as an equality anyway, because the
+    equality is the thing a future session has to come here and break -- and
+    what it will mean when it does is that a real tier appeared. ⚠ Tier 3 is
+    STILL one route, five sessions running.
     """
     tier1 = [r for r, d in bp.PLAYABLE.items() if d == 1]
-    assert len(tier1) == 9
-    assert len([r for r, d in bp.PLAYABLE.items() if d == 2]) == 8
+    assert len(tier1) == 10
+    assert len([r for r, d in bp.PLAYABLE.items() if d == 2]) == 9
     assert len([r for r, d in bp.PLAYABLE.items() if d == 3]) == 1
     # G3's ">" is now "==", and the change of operator IS the finding
     assert len(tier1) == len(bp.PLAYABLE) / 2
 
 
 def test_the_ceiling_is_the_goal_and_it_is_a_finite_named_list(bp):
-    """Granting all 20 fed-but-unrunnable routes reaches 41, against a goal of ~40.
+    """Granting all 23 fed-but-unrunnable routes reaches 45, against a goal of ~40.
 
-    This is the whole point of the work order: the distance from 18 to 41 is a
+    This is the whole point of the work order: the distance from 20 to 45 is a
     named table, not an open-ended grind against 173 routes.
 
     ⚠⚠ AND THE TABLE MOVES IN BOTH DIRECTIONS, WHICH IS THE POINT. C1 granted
@@ -122,14 +138,23 @@ def test_the_ceiling_is_the_goal_and_it_is_a_finite_named_list(bp):
     row can lengthen it, shorten it, or leave the goal exactly where it was.*
     ⚠ C3 granted two more and the list shrank again, 22 -> 20, with the
     ceiling once more UNCHANGED at 41: vanillin feeds nothing.
+
+    ⚠⚠⚠ **AND C4 MOVED THE CEILING FOR THE FIRST TIME SINCE C1: 41 -> 45.**
+    A fermentation puts acetone, ethanol, butanol and -- through
+    `acetic-fermentation` -- acetic acid on the shelf, which FEEDS four routes
+    that were not fed before (`acetic-anhydride-ketene`, `chloral-route`,
+    `mercury-fulminate-route`, `white-lead-route`). So the list GREW 20 -> 23
+    while the answer grew 18 -> 20. **The goal a session is measured against is
+    not a constant**, and two sessions in a row where it sat still were a
+    property of what they built rather than of the instrument.
     """
-    assert len(bp.FED_BUT_UNRUNNABLE) == 20
+    assert len(bp.FED_BUT_UNRUNNABLE) == 23
     ceiling, _ = bp.closure(pool=bp.RUNNABLE | set(bp.FED_BUT_UNRUNNABLE))
-    assert len(ceiling) == 41
-    # three fall out for free once the shelf grows -- G3 had four, and
-    # `saltpetre-nitric` is the one C1 promoted into PLAYABLE outright
+    assert len(ceiling) == 45
+    # two fall out for free once the shelf grows -- G3 had four, C3 had three,
+    # and `acetic-fermentation` is the one C4 promoted into PLAYABLE outright
     free = set(ceiling) - set(bp.PLAYABLE) - set(bp.FED_BUT_UNRUNNABLE)
-    assert free == {"acetic-fermentation", "haber-bosch", "thermite"}
+    assert free == {"haber-bosch", "thermite"}
 
 
 # ---------------------------------------------------------------------------
@@ -143,8 +168,8 @@ def test_a_need_is_decided_by_order_not_by_route_roles(bp):
     all* and was playable for free.
     """
     wrong, _ = bp.closure(needs_rule=bp.needs_by_roles)
-    assert len(wrong) == 19
-    assert len(bp.PLAYABLE) == 18, "the correction moves the headline DOWN"
+    assert len(wrong) == 21
+    assert len(bp.PLAYABLE) == 20, "the correction moves the headline DOWN"
 
     assert bp.needs_by_roles("lime-cycle") == set()
     assert bp.needs("lime-cycle") == {"calcium-carbonate", "water"}
@@ -185,9 +210,9 @@ def test_the_fouling_row_takes_the_target_off_the_shelf(bp):
     # a route (13 against 14) under the WRONG needs rule and nothing under the
     # right one. It now costs nothing in EITHER row:
     #
-    #                       shelf=target           +byproducts     +target in
-    #  needs=roles  G3 10 / C1 11 / C2 13 / C3 15  13/15/17/19  14/15/17/19
-    #  needs=order  G3  8 / C1 10 / C2 12 / C3 14  12/14/16/18  12/14/16/18
+    #                          shelf=target             +byproducts      +target in
+    #  needs=roles  G3 10 / C1 11 / C2 13 / C3 15 / C4 16  13/15/17/19/21  14/15/17/19/21
+    #  needs=order  G3  8 / C1 10 / C2 12 / C3 14 / C4 15  12/14/16/18/20  12/14/16/18/20
     #
     # The route the shelf rule used to buy was `saltpetre-nitric`, and it got its
     # sulfuric acid from the lead chamber's fouling row. C1 gave the acid a route
@@ -205,11 +230,16 @@ def test_the_fouling_row_takes_the_target_off_the_shelf(bp):
     # ⚠ C3 RE-MEASURED THE WHOLE GRID AGAIN, for C2's reason: the claim is
     # about the DIFFERENCE between cells. Still zero in both rows, three corpus
     # changes running.
+    # ⚠⚠ C4 RE-MEASURED IT A FOURTH TIME AND THE DIFFERENCE IS STILL ZERO --
+    # but it is the first session whose new route depends on a BYPRODUCT, so the
+    # cell that DID move is the target-only one, in the test below. **The two
+    # rules are measured as a grid because fixing one masked another once (G3),
+    # and a session that moves one column has to print all of them.**
     kw = dict(needs_rule=bp.needs_by_roles)
-    assert len(bp.closure(shelf_rule="products", **kw)[0]) == 19
-    assert len(bp.closure(shelf_rule="both", **kw)[0]) == 19
-    assert len(bp.closure(shelf_rule="products")[0]) == 18
-    assert len(bp.closure(shelf_rule="both")[0]) == 18
+    assert len(bp.closure(shelf_rule="products", **kw)[0]) == 21
+    assert len(bp.closure(shelf_rule="both", **kw)[0]) == 21
+    assert len(bp.closure(shelf_rule="products")[0]) == 20
+    assert len(bp.closure(shelf_rule="both")[0]) == 20
 
 
 def test_target_only_shelving_never_starts_the_deep_chain(bp):
@@ -225,14 +255,26 @@ def test_target_only_shelving_never_starts_the_deep_chain(bp):
     reach them and still cannot start the chain. ⚠⚠ C3 moved it 12 -> 14
     and the shortfall is STILL 4 -- both vanillin routes need caustic soda, which
     is `chloralkali`'s declared TARGET, so a target-only shelf reaches them too.
-    **Four sessions and the shortfall has not moved once: it is the byproduct, and
-    only the byproduct.**
+    Four sessions and the shortfall did not move once: it was the byproduct, and
+    only the byproduct.
+
+    ⚠⚠⚠ **AND C4 MOVED IT, 4 -> 5, BY THE SAME MECHANISM.**
+    `acetic-fermentation` needs ETHANOL, and ethanol is not
+    `abe-fermentation`'s target -- propanone is. So the second route C4 bought
+    is bought by a BYPRODUCT, exactly as the deep chain is bought by the zinc
+    retort's carbon monoxide, and a target-only shelf cannot see it either.
+    ⚠⚠ **The rule was justified by one route for four sessions and now has
+    two**, which is the opposite of the fouling rule one test up, whose only
+    evidence C1 dissolved. *A rule kept on a zero difference and a rule kept on a
+    growing one are different bets, and both are printed.*
     """
     target_only, _ = bp.closure(shelf_rule="target")
-    assert len(target_only) == 14
+    assert len(target_only) == 15
     assert max(target_only.values()) == 2
     assert "methanol-synthesis" not in target_only
-    assert len(bp.PLAYABLE) - len(target_only) == 4
+    assert "acetic-fermentation" not in target_only
+    assert "abe-fermentation" in target_only          # ITS target is fine
+    assert len(bp.PLAYABLE) - len(target_only) == 5
 
 
 def test_a_catalyst_is_a_feedstock_and_that_rule_makes_the_third_tier(bp):
