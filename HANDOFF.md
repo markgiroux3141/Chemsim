@@ -6781,3 +6781,189 @@ RESOLVED since the last handoff:
     ⚠ `tolerance_audit.py` is asserted **NOT owed**: no RHS edit, no data table
     moved, every pre-existing network builds the same reactions from the same
     constants. Its last measured state remains S13's.
+
+106. ✔✔ **C2 — PHOSPHATE ROCK: THE WORK ORDER NAMED A MINERAL AND THE BLOCK WAS
+    A pKa IN A DIFFERENT TABLE.** `PLAYABLE.md` §8 called `calcium-phosphate`
+    *"THE CHEAPEST ROW IN THE TABLE AND IT IS A LOOKUP"* — one mineral price, +2
+    playable, no chemistry. **The +2 landed. The mineral price bought none of
+    it.** Playable **14 → 16** (tiers 9 / 6 / 1), runnable **37 → 39**,
+    species-ready **83 → 85**, BOTH **32 → 34**, refused **419 → 416**; classes
+    **53/236** and template-ready **42** unchanged, because C2 added no class and
+    no template. `validation/phosphate_rock.py` (8 panels, ~280 s -- the most expensive
+    standing audit here),
+    `tests/test_phosphate.py` (16 tests, ~104 s).
+
+    ⚠⚠⚠ **THE CATALOG SPELLS THE ROCK AS ITS IONS**, so `catalog_coverage` prices
+    it FRAGMENT BY FRAGMENT through `electrolyte_provider`, and the fragment it
+    choked on was `[O-]P([O-])([O-])=O`. `ion_data` has carried phosphate,
+    hydrogen phosphate and dihydrogen phosphate on the aqueous basis since M3;
+    `electrolyte._PAIRS` carried phosphoric acid's **1st and 2nd** dissociations
+    and stopped. Measured as a 2x2 rather than guessed:
+
+        compound              neither   pKa row   mineral row     both
+        calcium-phosphate     refused    priced        priced   priced
+        sodium-phosphate      refused    priced       refused   priced
+        phosphate-ion         refused    priced       refused   priced
+
+    **All three move on the pKa row alone; the mineral row's contribution to
+    every published coverage number is ZERO.** *C1 found a route blocked on a
+    price for a species that is not in its chemistry; C2 found one blocked on a
+    price in the wrong TABLE. Both had been recorded for three milestones as a
+    mineral-curation job and neither was one.*
+
+    ⚠⚠⚠ **AND THE MINERAL ROW IS WHY IT RUNS, WHICH IS A DIFFERENT QUESTION.**
+    Drop the `MineralRecord` and keep the pKa: `phosphoric-wet` still reads
+    species-ready, still counts in BOTH, still scores playable — and the rock is
+    **INERT at 0.0000 %**, its ions sitting in the solid block for ever because
+    no Ksp connects them to the solution. With it, 8.03 % in 600 s at k_diss 10.
+    **The score and the chemistry came out of different tables and neither one
+    implies the other** — G4's *only RUNNING it said so*, from a new side.
+
+    ⚠⚠ **THE MEMBERSHIP GAP IS NOW MEASURED AND FIVE LATTICES ARE STILL IN IT.**
+    `solubility_product`'s docstring warns at length that `ion_data` and
+    `electrolyte` price the same ions on different ZEROS; **nothing anywhere
+    compares which ions they HAVE.** Of the 30 lattices that can be given a Ksp,
+    **25 can be put in a flask and 5 cannot** — `sphalerite`, `galena`,
+    `covellite`, `chalcocite`, `cinnabar`, **all five on `[S-2]`**, which is the
+    same shape: `_PAIRS` carries `H2S -> [SH-]` at 7.00 and stops. ⚠ **That step
+    is a REFUSAL and not the next one-line fix**: `HS- -> S2-` is quoted between
+    about 12.9 and 19 depending on the compilation, six decades of disagreement
+    about one number. Phosphoric acid's third pKa was takeable *because* the two
+    rows above it fix the series — **2.15 / 7.20 / 12.35**, not CRC's
+    2.16 / 7.21 / 12.32, which is the iodide row's decision made a second time.
+    ⚠ The new pair is **bit-identical for all 28 pre-existing ions**, measured.
+
+    ⚠ **A DATA JOB IS ONLY CHEAP WHEN THE DATA IS THERE.** Of PLAYABLE §8's four
+    *"needs no template at all"* rows, only the rock has both halves in one
+    database: `calcium-silicate` has **nothing** under any of three CAS numbers,
+    `pyrite` WEBBOOK-and-nothing, `sodium-hypochlorite` nothing. Engine-queue
+    items 11 and 14 re-confirmed rather than re-derived.
+
+    ⚠⚠⚠ **THE ENGINE BOUND: exp() BEING FINITE IS NOT k\*V\*exp() BEING FINITE.**
+    `LN_SATURATION_CAP` exists, in its own words, *"so that a transient absurd
+    state during a Jacobian perturbation cannot produce an inf"* — **and it did
+    not.** It bounds a CONCENTRATION and the next line multiplies by the liquid
+    volume, which a Newton iterate does not bound. Instrumented: **T = 1.0 K,
+    nL1 = 5.0e10 mol, V_L1 = 9.2e8 L**, so `1e-2 * 9.2e8 * exp(700)` overflowed
+    to `inf` and to `nan` one line later in `_avail`. Fixed by giving the cap the
+    multiply's headroom; **bit-identical wherever `k_diss * V_L1 <= 1`**, which
+    is every vessel in this repo. ⚠ The overflow was **measured harmless in the
+    answer AND the clock** — identical digits, 79.1 s against 81.2 s.
+
+    ⚠⚠⚠ **AND IT ANSWERS ENGINE QUEUE ITEM 6's OPEN QUESTION FROM A DIFFERENT
+    TERM.** That row records a PSRK overflow below 4.28 K and says *"WHAT IS NOT
+    KNOWN IS WHERE — nothing has found which call passes a T that low."*
+    **Nothing does: `T_MIN = 1.0` manufactures it.** A Newton iterate proposes a
+    temperature below 1 K and the RHS's `min(max(float(y[-1]), T_MIN), T_MAX)`
+    hands every term exactly 1.0, so every `1/T` in the right-hand side is
+    evaluated 297 K outside its domain at once. **Item 6's probe does not need
+    writing; its answer needed finding somewhere cheaper.**
+
+    ⚠⚠⚠ **AND THAT FIX BROKE THREE EXAMPLES WHILE THE SUITE STAYED GREEN.** The
+    headroom went in as `max(math.log(scale), 0.0)`, which is the same function
+    as `math.log(max(scale, 1.0))` **only where the log is defined** — and
+    `scale` is `k_diss * V_L1`, exactly zero whenever a vessel declares
+    `k_diss = 0.0`. Three do: `workshop` part 3, `named_routes`, and `recipes`'
+    crystallise stage, so `multistep_prep` too. All three began raising
+    `ValueError: math domain error` at rtol 1e-8; `multistep_prep` and `workshop`
+    swept cleanly before (6 lines / worst inf, and 2 lines / 1.98e-04), confirmed
+    by a `git stash` of C2. **NOTHING IN `tests/` WOULD HAVE CAUGHT IT** — no test
+    charges a `k_diss = 0` vessel through the precipitation branch.
+    `validation/tolerance_audit.py` caught it by comparing against its own
+    recorded baseline. **This is the clearest case this project has for the rule
+    that an RHS edit owes that audit ten minutes, and it is worth more than the
+    finding the audit was run to check.** Fixed; asserted by
+    `test_a_vessel_may_declare_k_diss_ZERO`. *A vessel with `k_diss = 0` is a
+    deliberate configuration — "no dissolution in this flask" — not an edge case.*
+
+    ⚠⚠⚠ **THE DEFAULT TOLERANCE CANNOT BE TRUSTED ON THIS FLASK.** 600 s at
+    k_diss = 1: **46.059 % loose in 36.3 s against 0.823 % tight in 2.4 s —
+    56x wrong, and the tight run is 15x FASTER.** At k_diss = 10 the two agree to
+    six figures and nothing in the answer says which case you are in. Every
+    number in C2 is quoted at rtol 1e-8, tests included. ⚠⚠ The session's first
+    sweep was run at the default and was entirely wrong — non-monotonic in both
+    k_diss and time (46 % at 600 s against 4.9 % at 3600 s). *A non-monotonic
+    sweep is not a finding about chemistry; it is a solver saying it has not
+    converged, and reading it as chemistry is how a wrong number gets written
+    down.*
+
+    ⚠⚠⚠ **THE LIMIT IT NAMES: AN ACID CANNOT ATTACK A CRYSTAL.** Dissolution is
+    `k_diss * V * (Qroot - Ksproot)` — **no acid term and no surface-area term.**
+    33x the acid moves conversion 8.032 → 8.363 % while the pH goes
+    1.487 → −0.001; **10x the rock dissolves the same number of moles**
+    (8.03e-4 against 8.20e-4). Conversion is exactly linear in the vessel knob
+    (0.0157 / 0.0825 / 0.823 / 8.03 / 70.7 % for k_diss 1e-2 up to 1e2), and at
+    the default the cap is 2.9e-9 mol/s — **40 days for 0.01 mol.** A real
+    digestion is a SURFACE reaction going with [H+], and this engine has that
+    shape for a **gas** arriving at a crystal (`SurfaceArrays`, S1) and not for a
+    liquid. **A LIMIT to remove.** ⚠ No gypsum drops either, and that is
+    arithmetic rather than a bug: **Q/Ksp = 0.26**, genuinely undersaturated at
+    this dilution.
+
+    ⚠⚠ **THE WORK ORDER SHRANK THIS TIME, WHICH IS C1's LESSON IN REVERSE.** C1
+    granted one row and the list went 21 → 24; C2 granted two and it went
+    **24 → 22**, with the ceiling **unchanged at 41**, because phosphoric acid
+    feeds no route that was not fed already. ⚠ But the shelf still re-priced a
+    lever: **`ethylene` was +1 in G3's table and is +2 now**, because
+    `ethanol-hydration` was blocked on ethylene *and phosphoric acid*.
+
+    **What C2 did NOT do:** `superphosphate` is **scored, not demonstrated** —
+    its catalog row is a "den, ambient" paste with no water, and a solventless
+    acidulation is not expressible here. `white-phosphorus` **did not move** and
+    names calcium-phosphate too: no `carbothermic-phosphate-reduction` template,
+    no P4 formation pair in any source here, `calcium-silicate` refused.
+    **Pricing one species of four is worth nothing on a route.**
+
+    ⚠⚠⚠ **THE FULL SUITE CAME BACK 7 FAILED, AND ALL SEVEN WERE THE
+    INSTRUMENT WORKING.** C2 re-ran every generated artefact, read every headline
+    they printed, and wrote those headlines into the docs by hand -- and did NOT
+    run `tests/test_playable.py`, which pins the same headlines. Six failures
+    there (14 -> 16 playable, 37 -> 39 runnable, fed-but-unrunnable 24 -> 22,
+    needs=roles 15 -> 17, target-only 10 -> 12, the species-only bucket 4 -> 2)
+    and one in `test_protonation` (the ion table 28 -> 29). **Every one was a
+    number C2 had already measured.** *The generated report and the test that
+    pins it are two different consumers of the same number, and running one is
+    not running the other.* ⚠ G3 built these assertions for exactly this, and
+    C1's handoff lists `test_playable` among what it ran.
+    ⚠⚠ The rule-3 grid was re-measured WHOLE rather than patched, because
+    the claim is about the difference between cells: roles 13/17/17, order
+    12/16/16, so **rule 3's cost is still zero in both rows** and C1's "kept and
+    asserted zero" survives a second corpus change. ⚠⚠ And one assertion
+    was a PREDICTION C2 cashed -- *grant these two and playability goes +2* now
+    measures zero, and is rewritten to assert where the +2 landed. *A test that
+    predicts a gain has to be rewritten by the session that delivers it.*
+
+    ⚠⚠ **ON THE SUITE, AND C2 GOT THIS WRONG ONCE BEFORE GETTING IT RIGHT.**
+    C1's owed run came back **1081 passed / 0 failed**, exactly the predicted
+    count, discharging C1's debt. C2's own tree then ran twice: **7 failed**
+    (above), then **1097 passed / 0 failed in 29:55** with nothing else on the box.
+
+    ⚠⚠⚠ The first run had a `k_diss` sweep running alongside it and came
+    back **+25% over G6**, every big row 14-23% up. That was written down as *"a
+    single-threaded pytest run on a 16-core box is not insulated from one
+    concurrent job -- measured at +25%"*. **The clean re-run refutes it**: 29:55,
+    SLOWER than the contaminated 28:47, and agreeing row for row --
+
+                            G6      contaminated    alone     the two C2 runs
+        total            23:03         28:47        29:55        +3.9%
+        the ONE RIG test 176.9 s       201.40       199.26       -1.1%
+        catalysis         75.1 s        89.17        91.50       +2.6%
+        burner @1e-8      52.8 s        64.90        64.81       -0.1%
+
+    -- so the concurrent job cost **nothing measurable**. *A plausible cause
+    measured once is a guess; the second run is what made it a finding, and it
+    made it the opposite finding.*
+    ⚠⚠ **WHAT IS REAL IS A +30% NOTHING EXPLAINS, AND IT IS THE S12->S13
+    SHAPE AGAIN.** 1045 tests took 1383 s at G6; 1097 take 1795 s now. New test
+    files account for ~179 s (`test_phosphate` ~104, `test_playable` ~57,
+    `test_vitriol` ~18), leaving **~230 s spread across tests that did not
+    change**, far outside the ~8%/~1% floor. The project already records one such
+    regression and has bisected neither.
+
+    ⚠ `tolerance_audit.py` **IS owed** here, because C2 edited the RHS, and was
+    run — **its last measured state is C2's now, not S13's.** After the
+    `k_diss = 0` fix the full audit is back at the recorded baseline: ONE
+    example raises (`named_routes`, the diagnosed entry), `multistep_prep`
+    sweeps at 6 lines / worst `inf`, `workshop` at 2 / 1.98e-04, `activity` at
+    1.28e-03, and `mercury_retort` — the harness's own self-check — at
+    **0 lines and 1.02x**.

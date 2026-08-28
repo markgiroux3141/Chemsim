@@ -57,6 +57,7 @@ contract did not change.
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 
 import numpy as np
@@ -827,6 +828,36 @@ CONC_FLOOR = 1.0e-30
 # is capped. Not a gate either: 1e3 in the root of the saturation ratio is a
 # driving force no chemistry reaches, and the cap exists so that a transient
 # absurd state during a Jacobian perturbation cannot produce an inf.
+#
+# ⚠⚠⚠ AND C2 MEASURED THAT IT DID NOT ACHIEVE THAT, WHICH IS THE WHOLE POINT OF
+# WRITING AN INTENT DOWN. The cap bounds a CONCENTRATION; the RHS returns a
+# MOLAR FLOW, and the line that turns one into the other multiplies by the
+# liquid volume -- which a Newton iterate does not bound. Measured, in a flask
+# of phosphate rock and sulfuric acid: the BDF iteration proposed T = 1.0 K
+# (the RHS's own ``T_MIN`` clamp, not a state the chemistry reached) with
+# 5.0e10 mol in the liquid, so ``V_L1`` came to 9.2e8 L, every lattice's
+# ``ln_Ksp/total_nu`` ran past the cap, and ``1e-2 * 9.2e8 * exp(700)``
+# overflowed to ``inf`` -- and then to ``nan`` one line later, in the ``_avail``
+# product. **exp() being finite is not the same claim as k*V*exp() being
+# finite**, and the cap was written as though it were.
+#
+# ⚠⚠ THE HEADROOM IN THE RHS IS THEREFORE PART OF THIS CAP AND NOT A SECOND
+# CLAMP. ``head`` subtracts the scale the result is about to be multiplied by,
+# so the quantity actually bounded by ``LN_SATURATION_CAP`` is the DRIVE. It is
+# BIT-IDENTICAL wherever ``k_diss * V_L1 <= 1`` -- which is every vessel in this
+# repo, ``k_diss`` defaulting to 1e-2 and no flask here holding more than a few
+# litres -- and elsewhere it binds only in states that were already past the
+# cap. ⚠ It is still a CAP and not a fix for the Ksp: ``ln_Ksp(1 K)`` is a
+# van 't Hoff extrapolation 297 K outside anything it means, and no bound makes
+# that number mean something. What the cap buys is that the meaningless number
+# stays FINITE, so BDF rejects the step on its merits rather than on a ``nan``.
+#
+# ⚠ AND THIS IS ENGINE QUEUE ITEM 6's OPEN QUESTION, ANSWERED FROM A DIFFERENT
+# TERM. That row records a PSRK overflow below 4.28 K and says "nothing has
+# found WHICH call passes a T that low". Nothing does: ``T_MIN`` manufactures
+# it. A Newton iterate proposes a temperature below 1 K, the RHS's
+# ``min(max(float(y[-1]), T_MIN), T_MAX)`` hands every term exactly 1.0, and
+# each 1/T in the right-hand side is evaluated 297 K outside its domain at once.
 LN_SATURATION_CAP = 700.0
 
 
@@ -2127,11 +2158,26 @@ class VesselIntegrator:
                 # Q^(1/N) and Ksp^(1/N), both concentrations in mol/L.
                 ln_Qroot = (prec.nu @ ln_c) / prec.total_nu
                 ln_Ksproot = prec.ln_Ksp(T) / prec.total_nu
+                # ⚠ THE CAP CARRIES THE MULTIPLY'S HEADROOM -- see
+                # LN_SATURATION_CAP, where the state that forced it is written
+                # down. Bit-identical while ``k_diss * V_L1 <= 1``.
+                #
+                # ⚠⚠ ``log(max(scale, 1))`` AND **NOT** ``max(log(scale), 0)``.
+                # Those two are the same function only where the log is DEFINED,
+                # and ``scale`` is zero whenever a vessel declares
+                # ``k_diss = 0.0`` -- which three examples do
+                # (``workshop`` part 3, ``named_routes``, and ``recipes``'
+                # crystallise stage, so ``multistep_prep`` as well). Written the
+                # other way this line raised ``ValueError: math domain error``
+                # in all three, and NOTHING IN THE TEST SUITE CAUGHT IT:
+                # ``tolerance_audit.py`` did, which is what that audit is for.
+                scale = cond.k_diss * V_L1
+                head = LN_SATURATION_CAP - math.log(max(scale, 1.0))
                 roots = np.exp(np.clip(
                     np.stack([ln_Qroot, ln_Ksproot]),
-                    -LN_SATURATION_CAP, LN_SATURATION_CAP,
+                    -LN_SATURATION_CAP, head,
                 ))
-                drive = cond.k_diss * V_L1 * (roots[0] - roots[1])   # + = out
+                drive = scale * (roots[0] - roots[1])                # + = out
                 # How many formula units of THIS lattice the solid block can
                 # supply. A lattice missing any of its ions from the solid has
                 # units = 0 and cannot dissolve, which is what keeps a lattice

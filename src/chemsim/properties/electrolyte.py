@@ -99,6 +99,38 @@ _PAIRS: tuple[AcidPair, ...] = (
     AcidPair("[O-]S(=O)(=O)O", "[O-]S(=O)(=O)[O-]", 1.99, "sulfuric acid, 2nd"),
     AcidPair("OP(=O)(O)O", "[O-]P(=O)(O)O", 2.15, "phosphoric acid, 1st"),
     AcidPair("[O-]P(=O)(O)O", "[O-]P(=O)([O-])O", 7.20, "phosphoric acid, 2nd"),
+    # ⚠⚠⚠ ADDED BY C2, AND THE REASON IS THAT A LATTICE COULD NOT BE PUT IN A
+    # FLASK -- not that a number was missing.
+    #
+    # `ion_data` has carried phosphate, hydrogen phosphate AND dihydrogen
+    # phosphate on the aqueous basis since M3. This table stopped one proton
+    # short, and nothing anywhere compares the two tables' MEMBERSHIP -- the
+    # module docstring's warning about them is entirely about their different
+    # ZEROS. So `mineral_data` could price phosphate rock, `solubility_product`
+    # could return a Ksp for it against ions this table cannot reach, the
+    # coverage audit could read `phosphoric-wet` species-ready, and
+    # `build_network` would then REFUSE `O=P([O-])([O-])[O-]` for want of a
+    # pKa. **Two curated tables over the same ions, and only one of them had
+    # all three.** ``validation/phosphate_rock.py`` panel 2 measures the gap
+    # across every anion in both tables so it cannot happen silently again.
+    #
+    # ⚠ 12.35 IS THE MEMBER OF THE SERIES THIS TABLE ALREADY CARRIES, which is
+    # the HI decision above applied a second time: the two rows above are 2.15
+    # and 7.20, and 12.35 is the third of that same triple. CRC's own row is
+    # 2.16 / 7.21 / 12.32; taking 12.32 to sit under a 2.15 and a 7.20 would
+    # mix two compilations inside one trend, which is exactly what the iodide
+    # comment refuses.
+    #
+    # ⚠⚠ AND ITS VALUE IS MEASURED IRRELEVANT WHERE IT IS USED, WHICH IS THE
+    # HONEST WAY TO SHIP A CONSTANT THAT WAS NEEDED FOR REPRESENTABILITY RATHER
+    # THAN FOR AN ANSWER. The wet process runs at pH ~1, twelve decades below
+    # this pKa, so the trianion is never populated -- it is in the network only
+    # because it is what the ROCK is made of. Swept over 11.35/12.35/13.35 the
+    # digestion's phosphoric acid agrees to eight figures
+    # (``validation/phosphate_rock.py`` panel 4). **A constant whose error is
+    # measured invisible is a different thing from one nobody checked.**
+    AcidPair("[O-]P(=O)([O-])O", "[O-]P(=O)([O-])[O-]", 12.35,
+             "phosphoric acid, 3rd"),
     AcidPair("F", "[F-]", 3.17, "hydrofluoric acid"),
     AcidPair("C#N", "[C-]#N", 9.21, "hydrogen cyanide"),
     AcidPair("S", "[SH-]", 7.00, "hydrogen sulfide"),

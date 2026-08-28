@@ -47,28 +47,37 @@ def bp():
 # ---------------------------------------------------------------------------
 # 1. THE HEADLINE
 # ---------------------------------------------------------------------------
-def test_the_answer_is_fourteen_playable_three_tiers_deep(bp):
-    """14 of 173, and the corpus's deepest chain is still 3 tiers.
+def test_the_answer_is_sixteen_playable_three_tiers_deep(bp):
+    """16 of 173, and the corpus's deepest chain is still 3 tiers.
 
     ⚠ G3 measured 12 of 36 runnable. C1 built ``sulfur_trioxide_hydration`` and
     corrected the ``vitriol-distillation`` rows, which put oil of vitriol on the
     shelf from a natural mineral and carried ``saltpetre-nitric`` up with it.
+    ⚠⚠ C2 added `phosphoric-wet` and `superphosphate`, and neither needed
+    a template: they were blocked on ONE refused species, and the price that
+    unblocked it turned out to be a **pKa** rather than the mineral the work
+    order named. Both land in tier 2, on C1's own sulfuric acid.
     """
     assert len(bp.routes) == 173
-    assert len(bp.PLAYABLE) == 14
+    assert len(bp.PLAYABLE) == 16
     assert max(bp.PLAYABLE.values()) == 3
-    assert len(bp.RUNNABLE) == 37
+    assert len(bp.RUNNABLE) == 39
     assert bp.PLAYABLE["vitriol-distillation"] == 1
     assert bp.PLAYABLE["saltpetre-nitric"] == 2
+    assert bp.PLAYABLE["phosphoric-wet"] == 2
+    assert bp.PLAYABLE["superphosphate"] == 2
 
 
 def test_the_tech_tree_is_a_shallow_bush(bp):
-    """9 of the 14 are tier 1 -- they touch nothing another route made.
+    """9 of the 16 are tier 1 -- they touch nothing another route made.
 
     The GOAL asks for a connected tech tree. This is the measurement that says it
     is not one yet, and it is the reason the file exists. ⚠ C1 added one route to
-    each of the first two tiers, so the SHAPE did not change: the corpus is still
-    a fan off the ground with one thin chain hanging off it.
+    each of the first two tiers and C2 added two more to tier 2, so the SHAPE
+    still has not changed: the corpus is a fan off the ground with one thin chain
+    hanging off it, and **every route either C-series item added is one hop from
+    the ground.** Tier 1 has not grown since C1 and tier 3 is still a single
+    route.
     """
     tier1 = [r for r, d in bp.PLAYABLE.items() if d == 1]
     assert len(tier1) == 9
@@ -76,18 +85,21 @@ def test_the_tech_tree_is_a_shallow_bush(bp):
 
 
 def test_the_ceiling_is_the_goal_and_it_is_a_finite_named_list(bp):
-    """Granting all 24 fed-but-unrunnable routes reaches 41, against a goal of ~40.
+    """Granting all 22 fed-but-unrunnable routes reaches 41, against a goal of ~40.
 
-    This is the whole point of the work order: the distance from 14 to 41 is a
+    This is the whole point of the work order: the distance from 16 to 41 is a
     named table, not an open-ended grind against 173 routes.
 
-    ⚠⚠ AND THE TABLE GREW WHEN A ROW WAS TAKEN OFF IT. C1 granted one of G3's 21
-    and the list went to 24, because sulfuric acid on the shelf FEEDS four routes
-    that were not fed before (`guncotton`, `hmf-route`, `phosphoric-wet`,
-    `superphosphate`). The ceiling moved 37 -> 41 with it. *A work order derived
-    from a fixed point is not a burndown list; granting a row can lengthen it.*
+    ⚠⚠ AND THE TABLE MOVES IN BOTH DIRECTIONS, WHICH IS THE POINT. C1 granted
+    one of G3's 21 and the list GREW to 24, because sulfuric acid on the shelf fed
+    four routes that were not fed before (`guncotton`, `hmf-route`,
+    `phosphoric-wet`, `superphosphate`) and the ceiling moved 37 -> 41 with it.
+    C2 granted two and the list SHRANK to 22, because phosphoric acid feeds no
+    route that was not fed already -- and **the ceiling did not move at all.**
+    *A work order derived from a fixed point is not a burndown list: granting a
+    row can lengthen it, shorten it, or leave the goal exactly where it was.*
     """
-    assert len(bp.FED_BUT_UNRUNNABLE) == 24
+    assert len(bp.FED_BUT_UNRUNNABLE) == 22
     ceiling, _ = bp.closure(pool=bp.RUNNABLE | set(bp.FED_BUT_UNRUNNABLE))
     assert len(ceiling) == 41
     # three fall out for free once the shelf grows -- G3 had four, and
@@ -107,8 +119,8 @@ def test_a_need_is_decided_by_order_not_by_route_roles(bp):
     all* and was playable for free.
     """
     wrong, _ = bp.closure(needs_rule=bp.needs_by_roles)
-    assert len(wrong) == 15
-    assert len(bp.PLAYABLE) == 14, "the correction moves the headline DOWN"
+    assert len(wrong) == 17
+    assert len(bp.PLAYABLE) == 16, "the correction moves the headline DOWN"
 
     assert bp.needs_by_roles("lime-cycle") == set()
     assert bp.needs("lime-cycle") == {"calcium-carbonate", "water"}
@@ -149,9 +161,9 @@ def test_the_fouling_row_takes_the_target_off_the_shelf(bp):
     # a route (13 against 14) under the WRONG needs rule and nothing under the
     # right one. It now costs nothing in EITHER row:
     #
-    #                  shelf=target   +byproducts   +target unioned in
-    #     needs=roles   G3 10 / C1 11  G3 13 / C1 15  G3 14 / C1 15
-    #     needs=order   G3  8 / C1 10  G3 12 / C1 14  G3 12 / C1 14
+    #                    shelf=target        +byproducts    +target unioned in
+    #  needs=roles  G3 10 / C1 11 / C2 13  13 / 15 / 17    14 / 15 / 17
+    #  needs=order  G3  8 / C1 10 / C2 12  12 / 14 / 16    12 / 14 / 16
     #
     # The route the shelf rule used to buy was `saltpetre-nitric`, and it got its
     # sulfuric acid from the lead chamber's fouling row. C1 gave the acid a route
@@ -163,11 +175,14 @@ def test_the_fouling_row_takes_the_target_off_the_shelf(bp):
     # difference must not be reverted the day the difference goes away; that is
     # how a corrected instrument un-corrects itself. *What is measured here now
     # is that the cost is zero, and that is written down rather than hidden.*
+    # ⚠ C2 RE-MEASURED THE WHOLE GRID RATHER THAN BUMPING THE TWO CELLS THAT
+    # FAILED, because the claim is about the DIFFERENCE between cells and not
+    # about any one of them. The difference is still zero in both rows.
     kw = dict(needs_rule=bp.needs_by_roles)
-    assert len(bp.closure(shelf_rule="products", **kw)[0]) == 15
-    assert len(bp.closure(shelf_rule="both", **kw)[0]) == 15
-    assert len(bp.closure(shelf_rule="products")[0]) == 14
-    assert len(bp.closure(shelf_rule="both")[0]) == 14
+    assert len(bp.closure(shelf_rule="products", **kw)[0]) == 17
+    assert len(bp.closure(shelf_rule="both", **kw)[0]) == 17
+    assert len(bp.closure(shelf_rule="products")[0]) == 16
+    assert len(bp.closure(shelf_rule="both")[0]) == 16
 
 
 def test_target_only_shelving_never_starts_the_deep_chain(bp):
@@ -177,10 +192,13 @@ def test_target_only_shelving_never_starts_the_deep_chain(bp):
     ⚠ G3 measured 8 at depth 1. C1's own route is a tier-1 whose TARGET feeds
     `saltpetre-nitric`, so a target-only shelf now reaches depth 2 -- but the
     deep chain still does not start, because the zinc retort's carbon monoxide
-    is a byproduct and no shelf rule that reads targets can see it.
+    is a byproduct and no shelf rule that reads targets can see it. ⚠⚠ C2
+    moved this cell 10 -> 12 and the SHORTFALL is unchanged at 4: both of its
+    routes take sulfuric acid, which is a target, so a target-only shelf can
+    reach them and still cannot start the chain.
     """
     target_only, _ = bp.closure(shelf_rule="target")
-    assert len(target_only) == 10
+    assert len(target_only) == 12
     assert max(target_only.values()) == 2
     assert "methanol-synthesis" not in target_only
     assert len(bp.PLAYABLE) - len(target_only) == 4
@@ -298,28 +316,39 @@ def test_the_top_content_row_is_hall_heroult_and_it_opens_the_deepest_chain(bp):
         worth_route(r) for r in bp.FED_BUT_UNRUNNABLE)
 
 
-def test_four_of_the_work_order_need_no_template_at_all(bp):
+def test_two_of_the_work_order_need_no_template_at_all(bp):
     """They are blocked purely on a species the engine refuses to price, which
     makes a DATA refusal measurably a playability blocker.
 
-    ⚠⚠ G3 FOUND TWO AND C1 DOUBLED IT WITHOUT MEANING TO. Sulfuric acid on the
-    shelf FED `phosphoric-wet` and `superphosphate`, and both are then blocked on
-    one entry: `calcium-phosphate`, phosphate rock, which is already on the
-    NATURAL list and which the engine refuses to price. **One mineral is worth
-    +2 playable routes and needs no chemistry at all** -- the cheapest row in the
-    work order and it is a data job.
+    ⚠⚠ G3 FOUND TWO, C1 DOUBLED IT WITHOUT MEANING TO, AND C2 TOOK ITS HALF
+    BACK. C1's sulfuric acid fed `phosphoric-wet` and `superphosphate`, both then
+    blocked on `calcium-phosphate`; C2 priced it and both became playable, so the
+    bucket is back to G3's two.
+
+    ⚠⚠⚠ AND C2 MEASURED WHAT IS LEFT OF THE BUCKET, WHICH IS THE
+    FINDING. It read as four cheap lookups. Probed in one run against
+    ``chemicals``, THREE of the four have no Hfs and no S0s in any shared
+    database -- `calcium-silicate` (under all three of its CAS numbers), `pyrite`
+    (Hfs in WEBBOOK, S0s in nothing) and `sodium-hypochlorite` (neither). **A
+    data job is only cheap when the data is there, and there is no cheap data row
+    left in this table.** See `validation/phosphate_rock.py` panel 1.
     """
     species_only = [r for r in bp.FED_BUT_UNRUNNABLE
                     if not {s.cls for s in bp.route_steps(r)} - set(bp.TC)]
-    assert sorted(species_only) == ["hypochlorite-bleach", "phosphoric-wet",
-                                    "pyrite-roasting", "superphosphate"]
+    assert sorted(species_only) == ["hypochlorite-bleach", "pyrite-roasting"]
     # pyrite is the engine queue's own source-blocked entry
     assert not bp.priced("iron-disulfide")
-    # and the new pair share ONE blocker, which is a declared natural material
-    assert not bp.priced("calcium-phosphate")
+    # ⚠ and the row C2 took is priced now, which is what moved the headline
+    assert bp.priced("calcium-phosphate")
     assert "calcium-phosphate" in bp.NATURAL_IDS
+    # ⚠⚠ C1 WROTE THIS LINE AS A PREDICTION AND C2 CASHED IT, so it now reads
+    # ZERO -- granting two routes that are already playable adds nothing. The +2
+    # is asserted where it actually landed (the headline test, 14 -> 16) rather
+    # than left here as a claim that quietly stopped meaning anything. *A test
+    # that predicts a gain has to be rewritten by the session that delivers it.*
     both = bp.closure(pool=bp.RUNNABLE | {"phosphoric-wet", "superphosphate"})[0]
-    assert len(both) - len(bp.PLAYABLE) == 2
+    assert len(both) - len(bp.PLAYABLE) == 0
+    assert {"phosphoric-wet", "superphosphate"} <= set(bp.PLAYABLE)
 
 
 # ---------------------------------------------------------------------------

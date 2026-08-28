@@ -86,11 +86,19 @@ def test_the_only_cations_in_the_table_are_the_four_plus_the_hydronium(ions):
     of `refused` on the back of it. If this test fails because the table grew,
     re-measure `validation/catalog_coverage.py` and update BOTH numbers with the
     new refusal count in the commit message.
+
+    ⚠⚠ **C2 GREW IT AGAIN, 28 -> 29, AND THE PROMPT WORKED EXACTLY AS
+    WRITTEN.** The new row is phosphoric acid's THIRD dissociation, so the
+    addition is an ANION and the cation list above is unchanged -- which is the
+    reason both halves are asserted separately. Re-measured as instructed:
+    corpus refusals went **419 -> 416** and species-ready **83 -> 85**, and
+    `phosphoric-wet` and `superphosphate` became playable on it. See
+    `tests/test_phosphate.py` and MILESTONES §C2.
     """
     got = sorted(k for k in ions if Molecule.from_smiles(k).charge > 0)
     assert got == ["C[NH3+]", "[NH3+]c1ccccc1", "[NH4+]", "[OH3+]",
                    "c1cc[nH+]cc1"]
-    assert len(ions) == 28
+    assert len(ions) == 29
 
 
 def test_an_anion_is_still_anchored_on_its_acid_bit_for_bit(ions):

@@ -766,6 +766,50 @@ it costs **zero either way today**, because the route needs three more classes a
 well. *A false credit is cheapest to refuse before it can pay*, and the
 measurement of what it is worth is in `validation/vitriol.py` panel 6.
 
+### ⚠⚠⚠ C2's LANDMINE, WITH ITS TRIGGER NAMED — A SULFIDE ROUTE WILL SCORE AND NOT RUN
+
+C1 proved that a recorded landmine with a named trigger is the cheapest
+documentation this project writes. Here is C2's, in the same form, and it is the
+same failure C2 itself walked into.
+
+**A compound spelled as its IONS is priced fragment by fragment, through
+`electrolyte_provider` — which reaches an ion only through a pKa pair somebody
+typed into `properties/electrolyte.py`.** `properties/ion_data.py` is a *different*
+table on a *different* zero, and it is bigger. Nothing anywhere compares which
+ions the two of them HAVE. `phosphoric-wet` and `superphosphate` read
+species-UNREADY for three milestones and the recorded reason was a missing
+**mineral price**; the actual reason was that phosphoric acid's chain stopped at
+the second proton, so `[O-]P([O-])([O-])=O` had no price and the salt could not
+resolve.
+
+⚠⚠ **THE TRIGGER: the day anything credits a route through a metal SULFIDE in
+solution — `[S-2]` — that route will read species-ready and its network will
+REFUSE to build.** `_PAIRS` carries `H2S -> [SH-]` at pKa 7.00 and stops there,
+exactly as phosphoric acid did. Five lattices are already in this state, priced
+with a real Ksp and unbuildable in a flask: **`sphalerite`, `galena`,
+`covellite`, `chalcocite`, `cinnabar`** (the last two also on `[Cu+]` and
+`[Hg+2]`, which have no neutral conjugate base at all).
+
+⚠⚠ **AND THE FIX IS NOT A ONE-LINE pKa, WHICH IS WHY THIS IS A LANDMINE AND NOT
+A TO-DO.** `HS- -> S2-` is quoted anywhere between about **12.9 and 19**
+depending on the compilation — six decades of disagreement about one number —
+so `element_data`'s rule applies: report it, do not invent it. Phosphoric acid's
+third pKa was takeable *because* the two rows above it in the same table fix
+which series it has to come from (2.15 / 7.20 / **12.35**). There is no such
+anchor for the sulfide.
+
+⚠ `validation/phosphate_rock.py` panel 3 re-measures the whole gap every time it
+is run, so the count cannot go stale and the next session does not have to
+rediscover the shape.
+
+⚠⚠ **AND THE SECOND HALF OF C2 IS THE WARNING THAT PRICING THE ION IS NOT
+ENOUGH.** A pKa makes the route SCORE; a `MineralRecord` in
+`properties/mineral_data.py` is what gives the lattice a Ksp and lets it actually
+dissolve. C2 measured both, one at a time: with the pKa and no mineral row,
+`phosphoric-wet` counts as species-ready, counts in the BOTH column, counts as
+playable — and the rock sits in the solid block at **0.0000 % converted, for
+ever.** *Whoever closes a sulfide route owes it both rows and a run.*
+
 ### ⚠ THE TWO GAPS COST DIFFERENT AMOUNTS, WHICH IS WHY THEY ARE TWO CLASSES
 
 * **`urea-deammoniation` is blocked on a TEMPLATE ONLY.** All three species

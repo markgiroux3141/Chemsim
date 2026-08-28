@@ -705,6 +705,22 @@ MINERALS: dict[str, MineralRecord] = {
         Cp_solid=37.2, Vm_solid=0.011196,
         condensed_source='Cps from the same CRC row as Hfs/S0s; Vm from the CRC inorganic solid-density table, via chemicals 1.5.2',
     ),
+    # Ca3(PO4)2 -- apatite and bone ash: what `phosphoric-wet` digests with oil of vitriol, and what `superphosphate` acidulates
+    'phosphate rock': MineralRecord(
+        name='phosphate rock', cas='7758-87-4',
+        ions=('[Ca+2]', '[Ca+2]', '[Ca+2]', 'O=P([O-])([O-])[O-]', 'O=P([O-])([O-])[O-]'),
+        lattice='O=P([O-])([O-])[O-].O=P([O-])([O-])[O-].[Ca+2].[Ca+2].[Ca+2]',
+        formula={'Ca': 3, 'P': 2, 'O': 8},
+        purpose='Ca3(PO4)2 -- apatite and bone ash: what `phosphoric-wet` digests with oil of vitriol, and what `superphosphate` acidulates',
+        Hf_solid=-4120.8, Gf_solid=-3884.72, S0_solid=236.0,
+        Tm=1943.15, Hfus=None,
+        source='Hfs and S0s both from CRC via chemicals 1.5.2; Gf DERIVED against the CRC element reference states',
+        physical_source='Tm=CRC_INORG',
+        fusion_law_bound=None,
+        solubility_note=None,
+        Cp_solid=227.8, Vm_solid=0.098782,
+        condensed_source='Cps from the same CRC row as Hfs/S0s; Vm from the CRC inorganic solid-density table, via chemicals 1.5.2',
+    ),
     # Fe -- promoted iron, the Haber-Bosch catalyst, and the gate on it
     'iron': MineralRecord(
         name='iron', cas='7439-89-6',

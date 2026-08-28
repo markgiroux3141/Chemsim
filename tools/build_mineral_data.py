@@ -219,6 +219,39 @@ CANDIDATES: list[tuple[str, str, str, dict, str]] = [
      "Al2O3 -- so that `bayer-process` step 3 is refused on GIBBSITE alone"),
     ("periclase", "1309-48-4", "[Mg+2].[O-2]",
      {"Mg": 1, "O": 1}, "MgO -- brucite's dehydration partner"),
+    # --- added for C2: the rock two fertiliser routes are FED but blocked on --
+    # ⚠ THE CHEAPEST ROW IN `PLAYABLE.md` §8, AND IT IS A LOOKUP RATHER THAN A
+    # TEMPLATE. `phosphoric-wet` and `superphosphate` need no class this engine
+    # does not already cover -- both are `acid-displacement-precipitating`,
+    # which `electrolyte.dissociation_templates` plus `PrecipitationArrays`
+    # cover between them -- and both were blocked on ONE refused species.
+    # G3's scoreboard prices that refusal at +2 playable routes, which is more
+    # than any single template row below `blast-furnace` in the same table.
+    #
+    # ⚠ AND IT PRICES ON THE ORDINARY RULE, which is why it is a lookup: CRC
+    # carries Hfs = -4120.8 kJ/mol AND S0s = 236.0 J/(mol K) in the same row,
+    # plus the Cps and Vm the solid block asks of every species. No second
+    # tabulation is consulted and none is needed. Contrast the three rows
+    # around it that were probed in the same run and stay refused --
+    # `calcium-silicate` has NO Hfs and NO S0s under any of its three CAS
+    # numbers, `pyrite` has an Hfs in WEBBOOK and an S0s in nothing, and
+    # `sodium-hypochlorite` has neither. **A data job is only cheap when the
+    # data is there, and three of the four in that table's "needs no template"
+    # bucket are not.**
+    #
+    # ⚠⚠ WHITE PHOSPHORUS IS THE ROW THIS DOES *NOT* UNBLOCK, and saying so is
+    # the point. `white-phosphorus` names calcium-phosphate too, and stays
+    # blocked three more ways: `carbothermic-phosphate-reduction` has no
+    # template, `phosphorus-white` (P4) has no formation pair anywhere, and
+    # `calcium-silicate` is the refusal engine queue item 11 already records as
+    # source-blocked. **Pricing one species of four is worth nothing on that
+    # route** -- which is the shape §7 of PLAYABLE measured as "the most
+    # frequent blocker is not the most valuable one", seen from the other side.
+    ("phosphate rock", "7758-87-4",
+     "[Ca+2].[Ca+2].[Ca+2].[O-]P([O-])([O-])=O.[O-]P([O-])([O-])=O",
+     {"Ca": 3, "P": 2, "O": 8},
+     "Ca3(PO4)2 -- apatite and bone ash: what `phosphoric-wet` digests with "
+     "oil of vitriol, and what `superphosphate` acidulates"),
 ]
 
 # ---------------------------------------------------------------------------
