@@ -443,6 +443,11 @@ def test_the_class_is_worth_the_TWO_PLAYABLE_ROUTES_section_8b_priced():
     `abe-fermentation`'s catalog target is propanone, but what unblocks
     `acetic-fermentation` is the ETHANOL -- the minority branch, at a seventh of
     the butanol. A route's own target is not what it is worth downstream.
+
+    ⚠⚠ READ AS A DIFFERENCE. C5 added a playable route elsewhere, so both
+    LEVELS below moved by +1 and the +2 this test is about did not move at all --
+    which is the rule `test_vanillin.py` states and the reason this assertion
+    survived a session it knows nothing about.
     """
     import build_playable as bp
     import catalog as cat
@@ -456,13 +461,13 @@ def test_the_class_is_worth_the_TWO_PLAYABLE_ROUTES_section_8b_priced():
         return len(bp.closure(pool=pool)[0])
 
     both = playable(set())
-    assert both == 20
+    assert both == 21                                # C5's baseline
     base = playable({"solventogenic-fermentation"})
-    assert base == 18                                # C3's number, recovered
+    assert base == 19
     assert both - base == 2
     # homolactic buys no PLAYABILITY at all -- `lactic-acid-pla` needs a
     # polymerisation as well. It was built for the class and the stereo finding.
-    assert playable({"homolactic-fermentation"}) == 20
+    assert playable({"homolactic-fermentation"}) == 21
 
 
 def test_granting_the_top_row_made_the_work_order_LONGER_again():
@@ -480,7 +485,10 @@ def test_granting_the_top_row_made_the_work_order_LONGER_again():
     """
     import build_playable as bp
 
-    assert len(bp.FED_BUT_UNRUNNABLE) == 23
+    # ⚠ C5 TOOK ONE ROW OFF IT AGAIN (23 -> 22) AND THE CEILING DID NOT
+    # MOVE, because 5-HMF and levulinic acid feed nothing. The four routes C4's
+    # solvents fed are what this test is about and they are all still here.
+    assert len(bp.FED_BUT_UNRUNNABLE) == 22
     assert "abe-fermentation" not in bp.FED_BUT_UNRUNNABLE
     assert "acetic-fermentation" not in bp.FED_BUT_UNRUNNABLE
     for grown in ("white-lead-route", "chloral-route",
@@ -501,6 +509,10 @@ def test_the_work_order_no_longer_has_a_PLUS_TWO_ROW():
     """
     import build_playable as bp
 
+    # ⚠⚠ C5 TOOK ONE OF THE SIX (`dehydration-cyclisation`, which was also
+    # the only one with a runnable BONUS), so the table is FIVE at +1 and 24 at
+    # +0. The claim -- there is no +2 row and the cheap end is over -- is what
+    # this test is about, and it is the `max` line that carries it.
     worths = {c: g for g, _r, c, _ in bp.CLASS_WORTH}
     assert max(worths.values()) == 1
-    assert sum(1 for w in worths.values() if w == 1) == 6
+    assert sum(1 for w in worths.values() if w == 1) == 5

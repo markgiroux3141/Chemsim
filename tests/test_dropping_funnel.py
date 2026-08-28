@@ -50,11 +50,33 @@ def _scenario(funnel_volume: float = 2.0) -> Scenario:
     The nitration is here because it is the only exotherm in reach that is big
     enough for a drip rate to matter: -141 kJ/mol for the first substitution,
     against an esterification's -3.2. See ``validation/dropwise.py``.
+
+    ⚠⚠⚠ **THE CAP IS LOAD-BEARING, AND SAYING IT IS NOT TUNING TOOK A
+    MEASUREMENT.** ``aromatic_nitration`` FEEDS ITSELF -- its own docstring says
+    so, and ``aromatic_chemistry``'s says to cap the expansion. Left at
+    ``max_species=60`` it enumerates benzene all the way to HEXAnitrobenzene: 15
+    species, twelve of which cannot form at 280 K in the seconds this scenario
+    runs and sit at structural zero. **At 15 species BDF's ``I - c*J`` factors
+    exactly singular -- and whether it does depends on the ORDER OF TWO
+    CHEMICALLY EQUIVALENT STOICHIOMETRY ROWS**, same reactions, same A, same Ea,
+    different positions in the list.
+
+    ⚠⚠ C5 measured it both ways round rather than assuming: **the pre-C5 engine
+    FAILS on the post-C5 ordering and the post-C5 engine PASSES on the pre-C5
+    one**, so the ordering is the whole cause and neither engine is. C5 changed
+    ``ReactionTemplate.run``, which re-rolled that order and made a green test
+    red without touching anything it was about.
+
+    ⚠ **The evidence that the cap costs nothing is that the answer does not
+    move**: ``elapsed`` is **29.985 s at every cap from 4 to 14**, and the run
+    only fails at 15. *A test that passes on the order of two identical rows was
+    not passing for its own reason.* The underlying fragility belongs to the rig
+    integrator and is handed forward -- see NEXT_PROMPT's fragilities.
     """
     return Scenario(
         feed_species=[BENZENE, NITRIC, WATER],
         templates=[TemplateSpec.of(aromatic_nitration())],
-        max_species=60,
+        max_species=10,
         vessels={
             "funnel": VesselSpec(volume=funnel_volume, T=280.0, T_env=280.0,
                                  UA=1.0e6, kla=0.0, k_vent=0.0, k_diss=0.0,
@@ -230,7 +252,16 @@ def test_the_funnel_itself_can_be_what_is_watched():
         "0.2 mol of acid in 0.3 mol of solution, drained at 0.01 mol/s"
     )
     assert out["elapsed"] > 25.0, "and NOT the 20 s that total/rate predicts"
-    assert w.vessels["funnel"].state().total(NITRIC) < 1.0e-4
+    # ⚠⚠ ``pytest.approx`` AND NOT ``<``, AND THAT IS A REAL RULE RATHER THAN A
+    # LOOSENING. ``consumed`` is a ROOT, and a root is zero to solver precision
+    # -- the funnel lands at 1.0000000000000826e-04 against a threshold of
+    # 1.0e-04, which is one part in 1e13 of the condition it was asked to find.
+    # A strict ``<`` asserts which SIDE of a root the solver stopped on, and
+    # nothing guarantees that: C5 re-rolled the reaction order and this landed a
+    # hair above where it used to land a hair below. **The claim worth pinning is
+    # that the tap ran until the condition, not that it overshot it downward.**
+    assert w.vessels["funnel"].state().total(NITRIC) == pytest.approx(
+        1.0e-4, rel=1e-9)
 
 
 def test_leaving_the_tap_open_is_sayable_so_a_staged_addition_is_too():

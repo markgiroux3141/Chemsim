@@ -957,6 +957,29 @@ blaming `pyrolysis`/`coal-gas` where the marker is on the LEFT and the route was
 already dead. **A false-credit detector needs the same does-it-actually-run
 check as everything it audits.** *Whoever takes that row owes it a graph first.*
 
+### ⚠⚠ C5's WART, FOUND WHEN A ROUTE WENT RUNNABLE AND NOT WHEN THE ROW WAS WRITTEN
+
+`furfural-route` step 1 reads **`xylose + water -> xylose`**. The corpus has no
+pentosan or xylan graph — a hemicellulose is a polymer, and the marker convention
+above is for things exactly like it — so the row uses its own PRODUCT as a
+stand-in feedstock. That is an honest placeholder and it stayed harmless for as
+long as the route was unrunnable.
+
+⚠⚠ **A SPECIES ON BOTH SIDES OF A STEP IS EXACTLY WHAT `catalog.route_roles`
+CALLS A CATALYST.** So the moment C5 made `furfural-route` runnable,
+`PLAYABLE.md`'s `with_catalysts=False` counterfactual began handing the route's
+actual SUGAR over for free and calling it playable — a route whose only feedstock
+nothing in 173 routes makes.
+
+⚠⚠⚠ **THE HEADLINE IS IMMUNE, AND THAT IS WORTH KNOWING RATHER THAN FIXING.**
+`PLAYABLE.md`'s rule 2 — *a need is decided by ORDER, not by `route_roles`* — was
+measured wrong first in G3 and corrected, and by order xylose is used at the step
+that first makes it, so it is external and the route is correctly not playable.
+**The artefact can only appear in the one counterfactual where `route_roles` still
+gets to answer**, and it is asserted there in `tests/test_playable.py` so it
+cannot be mistaken for a scoreboard going up. *A rule already known to be right is
+what kept this out of the number the project quotes.*
+
 ### ⚠ THE TWO GAPS COST DIFFERENT AMOUNTS, WHICH IS WHY THEY ARE TWO CLASSES
 
 * **`urea-deammoniation` is blocked on a TEMPLATE ONLY.** All three species

@@ -11,15 +11,15 @@ The GOAL in `MILESTONES.md` § THE G-SERIES is stated as **~10 natural starting 
 | tier | routes | what it means |
 |---|---:|---|
 | **1 — from the ground** | 10 | every feedstock and every catalyst is a natural material |
-| **2 — 1 step up** | 9 | needs the output of a tier-1 route |
+| **2 — 1 step up** | 10 | needs the output of a tier-1 route |
 | **3 — 2 steps up** | 1 | needs the output of a tier-2 route |
-| *runnable but unfed* | 22 | the engine can run it; nothing can supply it |
-| *not runnable* | 131 | see `COVERAGE_REPORT.md` |
+| *runnable but unfed* | 23 | the engine can run it; nothing can supply it |
+| *not runnable* | 129 | see `COVERAGE_REPORT.md` |
 | | **173** | |
 
-**20 of 173 named routes are playable from natural materials**, against a goal of ~40 targets. The deepest chain in the corpus is **3 tiers**.
+**21 of 173 named routes are playable from natural materials**, against a goal of ~40 targets. The deepest chain in the corpus is **3 tiers**.
 
-⚠ **THE TECH TREE IS A SHALLOW BUSH, NOT A TREE.** 10 of the 20 playable routes are tier 1 — they touch nothing another route made. The corpus is not a connected progression that happens to be short; it is a fan of one-step routes off the ground with one thin chain hanging off it, and §5 is that chain.
+⚠ **THE TECH TREE IS A SHALLOW BUSH, NOT A TREE.** 10 of the 21 playable routes are tier 1 — they touch nothing another route made. The corpus is not a connected progression that happens to be short; it is a fan of one-step routes off the ground with one thin chain hanging off it, and §5 is that chain.
 
 ## 2. The one hand judgement, printed so it can be argued with
 
@@ -108,10 +108,10 @@ Rules 2 and 3 are two axes and they had to be measured as a grid, because **they
 
 | | shelf = target only | + byproducts | + target unioned in |
 |---|---:|---:|---:|
-| needs = `route_roles` *(wrong)* | 16 / depth 2 | 21 / depth 3 | 21 / depth 3 |
-| needs = **order** *(correct)* | 15 / depth 2 | 20 / depth 3 | 20 / depth 3 |
+| needs = `route_roles` *(wrong)* | 17 / depth 2 | 22 / depth 3 | 22 / depth 3 |
+| needs = **order** *(correct)* | 16 / depth 2 | 21 / depth 3 | 21 / depth 3 |
 
-⚠⚠⚠ **THE BOTTOM-RIGHT CELL IS THE ANSWER (20), AND THE TWO CELLS BESIDE IT ARE EQUAL — WHICH IS THE FINDING.** Under the correct needs rule, shelving byproducts-only costs *nothing*, so the fouling-row bug in rule 3 is **invisible**. It is only visible along the top row, where it is worth one route. **Two of the four rules were wrong at once and fixing the first one masked the second.** Had the needs rule been fixed first, rule 3 would have looked like a distinction without a difference and gone in wrong — and it would have started costing routes silently the moment the lead chamber became reachable.
+⚠⚠⚠ **THE BOTTOM-RIGHT CELL IS THE ANSWER (21), AND THE TWO CELLS BESIDE IT ARE EQUAL — WHICH IS THE FINDING.** Under the correct needs rule, shelving byproducts-only costs *nothing*, so the fouling-row bug in rule 3 is **invisible**. It is only visible along the top row, where it is worth one route. **Two of the four rules were wrong at once and fixing the first one masked the second.** Had the needs rule been fixed first, rule 3 would have looked like a distinction without a difference and gone in wrong — and it would have started costing routes silently the moment the lead chamber became reachable.
 
 ⚠⚠⚠ **THREE OF THE FOUR ROWS ARE THE SAME TWO CATALOG ROUTES, READ FROM THREE DIFFERENT SIDES — AND ONE OF THEM IS THE ROUTE G4 ALREADY FOUND.**
 
@@ -121,9 +121,9 @@ Rules 2 and 3 are two axes and they had to be measured as a grid, because **they
 
 ⚠ **AND THE THIRD BULLET IS WHY THE ACID FALLS OFF THE SHELF TWICE OVER.** The lead chamber is blocked on its NOx charge before the fouling row ever gets a chance to matter, which is exactly the masking the grid shows.
 
-⚠⚠ **AND THE FIX MOVED THE HEADLINE DOWN, FROM 21 TO 20.** That is the fourth time in this project that correcting a coverage instrument lowered its own number — M1, G4, and now twice inside one file. **A scoreboard that only ever goes up is not measuring anything.**
+⚠⚠ **AND THE FIX MOVED THE HEADLINE DOWN, FROM 22 TO 21.** That is the fourth time in this project that correcting a coverage instrument lowered its own number — M1, G4, and now twice inside one file. **A scoreboard that only ever goes up is not measuring anything.**
 
-⚠ **AND THE CATALYST RULE IS WHAT MAKES THE TREE THREE DEEP AT ALL.** Without it 22 routes are playable and the tree is 2 tiers; with it 20 are, and there is a third tier holding exactly one route. Dropping the rule frees `haber-bosch` (iron) and `hydrogenation-margarine` (nickel) — two metals nothing in 173 industrial routes makes.
+⚠ **AND THE CATALYST RULE IS WHAT MAKES THE TREE THREE DEEP AT ALL.** Without it 24 routes are playable and the tree is 2 tiers; with it 21 are, and there is a third tier holding exactly one route. Dropping the rule frees `haber-bosch` (iron) and `hydrogenation-margarine` (nickel) — two metals nothing in 173 industrial routes makes.
 
 ## 4. The tiers, route by route
 
@@ -142,12 +142,13 @@ Rules 2 and 3 are two axes and they had to be measured as a grid, because **they
 | `vitriol-distillation` | sulfuric acid | iron-ii-sulfate, water | **sulfuric-acid**, iron-iii-oxide, sulfur-dioxide |
 | `zinc-smelting` | zinc metal | carbon-graphite, oxygen, zinc-sulfide | **zinc**, carbon-monoxide, sulfur-dioxide |
 
-### Tier 2 (9)
+### Tier 2 (10)
 
 | route | target | needs | puts on the shelf |
 |---|---|---|---|
 | `acetic-fermentation` | ethanoic acid | ethanol, oxygen | **acetic-acid**, water |
 | `copper-smelting` | copper metal | carbon-monoxide, copper-sulfide, oxygen | **copper**, carbon-dioxide, sulfur-dioxide |
+| `hmf-route` | 5-HMF | fructose, sulfuric-acid | **5-hydroxymethylfurfural**, formic-acid, levulinic-acid |
 | `lead-smelting` | lead metal | carbon-monoxide, lead-sulfide, oxygen | **lead**, carbon-dioxide, sulfur-dioxide |
 | `phosphoric-wet` | phosphoric acid | calcium-phosphate, sulfuric-acid, water | **phosphoric-acid**, gypsum |
 | `saltpetre-nitric` | nitric acid | potassium-nitrate, sulfuric-acid | **nitric-acid**, potassium-bisulfate |
@@ -162,7 +163,7 @@ Rules 2 and 3 are two axes and they had to be measured as a grid, because **they
 |---|---|---|---|
 | `methanol-synthesis` | methanol | carbon-dioxide, carbon-monoxide, copper, hydrogen | **methanol**, water |
 
-After every tier has run, the shelf holds **71 species** (the 45 natural ones plus 26 made).
+After every tier has run, the shelf holds **74 species** (the 45 natural ones plus 29 made).
 
 ## 5. The runs: the deep chain, end to end
 
@@ -221,7 +222,7 @@ The other tier-1 routes are exercised elsewhere — `zinc-smelting`, `copper-sme
 
 ## 6. What blocks the rest
 
-### Blocked on something the corpus MAKES but cannot RUN (18)
+### Blocked on something the corpus MAKES but cannot RUN (19)
 
 These are the routes a player can see the shape of and not reach. Each one is runnable today and waiting on a route that is not.
 
@@ -234,6 +235,7 @@ These are the routes a player can see the shape of and not reach. Each one is ru
 | `ddt-route` | dichlorodiphenyltrichloroethane | chloral, chlorobenzene |
 | `deacon-process` | dichlorine | copper-ii-oxide, hydrogen-chloride |
 | `ethanol-hydration` | ethanol | ethylene |
+| `furfural-route` | 2-furaldehyde | nickel, palladium, xylose |
 | `haber-bosch` | ammonia | iron |
 | `hydrogenation-margarine` | glyceryl tristearate | nickel |
 | `kolbe-electrolysis` | ethane | sodium-acetate |
@@ -261,28 +263,28 @@ Nothing in 173 named industrial routes makes these at all, so no amount of engin
 
 ## 7. Is there a lever? No — and the frequent blocker is not the valuable one
 
-Grant a player one species free and re-run the fixed point. Base is 20.
+Grant a player one species free and re-run the fixed point. Base is 21.
 
 | grant | playable | gain | routes it blocks |
 |---|---:|---:|---:|
-| aluminium | 22 | +2 | 1 |
-| nickel | 21 | +1 | 3 |
-| benzaldehyde | 21 | +1 | 3 |
-| sodium-acetate | 21 | +1 | 2 |
-| phenol | 21 | +1 | 2 |
-| iron | 21 | +1 | 2 |
-| ethylene | 21 | +1 | 2 |
-| nitrogen-dioxide | 21 | +1 | 1 |
-| hydrogen-sulfide | 21 | +1 | 1 |
-| aspirin | 21 | +1 | 1 |
+| aluminium | 23 | +2 | 1 |
+| nickel | 22 | +1 | 4 |
+| benzaldehyde | 22 | +1 | 3 |
+| sodium-acetate | 22 | +1 | 2 |
+| phenol | 22 | +1 | 2 |
+| iron | 22 | +1 | 2 |
+| ethylene | 22 | +1 | 2 |
+| nitrogen-dioxide | 22 | +1 | 1 |
+| hydrogen-sulfide | 22 | +1 | 1 |
+| aspirin | 22 | +1 | 1 |
 
 ⚠ **THE BIGGEST SINGLE GRANT IS +2** (`aluminium`), which is the same shape as the coverage report's finding that there is no lever — 47 routes one class away from 37 different classes. **Playability has no lever either**, and that is worth having measured rather than assumed: the two scoreboards disagree about almost everything else.
 
-⚠⚠ **AND THE MOST FREQUENT BLOCKER IS NOT THE MOST VALUABLE ONE.** `benzaldehyde` blocks 3 routes and granting it is worth +1, because every route it blocks is blocked by something else as well. **A histogram of blockers is not a work order** — the fixed point is, and they disagree.
+⚠⚠ **AND THE MOST FREQUENT BLOCKER IS NOT THE MOST VALUABLE ONE.** `nickel` blocks 4 routes and granting it is worth +1, because every route it blocks is blocked by something else as well. **A histogram of blockers is not a work order** — the fixed point is, and they disagree.
 
 ## 8. The work order this file exists to produce
 
-**23 of the 131 routes the engine cannot run are ALREADY FED from the shelf above.** A template built for one of these lights up the tech tree the moment it lands. A template built for the other 108 moves a coverage number and no player can reach it.
+**22 of the 129 routes the engine cannot run are ALREADY FED from the shelf above.** A template built for one of these lights up the tech tree the moment it lands. A template built for the other 107 moves a coverage number and no player can reach it.
 
 ⚠ **THIS IS THE ONLY RANKING IN THE REPO THAT IS ABOUT PLAYABILITY RATHER THAN COVERAGE**, and it is what the C-series should take its order from. `COVERAGE_REPORT.md`'s greedy set-cover curve maximises classes covered per template; this maximises routes a player can actually walk to. They are not the same list.
 
@@ -310,7 +312,6 @@ Grant a player one species free and re-run the fixed point. Base is 20.
 | **+1** | `castner-kellner` | sodium hydroxide | `amalgam-decomposition`, `amalgam-electrolysis` | — |
 | **+1** | `chloral-route` | chloral hydrate | `carbonyl-hydration`, `radical-halogenation` | — |
 | **+1** | `gunpowder` | black powder marker | `deflagration`, `formulation` | gunpowder-marker |
-| **+1** | `hmf-route` | 5-HMF | `dehydration-cyclisation`, `hydration-ring-opening` | — |
 | **+1** | `white-lead-route` | white lead | `basic-carbonate-precipitation`, `oxidative-dissolution` | — |
 | **+1** | `frank-caro` | calcium cyanamide | `carbide-formation`, `cyanamide-hydrolysis`, `gas-solid-fixation` | calcium-carbide, calcium-cyanamide |
 
@@ -324,7 +325,6 @@ Grant a player one species free and re-run the fixed point. Base is 20.
 
 | worth | runnable | class to build | fed rows waiting on it |
 |---:|---:|---|---|
-| **+1** | +2 | `dehydration-cyclisation` | `hmf-route` |
 | **+1** | +1 | `biological-transformation` | `tyrian-purple-route` |
 | **+1** | +1 | `direct-combination` | `vermilion-route` |
 | **+1** | +1 | `molten-salt-electrolysis` | `downs-cell`, `hall-heroult` |
@@ -344,7 +344,6 @@ Grant a player one species free and re-run the fixed point. Base is 20.
 | **+0** | +0 | `esterification-nitration` | `guncotton` |
 | **+0** | +0 | `formulation` | `gunpowder` |
 | **+0** | +0 | `gas-solid-fixation` | `frank-caro` |
-| **+0** | +0 | `hydration-ring-opening` | `hmf-route` |
 | **+0** | +0 | `nucleophilic-addition` | `acetic-anhydride-ketene` |
 | **+0** | +0 | `oxidative-dissolution` | `white-lead-route` |
 | **+0** | +0 | `oxidative-nitrosation` | `mercury-fulminate-route` |
@@ -354,7 +353,7 @@ Grant a player one species free and re-run the fixed point. Base is 20.
 | **+0** | +0 | `slagging` | `blast-furnace` |
 | **+0** | +0 | `thermal-fixation` | `birkeland-eyde` |
 
-⚠⚠⚠ **THE BIGGEST SINGLE CLASS IS +1** (`dehydration-cyclisation`, `biological-transformation`, `direct-combination`, `molten-salt-electrolysis`, `oxidative-complexation`, `pyrolysis`) — and §8's `+3` top row is **not** at the top here. Granting `molten-salt-electrolysis` leaves `hall-heroult` unrunnable, because its cryolite is refused a price as well; the class lands its point on `downs-cell` instead. **A row's worth assumes every OTHER blocker away, and a template only removes one of them.**
+⚠⚠⚠ **THE BIGGEST SINGLE CLASS IS +1** (`biological-transformation`, `direct-combination`, `molten-salt-electrolysis`, `oxidative-complexation`, `pyrolysis`) — and §8's `+3` top row is **not** at the top here. Granting `molten-salt-electrolysis` leaves `hall-heroult` unrunnable, because its cryolite is refused a price as well; the class lands its point on `downs-cell` instead. **A row's worth assumes every OTHER blocker away, and a template only removes one of them.**
 
 ⚠⚠ **AND 10 OF THE ROWS ABOVE CANNOT BE BOUGHT BY TEMPLATES AT ALL.** Grant every class each one is missing and it is still not runnable, because a refused species is blocking it too: `bayer-process`, `blast-furnace`, `calcium-carbide`, `coal-gas`, `frank-caro`, `guncotton`, `gunpowder`, `hall-heroult`, `mercury-fulminate-route`, `white-phosphorus`. **They are joint grants priced as though they were single ones.**
 
@@ -368,15 +367,15 @@ Grant a player one species free and re-run the fixed point. Base is 20.
 
 ### The ceiling, and it is the goal
 
-Grant **all 23** of them and the fixed point reaches **45 playable routes** at depth 3 — because 2 more routes fall out for free once the shelf grows: `haber-bosch`, `thermite`.
+Grant **all 22** of them and the fixed point reaches **45 playable routes** at depth 3 — because 2 more routes fall out for free once the shelf grows: `haber-bosch`, `thermite`.
 
-⚠⚠⚠ **THAT IS THE GOAL, AND IT IS NOW A FINITE NAMED LIST.** The G-series goal is ~40 targets reachable from the ground; this corpus tops out at **45** on the natural list in §2, and the entire distance from today's 20 to that 45 is the 23 rows above. **The C-series is not an open-ended grind against 173 routes; it is this table.** Everything outside it is coverage work that no player can reach until something in it lands first.
+⚠⚠⚠ **THAT IS THE GOAL, AND IT IS NOW A FINITE NAMED LIST.** The G-series goal is ~40 targets reachable from the ground; this corpus tops out at **45** on the natural list in §2, and the entire distance from today's 21 to that 45 is the 22 rows above. **The C-series is not an open-ended grind against 173 routes; it is this table.** Everything outside it is coverage work that no player can reach until something in it lands first.
 
 ## What this file does NOT license
 
 - **A yield is not a corpus property.** §5's numbers move whenever a declared constant moves. Read them with their conditions or not at all.
 - **`RUNNABLE` cannot ask whether a number is RIGHT** (S7). Every route in §4 produces its target; none of it says the amount is what a real process gives.
 - **The tiers rest on §2's hand judgement.** Argue with that list and every number here moves. That is why it is printed.
-- **`COVERAGE_REPORT.md`'s BOTH column is not re-scored here**, and this file's 42 runnable routes include G4's five. See MILESTONES §G4 §6 for why a hand judgement does not go into a mechanical column.
+- **`COVERAGE_REPORT.md`'s BOTH column is not re-scored here**, and this file's 44 runnable routes include G4's five. See MILESTONES §G4 §6 for why a hand judgement does not go into a mechanical column.
 
-*173 routes, 1583 compounds, 45 declared natural, 42 runnable, 20 playable, 3 tiers deep.*
+*173 routes, 1583 compounds, 45 declared natural, 44 runnable, 21 playable, 3 tiers deep.*

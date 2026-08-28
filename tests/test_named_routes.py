@@ -405,10 +405,24 @@ def test_no_derived_rate_constant_exceeds_the_collision_limit(
     """M12 was a DERIVED rate constant 9.4e7x the collision limit, and the lesson
     was that this project had never checked the ones it derives. Every reversible
     template M5 added goes through the same check, at the guard's own temperature.
+
+    ⚠⚠⚠ **`generations=3` IS DECLARED HERE BECAUSE `kolbe_schmitt` FEEDS ITSELF,
+    AND UNTIL C5 A BUG WAS DOING THE CAPPING.** Carboxylation makes salicylate,
+    dissociation takes its phenol proton at pKa 13.4, and the DIANION is a
+    phenoxide the same template carboxylates again -- an unbounded series whose
+    second member the corpus does not price. Before C5 fixed
+    `ReactionTemplate.run`, a template could not run on a species another template
+    had MADE, so this network stopped at generation 2 by itself and this line was
+    not needed. **An accidental cap is still a cap**: the fix removed it, so the
+    bound has to be declared -- which is what `aromatic_chemistry` already says to
+    do for a template that feeds itself.
+    ⚠ It costs the other five cases NOTHING: each reaches its fixpoint inside
+    three generations, measured.
     """
     import numpy as np
 
-    net = net_of(seed, templates(), thermo, volatility, max_species=40)
+    net = net_of(seed, templates(), thermo, volatility, max_species=40,
+                 generations=3)
     for r in net.reactions:
         if len(r.reactants) < 2:
             continue

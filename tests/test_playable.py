@@ -47,8 +47,16 @@ def bp():
 # ---------------------------------------------------------------------------
 # 1. THE HEADLINE
 # ---------------------------------------------------------------------------
-def test_the_answer_is_twenty_playable_three_tiers_deep(bp):
-    """20 of 173, and the corpus's deepest chain is still 3 tiers.
+def test_the_headline_and_the_tiers_are_what_the_report_says(bp):
+    """21 of 173, and the corpus's deepest chain is still 3 tiers.
+
+    ⚠⚠⚠ **C5 RENAMED THIS TEST, AND THE REASON IS C4's OWN RULE.** It used to be
+    called `test_the_answer_is_twenty_playable_three_tiers_deep`, and C4 wrote
+    down that *a test that pins a LEVEL will be re-numbered by the next session
+    that moves it, and the claim will quietly become someone else's arithmetic*.
+    Its own name was such a level, and C5 moved it. The name now states the
+    RELATION -- the headline is whatever the current code produces -- so future
+    sessions change the numbers inside and nothing else.
 
     ⚠ G3 measured 12 of 36 runnable. C1 built ``sulfur_trioxide_hydration`` and
     corrected the ``vitriol-distillation`` rows, which put oil of vitriol on the
@@ -69,11 +77,20 @@ def test_the_answer_is_twenty_playable_three_tiers_deep(bp):
     branch carries `acetic-fermentation` up to tier 2 behind it. ⚠⚠ **The
     class M5 refused as "a metabolic NETWORK" was an outcome label over five
     mechanisms**, and the split is what made the credit honest.
+
+    ⚠⚠⚠ **AND C5 IS THE FIRST SESSION TO BUY A ROUTE OFF A SUGAR IT HAD TO
+    INVERT.** `hmf-route` lands in tier 2 on `invert-sugar`: sucrose is natural
+    and fructose is not, so the chain is invert-then-dehydrate. It is also the
+    first route in this file that could not have run at all before an ENGINE fix
+    -- see `tests/test_furans.py`, where a template could not consume a species
+    another template had made.
     """
     assert len(bp.routes) == 173
-    assert len(bp.PLAYABLE) == 20
+    assert len(bp.PLAYABLE) == 21
     assert max(bp.PLAYABLE.values()) == 3
-    assert len(bp.RUNNABLE) == 42
+    assert len(bp.RUNNABLE) == 44
+    assert bp.PLAYABLE["hmf-route"] == 2
+    assert bp.PLAYABLE["invert-sugar"] == 1
     assert bp.PLAYABLE["abe-fermentation"] == 1
     assert bp.PLAYABLE["acetic-fermentation"] == 2
     assert bp.PLAYABLE["vitriol-distillation"] == 1
@@ -88,6 +105,14 @@ def test_the_answer_is_twenty_playable_three_tiers_deep(bp):
     for rid in ("vanillin-eugenol", "vanillin-lignin"):
         assert "sodium-hydroxide" in bp.needs(rid)
         assert bp.needs(rid) - {"sodium-hydroxide"} <= set(bp.NATURAL_IDS)
+    # ⚠⚠ AND C5's OWN ROUTE STANDS ON TWO TIER-1 ROUTES AT ONCE, WHICH IS
+    # A FIRST FOR THIS FILE: `invert-sugar` for the fructose (sucrose is
+    # natural, fructose is not) and `vitriol-distillation` for the acid that
+    # catalyses it. Every other tier-2 route here needs one upstream route or
+    # one granted reagent.
+    assert bp.needs("hmf-route") == {"fructose", "sulfuric-acid"}
+    assert bp.PLAYABLE["invert-sugar"] == 1
+    assert bp.PLAYABLE["vitriol-distillation"] == 1
 
 
 def test_the_tech_tree_is_a_shallow_bush(bp):
@@ -108,25 +133,41 @@ def test_the_tech_tree_is_a_shallow_bush(bp):
     still nine, and tier 3 is still a single route.
 
     ⚠⚠ **AND C4 ADDED ONE TO EACH OF THE FIRST TWO TIERS, SO THE EXACT HALF
-    HELD THROUGH A SESSION THAT WAS NOT AIMED AT IT.** 10 of 20. That is a
-    coincidence twice over and is asserted as an equality anyway, because the
-    equality is the thing a future session has to come here and break -- and
-    what it will mean when it does is that a real tier appeared. ⚠ Tier 3 is
-    STILL one route, five sessions running.
+    HELD THROUGH A SESSION THAT WAS NOT AIMED AT IT.** 10 of 20. C4 asserted the
+    equality anyway and said what breaking it would mean: *the equality is the
+    thing a future session has to come here and break -- and what it will mean
+    when it does is that a real tier appeared.*
+
+    ⚠⚠⚠ **C5 BROKE IT, AND IT BROKE THE RIGHT WAY.** `hmf-route` is tier 2, so
+    the counts are 10 / 10 / 1 and **tier 1 is a MINORITY of the playable set for
+    the first time in the project's history** -- 10 of 21. G3's finding was *most
+    playable routes are tier 1*; C3 took it to exactly half; C5 takes it below
+    half. The operator has now gone `>` then `==` then `<`, and every step of
+    that was a session buying a route that stands on another route's output.
+    ⚠ Tier 3 is STILL one route, six sessions running, and that is the part that
+    has not moved.
     """
     tier1 = [r for r, d in bp.PLAYABLE.items() if d == 1]
     assert len(tier1) == 10
-    assert len([r for r, d in bp.PLAYABLE.items() if d == 2]) == 9
+    assert len([r for r, d in bp.PLAYABLE.items() if d == 2]) == 10
     assert len([r for r, d in bp.PLAYABLE.items() if d == 3]) == 1
-    # G3's ">" is now "==", and the change of operator IS the finding
-    assert len(tier1) == len(bp.PLAYABLE) / 2
+    # G3's ">" became "==" in C3 and is "<" now, and the OPERATOR is the finding
+    assert len(tier1) < len(bp.PLAYABLE) / 2
 
 
 def test_the_ceiling_is_the_goal_and_it_is_a_finite_named_list(bp):
-    """Granting all 23 fed-but-unrunnable routes reaches 45, against a goal of ~40.
+    """Granting all 22 fed-but-unrunnable routes reaches 45, against a goal of ~40.
 
-    This is the whole point of the work order: the distance from 20 to 45 is a
+    This is the whole point of the work order: the distance from 21 to 45 is a
     named table, not an open-ended grind against 173 routes.
+
+    ⚠⚠ **AND C5 IS THE FIRST SESSION SINCE C2 THAT DID NOT MOVE THE CEILING.**
+    C4 moved it 41 -> 45 because a fermentation puts four solvents on the shelf
+    and those FEED four more routes. 5-HMF and levulinic acid feed nothing: no
+    other corpus route takes either of them as an input. **A route can be worth
+    a playable point and worth nothing to the goal it is scored against**, and
+    which of the two a session gets is a property of the corpus rather than of
+    the chemistry built.
 
     ⚠⚠ AND THE TABLE MOVES IN BOTH DIRECTIONS, WHICH IS THE POINT. C1 granted
     one of G3's 21 and the list GREW to 24, because sulfuric acid on the shelf fed
@@ -148,7 +189,7 @@ def test_the_ceiling_is_the_goal_and_it_is_a_finite_named_list(bp):
     not a constant**, and two sessions in a row where it sat still were a
     property of what they built rather than of the instrument.
     """
-    assert len(bp.FED_BUT_UNRUNNABLE) == 23
+    assert len(bp.FED_BUT_UNRUNNABLE) == 22
     ceiling, _ = bp.closure(pool=bp.RUNNABLE | set(bp.FED_BUT_UNRUNNABLE))
     assert len(ceiling) == 45
     # two fall out for free once the shelf grows -- G3 had four, C3 had three,
@@ -168,8 +209,8 @@ def test_a_need_is_decided_by_order_not_by_route_roles(bp):
     all* and was playable for free.
     """
     wrong, _ = bp.closure(needs_rule=bp.needs_by_roles)
-    assert len(wrong) == 21
-    assert len(bp.PLAYABLE) == 20, "the correction moves the headline DOWN"
+    assert len(wrong) == 22
+    assert len(bp.PLAYABLE) == 21, "the correction moves the headline DOWN"
 
     assert bp.needs_by_roles("lime-cycle") == set()
     assert bp.needs("lime-cycle") == {"calcium-carbonate", "water"}
@@ -230,16 +271,17 @@ def test_the_fouling_row_takes_the_target_off_the_shelf(bp):
     # ⚠ C3 RE-MEASURED THE WHOLE GRID AGAIN, for C2's reason: the claim is
     # about the DIFFERENCE between cells. Still zero in both rows, three corpus
     # changes running.
+    # ⚠ C5 RE-MEASURED IT A FIFTH TIME. Still zero in both rows.
     # ⚠⚠ C4 RE-MEASURED IT A FOURTH TIME AND THE DIFFERENCE IS STILL ZERO --
     # but it is the first session whose new route depends on a BYPRODUCT, so the
     # cell that DID move is the target-only one, in the test below. **The two
     # rules are measured as a grid because fixing one masked another once (G3),
     # and a session that moves one column has to print all of them.**
     kw = dict(needs_rule=bp.needs_by_roles)
-    assert len(bp.closure(shelf_rule="products", **kw)[0]) == 21
-    assert len(bp.closure(shelf_rule="both", **kw)[0]) == 21
-    assert len(bp.closure(shelf_rule="products")[0]) == 20
-    assert len(bp.closure(shelf_rule="both")[0]) == 20
+    assert len(bp.closure(shelf_rule="products", **kw)[0]) == 22
+    assert len(bp.closure(shelf_rule="both", **kw)[0]) == 22
+    assert len(bp.closure(shelf_rule="products")[0]) == 21
+    assert len(bp.closure(shelf_rule="both")[0]) == 21
 
 
 def test_target_only_shelving_never_starts_the_deep_chain(bp):
@@ -267,14 +309,28 @@ def test_target_only_shelving_never_starts_the_deep_chain(bp):
     two**, which is the opposite of the fouling rule one test up, whose only
     evidence C1 dissolved. *A rule kept on a zero difference and a rule kept on a
     growing one are different bets, and both are printed.*
+
+    ⚠⚠ **AND C5 MOVED THE CELL WITHOUT MOVING THE SHORTFALL**, which is the
+    other way this measurement can go. `hmf-route` needs fructose, and fructose
+    is a declared PRODUCT of `invert-sugar` as well as half of its target -- so a
+    target-only shelf reaches it and the gap stays at 5. *One session moved the
+    shortfall and the next moved only the level; printing both cells is what
+    lets a reader tell those apart.*
     """
     target_only, _ = bp.closure(shelf_rule="target")
-    assert len(target_only) == 15
+    assert len(target_only) == 16
     assert max(target_only.values()) == 2
     assert "methanol-synthesis" not in target_only
     assert "acetic-fermentation" not in target_only
     assert "abe-fermentation" in target_only          # ITS target is fine
+    assert "hmf-route" in target_only                 # C5's, on invert-sugar
     assert len(bp.PLAYABLE) - len(target_only) == 5
+
+
+def cat_roles(bp, rid):
+    import catalog as cat
+
+    return cat.route_roles(bp.steps, rid)
 
 
 def test_a_catalyst_is_a_feedstock_and_that_rule_makes_the_third_tier(bp):
@@ -291,9 +347,23 @@ def test_a_catalyst_is_a_feedstock_and_that_rule_makes_the_third_tier(bp):
     with_copper, _ = bp.closure(extra={"copper"})
     assert with_copper["methanol-synthesis"] == 2
     assert max(with_copper.values()) == 2
-    # the two routes the rule costs are blocked on metals nobody makes
+    # ⚠⚠⚠ AND C5 ADDED A THIRD, WHICH IS NOT A METAL AND IS NOT THE RULE'S
+    # DOING. `furfural-route` step 1 is written `xylose + water -> xylose` --
+    # the corpus has no pentosan graph, so the row uses its own product as a
+    # stand-in feedstock -- and a species on BOTH sides of a step is exactly
+    # what `route_roles` calls a CATALYST. So `with_catalysts=False` hands over
+    # the route's actual SUGAR for free.
+    #
+    # ⚠⚠ **THE HEADLINE IS IMMUNE AND THAT IS THE POINT.** `needs()` decides by
+    # ORDER (rule 2, the test two above), and by order xylose is used at the
+    # step that first makes it, so it is external and `furfural-route` is not
+    # playable. The artefact appears only in this counterfactual, which is the
+    # one place `route_roles` still gets to answer -- and it appeared the moment
+    # C5 made `furfural-route` RUNNABLE, having been latent until then.
     assert set(free_catalysts) - set(bp.PLAYABLE) == {
-        "haber-bosch", "hydrogenation-margarine"}
+        "furfural-route", "haber-bosch", "hydrogenation-margarine"}
+    assert "xylose" in cat_roles(bp, "furfural-route").catalysts
+    assert "xylose" in bp.needs("furfural-route")
 
 
 def test_the_target_may_not_be_charged_still_holds(bp):
@@ -354,6 +424,13 @@ def test_there_is_no_lever_and_the_frequent_blocker_is_not_the_valuable_one(bp):
     ⚠ And `nitrogen-dioxide` fell from +2 to +1 for the same reason -- fragility
     31's lead-chamber pinch is worth half what G3 priced it at, because
     `saltpetre-nitric` no longer needs the chamber's acid.
+
+    ⚠⚠ **C5 RE-MEASURED IT AND THE FINDING SURVIVED A SECOND EXAMPLE CHANGE.**
+    The most frequent blocker is `nickel` at FOUR routes now, because
+    `furfural-route` went runnable and its last step is a nickel hydrogenation.
+    It is still worth +1. `aluminium` still blocks ONE route and is still worth
+    +2. **Three sessions, three different top blockers, and the same shape every
+    time.**
     """
     from collections import Counter
 
@@ -367,7 +444,7 @@ def test_there_is_no_lever_and_the_frequent_blocker_is_not_the_valuable_one(bp):
 
     assert "sulfuric-acid" not in blockers, "C1 put it on the shelf"
     top = blockers.most_common(1)[0][1]
-    assert top == 3
+    assert top == 4
     for x, n in blockers.items():
         if n == top:
             assert worth(x) == 1, x

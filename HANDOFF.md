@@ -7291,3 +7291,250 @@ RESOLVED since the last handoff:
     4.3% in the same run), so **one row's change is not a signal** — the per-test
     total is, and the `--durations` list is a per-row diff, not an alarm.
     ⚠ The S12->S13 eight minutes is still unbisected.
+
+109. ✔✔ **C5 — THE SUGAR-TO-FURAN DEHYDRATIONS: TWO ROWS THAT ARE ONE MECHANISM,
+    AND A BUG THAT TOOK TWO GENERATIONS TO SEE.** `dehydration-cyclisation` was
+    `PLAYABLE.md` §8b's top row after C4 — +1 playable and **+2 runnable**, the
+    largest runnable gain on a table C4 had flattened. Playable **20 → 21**
+    (tiers **10 / 10 / 1**), runnable **42 → 44**, classes
+    **57/240 → 59/240**, template-ready **45 → 46**, BOTH **37 → 38**;
+    species-ready unchanged at **85**. Three templates, one bundle, **one ENGINE
+    fix**, one pKa row, no taxonomy split. `validation/furans.py` (9 panels,
+    ~2 min), `tests/test_furans.py` (20 tests, ~2 min).
+
+    ⚠⚠⚠ **THE SAME RULE THAT SPLIT C4's CLASS SAYS *DO NOT SPLIT* HERE.** C3
+    bought a class by reading its second row; C4 bought one by splitting it five
+    ways; both were applying *read every row before crediting the class*. These
+    two rows are ONE mechanism — an acid-catalysed triple dehydration of a sugar
+    into a furan, a pentose giving furfural and a ketohexose giving 5-HMF — and
+    each balances exactly 1:1 with three waters. **So the class stands and the
+    credit needs BOTH templates**: grant it off the HMF row alone and
+    `furfural-route` goes template-ready with nothing able to make furfural.
+    *The check that catches a false credit and the check that catches a lazy lump
+    are the same check.*
+
+    ⚠⚠⚠ **AND THE CORPUS SPELLING C4 BOOKED AS A LOST SUBSTRATE IS LOAD-BEARING
+    HERE — FOR ONE ROW OF TWO.** Measured out of RDKit's own reactant-to-product
+    atom tags, not read off the SMARTS:
+
+        fructose -> 5-HMF     5 of 5 product ring atoms from the sugar's own ring
+        xylose   -> furfural  3 of 5
+
+    Fructofuranose's ring C2-C3-C4-C5-O **IS** 5-HMF's furan ring, so that
+    rewrite forms no ring bond at all. Xylofuranose's ring is C1-C2-C3-C4-O and
+    furfural's is C2-C3-C4-C5-O — **the WRONG ring**: C5 and its hydroxyl are
+    pulled in, the sugar's own ring oxygen leaves as a water, C1 is pushed out to
+    become the aldehyde. ⚠ **A coefficient vector cannot see that**; both rows
+    are 1:1:3. Same blindness `corpus_balance` has, on two rows that are both
+    RIGHT.
+
+    ⚠⚠⚠ **THE ENGINE COULD NOT FERMENT SUGAR IT HAD INVERTED ITSELF.**
+    `ReactionTemplate.run` handed back products carrying RDKit's `noImplicit`
+    flag, and no template can run on such a molecule. A product-template atom
+    written with an H count (`[CH3:2]`, `[OH1:8]`) comes back with its hydrogens
+    counted EXPLICIT; substructure matching cannot see it, because the total H
+    count is identical, so the species is discovered, priced, charged and
+    reported normally — and then `RunReactants` hands the flag on, the next
+    template's unspelled product atoms inherit an H they must not have, and `run`
+    catches the valence error and returns an **empty list**.
+
+        template                     BEFORE   AFTER
+        ethanolic_fermentation            0        1
+        butanolic_fermentation            0        1
+        acetonic_fermentation             0        1
+        homolactic_fermentation           1        1
+
+        charge SUCROSE + water   4 species, 1 rxn, ethanol FALSE  ->  9 / 4 / TRUE
+        charge GLUCOSE + water   7 species, 3 rxn, ethanol TRUE   ->  7 / 3 / TRUE
+
+    **C4's docstring says a brewer *"has to invert the sugar first"*, and a
+    brewer who did got nothing.** The claim was right about the chemistry and
+    false about the engine, and **it is invisible to every single-template
+    test**: catching it takes one template to MAKE what another consumes, and
+    every fermentation test C4 wrote charges glucose directly.
+    ⚠⚠ **The fourth row is the instructive one.** `homolactic_fermentation` was
+    never broken — it happens to spell an H count for the ONE atom that carried
+    the flag, where the other three send that atom into a CO2 they wrote
+    `[O:6]=[C:9]=[O:10]`. **Spelling an H count on every product atom IS a valid
+    fix, and it is a rule an author has to remember on every atom of every
+    template, which is why the fix went into the TYPE.** One line: re-parse each
+    product from its own canonical SMILES. `Molecule`'s docstring already states
+    the contract — *equal iff their canonical SMILES match* — and two molecules
+    were satisfying it while behaving differently.
+
+    ⚠⚠ **REMOVING IT REMOVED AN ACCIDENTAL GENERATION CAP.** `kolbe_schmitt`
+    feeds itself through the phenoxide it makes: carboxylate to salicylate,
+    dissociate the PHENOL proton (pKa 13.4), and the dianion is a phenoxide it
+    carboxylates again. The bug had been stopping that at generation 2.
+    Generation 4 wants 2-hydroxyisophthalate, which the corpus does not price, so
+    `tests/test_named_routes.py` DECLARES `generations=3` now — what
+    `aromatic_chemistry` already tells a reader to do for a self-feeding
+    template, at no cost to the other five cases. **An accidental cap is still a
+    cap: removing the accident means writing the cap down.**
+    ⚠ **The salicylate pKa2 row was EXPOSED, not missed** — nothing could reach
+    the mono-anion with a template before. *C2's rule from the other side: a
+    table can be short a row for years if nothing can get far enough to ask.*
+
+    ⚠⚠ **THE +0 ROW IS WHAT MAKES THE +1 ROW MEAN ANYTHING.** `hmf-route` row 2
+    is `hydration-ring-opening`, priced +0 because the target is reached at row 1
+    — and the corpus names it *"the side reaction that limits yield"*. Built
+    anyway, and the +0 re-measured and confirmed. **Without it the flask runs to
+    100% HMF and reports a number no laboratory has ever seen**; with it the HMF
+    rises, peaks and falls where two barriers cross. *A row worth nothing on the
+    scoreboard can be the row that makes the scoreboard's number mean something.*
+
+    ⚠⚠⚠ **AND ITS BARRIER IS THE LOWER ONE, WHICH PREDICTED SOMETHING NOTHING WAS
+    AIMED AT:**
+
+         T/K    peak HMF yield     at t/h
+         390          39.85%      155.71
+         420          52.34%       11.33
+         450          63.33%        0.83
+
+    **Selectivity IMPROVES with temperature and the batch gets shorter** —
+    hot-and-short is how the process is operated. 110 against 140 kJ/mol makes
+    the destruction the less temperature-sensitive step. Only the LEVEL is
+    fitted; the DIRECTION could have come out wrong. *S11's competing-templates
+    finding on a CONSECUTIVE pair.*
+
+    ⚠⚠ **A SECOND LEVER FELL OUT: AN INERT SPECTATOR.** Glucose does nothing in
+    this network and adding 0.5 mol takes the peak from **52.4% to 61.6%**. It
+    occupies liquid volume, [H2O] falls, and the rehydration is second order in
+    water while the dehydration is zeroth. **A chemically inert species moves the
+    yield through the volume** — which is the corpus row's own *"420 K, DMSO or
+    biphasic"* explaining itself. **The engine has no solvent model and gets the
+    direction of the trick anyway, because water is a REACTANT in the rate law.**
+
+    ⚠ **ONE NUMBER IS FITTED AND IT CHECKS AGAINST SOMETHING ELSE.** The
+    rehydration's `A` = 5.0e5 puts the peak at 52.5% at 420 K against a reported
+    ~50-55%; a peak yield is a RATIO and two barriers fix only its temperature
+    dependence. Folded against the flask's own water it is an effective
+    first-order 1.4e9 /s — **ΔS‡ ≈ −74 J/(mol K)**, which is what ordering two
+    waters into a transition state costs. *C4 fitted three constants and could
+    check none.*
+
+    ⚠ **STEREO-BLIND, AND EVERY EXTRA HIT IS RIGHT.** Over 1583 compounds:
+    `ketofuranose_dehydration` hits fructose and sorbose; `aldofuranose_
+    dehydration` hits ribose, xylose and arabinose. Every pentose gives furfural
+    in hot acid and sorbose is a ketohexose. **Sucrose is inert to both** (no
+    free anomeric -OH — C4's narrowing on a different ring size), and **furfural
+    is inert to the rehydration**, which is why it is the furan that survives.
+
+    ⚠⚠⚠ **TIER 1 IS A MINORITY OF THE PLAYABLE SET FOR THE FIRST TIME.** 10 of
+    21. G3's finding was *most playable routes are tier 1*; C3 took it to exactly
+    half and asserted the equality, saying whoever broke it would be the session
+    where a real tier appeared. The operator has gone `>`, `==`, `<`.
+    ⚠ **Tier 3 is STILL one route, six sessions running.**
+    ⚠⚠ **And C5 is the first session since C2 that did NOT move the ceiling**:
+    5-HMF and levulinic acid feed nothing, where C4's four solvents fed four
+    routes. **A route can be worth a playable point and worth nothing to the goal
+    it is scored against.**
+    ⚠ `hmf-route` stands on TWO tier-1 routes at once — `invert-sugar` for the
+    fructose and C1's `vitriol-distillation` for the acid — which is a first.
+
+    ⚠ **THE HEADLINE TEST HAD TO BE RENAMED, BY C4's OWN RULE.**
+    `test_the_answer_is_twenty_playable_three_tiers_deep` carried a LEVEL in its
+    name. It is `test_the_headline_and_the_tiers_are_what_the_report_says` now.
+    **Two sessions running that rule has cost a test its name, and both times
+    `test_the_PAIR_is_worth_more_than_the_sum_of_its_parts` survived untouched
+    because it asserts differences.**
+
+    ⚠ **AND A LATENT SCORING ARTEFACT SURFACED THE MOMENT A ROUTE WENT
+    RUNNABLE.** `furfural-route` step 1 is `xylose + water -> xylose` — the
+    corpus has no pentosan graph, so the row uses its own product as a stand-in —
+    and a species on both sides of a step is what `route_roles` calls a CATALYST.
+    So `with_catalysts=False` hands the route's SUGAR over free. **The headline
+    is immune**, because `needs()` decides by ORDER (rule 2, measured wrong first
+    in G3): by order xylose is used at the step that first makes it, so it is
+    external. *A rule already known to be right is what kept a corpus wart out of
+    the headline.*
+
+
+    ⚠⚠⚠ **THE SUITE: 1179 passed / 0 failed in 28:59, run alone -- AND IT
+    FOUND NINE, TWO OF WHICH WERE NOT LEVELS.** Five were
+    level-pins C5 legitimately moved (three in `test_fermentation.py`, the ion
+    count 29 -> 30 in `test_protonation.py`, `furfural-route`'s uncovered classes
+    4 -> 3 in `test_vitriol.py`). The other four are the reason the run was owed.
+
+    ⚠⚠⚠ **THE FLAGSHIP PREP HAD BEEN MAKING AN ESTER IN CAUSTIC SODA.**
+    `test_prep_side_products.py` failed three ways on `total(ACETIC) == 0`. The
+    pot is a SAPONIFICATION holding **0.093 mol of free hydroxide**, so the
+    acetic acid the oxidation cascade makes is acetATE -- and until C5,
+    `carboxylic_acid_dissociation` could not fire on it, because
+    `peroxide_over_oxidation` had MADE it. So the acid sat neutral in caustic
+    soda **and then Fischer-esterified with the ethanol.** There is no Fischer
+    esterification at pH 13. The cascade is unchanged and correct (6.85 mmol of
+    acetyl at two hours); **the SPECIATION was wrong, and had been since the
+    side-product model was written.** The tests count acid plus conjugate base
+    now. ⚠ *A two-generation bug hid a one-generation wrong answer.*
+
+    ⚠⚠⚠ **AND A GREEN TEST WAS RESTING ON THE ORDER OF TWO IDENTICAL ROWS.**
+    `test_the_funnel_itself_can_be_what_is_watched` died with
+    `RuntimeError: Factor is exactly singular` out of BDF's `I - c*J`. The fix
+    changes the order `run` returns product sets in, so two nitrations -- same
+    name, same A, same Ea -- swap places in the stoichiometry matrix. Nothing
+    else moves: species set, species ORDER, every rate constant and every
+    molecule-derived property diff to zero. Measured both ways round:
+
+        pre-C5 engine  + pre-C5 order    OK, 29.985 s
+        post-C5 engine + post-C5 order   Factor is exactly singular
+        post-C5 engine + PRE-C5 order    OK, 29.985 s
+        pre-C5 engine  + POST-C5 order   Factor is exactly singular
+
+    **The ordering is the whole cause and neither engine is.** ⚠ The first three
+    attempts at that experiment were NO-OPS, because `World` imports
+    `build_network` into its own namespace and the monkeypatch was going onto
+    `chemsim.network.builder` -- *an experiment that returns the answer you
+    expected is the one to check hardest.*
+    ⚠⚠ The scenario is what is fragile: `aromatic_nitration` FEEDS ITSELF and
+    the funnel let it run to `max_species=60`, 15 species all the way to
+    HEXAnitrobenzene, twelve of them at structural zero. Capped it is robust --
+    **29.985 s at every cap from 4 to 14, failing only at 15** -- and the answer
+    not moving across ten caps is what says the cap is not tuning. This is the
+    SECOND place in one session where removing an accidental cap meant writing a
+    real one down. ⚠ The same test then failed on `< 1.0e-4` reading
+    **1.0000000000000826e-04**: `consumed` is a ROOT, and a strict `<` asserts
+    which SIDE of a root the solver stopped on. It is `pytest.approx` now.
+    ⚠⚠⚠ **The fragility itself is NOT fixed and is handed forward** -- a
+    15-species rig network with twelve structurally-zero columns can factor
+    exactly singular, and whether it does turns on a permutation that changes
+    nothing physical. That is a numerics session, not a content one.
+
+    ⚠ **WHAT C5 DID NOT DO.** `furfural-route` is runnable and NOT playable —
+    nothing in 173 routes makes a pentose. Furfural runs to 100% and that is an
+    UPPER BOUND: real yields stop near 50% because furfural resinifies into
+    humins, and this project has no representation for an amorphous polymer.
+    `aldofuranose_dehydration` is deliberately NOT in `furan_chemistry`. All
+    three reactions MIX STANDARD STATES on the sugar side (dH −14.4 gas against
+    −191.3 liquid for the dehydration, 9 apart for the rehydration, which has no
+    sugar in it) — **it costs the K and nothing else**, all three being
+    irreversible. C4's stereo-keying job is untouched.
+
+    ⚠⚠ **THE CLOCK, AND C5 RAN THE SUITE TWICE IN ONE SESSION.** Owing a second
+    run after fixing the nine gives this project its first WITHIN-session control:
+
+        two full runs, same box, 18 minutes apart
+                            run 1     run 2   change   touched between?
+        total / s          1660.8    1739.0    +4.7%
+        the ONE RIG test    160.8     158.5    -1.4%   no
+        catalysis            72.2      72.4    +0.2%   no
+        burner @1e-8         50.8      85.0   +67.3%   NO
+        rig azeotrope        22.2      34.3   +54.5%   NO
+
+    ⚠⚠⚠ **TWO ROWS MOVED MORE THAN HALF THEIR OWN VALUE WITH NOTHING TOUCHED,
+    WHILE THE TOTAL MOVED 4.7%.** That settles what four sessions of
+    cross-session comparison could only bound: **a single `--durations` row is not
+    an instrument and the per-test total is.** C3 put the between-run spread at
+    ~20% on every big row; C5 measures 67% on one row and 0.2% on another in the
+    same pair of runs.
+
+                            G6        C2        C3        C4        C5
+        total / s         1383.0    1795.0    1494.6    1569.5    1739.0
+        tests               1045      1097      1128      1159      1179
+        SECONDS PER TEST  1.3234    1.6363    1.3250    1.3542    1.4750
+
+    ⚠ Per test C5 is 1.4750 s against C4's 1.3542, and most of that is work
+    ADDED rather than slowed: `tests/test_furans.py` is ~125 s of new integration,
+    and without it C5 is **1.3927 s per test, +2.8% on C4** -- back inside the
+    band G6/C3/C4 sit in. ⚠ The S12->S13 eight minutes is still unbisected, and
+    is now measured against a much wider single-row floor than anyone allowed for.

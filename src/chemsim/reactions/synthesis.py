@@ -1900,7 +1900,15 @@ _FERMENTATION_EA = 55_000.0
 # MATTERS: the anomeric carbon must carry an -OH (`[CH:5]([OX2H:6])`), so a
 # GLYCOSIDE does not match -- sucrose is inert to all four of these and has to be
 # inverted first, by `glycoside_hydrolysis`, which is what `ethanol-fermentation`
-# step 1 and a brewer both do. ⚠ It fires on glucose and mannose (measured) and
+# step 1 and a brewer both do.
+# ⚠⚠⚠ **AND THAT SENTENCE WAS FALSE ABOUT THE ENGINE UNTIL C5, WHICH IS THE
+# BEST DEMONSTRATION OF C5's BUG.** `glycoside_hydrolysis` spells its new anomeric
+# hydroxyl `[OX2H1:5]`, so the glucose it made carried RDKit's `noImplicit` flag,
+# and NONE of the three branches above could run on it -- each sends that oxygen
+# into a CO2 it wrote `[O:6]=[C:9]=[O:10]` with no H count, which arrives as
+# `O=C=[OH]` and takes the whole product set with it. **A brewer who inverted the
+# sugar got no ethanol.** Every test here charges glucose by hand, so nothing saw
+# it. See `ReactionTemplate.run` and `tests/test_furans.py`. ⚠ It fires on glucose and mannose (measured) and
 # NOT on fructose, because the corpus spells fructose as a FURANOSE: a five-ring
 # sugar is a different pattern and this one does not reach it. That is S7's
 # pyranose/furanose finding -- *"the corpus spells one as a pyranose and the other
@@ -2058,6 +2066,295 @@ def homolactic_fermentation(
             _HEXOPYRANOSE_ANY
             + ">>[CH3:5][CH1:7]([OH:8])[CH0:9](=[O:10])[OH:6]"
               ".[CH3:2][CH1:3]([OH:4])[CH0:11](=[O:12])[OH:1]",
+            catalyst,
+        ),
+        A=_kinetics(A, catalyst), Ea=Ea, phase="liquid",
+    )
+
+
+# ---------------------------------------------------------------------------
+# C5 -- THE SUGAR-TO-FURAN DEHYDRATIONS, AND A CLASS WHOSE TWO ROWS ARE ONE
+# MECHANISM
+# ---------------------------------------------------------------------------
+# `PLAYABLE.md` §8b's top row after C4, and the only one there worth +2 RUNNABLE:
+# `dehydration-cyclisation`, two catalog rows and both of them fed.
+#
+#   hmf-route 1       fructose + H2SO4 -> 5-HMF + water + H2SO4
+#   furfural-route 2  xylose   + H2SO4 -> furfural + water + H2SO4
+#
+# ⚠⚠⚠ **AND FOR ONCE READING EVERY ROW SAYS *DO NOT SPLIT*.** C4's rule is that a
+# class must name a MECHANISM, and it split `fermentation` five ways because its
+# five rows were five mechanisms. These two are ONE mechanism: an acid-catalysed
+# triple dehydration of a sugar into a furan, a pentose giving furfural and a
+# ketohexose giving 5-HMF. So the class stands -- and **the credit needs BOTH
+# templates**. Grant the class off the HMF row alone and `furfural-route` goes
+# runnable with nothing in the engine able to make furfural. *The check that
+# catches a false credit and the check that catches a false split are the same
+# check; C4 read it one way and C5 reads it the other.*
+#
+# ⚠⚠⚠ **AND THE CORPUS SPELLING C4 RECORDED AS A LOST SUBSTRATE IS THE SPELLING
+# THIS CLASS NEEDS -- FOR ONE OF ITS TWO ROWS.** C4 measured that `_HEXOPYRANOSE`
+# does not fire on fructose *"because the corpus spells fructose as a FURANOSE: a
+# five-ring sugar is a different pattern"*, and booked it as a corpus limit. It is
+# not a defect, and here it is load-bearing -- for one row and not the other:
+#
+#   fructose  the beta-D-fructoFURANOSE ring is C2-C3-C4-C5-O, and that is
+#             EXACTLY 5-HMF's furan ring. Every ring bond is retained; the
+#             rewrite only strips three hydroxyls and aromatises what is left.
+#   xylose    the D-xyloFURANOSE ring is C1-C2-C3-C4-O, and furfural's ring is
+#             C2-C3-C4-C5-O. **It is the WRONG RING.** The sugar's ring oxygen
+#             leaves as one of the three waters and a new ring closes from C5.
+#
+# ⚠ So the two rows differ in the one place a coefficient vector cannot see: the
+# ketose keeps its ring and the aldose rebuilds one. Both are still a single graph
+# rewrite -- RDKit does not care whether a ring survived -- and knowing which is
+# which is what makes the atom maps below checkable rather than decorative.
+#
+# THE ATOM MAPS, AND NEITHER OF THEM MOVES AN OXYGEN BETWEEN CARBONS
+#
+#   fructose -> 5-HMF + 3 H2O
+#       the ring oxygen stays the ring oxygen; C1's hydroxyl stays the
+#       hydroxymethyl; C6's hydroxyl becomes the ALDEHYDE oxygen. The three
+#       waters are the hydroxyls of C2, C3 and C4 -- the anomeric one and the
+#       two on the ring.
+#   xylose -> furfural + 3 H2O
+#       C1's oxygen -- the anomeric hydroxyl, which is the open chain's aldehyde
+#       oxygen -- becomes the aldehyde oxygen again; C5's hydroxyl becomes the
+#       NEW ring oxygen. The three waters are C2's and C3's hydroxyls and the
+#       furanose RING oxygen, which is C4's. That is the 2,3-enediol route's own
+#       ledger: lose C3 first, cyclise C5 onto C2, dehydrate twice more.
+#
+# ⚠ C4's standard -- *every terminal oxygen in every product is the oxygen that
+# carbon already carried* -- holds unchanged on both. The rehydration below is the
+# one that cannot meet it, and it says so rather than pretending.
+#
+# ⚠⚠⚠ **THE TEMPLATES ARE STEREO-BLIND AND THE GENERALISATION THAT BUYS IS
+# CORRECT CHEMISTRY, NOT SLOP.** Spelled with `[C;H1;@,@@:n]` -- C4's
+# `_HEXOPYRANOSE_ANY` device, needed here for the same RDKit reason -- they fire
+# on every corpus sugar of the right ring size and oxidation state and on nothing
+# else. Swept over all 1583 compounds:
+#
+#   aldofuranose_dehydration   xylose, ribose, arabinose  -> furfural  (3 hits)
+#   ketofuranose_dehydration   fructose, sorbose          -> 5-HMF     (2 hits)
+#
+# **All five are right.** Every pentose gives furfural in hot acid -- that is what
+# a pentosan assay IS -- and L-sorbose dehydrates to HMF exactly as fructose does.
+# ⚠ AND SUCROSE IS INERT TO BOTH, for C4's reason at the anomeric carbon: a
+# glycoside has no free anomeric -OH, so a syrup has to be INVERTED first.
+# **That inversion is `glycoside_hydrolysis`, and before this session the engine
+# could not do it** -- see `ReactionTemplate.run`, which C5 had to fix, and which
+# had been silently costing C4's own chemistry the same step.
+#
+# ⚠⚠⚠ **THE SIDE REACTION IS BUILT TOO, AND IT IS WHY THIS ROUTE HAS A YIELD AT
+# ALL.** `hmf-route` row 2 is `hydration-ring-opening`, priced +0 in `PLAYABLE.md`
+# because the route's target is already reached at row 1 -- and the corpus names
+# it *"the side reaction that limits yield"*. Without it a flask of fructose in
+# acid runs to 100% HMF and reports a number no laboratory has ever seen. With it
+# the HMF RISES, PEAKS AND FALLS, and **where the peak sits is a property of two
+# barriers rather than of a declared stopping time.**
+#
+# ⚠⚠ AND ITS BARRIER IS THE LOWER ONE, WHICH MAKES A PREDICTION NOTHING WAS AIMED
+# AT: the destruction is LESS temperature-sensitive than the formation, so
+# **selectivity IMPROVES as the flask gets hotter.** That is how this process is
+# actually operated -- hot and short, not warm and long -- and it falls out of two
+# sourced barriers. S11's competing-templates finding, arriving on a CONSECUTIVE
+# pair instead of a parallel one.
+#
+# ⚠ THE ONE PLACE A MAP HERE IS A CHOICE, STATED RATHER THAN HIDDEN. HMF carries
+# three oxygens and levulinic acid needs its ketone at C4, which forces the
+# skeleton: the aldehyde carbon leaves as the formic acid, the ring oxygen stays
+# bonded to the carbon it is already on and becomes the CARBOXYL, and the
+# hydroxymethyl carbon has to end up a METHYL -- so that carbon's oxygen cannot
+# stay where it is. It is moved ONE bond, onto its neighbour, where it becomes
+# the ketone. **Exactly one oxygen migrates and it migrates to an adjacent
+# atom**, which is the smallest move the stoichiometry permits. C4's CO2-oxygen
+# paragraph is the precedent: a genuine arbitrary choice gets written down.
+#
+# THE KINETICS, AND WHAT IS SOURCED
+#
+# All three barriers are literature apparent barriers for the acid-catalysed
+# reaction in water, quoted at each template. The BAND matters more than the
+# midpoint, because what the flask demonstrates is an ORDERING:
+#
+#   fructose -> HMF          140 kJ/mol   (reported band ~125-160)
+#   xylose -> furfural       130 kJ/mol   (reported band ~120-145)
+#   HMF + 2 H2O -> LA + FA   110 kJ/mol   (Girisuta et al., 110.5)
+#
+# ⚠ The two dehydrations' pre-exponentials are order-of-magnitude choices for the
+# molecularity, as everywhere in this project: 1e13 is a transition-state
+# frequency factor for a unimolecular collapse. **ONE number is fitted and it is
+# the rehydration's A**, because a peak yield is a RATIO of two rates and two
+# barriers fix only how that ratio moves with temperature, never its value at one
+# temperature. 5.0e5 puts the peak at 52.5% of the fructose at 420 K against a
+# reported ~50-55%, and it CHECKS against something it was not fitted to: folded
+# against the flask's own water it is an effective first-order 1.4e9 /s, an
+# entropy of activation near **-74 J/mol/K**, which is what ordering two waters
+# into a transition state costs. C4 fitted three constants and could check none
+# of them; one fitted constant with an independent check is the better trade.
+#
+# ⚠ ALL THREE ARE IRREVERSIBLE. The two dehydrations take `library`'s argument for
+# the alcohol dehydrations -- they eliminate water into a large excess of water,
+# and they end on an aromatic ring. The rehydration is irreversible for the
+# opposite reason: it ends on two carboxylic acids and a ring that is no longer
+# there, and nothing in a hot acid liquor runs that backwards.
+
+_FURAN_ACID_EA_KETOSE = 140_000.0
+_FURAN_ACID_EA_ALDOSE = 130_000.0
+
+# The beta-D-fructofuranose ring, with its stereocentres spelled as "either".
+# ⚠ THE ANOMERIC -OH IS REQUIRED (`[OX2H:6]` on `:5`), so a glycoside does not
+# match and sucrose is inert until something inverts it.
+# ⚠ The exocyclic `[CH2:7][OX2H:8]` on the anomeric carbon is what makes this a
+# KETOhexose pattern: an aldofuranose carries an H in that position instead and
+# falls to the other template. Two patterns, two rows, no overlap -- measured.
+_KETOFURANOSE = (
+    "[OX2H:1][CH2:2][C;H1;@,@@:3]1[OX2:4][C;@,@@:5]([OX2H:6])([CH2:7][OX2H:8])"
+    "[C;H1;@,@@:9]([OX2H:10])[C;H1;@,@@:11]1[OX2H:12]"
+)
+
+# The D-xylofuranose ring, same device. ⚠ NOTE THAT `:4` -- the ring oxygen -- is
+# a LEAVING atom here and a SURVIVING one in the ketose pattern above. That single
+# difference is the whole distance between the two rows of this class.
+_ALDOFURANOSE = (
+    "[OX2H:1][CH2:2][C;H1;@,@@:3]1[OX2:4][C;H1;@,@@:5]([OX2H:6])"
+    "[C;H1;@,@@:7]([OX2H:8])[C;H1;@,@@:9]1[OX2H:10]"
+)
+
+# 5-HMF itself, for the rehydration. ⚠ SPECIFIC TO THE HYDROXYMETHYL, and that is
+# chemistry rather than convenience: furfural has none, does not match, and is
+# indeed the furan that survives the conditions which destroy HMF.
+_HYDROXYMETHYLFURFURAL = (
+    "[OX2H:1][CH2:2][c:3]1[cH:4][cH:5][c:6]([CH:7]=[O:8])[o:9]1"
+)
+
+
+def ketofuranose_dehydration(
+    A: float = 1.0e13,
+    Ea: float = _FURAN_ACID_EA_KETOSE,
+    catalyst: str | None = None,
+) -> ReactionTemplate:
+    """fructose -> 5-hydroxymethylfurfural + 3 H2O. `hmf-route` step 1.
+
+    ⚠⚠ **THE RING SURVIVES.** A beta-D-fructofuranose already contains 5-HMF's
+    furan ring -- C2-C3-C4-C5 closed by the ring oxygen -- so this rewrite forms
+    no ring bond at all. It strips the anomeric hydroxyl and the two ring
+    hydroxyls, takes C6's hydroxymethyl to the aldehyde, and lets aromaticity
+    perception do the rest. **That is why the corpus's furanose spelling of
+    fructose is the right one here and not the inconvenience C4 met.**
+
+    ⚠ It fires on sorbose too, and that is correct: L-sorbose is a ketohexose and
+    dehydrates to HMF like fructose does.
+
+    Ea 140 kJ/mol: the apparent barrier for fructose dehydration in dilute
+    aqueous mineral acid, reported in the ~125-160 kJ/mol band. The spread is
+    largely how much of the protonation pre-equilibrium each study folds in.
+
+    ⚠ Irreversible -- three waters eliminated into water, ending on an aromatic
+    ring. See the block comment.
+    """
+    return ReactionTemplate(
+        name="ketofuranose_dehydration" + ("_acid" if catalyst else ""),
+        smarts=_maybe_catalyse(
+            _KETOFURANOSE
+            + ">>[OH1:8][CH2:7][CH0:5]1=[CH1:9][CH1:11]=[CH0:3]([CH1:2]=[OH0:1])"
+              "[OH0:4]1.[OH2:6].[OH2:10].[OH2:12]",
+            catalyst,
+        ),
+        A=_kinetics(A, catalyst), Ea=Ea, phase="liquid",
+    )
+
+
+def aldofuranose_dehydration(
+    A: float = 1.0e13,
+    Ea: float = _FURAN_ACID_EA_ALDOSE,
+    catalyst: str | None = None,
+) -> ReactionTemplate:
+    """xylose -> furfural + 3 H2O. `furfural-route` step 2, and the catalog's
+    oldest industrial use of a farm waste.
+
+    ⚠⚠ **THE RING DOES NOT SURVIVE, AND THAT IS THIS ROW'S WHOLE DIFFERENCE FROM
+    ITS CLASSMATE.** A xylofuranose ring is C1-C2-C3-C4-O; furfural's is
+    C2-C3-C4-C5-O. So the rewrite breaks BOTH bonds to the sugar's ring oxygen,
+    sends that oxygen out as one of the three waters, and closes a new ring from
+    C5's hydroxyl onto C2. The anomeric oxygen -- which is the open chain's
+    aldehyde oxygen -- becomes an aldehyde oxygen again, and that is the part of
+    the map worth checking.
+
+    ⚠ It fires on ribose and arabinose as well, and that is right: every pentose
+    gives furfural in hot acid, which is what a pentosan assay measures.
+
+    Ea 130 kJ/mol: the apparent barrier for xylose dehydration in dilute mineral
+    acid, reported in the ~120-145 kJ/mol band.
+
+    ⚠ Irreversible, on its classmate's argument.
+    """
+    return ReactionTemplate(
+        name="aldofuranose_dehydration" + ("_acid" if catalyst else ""),
+        smarts=_maybe_catalyse(
+            _ALDOFURANOSE
+            + ">>[OH0:6]=[CH1:5][CH0:7]1=[CH1:9][CH1:3]=[CH1:2][OH0:1]1"
+              ".[OH2:4].[OH2:8].[OH2:10]",
+            catalyst,
+        ),
+        A=_kinetics(A, catalyst), Ea=Ea, phase="liquid",
+    )
+
+
+def hydroxymethylfurfural_rehydration(
+    A: float = 5.0e5, Ea: float = 110_000.0, catalyst: str | None = None,
+) -> ReactionTemplate:
+    """5-HMF + 2 H2O -> levulinic acid + formic acid. `hmf-route` step 2, which
+    the corpus itself labels *"the side reaction that limits yield"*.
+
+    ⚠⚠⚠ **THIS IS THE TEMPLATE THAT MAKES THE ROUTE HONEST.** Without it a flask
+    of fructose in acid goes to 100% HMF and the number means nothing. With it the
+    HMF rises, peaks and falls, and where the peak sits is decided by two barriers
+    rather than by anyone declaring when to stop.
+
+    ⚠⚠ **AND ITS BARRIER IS THE LOWER OF THE TWO, WHICH PREDICTS SOMETHING THIS
+    SESSION DID NOT AIM AT: SELECTIVITY IMPROVES WITH TEMPERATURE.** 110 against
+    140 kJ/mol makes the destruction the less temperature-sensitive step, so a
+    hotter, shorter run keeps more of its HMF. That is exactly how the process is
+    operated, and it comes out of two sourced numbers rather than a fit.
+
+    ⚠ It does NOT match furfural, which has no hydroxymethyl group. Correct:
+    furfural is the stable furan and survives what opens HMF.
+
+    ⚠ **THE ONE OXYGEN THAT MIGRATES.** The skeleton is forced -- the aldehyde
+    carbon leaves as formic acid, the ring oxygen stays bonded to the carbon it is
+    already on and becomes the carboxyl, and the hydroxymethyl carbon must end up
+    a methyl -- so that carbon's oxygen is moved one bond, onto its neighbour,
+    where it becomes the ketone. Stated rather than hidden; see the block comment.
+
+    Ea 110 kJ/mol: Girisuta et al. report 110.5 kJ/mol for HMF decomposition to
+    levulinic acid in aqueous sulfuric acid.
+
+    ⚠⚠ **A IS THE ONE FITTED NUMBER IN THIS SESSION, AND WHAT IT IS FITTED TO IS
+    THE PEAK YIELD.** 5.0e5 L^2/mol^2/s puts the maximum at **52.5% of the
+    fructose at 420 K** in the reference flask, against the ~50-55% that fructose
+    in dilute aqueous acid is reported to give. It has to be fitted because a
+    RATIO of two rates is what a peak yield is, and the two barriers alone fix
+    only the ratio's temperature dependence, not its value at any one
+    temperature. `skraup_cyclisation`'s bargain and C4's, declared the same way.
+
+    ⚠ **AND THE FITTED NUMBER CHECKS OUT AGAINST SOMETHING IT WAS NOT FITTED
+    TO.** Folding the flask's own water concentration (~52.6 mol/L) into it gives
+    an effective FIRST-order pre-exponential of ~1.4e9 /s -- about 7000x below a
+    bare transition-state frequency factor, which is an entropy of activation of
+    **about -74 J/mol/K**. That is what ordering TWO water molecules into a
+    transition state costs, and it is the right size for it. A fitted constant
+    that lands on a physically sensible dS-double-dagger is a different kind of
+    number from one that only reproduces its own target.
+
+    ⚠ Irreversible: it ends on two carboxylic acids and a ring that is gone.
+    """
+    return ReactionTemplate(
+        name="hydroxymethylfurfural_rehydration" + ("_acid" if catalyst else ""),
+        smarts=_maybe_catalyse(
+            _HYDROXYMETHYLFURFURAL
+            + ".[OX2H2:10].[OX2H2:11]"
+              ">>[CH3:2][CH0:3](=[OH0:1])[CH2:4][CH2:5][CH0:6](=[OH0:9])[OH1:10]"
+              ".[CH1:7](=[OH0:8])[OH1:11]",
             catalyst,
         ),
         A=_kinetics(A, catalyst), Ea=Ea, phase="liquid",
@@ -2282,6 +2579,33 @@ def vanillin_chemistry(base: str | None = "[OH-]") -> list[ReactionTemplate]:
     """
     return [alkene_isomerisation(catalyst=base), oxidative_cleavage()]
 
+
+def furan_chemistry(catalyst: str | None = None) -> list[ReactionTemplate]:
+    """The biomass furan platform: make 5-HMF out of a ketose and then destroy it.
+
+    ⚠⚠ **A BUNDLE OF EXACTLY TWO, AND THE SECOND ONE IS THE POINT.** Charge
+    fructose and water. `ketofuranose_dehydration` alone runs to 100% HMF, which
+    is not a result; `hydroxymethylfurfural_rehydration` is what gives the flask a
+    yield MAXIMUM, and its position is set by the two barriers.
+
+    ⚠ `aldofuranose_dehydration` is deliberately NOT here. It is the same class
+    and a different feedstock -- a pentose rather than a ketohexose -- and a
+    bundle carrying both would report a flask no one runs. Add it when the charge
+    is a real hemicellulose hydrolysate carrying both sugars.
+
+    ⚠ Charge SUCROSE instead of fructose and add `glycoside_hydrolysis`, and the
+    whole chain runs: invert, dehydrate, over-cook. That is `invert-sugar`
+    followed by `hmf-route`, and it is the playable path -- sucrose is natural
+    here and fructose is not.
+
+    ⚠ No `dissociation_templates()` is needed. Pass a `catalyst` SMILES (with
+    `electrolyte_provider()`) to make the acid catalysis explicit; the apparent
+    rate is unchanged at `library.CATALYST_REFERENCE`.
+    """
+    return [
+        ketofuranose_dehydration(catalyst=catalyst),
+        hydroxymethylfurfural_rehydration(catalyst=catalyst),
+    ]
 
 def quinoline_chemistry() -> list[ReactionTemplate]:
     """The Skraup ring closure alone. ⚠ ONE template, and it needs FOUR things.

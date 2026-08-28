@@ -498,6 +498,39 @@ class ReactionTemplate:
         balance that closes perfectly while the answer is wrong. ``RemoveHs``
         collapses them onto their heavy atom, and it correctly leaves H2 itself
         alone -- neither of its atoms has a heavy neighbour to fold into.
+
+        ⚠⚠⚠ **AND EVERY PRODUCT IS RE-PARSED FROM ITS OWN CANONICAL SMILES,
+        BECAUSE A MOLECULE RDKit BUILT FROM A PRODUCT TEMPLATE IS NOT THE SAME
+        OBJECT AS THE ONE THAT SMILES PARSES TO.** ``Molecule``'s stated identity
+        contract is *two Molecules are equal iff their canonical SMILES match* --
+        and without this line two molecules can satisfy it and still behave
+        differently, because a product-template atom written with an H count
+        (``[CH3:2]``, ``[OH1:8]``) comes back with RDKit's ``noImplicit`` flag SET
+        and its hydrogens counted as EXPLICIT. Substructure matching cannot see
+        the difference -- the total H count is the same -- so such a species is
+        discovered, priced and charged exactly as normal. But ``RunReactants`` on
+        it hands the flag to the NEXT template's products, and any product atom
+        that template did not itself spell an H count for inherits an H it must
+        not have. The result is an ``AtomValenceException`` inside this method,
+        which this method CATCHES, and a silently EMPTY product list.
+
+        ⚠⚠ **THE FAILURE IS INVISIBLE TO EVERY SINGLE-TEMPLATE TEST**, because it
+        takes one template to MAKE the species another template consumes: charge
+        that same species by hand and the reaction fires. C5 hit it two
+        generations deep in its own furan chain and then measured it on C4's
+        chemistry -- **the engine could not ferment sugar it had inverted
+        itself.** ``glycoside_hydrolysis`` spells its new anomeric hydroxyl
+        ``[OX2H1:5]``, so the glucose it makes out of sucrose carried the flag,
+        and all four fermentation templates returned nothing for it. C4's
+        docstring says a brewer *"has to invert the sugar first"*; before this
+        line, a brewer who did got no ethanol at all.
+
+        ⚠ A round trip through canonical SMILES is the cheapest fix and also the
+        right one: that SMILES is already this species' identity everywhere else
+        in the engine, so anything the round trip loses was never part of the
+        identity to begin with. Writing an H count on EVERY product atom works
+        too, and the templates C5 added do -- but that is a rule a template author
+        has to remember, and this is a property of the type.
         """
         rd_reactants = tuple(m._mol for m in reactants)
         outcomes = self._rxn.RunReactants(rd_reactants)
@@ -511,6 +544,11 @@ class ReactionTemplate:
                 try:
                     Chem.SanitizeMol(p)
                     p = Chem.RemoveHs(p)
+                    # See the docstring: re-parse, so that a species a template
+                    # MADE is the same object as the one its SMILES parses to.
+                    reparsed = Chem.MolFromSmiles(Chem.MolToSmiles(p))
+                    if reparsed is not None:
+                        p = reparsed
                 except (Chem.AtomValenceException, Chem.KekulizeException, ValueError):
                     ok = False
                     break

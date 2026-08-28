@@ -370,7 +370,12 @@ def test_the_pentosan_row_keeps_an_uncovered_class_and_it_is_free_today(steps):
 
     gaps = {s.cls for s in steps if s.route == "furfural-route"} - set(
         cc.TEMPLATE_CLASSES)
-    assert len(gaps) == 4
+    # ⚠⚠ C5 TOOK ONE OF THE FOUR (`dehydration-cyclisation`), so this
+    # row's warning is one class NEARER to firing rather than further: the
+    # route needs three more classes now, not four. **The measurement this
+    # test exists for is the one below -- that filing the row under the
+    # covered class would cost nothing TODAY -- and it is still zero.**
+    assert len(gaps) == 3
 
     routes = cat.load_routes()
     compounds = cat.load_compounds()

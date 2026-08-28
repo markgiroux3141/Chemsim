@@ -611,6 +611,47 @@ TEMPLATE_CLASSES = {
     # fitted to.
     "solventogenic-fermentation": "acetonic_fermentation",
     "homolactic-fermentation": "homolactic_fermentation",
+    # ---------------------------------------------------------------------
+    # C5 -- A CLASS WHOSE TWO ROWS ARE ONE MECHANISM, SO IT IS NOT SPLIT
+    # ---------------------------------------------------------------------
+    # `PLAYABLE.md` §8b's top row after C4. C3 and C4 both bought a class by
+    # SPLITTING it, and the rule that told them to -- *read every row before
+    # crediting the class* -- says the opposite here:
+    #
+    #   hmf-route 1       fructose + H2SO4 -> 5-HMF    + 3 H2O
+    #   furfural-route 2  xylose   + H2SO4 -> furfural + 3 H2O
+    #
+    # Both are an acid-catalysed triple dehydration of a sugar into a furan. One
+    # mechanism, two substrates -- so the class stands, and **the credit needs
+    # BOTH templates.** Credit it off the HMF row alone and `furfural-route` goes
+    # template-ready with nothing in the engine able to make furfural: C4's false
+    # credit, from the other direction. *The same check refuses a lazy lump and a
+    # lazy split; which one it refuses depends on the rows, not on the taste of
+    # the session reading them.*
+    #
+    # ⚠⚠ **AND THE TWO ROWS ARE NOT THE SAME REWRITE, WHICH IS WHY BOTH HAD TO BE
+    # WRITTEN RATHER THAN ONE GENERALISED.** The corpus spells both sugars as
+    # FURANOSES, and only one of those rings is the product's:
+    #
+    #   fructose  fructofuranose ring C2-C3-C4-C5-O IS 5-HMF's furan ring; no
+    #             ring bond is formed or broken, only three hydroxyls leave.
+    #   xylose    xylofuranose ring is C1-C2-C3-C4-O and furfural's is
+    #             C2-C3-C4-C5-O -- the WRONG ring. The sugar's ring oxygen leaves
+    #             as a water and a new ring closes from C5.
+    #
+    # ⚠ CREDITED ON AN INTEGRATION, to the S1 standard: `validation/furans.py`
+    # charges a real Vessel with sucrose and water, inverts it, dehydrates the
+    # fructose and reads 5-HMF out -- and then over-cooks it, because
+    # `hydration-ring-opening` below is the row that gives the route a yield.
+    "dehydration-cyclisation":
+        "ketofuranose_dehydration + aldofuranose_dehydration",
+    # `hmf-route` row 2, the corpus's own *"side reaction that limits yield"*.
+    # ⚠ It is worth +0 in `PLAYABLE.md` because the route's target is already
+    # reached at row 1 -- and building it anyway is what stops this route
+    # reporting 100% of a compound that has never been isolated in that yield.
+    # **A row worth nothing on the scoreboard can be the row that makes the
+    # scoreboard's number mean something.**
+    "hydration-ring-opening": "hydroxymethylfurfural_rehydration",
     # ⚠⚠ S9 SPLIT `catalytic-gas-oxidation`, AND IT WAS A FALSE CREDIT ON TWO OF
     # ITS THREE ROWS -- found while RANKING the queue rather than while building
     # anything, which is the second time a class has come apart under that check.

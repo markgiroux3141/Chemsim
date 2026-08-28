@@ -29,6 +29,28 @@ ETOH = recipes.ETHANOL
 ESTER = recipes.ETHYL_BENZOATE
 
 ALDEHYDE, PEROXIDE, ETHYL_ACETATE, ETHER = "CC=O", "OO", "CCOC(C)=O", "CCOCC"
+ACETATE = "CC(=O)[O-]"
+
+
+def acetyl(st) -> float:
+    """Everything the oxidation cascade made, acid PLUS its conjugate base.
+
+    ⚠⚠⚠ **C5 IS WHY THIS FUNCTION EXISTS, AND IT IS A CORRECTION RATHER THAN
+    A CONVENIENCE.** This pot is a SAPONIFICATION: it holds ~0.09 mol of free
+    hydroxide at the point these assertions read it. A carboxylic acid in that
+    liquor is a carboxylATE, and until C5 fixed ``ReactionTemplate.run`` the
+    engine could not say so -- ``carboxylic_acid_dissociation`` could not fire on
+    acetic acid because ``peroxide_over_oxidation`` had MADE it, so the acid sat
+    there neutral in caustic soda and even re-esterified with the ethanol.
+    **The old numbers were a neutral acid and its ethyl ester in 0.09 mol of free
+    alkali**, which is not chemistry; the acetate is.
+
+    ⚠⚠ So these tests count the acid and the anion TOGETHER, which is what
+    "the prep makes its own contaminant" always meant. Measured after the fix:
+    the cascade makes **6.85e-3 mol of acetyl at two hours and all of it is the
+    anion.**
+    """
+    return st.total(ACETIC) + st.total(ACETATE)
 
 
 @pytest.fixture(scope="module")
@@ -109,12 +131,22 @@ def test_the_prep_makes_its_own_contaminant_from_the_alcohol_it_liberates(net):
     st = saponify(net, air=True)
 
     assert st.total(ETOH) > 0.15, "saponification must actually liberate ethanol"
-    for species in (ALDEHYDE, PEROXIDE, ACETIC, ETHYL_ACETATE):
+    for species in (ALDEHYDE, PEROXIDE):
         assert st.total(species) > 0.0, species
+    assert acetyl(st) > 0.0
+    # ⚠⚠ AND IT IS ALL THE ANION, WHICH IS THE POINT OF `acetyl`. The pot
+    # is caustic; a carboxylic acid in it is a carboxylate. C5's engine fix is
+    # what let the dissociation reach an acid another template had made.
+    assert st.total(ACETIC) == pytest.approx(0.0, abs=1e-12)
+    assert st.total(ACETATE) > 0.0
+    # ⚠ AND ETHYL ACETATE IS GONE FOR THE SAME REASON, WHICH IS ALSO RIGHT:
+    # there is no Fischer esterification at pH 13, because there is no acid left
+    # to esterify. The old network made an ester in a saponification pot.
+    assert st.total(ETHYL_ACETATE) == pytest.approx(0.0, abs=1e-12)
     # The cascade's ORDERING: over-oxidation is the faster step (Ea 50 vs 65),
     # so the acid outruns the aldehyde it comes from rather than piling up
     # behind it.
-    assert st.total(ACETIC) > 10.0 * st.total(ALDEHYDE)
+    assert acetyl(st) > 10.0 * st.total(ALDEHYDE)
 
 
 def test_sealing_the_flask_removes_the_oxidation_products(net):
@@ -124,9 +156,9 @@ def test_sealing_the_flask_removes_the_oxidation_products(net):
     air = saponify(net, air=True)
     sealed = saponify(net, air=False)
 
-    assert sealed.total(ACETIC) < 1e-6
+    assert acetyl(sealed) < 1e-6
     assert sealed.total(ALDEHYDE) < 1e-6
-    assert air.total(ACETIC) > 1000.0 * max(sealed.total(ACETIC), 1e-12)
+    assert acetyl(air) > 1000.0 * max(acetyl(sealed), 1e-12)
     # ... and the benzoyl chemistry is untouched by it, which is why this is a
     # PURITY mechanic and not a yield one.
     assert air.total(BENZOATE) == pytest.approx(sealed.total(BENZOATE), rel=1e-3)
@@ -139,8 +171,8 @@ def test_the_side_products_are_bounded_by_the_oxygen_in_the_flask(net):
     two_hours = saponify(net, air=True, hours=2.0)
     eight_hours = saponify(net, air=True, hours=8.0)
 
-    assert eight_hours.total(ACETIC) >= two_hours.total(ACETIC)
-    assert eight_hours.total(ACETIC) < 2.0 * two_hours.total(ACETIC), (
+    assert acetyl(eight_hours) >= acetyl(two_hours)
+    assert acetyl(eight_hours) < 2.0 * acetyl(two_hours), (
         "the headspace oxygen is the budget; four times the time must not give "
         "anything like four times the acid"
     )

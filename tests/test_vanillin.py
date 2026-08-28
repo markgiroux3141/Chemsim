@@ -473,16 +473,21 @@ def test_the_PAIR_is_worth_more_than_the_sum_of_its_parts():
         return len(bp.closure(pool=pool)[0])
 
     both = playable(set())
-    assert both == 20                                        # C4's baseline
-    assert playable({"alkene-isomerisation"}) == 19          # -1: cleavage only
-    assert playable({"oxidative-cleavage"}) == 18            # -2: neither route
-    assert playable({"alkene-isomerisation", "oxidative-cleavage"}) == 18
+    assert both == 21                                        # C5's baseline
+    assert playable({"alkene-isomerisation"}) == 20          # -1: cleavage only
+    assert playable({"oxidative-cleavage"}) == 19            # -2: neither route
+    assert playable({"alkene-isomerisation", "oxidative-cleavage"}) == 19
 
     # ⚠⚠ READ AS DIFFERENCES, NOT AS LEVELS -- which is why this test
     # survived C4 with four numbers changed and its FINDING untouched. C4 added
     # two playable routes elsewhere, so every level above moved by +2 and every
     # difference below is identical to C3's. **A test that pins a claim about a
     # difference must assert the difference.**
+    # ⚠⚠⚠ C5 IS THE SECOND TIME, AND IT COST ANOTHER TEST ITS NAME.
+    # Every level above moved by +1 again and every difference below is C3's
+    # still, two sessions running. Meanwhile `test_playable.py`'s headline test
+    # had to be RE-NAMED, because its name carried the level -- which is
+    # exactly the failure mode this comment was written about.
     base = playable({"alkene-isomerisation", "oxidative-cleavage"})
     assert playable({"oxidative-cleavage"}) - base == 0
     assert playable({"alkene-isomerisation"}) - base == 1

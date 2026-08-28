@@ -178,6 +178,23 @@ _PAIRS: tuple[AcidPair, ...] = (
     # acidification step of the aspirin route behave differently from the
     # benzoic-acid prep it is otherwise identical to, so it is not decoration.
     AcidPair("OC(=O)c1ccccc1O", "[O-]C(=O)c1ccccc1O", 2.97, "salicylic acid"),
+    # ⚠⚠⚠ ADDED BY C5, AND IT WAS EXPOSED RATHER THAN MISSED. The Kolbe-
+    # Schmitt network makes salicylate and then wants to take its PHENOL
+    # proton as well -- real chemistry, pKa2 = 13.4 -- and until C5 fixed
+    # `ReactionTemplate.run` the engine could not run a template on a
+    # species another template had MADE, so `phenol_dissociation` never
+    # reached the mono-anion and this row was never asked for. **The fix
+    # did not create a gap; it made a two-generation network reachable and
+    # the gap was already there.** C2's rule, from the other side: a table
+    # can be short a row for years if nothing can get far enough to ask.
+    #
+    # ⚠⚠ 13.4 against phenol's own 9.95, and the 3.5 units are the point:
+    # the ortho CARBOXYLATE hydrogen-bonds to the phenol proton and holds
+    # onto it, which is the same interaction that makes the FIRST proton
+    # come off at 2.97 instead of benzoic acid's 4.20. One hydrogen bond,
+    # both directions, and this table now carries both ends of it.
+    AcidPair("[O-]C(=O)c1ccccc1O", "[O-]C(=O)c1ccccc1[O-]", 13.4,
+             "salicylic acid, 2nd"),
     AcidPair("CC(O)C(=O)O", "CC(O)C(=O)[O-]", 3.86, "lactic acid"),
     AcidPair("OC(=O)C(=O)O", "[O-]C(=O)C(=O)O", 1.25, "oxalic acid, 1st"),
     AcidPair("OC(=O)CCCCC(=O)O", "[O-]C(=O)CCCCC(=O)O", 4.43, "adipic acid, 1st"),

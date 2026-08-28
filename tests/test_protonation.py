@@ -98,7 +98,13 @@ def test_the_only_cations_in_the_table_are_the_four_plus_the_hydronium(ions):
     got = sorted(k for k in ions if Molecule.from_smiles(k).charge > 0)
     assert got == ["C[NH3+]", "[NH3+]c1ccccc1", "[NH4+]", "[OH3+]",
                    "c1cc[nH+]cc1"]
-    assert len(ions) == 29
+    # ⚠⚠ C5 GREW IT AGAIN, 29 -> 30, AND THE PROMPT WORKED A SECOND
+    # TIME. The new row is salicylic acid's SECOND dissociation -- the
+    # PHENOL proton, pKa 13.4 -- so the addition is an ANION again and the
+    # cation list above is unchanged. ⚠ It was EXPOSED rather than
+    # missed: nothing could reach the mono-anion with a template until C5
+    # fixed `ReactionTemplate.run`. See `tests/test_furans.py`.
+    assert len(ions) == 30
 
 
 def test_an_anion_is_still_anchored_on_its_acid_bit_for_bit(ions):
