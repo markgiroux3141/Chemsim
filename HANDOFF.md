@@ -6967,3 +6967,155 @@ RESOLVED since the last handoff:
     sweeps at 6 lines / worst `inf`, `workshop` at 2 / 1.98e-04, `activity` at
     1.28e-03, and `mercury_retort` — the harness's own self-check — at
     **0 lines and 1.02x**.
+
+107. ✔✔ **C3 — VANILLIN FROM CLOVE OIL: THE CLASS HAD BEEN REFUSED ON THE
+    EVIDENCE OF ONE OF ITS TWO ROWS.** S11 attempted `oxidative-cleavage`, read
+    `vanillin-lignin` step 1, found that a C10 monolignol cannot make one C8
+    vanillin and a water, and **refused the class**. It was right about the row.
+    **The class has a second row and it balances exactly 1:1 with its C2
+    fragment named.** Playable **16 → 18** (tiers 9 / 8 / 1), runnable
+    **39 → 41**, classes **53/236 → 55/236**, template-ready **42 → 44**, BOTH
+    **34 → 36**; species-ready unchanged at **85**, because C3 added no data row
+    and no engine code — two SMARTS strings and two table entries.
+    `validation/vanillin.py` (9 panels, ~2 min), `tests/test_vanillin.py`
+    (31 tests, ~66 s).
+
+    ⚠⚠⚠ **THE ARITHMETIC THAT DECIDED IT, DONE BEFORE ANYTHING WAS WRITTEN:**
+
+        isoeugenol + O2 -> vanillin + acetaldehyde     C10H12O4 both sides, EXACT
+        coniferyl  + O2 -> vanillin + glycolaldehyde   C10H12O5 both sides, EXACT
+        coniferyl  + O2 -> vanillin + water            C10H12O5 -> C8H10O4   NO
+
+    So the template is written off `vanillin-eugenol` step 2 — and applied to
+    coniferyl alcohol it produces the fragment the lignin row omits, which is
+    **`glycolaldehyde`, a compound `07-carbonyls.psv` has carried all along.**
+    *The mechanism supplies the fragment and the corpus supplies its name;
+    nothing is invented, which is the precise thing S11 refused to do.*
+
+    ⚠⚠⚠ **THREE SESSIONS RUNNING HAVE FOUND THE SAME SHAPE.** C1 — a route
+    blocked on a price for a species **not in its chemistry**. C2 — a route
+    blocked on a price **in a different table**. C3 — a **class refused on the
+    evidence of one of its rows.** **Read every row of a class before refusing
+    the class**, and print the refusal before costing it.
+
+    ⚠ **AND THE CORPUS ROW WAS LEFT WRONG ON PURPOSE**, which is the half of
+    S11's reason that stands: on coniferyl alcohol the mechanism is unambiguous,
+    but the catalog row is about alkaline **lignin liquor**, where the C2
+    fragment is a mixture depending on which monolignol reacted. Writing one name
+    into it would over-commit the corpus. ⚠⚠ `vanillin-lignin` is now **inside
+    the BOTH column**, so `corpus_balance`'s own standing example of a row that
+    PASSES the balance test and is not the reaction it is written as sits inside
+    the number the project quotes. That panel is rewritten, not remembered.
+
+    ⚠⚠⚠ **THE SHARPEST FINDING IS NUMERICAL: A REVERSIBLE LIQUID-PHASE
+    EQUILIBRIUM IS EXACT ON THE LIQUID AND NOT ON THE INVENTORY.** C3's first
+    flask read an isoeugenol:eugenol ratio of **15362** where `kf/kb` is
+    **2677.83**, and that 5.7x was nearly written into a template comment as
+    chemistry:
+
+        liquor / L   TOTAL ratio   LIQUID ratio   eug in gas   iso in gas
+             0.082      10993.93        2677.83       60.14%       22.27%
+             0.730       2866.67        2677.83       10.25%        2.12%
+
+    **The liquid ratio is `kf/kb` to the last digit** — detailed balance was
+    never in question. The allyl isomer is ~5x the more volatile, so a share of
+    the eugenol sits where no rate law can reach it, and the smaller the liquor
+    the bigger the lie. ⚠⚠ **`state().total()` is the right number for a YIELD
+    and the wrong one for an EQUILIBRIUM.** A rate law is written on one phase;
+    read the equilibrium on that phase or not at all.
+
+    ⚠⚠ **§8 RANKS ROUTES AND A SESSION BUILDS TEMPLATES, SO `PLAYABLE.md` GREW A
+    §8b.** The `worth` column grants a ROUTE; a template grants a CLASS, and
+    they disagree at the top of the table: grant `molten-salt-electrolysis` and
+    §8's **+3** top row `hall-heroult` is **still not runnable** (cryolite is
+    refused a price too — the point lands on `downs-cell`); grant `slagging` and
+    **nothing at all moves**. **9 of the 20 rows cannot be bought by a template
+    at any price**, and only 7 of the 23 missing classes are worth a point.
+    *A row's worth assumes every OTHER blocker away, and a template removes one.*
+
+    ⚠⚠⚠ **AND THE PAIR C3 BUILT IS SUPER-ADDITIVE, WHICH C3's OWN PROBE HID.**
+    `alkene-isomerisation` alone is **+0** and `oxidative-cleavage` alone **+1**;
+    together **+2**, because `vanillin-eugenol` needs both. The scouting probe
+    printed its pair table `[:12]` and that row fell off the bottom, so the
+    session went in expecting +1. *A probe that truncates its own output can hide
+    the row it was written to find.*
+
+    ⚠⚠⚠ **§8b's NEW DETECTOR FOUND A LIVE FALSE CREDIT AND THEN HAD ONE OF ITS
+    OWN.** `route_reachable` blocks a route whose REACTANT has no molecular graph
+    and does not look at one the route MAKES. So `oxidative-complexation` is
+    scored **+1** on `iron-gall-ink`, whose product `iron-gallate-marker` the
+    corpus deliberately does not spell — **build it and the route goes
+    template-ready and `build_network` has no graph to make its product from.**
+    The trigger is in `data/catalog/README.md` in C1's and C2's landmine form.
+    ⚠ The detector's first version blamed `pyrolysis`/`coal-gas` as well, where
+    the marker is on the LEFT and the route was already dead: **a false-credit
+    detector needs the same does-it-actually-run check as everything it audits.**
+
+    ⚠⚠ **THE FLASK IS AN AUTOCLAVE AND THAT IS NOT DECORATION.** 0.73 L of
+    alkaline liquor in a 2 L vessel at 470 K under ~30 bar of its own steam:
+    **0.43% in four hours at 400 K, 26.9% at 440, 93.2% at 470, 99.98% at 490.**
+    ⚠ The acetaldehyde is **1:1 with the vanillin at every row** — the balance
+    above showing up as an invariant of the run. ⚠ **The isomerisation is
+    rate-determining** (94.65% in 4 h alone against the cleavage's 97% in 1 h),
+    so the intermediate never accumulates, which is the real preparation's shape.
+    ⚠⚠ **No over-oxidation channel exists, so every yield is an UPPER BOUND**
+    against a real 60-80%.
+
+    ⚠⚠ **AND THE BASE IS THE GATE IN A PLACE NEITHER TEMPLATE NAMES.** Zero
+    hydroxide gives **exactly zero** vanillin. `oxidative_cleavage` declares no
+    catalyst and would cleave any isoeugenol present; there is none, because the
+    step that MAKES isoeugenol is the base-catalysed one. *A two-template route
+    is gated by whichever step comes first, and neither template says so alone.*
+    ⚠ Both routes land in **tier 2 and not on sulfuric acid**: their feedstocks
+    are natural (clove oil, wood lignin) and what has to be made is the **caustic
+    soda**, so rule 3 — *a catalyst is a feedstock* — is what puts vanillin one
+    hop up. **C3 is the first session to move the tree off being mostly tier-1:
+    9 of 18 is exactly half**, where G3's assertion was a strict majority. Still
+    3 tiers, tier 3 still one route.
+
+    ⚠⚠ **TWO CLAIMS C3 WROTE AND THEN MEASURED FALSE.** (1) The bundle does NOT
+    need `dissociation_templates()` — **it must not be given them.** That line
+    was copied from `wacker_chemistry`: eugenol IS a phenol, so
+    `phenol_dissociation` fires on it and `build_network` refuses the whole
+    network for want of an **eugenolate pKa**. G5's *an open-ended rewrite over a
+    curated table will find the edge of the table*, met on an amine there and a
+    phenol here; **the refusal is KEPT.** (2) **Ea 110 kJ/mol was 8x too fast,
+    and the arithmetic that chose it assumed a ONE-LITRE liquid** where the
+    flask's liquor is 0.73 L. Corrected to **115**, calibrated against the flask.
+    *An apparent barrier calibrated against a rate has to be calibrated against
+    the rate the FLASK computes, not the one the envelope does.*
+
+    ⚠ **AND THE PRE-BUILD ARITHMETIC WAS DONE ON THE WRONG STANDARD STATE.** Both
+    templates are `phase="liquid"`: the isomerisation is dH **−21.80** on the
+    ideal-gas basis and **−56.56** on the pure-liquid one, with the sign of dS
+    flipping (+20.45 → −54.72 J/K) — **and their ln K at 470 K agrees to 2%,
+    which is a coincidence and not a licence.** S12's rule; the template comment
+    was corrected against the audit rather than the reverse.
+
+    ⚠ **THE GEOMETRY IS NOT DECLARED, AND THAT IS A DECISION.** cis, trans and
+    geometry-free isoeugenol price at Hf −216.705 / Gf −49.315, identical to
+    three decimals — S7's `oleic -> elaidic` finding re-measured, and here the
+    same fact **licenses** leaving the geometry out where there it refused a
+    class. So the template's product is a different species STRING from the
+    corpus's trans isoeugenol and the same molecule thermochemically. ⚠ It makes
+    **no spurious cycle, because discovery is FORWARD-ONLY** (M5): charge the
+    corpus's trans isomer and the isomerisation is not in the network at all.
+    *A rule that has cost this project a template twice does useful work here.*
+
+    ⚠ `tolerance_audit.py` is **NOT owed**: no RHS edit, no data-table edit, and
+    nothing outside the new bundle can reach either template.
+
+    ⚠⚠⚠ **SUITE: 1128 passed / 0 failed in 24:54, run alone — AND THE CLOCK
+    REFUTED C2's *"+30% that nothing explains"*.** C3 ran **31 more tests in 300
+    fewer seconds**, every big row 18-21% below C2 and back within 2-8% of G6.
+    **Per test: G6 1.3234 s, C2 1.6363 s, C3 1.3250 s — C3 is within 0.12% of
+    G6 and C2 sat 24% above both.** Nothing changed that either number could
+    depend on, so **C2's regression was the machine**; C2's own *a plausible
+    cause measured once is a guess*, turned on its own timing note.
+    ⚠⚠ **So the recorded noise floor is wrong** — *~8% on the biggest row, ~1%
+    on the mid rows* came from two quiet runs, and the observed between-run
+    spread here is **~20% on every big row**. ⚠ **Re-price the S12->S13 eight
+    minutes against that**: it was called *20x outside the floor* on the strength
+    of the floor that is now wrong, and neither gap has been bisected.
+    *A wall clock compared across SESSIONS is not an instrument; the same box in
+    the same session is.*

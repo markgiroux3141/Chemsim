@@ -1243,3 +1243,56 @@ S12→S13 regression, and neither has been bisected.**
 | ⚠⚠ **one assertion was a PREDICTION C2 cashed** | *grant `phosphoric-wet` and `superphosphate` and playability goes +2* now measures **zero** — they are already playable | rewritten to assert where the +2 landed. *A test that predicts a gain has to be rewritten by the session that delivers it* |
 | ⚠ **the tolerance audit's last measured state is C2's now** | after the fix, ONE example raises (`named_routes`, diagnosed); `multistep_prep` 6 lines / worst `inf`, `workshop` 2 / 1.98e-04, `activity` 1.28e-03, `competing_pathways` 1.77e-05, `vessel` 2.40e-05, `wait_until` 1.03e-04, five byte-identical | ⚠ `mercury_retort` is the harness's own self-check and passes at **0 lines / 1.02x** — if that row moves, the rebinding has stopped working and every other row is suspect |
 | the tests | **16 new, ~104 s** | `python -m pytest tests/test_phosphate.py -q` |
+
+## ⚠⚠ C3 -- vanillin, and a class refused on the evidence of one of its two rows
+
+**⚠⚠⚠ THE SUITE IS GREEN: 1128 passed / 0 failed in 24:54, run alone.**
+The directly affected files ran first (`test_playable` + `test_vanillin` +
+`test_granularity` + `test_vitriol` + `test_named_routes` = 114 passed) and the
+full run then found nothing further. C3 added no engine code and no data row.
+
+⚠⚠⚠ **AND THE CLOCK REFUTED C2's "+30% THAT NOTHING EXPLAINS": C3 RAN 31
+MORE TESTS IN 300 FEWER SECONDS.**
+
+                        G6        C2        C3     C2->C3    G6->C3
+    total / s         1383.0    1795.0    1494.6    -16.7%     +8.1%
+    tests               1045      1097      1128     +2.8%     +7.9%
+    the ONE RIG test   176.9     199.3     163.2    -18.1%     -7.7%
+    catalysis           75.1      91.5      73.5    -19.7%     -2.2%
+    burner @1e-8        52.8      64.8      51.0    -21.3%     -3.4%
+    SECONDS PER TEST  1.3234    1.6363    1.3250   -19.0%    +0.12%
+
+**Per test, C3 is within 0.12% of G6 while C2 sat 24% above both.** Every big row
+came back to within 2-8% of G6, with nothing changed that either number could
+depend on — **so C2's regression was the machine, not the code**, which is C2's
+own *a plausible cause measured once is a guess* turned on its own timing note.
+⚠⚠ **The recorded noise floor (~8% on the biggest row, ~1% on the mid rows) was
+measured on two quiet runs; the observed between-run spread here is ~20% on every
+big row.** Re-price the S12->S13 "regression" against that: it was called *20x
+outside the floor* on the strength of the floor that is now wrong. **A wall clock
+compared across SESSIONS is not an instrument.**
+
+⚠⚠⚠ **AND C2's LESSON WAS ACTED ON THIS TIME.** C2 re-ran every generated
+artefact, wrote the headlines into the docs by hand, and did not run
+`tests/test_playable.py` — 7 failures. C3 regenerated `COVERAGE_REPORT.md`,
+`PLAYABLE.md` and `ROUTE_INDEX.md` **and ran the tests that pin them in the same
+breath**: six `test_playable` assertions moved and are corrected with their
+reasons, one of them by changing an OPERATOR rather than a number.
+
+| what | the value | where it is pinned |
+|---|---|---|
+| ⚠⚠⚠ **the class was refused on the evidence of ONE of its two rows** | S11 read `vanillin-lignin` 1 (`C10H12O5 -> C8H10O4`, NOT balanced) and refused the class. `vanillin-eugenol` 2 is `isoeugenol + O2 -> vanillin + acetaldehyde`, **C10H12O4 both sides, exact, C2 fragment NAMED** | `test_the_class_has_two_rows_and_only_one_of_them_balances`. **C1: a price for a species not in the chemistry. C2: a price in a different table. C3: a class refused off one row.** *Read every row of a class before refusing the class* |
+| ⚠⚠⚠ **and the fragment the lignin row omits was already a corpus compound** | `glycolaldehyde \| OCC=O`, `07-carbonyls.psv`, "simplest sugar" — so naming it invented nothing, which is exactly what S11 refused to do | `test_the_fragment_the_lignin_row_omits_was_already_a_corpus_compound`. **The mechanism supplies the fragment and the corpus supplies its name** |
+| ⚠ **the corpus row is still wrong and was left so DELIBERATELY** | on coniferyl alcohol the mechanism is unambiguous; the catalog row is about lignin LIQUOR, where the C2 fragment is a mixture. Writing one name in would over-commit the corpus | `validation/corpus_balance.py`'s last panel, rewritten. ⚠⚠ **And `vanillin-lignin` is now INSIDE the BOTH column, so that audit's own standing example of a row that PASSES and is not the reaction it is written as is inside the quoted number** |
+| ⚠⚠⚠ **a reversible liquid-phase equilibrium is exact on the LIQUID and not on the INVENTORY** | C3's first flask read **15362** where `kf/kb` is **2677.83** and that 5.7x was nearly written down as chemistry. It is the HEADSPACE: 60% of the eugenol against 22% of the isoeugenol in a 0.08 L-liquor flask. On the liquid the flask matches detailed balance **to the last digit** | `test_the_equilibrium_is_exact_on_the_LIQUID_and_not_on_the_inventory`; `validation/vanillin.py` panel 7. ⚠⚠ **`state().total()` is right for a YIELD and wrong for an EQUILIBRIUM** — a rate law is written on one phase |
+| ⚠⚠ **§8 ranks ROUTES and a session builds TEMPLATES** | grant `molten-salt-electrolysis` and §8's **+3** top row `hall-heroult` is STILL not runnable (cryolite refused too); grant `slagging` and **+0 / +0**. **9 of the 20 rows cannot be bought by a template at any price**, and 7 of 23 classes are worth a point | `PLAYABLE.md` §8b, generated; `test_section_8b_says_a_template_cannot_buy_the_top_two_rows`. *A row's worth assumes every OTHER blocker away* |
+| ⚠⚠⚠ **the pair is SUPER-ADDITIVE and C3's own probe hid it** | `alkene-isomerisation` **+0** alone, `oxidative-cleavage` **+1** alone, together **+2** — `vanillin-eugenol` needs both. The scouting probe printed its pair table `[:12]` and the row fell off the bottom | `test_the_PAIR_is_worth_more_than_the_sum_of_its_parts`. *A probe that truncates its own output can hide the row it was written to find* |
+| ⚠⚠⚠ **§8b's detector found a live false credit, then had one of its own** | `route_reachable` blocks a marker on the LEFT and ignores one the route MAKES, so `oxidative-complexation` is scored **+1** on `iron-gall-ink` whose product has no graph. ⚠ The detector's first version blamed `pyrolysis`/`coal-gas` too, where the route was already dead | `test_section_8b_names_the_one_FALSE_CREDIT_left_in_the_table`; landmine with its trigger in `data/catalog/README.md`. **A false-credit detector needs the same does-it-actually-run check as everything it audits** |
+| ⚠⚠ **the base is the gate, in a place neither template names** | zero hydroxide gives **exactly 0.0** vanillin. `oxidative_cleavage` has no catalyst and would cleave any isoeugenol; there is none, because the step that MAKES it is the base-catalysed one | `test_the_base_is_the_gate_and_a_flask_without_it_is_EXACTLY_inert`. *A two-template route is gated by whichever step comes first* |
+| ⚠ **the flask is an AUTOCLAVE** | 0.73 L of liquor in 2 L at 470 K under ~30 bar of its own steam: **0.43% at 400 K / 26.9% at 440 / 93.2% at 470 / 99.98% at 490**, all at 4 h. Acetaldehyde 1:1 with vanillin at every row | `test_clove_oil_becomes_vanillin_and_the_balance_is_an_INVARIANT`, `test_the_route_needs_its_TEMPERATURE`. ⚠⚠ **No over-oxidation channel, so every yield is an UPPER BOUND** against a real 60-80% |
+| ⚠ **the isomerisation is rate-determining, and its barrier is a CALIBRATION** | 94.65% in 4 h alone against the cleavage's 97% in 1 h, so the intermediate never accumulates. ⚠ Ea 110 was **8x fast** because the hand arithmetic assumed a ONE-LITRE liquid; 115 was set against the flask | `test_the_isomerisation_is_the_rate_determining_step`. *An apparent barrier calibrated against a rate must be calibrated against the rate the FLASK computes* |
+| ⚠⚠ **the bundle must NOT be given `dissociation_templates()`** | the opposite of `wacker_chemistry`, and the docstring claimed the opposite until it was run: eugenol IS a phenol, so `phenol_dissociation` fires and the network refuses for want of an **eugenolate pKa**. G5's rule on a new substrate; the refusal is KEPT | `test_the_dissociation_set_REFUSES_because_eugenol_is_a_phenol` |
+| ⚠ **the product's double-bond geometry is not declared** | cis / trans / none all price Hf **−216.705**, Gf **−49.315** — S7's `oleic -> elaidic` re-measured, and here the same fact LICENSES the omission where there it refused a class. ⚠ No spurious cycle, because **discovery is FORWARD-ONLY**: charge the corpus's trans isomer and the isomerisation is not in the network | `test_nothing_here_can_price_a_double_bonds_geometry`, `test_forward_only_discovery_is_what_makes_that_decision_safe` |
+| ⚠ **the pre-build arithmetic was on the wrong standard state** | isomerisation dH **−21.80** (gas) against **−56.56** (liquid), dS sign FLIPS — **and ln K at 470 K agrees to 2%, which is a coincidence and not a licence** | `validation/vanillin.py` panel 3. S12's rule; the comment was corrected against the audit |
+| ⚠ **the work order shrank again and the ceiling did not move** | fed-but-unrunnable **22 → 20**, ceiling **41** for the second session running: vanillin feeds nothing. ⚠ Tiers **9 / 8 / 1** — G3's *"most are tier 1"* is now exactly HALF, and the assertion changed OPERATOR | `test_the_work_order_shrank_and_the_ceiling_did_not_move`, `test_the_tech_tree_is_a_shallow_bush` |
+| the tests | **31 new (~66 s)**, and 6 `test_playable` assertions corrected | `python -m pytest tests/test_vanillin.py -q` |

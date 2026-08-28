@@ -47,8 +47,8 @@ def bp():
 # ---------------------------------------------------------------------------
 # 1. THE HEADLINE
 # ---------------------------------------------------------------------------
-def test_the_answer_is_sixteen_playable_three_tiers_deep(bp):
-    """16 of 173, and the corpus's deepest chain is still 3 tiers.
+def test_the_answer_is_eighteen_playable_three_tiers_deep(bp):
+    """18 of 173, and the corpus's deepest chain is still 3 tiers.
 
     ⚠ G3 measured 12 of 36 runnable. C1 built ``sulfur_trioxide_hydration`` and
     corrected the ``vitriol-distillation`` rows, which put oil of vitriol on the
@@ -57,37 +57,59 @@ def test_the_answer_is_sixteen_playable_three_tiers_deep(bp):
     a template: they were blocked on ONE refused species, and the price that
     unblocked it turned out to be a **pKa** rather than the mineral the work
     order named. Both land in tier 2, on C1's own sulfuric acid.
+    ⚠⚠ C3 built the two templates for `vanillin-eugenol` and
+    `vanillin-lignin` -- ``alkene_isomerisation`` and ``oxidative_cleavage``, the
+    class S11 refused after reading one of its two rows. Both land in tier 2 as
+    well, and **not** on sulfuric acid: their feedstocks (clove-oil eugenol,
+    wood lignin) are natural and what they have to be GIVEN is caustic soda.
     """
     assert len(bp.routes) == 173
-    assert len(bp.PLAYABLE) == 16
+    assert len(bp.PLAYABLE) == 18
     assert max(bp.PLAYABLE.values()) == 3
-    assert len(bp.RUNNABLE) == 39
+    assert len(bp.RUNNABLE) == 41
     assert bp.PLAYABLE["vitriol-distillation"] == 1
     assert bp.PLAYABLE["saltpetre-nitric"] == 2
     assert bp.PLAYABLE["phosphoric-wet"] == 2
     assert bp.PLAYABLE["superphosphate"] == 2
+    assert bp.PLAYABLE["vanillin-eugenol"] == 2
+    assert bp.PLAYABLE["vanillin-lignin"] == 2
+    # ⚠ AND THE BASE IS WHAT PUTS THEM IN TIER 2, which is the whole reason
+    # a catalyst is a feedstock (rule 3). Both feedstocks are on the natural
+    # list; the hydroxide is not.
+    for rid in ("vanillin-eugenol", "vanillin-lignin"):
+        assert "sodium-hydroxide" in bp.needs(rid)
+        assert bp.needs(rid) - {"sodium-hydroxide"} <= set(bp.NATURAL_IDS)
 
 
 def test_the_tech_tree_is_a_shallow_bush(bp):
-    """9 of the 16 are tier 1 -- they touch nothing another route made.
+    """9 of the 18 are tier 1 -- they touch nothing another route made.
 
     The GOAL asks for a connected tech tree. This is the measurement that says it
-    is not one yet, and it is the reason the file exists. ⚠ C1 added one route to
-    each of the first two tiers and C2 added two more to tier 2, so the SHAPE
-    still has not changed: the corpus is a fan off the ground with one thin chain
-    hanging off it, and **every route either C-series item added is one hop from
-    the ground.** Tier 1 has not grown since C1 and tier 3 is still a single
-    route.
+    is not one yet, and it is the reason the file exists. ⚠ C1 added one route
+    to each of the first two tiers and C2 added two more to tier 2, so the SHAPE
+    did not change: a fan off the ground with one thin chain hanging off it.
+
+    ⚠⚠⚠ **AND C3 IS THE FIRST SESSION TO MOVE THAT, WHICH IS WHY
+    THE ASSERTION CHANGED SHAPE RATHER THAN ITS NUMBER.** G3's claim was that
+    MOST playable routes are tier 1 -- a strict majority -- and it is now exactly
+    HALF: 9 of 18. Tier 1 has not grown since C1; tiers 2 and 3 have, from 6+1 to
+    8+1. **The bush is still shallow at 3 tiers, and it is no longer mostly
+    ground-level.** ⚠ The honest reading is that this is a threshold crossed
+    by arithmetic and not a tree appearing: nine one-hop routes off the ground is
+    still nine, and tier 3 is still a single route.
     """
     tier1 = [r for r, d in bp.PLAYABLE.items() if d == 1]
     assert len(tier1) == 9
-    assert len(tier1) > len(bp.PLAYABLE) / 2
+    assert len([r for r, d in bp.PLAYABLE.items() if d == 2]) == 8
+    assert len([r for r, d in bp.PLAYABLE.items() if d == 3]) == 1
+    # G3's ">" is now "==", and the change of operator IS the finding
+    assert len(tier1) == len(bp.PLAYABLE) / 2
 
 
 def test_the_ceiling_is_the_goal_and_it_is_a_finite_named_list(bp):
-    """Granting all 22 fed-but-unrunnable routes reaches 41, against a goal of ~40.
+    """Granting all 20 fed-but-unrunnable routes reaches 41, against a goal of ~40.
 
-    This is the whole point of the work order: the distance from 16 to 41 is a
+    This is the whole point of the work order: the distance from 18 to 41 is a
     named table, not an open-ended grind against 173 routes.
 
     ⚠⚠ AND THE TABLE MOVES IN BOTH DIRECTIONS, WHICH IS THE POINT. C1 granted
@@ -98,8 +120,10 @@ def test_the_ceiling_is_the_goal_and_it_is_a_finite_named_list(bp):
     route that was not fed already -- and **the ceiling did not move at all.**
     *A work order derived from a fixed point is not a burndown list: granting a
     row can lengthen it, shorten it, or leave the goal exactly where it was.*
+    ⚠ C3 granted two more and the list shrank again, 22 -> 20, with the
+    ceiling once more UNCHANGED at 41: vanillin feeds nothing.
     """
-    assert len(bp.FED_BUT_UNRUNNABLE) == 22
+    assert len(bp.FED_BUT_UNRUNNABLE) == 20
     ceiling, _ = bp.closure(pool=bp.RUNNABLE | set(bp.FED_BUT_UNRUNNABLE))
     assert len(ceiling) == 41
     # three fall out for free once the shelf grows -- G3 had four, and
@@ -119,8 +143,8 @@ def test_a_need_is_decided_by_order_not_by_route_roles(bp):
     all* and was playable for free.
     """
     wrong, _ = bp.closure(needs_rule=bp.needs_by_roles)
-    assert len(wrong) == 17
-    assert len(bp.PLAYABLE) == 16, "the correction moves the headline DOWN"
+    assert len(wrong) == 19
+    assert len(bp.PLAYABLE) == 18, "the correction moves the headline DOWN"
 
     assert bp.needs_by_roles("lime-cycle") == set()
     assert bp.needs("lime-cycle") == {"calcium-carbonate", "water"}
@@ -161,9 +185,9 @@ def test_the_fouling_row_takes_the_target_off_the_shelf(bp):
     # a route (13 against 14) under the WRONG needs rule and nothing under the
     # right one. It now costs nothing in EITHER row:
     #
-    #                    shelf=target        +byproducts    +target unioned in
-    #  needs=roles  G3 10 / C1 11 / C2 13  13 / 15 / 17    14 / 15 / 17
-    #  needs=order  G3  8 / C1 10 / C2 12  12 / 14 / 16    12 / 14 / 16
+    #                       shelf=target           +byproducts     +target in
+    #  needs=roles  G3 10 / C1 11 / C2 13 / C3 15  13/15/17/19  14/15/17/19
+    #  needs=order  G3  8 / C1 10 / C2 12 / C3 14  12/14/16/18  12/14/16/18
     #
     # The route the shelf rule used to buy was `saltpetre-nitric`, and it got its
     # sulfuric acid from the lead chamber's fouling row. C1 gave the acid a route
@@ -178,11 +202,14 @@ def test_the_fouling_row_takes_the_target_off_the_shelf(bp):
     # ⚠ C2 RE-MEASURED THE WHOLE GRID RATHER THAN BUMPING THE TWO CELLS THAT
     # FAILED, because the claim is about the DIFFERENCE between cells and not
     # about any one of them. The difference is still zero in both rows.
+    # ⚠ C3 RE-MEASURED THE WHOLE GRID AGAIN, for C2's reason: the claim is
+    # about the DIFFERENCE between cells. Still zero in both rows, three corpus
+    # changes running.
     kw = dict(needs_rule=bp.needs_by_roles)
-    assert len(bp.closure(shelf_rule="products", **kw)[0]) == 17
-    assert len(bp.closure(shelf_rule="both", **kw)[0]) == 17
-    assert len(bp.closure(shelf_rule="products")[0]) == 16
-    assert len(bp.closure(shelf_rule="both")[0]) == 16
+    assert len(bp.closure(shelf_rule="products", **kw)[0]) == 19
+    assert len(bp.closure(shelf_rule="both", **kw)[0]) == 19
+    assert len(bp.closure(shelf_rule="products")[0]) == 18
+    assert len(bp.closure(shelf_rule="both")[0]) == 18
 
 
 def test_target_only_shelving_never_starts_the_deep_chain(bp):
@@ -195,10 +222,14 @@ def test_target_only_shelving_never_starts_the_deep_chain(bp):
     is a byproduct and no shelf rule that reads targets can see it. ⚠⚠ C2
     moved this cell 10 -> 12 and the SHORTFALL is unchanged at 4: both of its
     routes take sulfuric acid, which is a target, so a target-only shelf can
-    reach them and still cannot start the chain.
+    reach them and still cannot start the chain. ⚠⚠ C3 moved it 12 -> 14
+    and the shortfall is STILL 4 -- both vanillin routes need caustic soda, which
+    is `chloralkali`'s declared TARGET, so a target-only shelf reaches them too.
+    **Four sessions and the shortfall has not moved once: it is the byproduct, and
+    only the byproduct.**
     """
     target_only, _ = bp.closure(shelf_rule="target")
-    assert len(target_only) == 12
+    assert len(target_only) == 14
     assert max(target_only.values()) == 2
     assert "methanol-synthesis" not in target_only
     assert len(bp.PLAYABLE) - len(target_only) == 4

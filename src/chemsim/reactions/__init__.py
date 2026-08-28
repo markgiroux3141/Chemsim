@@ -25,6 +25,7 @@ from chemsim.reactions.reaction import ConcreteReaction
 from chemsim.reactions.synthesis import (
     addition_chemistry,
     alkene_hydration,
+    alkene_isomerisation,
     alkene_hydrogenation,
     alkyne_hydration,
     ammonia_synthesis,
@@ -37,9 +38,11 @@ from chemsim.reactions.synthesis import (
     claus_comproportionation,
     hydroformylation_branched,
     hydroformylation_linear,
+    oxidative_cleavage,
     oxo_chemistry,
     quinoline_chemistry,
     skraup_cyclisation,
+    vanillin_chemistry,
     wacker_chemistry,
     wacker_oxidation,
     condensation_chemistry,
@@ -135,6 +138,10 @@ __all__ = [
     "wacker_oxidation",
     # S12 -- the Skraup, see reactions/synthesis.py
     "skraup_cyclisation",
+    # C3 -- vanillin: the class S11 refused, see reactions/synthesis.py
+    "alkene_isomerisation",
+    "oxidative_cleavage",
+    "vanillin_chemistry",
     "syngas_generation_chemistry",
     "claus_chemistry",
     "oxo_chemistry",

@@ -790,6 +790,10 @@ with a real Ksp and unbuildable in a flask: **`sphalerite`, `galena`,
 `covellite`, `chalcocite`, `cinnabar`** (the last two also on `[Cu+]` and
 `[Hg+2]`, which have no neutral conjugate base at all).
 
+⚠⚠⚠ **C3 SCOUTED ONE OF THOSE FIVE AND NARROWED THIS TRIGGER — THE THREE WORDS "IN SOLUTION" ABOVE ARE LOAD-BEARING AND EVERY SHORT RESTATEMENT OF THIS SECTION DROPS THEM.** This section's own heading says *"a sulfide route will score and not run"*, and so did the one-liners in `NEXT_PROMPT.md` and the memory notes. **`vermilion-route` is a sulfide route and, read out of the code, it is not in danger:** its product is cinnabar as a SOLID, and `SurfaceArrays` prices a lattice off `mineral_data` on the solid basis without ever reaching for an ion pKa — `cinnabar-roasting` has charged that same lattice into a flask since S1. **What this landmine actually covers is a sulfide that has to DISSOLVE**, which is the precipitation path and nothing else.
+
+⚠ Not verified in a flask; C3 read it out of `vessel.py` while pricing a row it did not take. What blocks `vermilion-route` instead is that a `SurfaceReaction` solid participant must be a `mineral_data` lattice and **there is no `sulfur` MineralRecord** — native sulfur is the molecular `S1SSSSSSS1`. *A landmine is only as well-scoped as its shortest restatement.*
+
 ⚠⚠ **AND THE FIX IS NOT A ONE-LINE pKa, WHICH IS WHY THIS IS A LANDMINE AND NOT
 A TO-DO.** `HS- -> S2-` is quoted anywhere between about **12.9 and 19**
 depending on the compilation — six decades of disagreement about one number —
@@ -809,6 +813,74 @@ dissolve. C2 measured both, one at a time: with the pKa and no mineral row,
 `phosphoric-wet` counts as species-ready, counts in the BOTH column, counts as
 playable — and the rock sits in the solid block at **0.0000 % converted, for
 ever.** *Whoever closes a sulfide route owes it both rows and a run.*
+
+
+### ⚠⚠⚠ C3 BUILT A CLASS S11 HAD REFUSED — AND THE REFUSAL WAS ABOUT ONE OF ITS TWO ROWS
+
+S11 attempted `oxidative-cleavage`, found its row unbalanceable, and refused the
+class. The reason it gave was correct and its SCOPE was not:
+
+| row | 1:1 balance | the C2 fragment |
+|---|---|---|
+| `vanillin-lignin` 1 — `coniferyl alcohol + O2 + NaOH -> vanillin + water + NaOH` | **C10H12O5 → C8H10O4, NO** | not named |
+| `vanillin-eugenol` 2 — `isoeugenol + O2 -> vanillin + acetaldehyde` | **C10H12O4 both sides, EXACT** | **named** |
+
+S11 read the first line. The second is the same class, balances exactly, and
+names the fragment — so the class is built off it, and the fragment the lignin
+row omits turns out to be **`glycolaldehyde`, which `07-carbonyls.psv` has
+carried all along** as "simplest sugar". **The mechanism supplies the fragment
+and the corpus supplies its name; nothing is invented.**
+
+⚠⚠ **THE RULE, AND IT IS THE THIRD SESSION RUNNING TO FIND ONE OF THIS SHAPE.**
+
+* **C1** — a route blocked on a price for a species **not in its chemistry**.
+* **C2** — a route blocked on a price **in a different table** from the one named.
+* **C3** — a **class refused on the evidence of one of its rows.**
+
+**Read every row of a class before refusing the class**, exactly as C1 and C2
+say to print the refusal before costing it. ⚠ S11's own reason survives intact
+where it was aimed: the lignin row IS still wrong, and
+`validation/corpus_balance.py`'s last panel now says which half of the refusal
+stands and which was over-scoped.
+
+⚠ **AND THE ROW WAS LEFT WRONG ON PURPOSE.** On coniferyl alcohol the mechanism
+is unambiguous — the side chain leaves as glycolaldehyde and the flask says so.
+The catalog row is about alkaline **lignin liquor**, where the C2 fragment is a
+mixture depending on which monolignol reacted, so writing one name into the
+corpus would over-commit it in exactly the way S11 refused to. **The template
+names the fragment where it can be known; the row keeps its wrong product and a
+panel that says so.**
+
+⚠ `alkene-isomerisation` is **not** S7's refused `isomerisation`. That class was
+refused because its three rows are three mechanisms and one of them —
+`oleic -> elaidic` — prices at **dH = dG = 0.000 exactly**, no estimator here
+telling a cis alkene from a trans one. This is a *constitutional* isomerisation,
+the allyl migrating into conjugation with the ring, and it prices at dH −56.56
+kJ/mol with ln K +7.89 at 470 K. **The distinction is measured, not asserted** —
+and the same cis/trans finding that refused one class is what LICENSES this
+template leaving its product's geometry undeclared.
+
+### ⚠⚠⚠ C3's LANDMINE, WITH ITS TRIGGER NAMED — A MARKER ON THE RIGHT SCORES AND CANNOT BUILD
+
+The eight markers above have no molecular graph, deliberately.
+`catalog.route_reachable` blocks a route whose **reactant** is one — `coal-gas`
+is correctly dead, its only feedstock being a rock with no graph. **It does not
+look at one the route MAKES.**
+
+⚠⚠ **THE TRIGGER: the day anybody builds `oxidative-complexation`,
+`iron-gall-ink` will read template-ready and `build_network` will have no graph
+to make `iron-gallate-marker` from.** `PLAYABLE.md` §8b scores that class at
+**+1** today, which makes it a live false credit in the work order rather than a
+hypothetical. The same shape sits at +0 on `castner-kellner` /
+`sodium-amalgam-marker`, through `amalgam-decomposition` and
+`amalgam-electrolysis`.
+
+⚠ This is G4's *"three false credits in one session, all three caught by
+charging a flask"* reached through the marker convention instead of through the
+chemistry — and §8b's own detector had this same bug in its first version,
+blaming `pyrolysis`/`coal-gas` where the marker is on the LEFT and the route was
+already dead. **A false-credit detector needs the same does-it-actually-run
+check as everything it audits.** *Whoever takes that row owes it a graph first.*
 
 ### ⚠ THE TWO GAPS COST DIFFERENT AMOUNTS, WHICH IS WHY THEY ARE TWO CLASSES
 

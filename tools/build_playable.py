@@ -813,6 +813,160 @@ def main() -> int:
       "entropy in nothing. **A data refusal is now measurably a playability "
       "blocker and not just a coverage one.**")
     w("")
+
+    # --- 8b THE SAME WORK ORDER, ASKED THE WAY A SESSION SPENDS IT (C3) ------
+    #
+    # ⚠⚠⚠ THE TABLE ABOVE GRANTS A **ROUTE**; A SESSION BUILDS A **TEMPLATE**,
+    # WHICH GRANTS A **CLASS**. Those are different questions and C3 measured
+    # them disagreeing at the top of the table:
+    #
+    #   * `hall-heroult` is the +3 top row. Grant `molten-salt-electrolysis` and
+    #     hall-heroult is STILL NOT RUNNABLE -- its cryolite is refused a price
+    #     too -- so the class lands +1, on `downs-cell`.
+    #   * `blast-furnace` is +2. Grant `slagging` and NOTHING MOVES: +0 runnable,
+    #     +0 playable, three refused species.
+    #   * and two rows can share a class, so a pair of templates can be worth
+    #     MORE than the sum of the two singly. C3 built `alkene-isomerisation`
+    #     (+0 alone) and `oxidative-cleavage` (+1 alone) and the pair delivered
+    #     **+2**, because `vanillin-eugenol` needs both.
+    #
+    # The route column is still the right ranking for "what is this row worth".
+    # This one is the right ranking for "what is a template worth", and it is
+    # the one a C-series session is actually shopping in.
+    gaps: dict[str, set[str]] = {}
+    for rid in FED_BUT_UNRUNNABLE:
+        for s in route_steps(rid):
+            if s.cls not in TC:
+                gaps.setdefault(s.cls, set()).add(rid)
+
+    def grant_classes(extra):
+        tc2 = set(TC) | set(extra)
+        run2 = {rid for rid in routes
+                if cat.route_reachable(steps, rid, routes[rid].target,
+                                       priced, tc2, compounds)}
+        return run2, closure(pool=run2)[0]
+
+    crows = []
+    for cls in sorted(gaps):
+        run2, play2 = grant_classes([cls])
+        crows.append((len(play2) - len(PLAYABLE), len(run2) - len(RUNNABLE),
+                      cls, sorted(gaps[cls])))
+    crows.sort(key=lambda t: (-t[0], -t[1], t[2]))
+
+    w("### ⚠⚠ 8b. The same table asked the way a SESSION spends it: per CLASS")
+    w("")
+    w("§8 grants a **route**; a session builds a **template**, which grants a "
+      "**class**. C3 measured the two disagreeing at the top of the table, so "
+      "both are printed now.")
+    w("")
+    w("| worth | runnable | class to build | fed rows waiting on it |")
+    w("|---:|---:|---|---|")
+    for g, r, cls, rids in crows:
+        w(f"| **{g:+d}** | {r:+d} | `{cls}` | "
+          f"{', '.join(f'`{x}`' for x in rids)} |")
+    w("")
+    top_cls = [c for g, _, c, _ in crows if g == crows[0][0]]
+    w(f"⚠⚠⚠ **THE BIGGEST SINGLE CLASS IS {crows[0][0]:+d}** "
+      f"({', '.join(f'`{c}`' for c in top_cls)}) — and §8's `+3` top row is "
+      "**not** at the top here. Granting `molten-salt-electrolysis` leaves "
+      "`hall-heroult` unrunnable, because its cryolite is refused a price as "
+      "well; the class lands its point on `downs-cell` instead. **A row's worth "
+      "assumes every OTHER blocker away, and a template only removes one of "
+      "them.**")
+    w("")
+    # the rows that no template can buy at all, and the ones §8 cannot see
+    dead = []
+    for rid in FED_BUT_UNRUNNABLE:
+        bad = sorted({s.cls for s in route_steps(rid) if s.cls not in TC})
+        if not bad:
+            continue
+        run2, _ = grant_classes(bad)
+        if rid not in run2:
+            dead.append((rid, bad))
+    if dead:
+        w(f"⚠⚠ **AND {len(dead)} OF THE ROWS ABOVE CANNOT BE BOUGHT BY TEMPLATES "
+          "AT ALL.** Grant every class each one is missing and it is still not "
+          "runnable, because a refused species is blocking it too: "
+          f"{', '.join(f'`{r}`' for r, _ in dead)}. **They are joint grants "
+          "priced as though they were single ones.**")
+        w("")
+    # ⚠ AND THE `refused species` COLUMN CANNOT SAY THIS, WHICH IS THE THIRD
+    # TIME THIS SHAPE HAS COST A SESSION. It filters on ``x in compounds``, so a
+    # species that is not in the corpus AT ALL prints as an em dash -- reading
+    # as "needs nothing but a template" when the corpus has no such compound.
+    absent = []
+    for rid in FED_BUT_UNRUNNABLE:
+        mine = route_steps(rid)
+        gone = {x for s in mine for x in s.reactants + s.products
+                if x not in compounds}
+        if not gone:
+            continue
+        made = {p for s in mine for p in s.products}
+        absent.append((rid, sorted(gone), sorted(gone - made)))
+    if absent:
+        w(f"⚠⚠⚠ **AND THE `refused species` COLUMN IS BLANK FOR "
+          f"{len(absent)} ROWS THAT NAME A SPECIES THE CORPUS DOES NOT HAVE.** "
+          "It is derived by filtering on *is this compound refused a price*, "
+          "which drops anything that is not a compound here at all — and these "
+          "are not oversights: `17-route-intermediates.psv` carries them as "
+          "COMMENTED-OUT rows with the reason (*\"a rock: a macromolecular "
+          "kerogen mixture\"*, *\"a metal solution, not a compound\"*). "
+          + "; ".join(f"`{r}` wants {', '.join(m)}"
+                      + (f" (must be CHARGED: {', '.join(c)})" if c
+                         else " — but the route MAKES it")
+                      for r, m, c in absent)
+          + ".")
+        w("")
+        w("⚠⚠⚠ **AND WHICH SIDE IT IS ON DECIDES WHETHER THE SCORER NOTICES.** "
+          "`route_reachable` blocks on a species that has to be CHARGED, so "
+          "`coal-gas` is correctly dead — its only reactant is a rock with no "
+          "graph. It does **not** look at one the route MAKES, so a route whose "
+          "own PRODUCT the corpus has deliberately refused to spell still "
+          "scores.")
+        w("")
+        # ⚠⚠⚠ WHICH MAKES A LIVE ROW OF THE TABLE ABOVE A FALSE CREDIT, and it
+        # is worth naming rather than describing: this is G4's shape (a route
+        # that scores and does not run) reached through the marker convention
+        # instead of through the chemistry.
+        # ⚠ AND THE ROUTE HAS TO ACTUALLY BECOME RUNNABLE FOR THE CREDIT TO BE
+        # FALSE. `coal-gas` names a marker it makes AND one it must be charged
+        # with, so granting `pyrolysis` never credits it -- the class's point
+        # comes from `wood-distillation`. Attributing it to `coal-gas` was this
+        # detector's own first false credit.
+        dead_rids = {r for r, _ in dead}
+        made_absent = {}
+        for rid, gone, charged in absent:
+            if rid in dead_rids or not (set(gone) - set(charged)):
+                continue
+            bad = {t.cls for t in route_steps(rid)} - set(TC)
+            run2, _ = grant_classes(bad)
+            if rid not in run2:
+                continue
+            for cls in bad:
+                made_absent.setdefault(cls, set()).add(rid)
+        suspect = [(g, c, sorted(made_absent[c]))
+                   for g, _, c, _ in crows if c in made_absent]
+        live = [(g, c, r) for g, c, r in suspect if g > 0]
+        if live:
+            w("⚠⚠⚠ **SO THE TABLE ABOVE CONTAINS A FALSE CREDIT, AND HERE IT "
+              "IS:** "
+              + "; ".join(f"`{c}` is scored **{g:+d}** on `{', '.join(r)}`"
+                          for g, c, r in live)
+              + " — and that route's product is one of the markers. **Build it "
+                "and the route goes template-ready and `build_network` has no "
+                "graph to make the product from.** ⚠ That is G4's *only RUNNING "
+                "it said so* arriving through the marker convention rather than "
+                "through the chemistry, and C1's and C2's landmine form applies: "
+                "**the trigger is named, so whoever takes that row owes it a "
+                "second look before costing it.**")
+            w("")
+        zero = [(g, c, r) for g, c, r in suspect if g <= 0]
+        if zero:
+            w("⚠ The same shape is priced at zero elsewhere and needs no "
+              "warning today: "
+              + "; ".join(f"`{c}` ({g:+d}, `{', '.join(r)}`)"
+                          for g, c, r in zero) + ".")
+            w("")
     ceiling, _ = closure(pool=RUNNABLE | set(FED_BUT_UNRUNNABLE))
     # ⚠ THE COUNT IS DERIVED AND USED TO BE THE WORD "four". C1 granted one
     # of the 21 rows and the free list dropped to three, leaving a generated

@@ -537,6 +537,35 @@ TEMPLATE_CLASSES = {
     # stoichiometry checked against the oxidant rather than assumed. That is the
     # S1 standard.
     "skraup-cyclisation": "skraup_cyclisation",
+    # ---------------------------------------------------------------------
+    # C3 -- THE CLASS S11 REFUSED, AND THE REFUSAL WAS ABOUT ONE OF ITS TWO ROWS
+    # ---------------------------------------------------------------------
+    # S11 went to build `oxidative-cleavage` off `vanillin-lignin` step 1,
+    # found that `coniferyl alcohol + O2 -> vanillin + water` destroys two
+    # carbons, and refused the CLASS -- on the ground that naming the missing
+    # C2 fragment would be inventing chemistry inside the corpus. The class has
+    # a SECOND row and it was not read:
+    #
+    #   vanillin-eugenol 2  isoeugenol + O2 -> vanillin + acetaldehyde
+    #                       C10H12O4 both sides, EXACT, C2 fragment NAMED
+    #
+    # ⚠⚠ So the template is written off the row that balances, and the fragment
+    # the lignin row omits turns out to be `glycolaldehyde` -- ALREADY IN THE
+    # CORPUS (`07-carbonyls.psv`). Nothing is invented: the mechanism supplies
+    # the fragment and the corpus supplies its name. ⚠ S11's reason survives
+    # where it was aimed -- the lignin row IS wrong, and `validation/vanillin.py`
+    # panel 2 prints both readings side by side rather than quietly correcting
+    # the corpus.
+    #
+    # ⚠ `alkene-isomerisation` IS NOT S7's REFUSED `isomerisation`. That class
+    # was refused because its rows were three mechanisms and one of them --
+    # `oleic -> elaidic` -- prices at dH = dG = 0.000 EXACTLY, no estimator here
+    # telling a cis alkene from a trans one. This is a CONSTITUTIONAL
+    # isomerisation, the allyl migrating into conjugation with the ring, and the
+    # estimators do price it: dH -56.56 kJ/mol on the liquid basis, ln K +7.89
+    # at 470 K. **The distinction is measured, not asserted.**
+    "alkene-isomerisation": "alkene_isomerisation",
+    "oxidative-cleavage": "oxidative_cleavage",
     # ⚠⚠ S9 SPLIT `catalytic-gas-oxidation`, AND IT WAS A FALSE CREDIT ON TWO OF
     # ITS THREE ROWS -- found while RANKING the queue rather than while building
     # anything, which is the second time a class has come apart under that check.

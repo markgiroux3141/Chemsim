@@ -1531,6 +1531,230 @@ def skraup_cyclisation(
                 else (1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0)),
     )
 
+# ---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
+# C3 -- VANILLIN, AND THE CLASS S11 REFUSED AFTER READING ONE OF ITS TWO ROWS
+# ---------------------------------------------------------------------------
+# `oxidative-cleavage` has TWO rows in the catalog and S11 read the harder one:
+#
+#   vanillin-lignin  1 | coniferyl alcohol + O2 + NaOH -> vanillin + water + NaOH
+#   vanillin-eugenol 2 | isoeugenol + O2               -> vanillin + acetaldehyde
+#
+# S11 went to build the class off the LIGNIN row, found that a C10 monolignol
+# cannot make one C8 vanillin and a water, and refused the class -- on the
+# grounds that "naming the missing C2 product would be inventing chemistry
+# inside the corpus". That refusal is recorded in MILESTONES S11 section 12 and
+# printed by `validation/corpus_balance.py`'s last panel.
+#
+# ⚠⚠⚠ **THE REFUSAL WAS ABOUT THE ROW AND WAS WRITTEN ABOUT THE CLASS, AND THE
+# OTHER ROW IS BALANCED 1:1 WITH THE C2 FRAGMENT NAMED.** Measured:
+#
+#   isoeugenol + O2 -> vanillin + acetaldehyde     C10H12O4 both sides, EXACT
+#   coniferyl  + O2 -> vanillin + glycolaldehyde   C10H12O5 both sides, EXACT
+#   coniferyl  + O2 -> vanillin + water            C10H12O5 -> C8H10O4   NO
+#
+# So the template below is written off the row that balances, and the C2
+# fragment the lignin row omits is `glycolaldehyde` -- **a compound the corpus
+# has already carried all along** (`07-carbonyls.psv`, "simplest sugar"). Not
+# one atom of chemistry is invented: the mechanism supplies the fragment and the
+# corpus supplies the name.
+#
+# ⚠⚠ THE LESSON IS C1's AND C2's, APPLIED TO A REFUSAL RATHER THAN A BLOCKER.
+# C1: a route blocked on a price for a species that was not in its chemistry.
+# C2: a route blocked on a price in a different table from the one named. C3: a
+# CLASS refused on the evidence of one of its rows. **Read every row of a class
+# before refusing the class** -- and S11's own reason survives intact where it
+# was aimed: the lignin row IS still wrong, and it is wrong in a way this
+# template now says out loud rather than leaving unnamed.
+#
+# ⚠ AND THE ARITHMETIC WAS DONE BEFORE EITHER TEMPLATE WAS WRITTEN -- ON THE
+# WRONG BASIS, WHICH IS WHY IT IS PRINTED HERE ON BOTH. Both templates are
+# phase="liquid", so `reaction_deltas` moves every condensable species onto its
+# own pure liquid and the flask uses the second pair of columns:
+#
+#                                          IDEAL GAS        PURE LIQUID
+#                                        dH   ln K 470     dH   ln K 470
+#   eugenol -> isoeugenol             -21.80     +8.04  -56.56      +7.89
+#   isoeugenol + O2 -> vanil + MeCHO -325.58    +85.71 -320.92     +94.37
+#   coniferyl  + O2 -> vanil + HOCH2CHO
+#                                    -318.56    +83.62     -- see below
+#
+# ⚠⚠ THE TWO ln K VALUES FOR THE ISOMERISATION AGREE TO 2% AND THE dH
+# VALUES DISAGREE BY 35 kJ/mol, WITH THE SIGN OF dS FLIPPING (+20.45 against
+# -54.72 J/K). **That agreement is a coincidence and not a licence** -- it is two
+# errors cancelling at one temperature. S12's rule: a phase label carries a
+# standard state, and C3 had to correct this comment against
+# `validation/vanillin.py` panel 3 rather than the other way round.
+#
+# ⚠ AND THE LIGNIN READING HAS NO USABLE ln K AT ALL. Coniferyl alcohol has
+# no vapour-pressure curve, so `build_network` prints M5's MIXES STANDARD STATES
+# notice on it: its formation data stays on the ideal-gas basis while vanillin's
+# and glycolaldehyde's take the liquid shift. The reaction is irreversible so no
+# rate depends on it. **Which is a SECOND, independent reason the eugenol row was
+# the right one to build from -- all four of its species carry a curve and it
+# triggers no notice. S11 picked the row that is worse in both ways.**
+#
+# ⚠⚠ **AND PRICING THE UNBALANCED ROW IS SILENT, WHICH IS THE WHOLE REASON THE
+# BALANCE HAS TO BE CHECKED BY HAND.** `coniferyl + O2 -> vanillin + water`
+# prices at dH -251.99 and dS **+148.23 J/K** against its balanced neighbour's
+# +16.97 -- an entropy eight times the real one, because two carbons have been
+# destroyed -- and nothing anywhere raises. A row that is not a reaction still
+# comes back with a number.
+
+
+# Ea 115 kJ/mol -- apparent barrier for the base-catalysed allyl -> propenyl
+# migration on an arene, literature band ~90-120. A is 1e9 for the reason
+# `wacker_oxidation` documents: it is not a collision frequency, and what bounds
+# it is the REACTOR.
+#
+# ⚠⚠ AND 115 IS A CALIBRATION AGAINST THE PROCESS, MEASURED IN A FLASK
+# RATHER THAN ARGUED FOR. In `validation/vanillin.py`'s reference autoclave --
+# 0.73 L of liquor, [OH-] = 0.137 mol/L, 470 K -- this template alone converts
+# **51.96% in 1 h and 94.65% in 4 h**, against a real KOH isomerisation's 95%+
+# in 3-6 h at 470-490 K. ⚠ The first attempt declared 110 kJ/mol on hand
+# arithmetic that assumed a ONE-LITRE liquid and was 8x fast, because the
+# flask's liquor is 0.73 L and the base is correspondingly more concentrated.
+# **An apparent barrier calibrated against a rate has to be calibrated against
+# the rate the FLASK computes, not the one the envelope does.**
+
+
+def alkene_isomerisation(
+    A: float = 1.0e9, Ea: float = 115_000.0, catalyst: str | None = "[OH-]",
+) -> ReactionTemplate:
+    """Aryl allyl -> aryl propenyl. Eugenol to isoeugenol, over hydroxide.
+
+    ⚠⚠ **THE PRODUCT'S DOUBLE-BOND GEOMETRY IS NOT DECLARED, AND THAT IS A
+    DECISION RATHER THAN AN OMISSION.** The corpus spells isoeugenol
+    ``C/C=C/c1ccc(O)c(OC)c1`` -- trans -- and this template makes
+    ``CC=Cc1ccc(O)c(OC)c1``, which ``Molecule.from_smiles`` canonicalises to a
+    DIFFERENT STRING and therefore a different species. Two measurements decide
+    it:
+
+      * **nothing here can price the difference.** cis, trans and geometry-free
+        isoeugenol all come back at Hf -216.705 and Gf -49.315, identical to
+        three decimals, which is S7's ``oleic -> elaidic`` finding (*"no
+        estimator here tells a cis alkene from a trans one"*) re-measured on
+        this pair. Declaring a geometry would assert a distinction the
+        thermochemistry cannot carry.
+      * **and the geometry-free species reacts onward identically**, because
+        ``oxidative_cleavage``'s pattern does not query bond stereo. The chain
+        still reaches vanillin.
+
+    ⚠ **AND IT MAKES NO SPURIOUS CYCLE, BECAUSE DISCOVERY IS FORWARD-ONLY.**
+    With the corpus's trans isoeugenol charged instead, the reverse of this
+    template is in the network but nothing enumerates species through it (M5's
+    rule), so trans isoeugenol is inert to this template rather than draining
+    into eugenol and back out as the geometry-free isomer. **A rule that has
+    cost this project a template twice does useful work here.**
+
+    ⚠ Reversible, and it is worth being: ln K is +11.3 at 298 K and +8.0 at
+    470 K, so the equilibrium sits ~3000:1 towards the conjugated isomer and the
+    flask keeps a real trace of eugenol rather than running to completion. That
+    is the right shape -- a real isomerisation stops at 95-98%.
+
+    ⚠ **NEEDS ``electrolyte_provider()``**, for ``wacker_oxidation``'s
+    reason: ``[OH-]`` is not a species any of the three neutral providers will
+    price, so the gate is "is there a solvent for the base to be a base in".
+    Pass ``catalyst=None`` for the uncatalysed form at the same apparent rate.
+
+    ⚠⚠ **AND IT MUST *NOT* BE GIVEN ``dissociation_templates()``, WHICH
+    IS THE OPPOSITE OF WHAT ``wacker_chemistry`` NEEDS AND WAS MEASURED RATHER
+    THAN ASSUMED.** Eugenol IS a phenol, so ``phenol_dissociation`` fires on it
+    and ``build_network`` refuses the whole network for want of a pKa for the
+    eugenolate. That is G5's rule reaching a new substrate -- **an open-ended
+    rewrite over a curated table will find the edge of the table** -- met on an
+    amine there and on a phenol here. The refusal is KEPT: this route needs no
+    phenolate, and G5 measured what curating pKa values to satisfy an unused
+    template buys. ⚠ This docstring first claimed the dissociation set was
+    REQUIRED, copied from ``wacker_chemistry``, and running it is what caught
+    that.
+
+    ⚠ The SMARTS is narrow at the far end -- ``[CH2:4]`` is a terminal methylene
+    -- so it matches an allyl arene and NOT an already-conjugated one. That is
+    what stops it feeding itself: its own product has no CH2 next to the ring.
+    """
+    return ReactionTemplate(
+        name="alkene_isomerisation",
+        smarts=_maybe_catalyse(
+            "[c:1][CH2:2][CH1:3]=[CH2:4]>>[c:1][CH1:2]=[CH1:3][CH3:4]",
+            catalyst,
+        ),
+        A=_kinetics(A, catalyst), Ea=Ea, phase="liquid", reversible=True,
+    )
+
+
+# Ea 75 kJ/mol -- apparent barrier for the alkaline aerobic side-chain cleavage
+# of a propenyl arene, literature band ~60-90 for alkaline nitrobenzene and air
+# oxidations of lignin and its model compounds. A is 1e9, uncatalysed.
+#
+# ⚠ NO DECLARED ORDERS, AND THAT IS WHY THIS ONE IS SIMPLE. The SMARTS consumes
+# ONE alkene and ONE O2, so plain mass action already IS the rate law -- unlike
+# `wacker_oxidation`, which has to consume two ethylenes to balance one oxygen
+# and then declare the alkene order back down to 1. Nothing here is order zero,
+# so the trap `wacker_oxidation` and `hydrogen_sulfide_combustion` both document
+# -- a reactant at order zero keeps reacting after it runs out and is driven
+# negative -- cannot fire.
+#
+# ⚠ Irreversible: ln K is +94.4 at 470 K on the basis the flask uses, so the
+# reverse is ~1e-41 of the forward and carrying it would buy stiffness and
+# nothing else.
+#
+# ⚠ Ea 85 kJ/mol is likewise a calibration: this template alone takes
+# isoeugenol to 47% vanillin in 10 min and 97% in 1 h at 470 K, so it stays
+# comfortably FASTER than the isomerisation and the intermediate never
+# accumulates -- which is the real preparation's shape.
+# `validation/vanillin.py` panel 5 is the knockout that says which step is
+# rate-determining.
+
+
+def oxidative_cleavage(
+    A: float = 1.0e9, Ea: float = 85_000.0, catalyst: str | None = None,
+) -> ReactionTemplate:
+    """Ar-CH=CH-R + O2 -> Ar-CHO + R-CHO. Vanillin from isoeugenol or lignin.
+
+    ⚠⚠ **THIS IS THE CLASS S11 REFUSED, BUILT OFF THE OTHER ROW.** See the block
+    comment above for the whole argument; the short form is that
+    `vanillin-eugenol` step 2 balances exactly 1:1 and names its C2 fragment,
+    while `vanillin-lignin` step 1 does not and cannot. **This template makes
+    the lignin row's missing fragment explicit: glycolaldehyde, which the corpus
+    has carried since it was written.**
+
+    ⚠ **SO IT DISAGREES WITH A CATALOG ROW, AND THE ROW IS THE ONE THAT IS
+    WRONG.** S3's rule -- *"the mechanism doesn't make the row's product" is not
+    a verdict; ask which one is WRONG* -- and here the answer is arithmetic
+    rather than judgement: `coniferyl + O2 -> vanillin + water` is short a
+    whole **C2H2O** on the right (C10H12O5 against C8H10O4), and what the
+    mechanism puts there instead is glycolaldehyde, C2H4O2 -- which balances
+    it exactly.
+
+    ⚠ Liquid phase, so the oxygen has to DISSOLVE before it can reach the
+    alkene: its concentration in the liquor is a Henry's-law computed thing and
+    not a charged one, and a flask with a bigger headspace cleaves faster
+    without being told. That is what an alkaline oxidation tower is.
+
+    ⚠ THE SMARTS IS NARROW AT BOTH ENDS AND EACH END EARNS IT. ``[c:1]``
+    requires the alkene to be conjugated to a ring, which is what makes the
+    cleavage go under these conditions at all; ``[#6:4]`` requires a carbon
+    substituent on the far end, so **plain styrene does not match** -- correct
+    here, because this template is about the propenyl side chain a monolignol
+    carries, and a terminal vinyl arene is a different oxidation. Measured
+    against eleven substrates: it fires on isoeugenol, coniferyl alcohol,
+    stilbene (to two benzaldehydes) and cinnamaldehyde (to glyoxal and
+    benzaldehyde), and refuses eugenol, styrene, vanillin, safrole, toluene,
+    propene and 1-butene. ⚠ It cannot feed itself: neither product has a C=C
+    left.
+    """
+    return ReactionTemplate(
+        name="oxidative_cleavage",
+        smarts=_maybe_catalyse(
+            "[c:1][CH1:2]=[CH1:3][#6:4].[OX1:5]=[OX1:6]"
+            ">>[c:1][CH1:2]=[O:5].[#6:4][CH1:3]=[O:6]",
+            catalyst,
+        ),
+        A=_kinetics(A, catalyst), Ea=Ea, phase="liquid",
+    )
+
+
 # bundles
 # ---------------------------------------------------------------------------
 # Small on purpose. ``alcohol_chemistry`` is one bundle because its five templates
@@ -1685,6 +1909,38 @@ def chlorine_recovery_chemistry() -> list[ReactionTemplate]:
 def bleach_chemistry() -> list[ReactionTemplate]:
     """Halogen disproportionation. ⚠ Needs ``dissociation_templates()`` beside it."""
     return [halogen_disproportionation()]
+
+
+def vanillin_chemistry(base: str | None = "[OH-]") -> list[ReactionTemplate]:
+    """Vanillin: isomerise the clove-oil allyl, then cleave the side chain.
+
+    ⚠⚠ **A BUNDLE OF EXACTLY TWO, AND THE PAIR IS THE ROUTE.**
+    `vanillin-eugenol` is two steps and this is both of them, in order. Charge
+    eugenol, hydroxide and air; the isomerisation is what makes a substrate the
+    cleavage can match, because `oxidative_cleavage` deliberately does not fire
+    on an allyl arene. **Either template alone leaves the flask inert.**
+
+    ⚠ And `vanillin-lignin` needs only the second one -- coniferyl alcohol is
+    already conjugated. Pass this bundle at a lignin liquor and the
+    isomerisation simply finds nothing, which is the correct answer and not a
+    wasted template.
+
+    ⚠⚠ **NEEDS ``electrolyte_provider()`` AND MUST NOT BE GIVEN
+    ``dissociation_templates()``.** The first because ``[OH-]`` has no neutral
+    graph any estimator will price; the second because eugenol is a PHENOL and
+    ``phenol_dissociation`` then refuses the whole network for want of an
+    eugenolate pKa. See ``alkene_isomerisation``'s docstring -- this line
+    claimed the opposite until it was run. Pass ``base=None`` for a network with
+    no ionic chemistry in it at all; the apparent rate is unchanged at the
+    reference loading.
+
+    ⚠ THE FLASK IS AN AUTOCLAVE, AND THAT IS NOT OPTIONAL. An alkaline
+    liquor at 470 K sits under ~30 bar of its own steam, which is what an
+    alkaline oxidation digester is; at 400 K the route gives **0.43% in four
+    hours**.
+    """
+    return [alkene_isomerisation(catalyst=base), oxidative_cleavage()]
+
 
 def quinoline_chemistry() -> list[ReactionTemplate]:
     """The Skraup ring closure alone. ⚠ ONE template, and it needs FOUR things.
