@@ -7782,7 +7782,8 @@ RESOLVED since the last handoff:
     fragility it did not know it was touching, and only running the audit found out.*
 
     ⚠ **TWO CORRECTIONS TO WHAT THIS AUDIT COSTS AND REPORTS.**
-    * **It is ~2 h 35 m, not "ten minutes."** Measured 16:26:05 -> 19:01:39 on this
+    * ⚠⚠⚠ ~~**It is ~2 h 35 m, not "ten minutes."**~~ **REFUTED BY C7** at 10 m 31 s;
+      the original figure was right. Measured 16:26:05 -> 19:01:39 on this
       box. The "ten-minute run" figure in HANDOFF is stale and was quoted forward
       twice. **Budget two and a half hours.**
     * **`multistep_prep`'s tight WALL CLOCK reads 95172.31 s, which is 26 hours and
@@ -7791,3 +7792,105 @@ RESOLVED since the last handoff:
       it and none was confirmed. **It is a TIMING field and the audit's verdicts are
       string diffs, so no numerical conclusion rests on it.** Recorded rather than
       explained.
+
+111. ✔✔ **C7 — THE STEREO-KEYING JOB: BOTH RECORDED NUMBERS WERE RIGHT,
+    ABOUT DIFFERENT QUESTIONS, AND THE BIGGEST THING IN THE SESSION IS NOT
+    STEREOCHEMISTRY.** C4 filed fragility 0c at **31 of 146**; C6 re-measured
+    **145 of 205** and NEXT_PROMPT warned that *"a 4.7x gap on a headline is not
+    a methodological rounding"*. It is exactly that, and C7 reproduced **both**
+    numbers to the unit: C4 filtered on `"@"`, which is TETRAHEDRAL
+    stereochemistry only (66 more corpus rows carry an E/Z spelling), and C6
+    asked about table MEMBERSHIP where C4 asked which SOURCE came back. **212
+    corpus compounds are spelled with stereochemistry, 149 reach different
+    tables, and 49 resolve to a different source -- 31 of them tetrahedral.**
+
+    ⚠⚠⚠ **AND THE ADVERTISED MECHANISM IS TWO ROWS OF THE FORTY-NINE.** 0c
+    said the two halves of a record are keyed opposite ways; that is lactic acid
+    and pla-unit. The real shape is **one table against all the others, and it
+    is about how a table came to exist**: `MEASURED_PHYSICAL` is GENERATED from
+    the corpus and inherited its spelling (146 of 1239 keys), while every
+    hand-typed table is flat -- 0 of 82 ideal-gas formation, 0 of 58 liquid, 0
+    of 50 curated, 0 of 4 fusion, 0 of 29 pKa. *A human types the simple form.*
+
+    ⚠⚠⚠ **IT WAS LIVE, AND A TEMPLATE IS WHAT MADE IT LIVE.** A missed record
+    costs nothing unless something looks a species up flat and the corpus never
+    does. **No template in the library spells stereochemistry on its product
+    side -- 0 of 50** -- so a rewrite that makes or touches a centre emits the
+    flat species. Four catalog steps run: `perkin_condensation` and
+    `knoevenagel_doebner` emit flat cinnamic acid (Tb 581.9 Joback against the
+    corpus row's 573.1 CRC), `alkene_hydrogenation` emits flat menthol (530.3
+    against 487.1) in `menthol-route` step 2, and `homolactic_fermentation`
+    emits flat lactic acid, which runs the OTHER way -- the flat spelling
+    reaches the experimental formation record the corpus's chiral one misses.
+    **The control is `transesterification`, which does not touch the C=C and
+    hands back the corpus's own spelling: a template loses a spelling only where
+    it rewrites one.**
+
+    ⚠⚠ **THE FIX IS `properties/stereo_keys.py`: A FALLBACK WITH TWO LIMITS,
+    AND THE SECOND ONE FIRES.** It may cross an AMBIGUITY and never a
+    DIFFERENCE -- an unspecified centre may take a specified record and the
+    reverse, but two differently specified spellings never share one -- and the
+    unspecified side must be answered by **exactly one** record.
+    `MEASURED_PHYSICAL` holds **seven** skeletons with more than one
+    stereoisomer, worst `O=C(O)C=CC(=O)O`: **maleic and fumaric acid, 230.1 K
+    apart.** Without the guard a flat butenedioic acid takes one of them by
+    dictionary order. *A fallback that guesses is worse than the estimator it
+    replaces, because it is wrong with a measurement's authority.*
+
+    ⚠⚠ **THE STRIP ITSELF HAD THE TRAP.** `MolToSmiles(mol,
+    isomericSmiles=False)` drops ISOTOPE labels with the stereochemistry --
+    `[2H][2H]` becomes `[H][H]` -- so a fallback built on it hands deuterium
+    hydrogen's record. `matter.stereo_free_smiles` uses `RemoveStereochemistry`.
+    C7's own first probe counted deuterium as a stereoisomer before that was
+    found: *the instrument had the bug it was looking for.*
+
+    ⚠⚠⚠ **AND THE LARGEST THING THE SESSION FOUND IS NOT STEREOCHEMISTRY.**
+    Chasing why 102 compounds have a record that changes nothing: the physical
+    half overlays a measured melting point only `if half.Tb is None`, so a
+    species Joback can fragment keeps **Joback's** melting point. **376 entries
+    hold a Tm and no Tb; 214 of them resolve to a different Tm than the table's,
+    worst 877 K** (methotrexate, measured 468.1 K against 1344.7). The comment
+    beside that gate argued it was harmless because *"Nothing in the measured
+    table is a species Joback already prices completely (the builder checks and
+    reports)"* -- **855 of the 1239 entries are stamped `Joback: complete` in
+    the generated file.** *A check that reports is not a check that filters.*
+    NOT fixed: it moves 214 melting points and would not be attributable inside
+    a session about spellings. Fragility 0c-i.
+
+    ⚠ **WHAT IS STILL OPEN, EACH WITH ITS SIZE.** `electrolyte._PAIRS` is
+    keyed flat, so a corpus-spelled lactic acid does not dissociate -- two rows,
+    left out because `_PAIRS` decides which IONS EXIST (0c-ii). The sibling
+    refusal costs two rows and is RIGHT about one of them: elaidic acid must not
+    take oleic acid's boiling point (128 K, different compounds) while pla-unit
+    should take L-lactic acid's (107 K, same enantiomer pair). And Benson's Cp
+    coefficients are **not bit-reproducible across spellings** -- it sums groups
+    in SMILES atom order -- which made the audit's own first pass report ten
+    false failures at 2e-16.
+
+    **THE SUITE: 1191 passed / 0 failed in 28:00**, run alone. C6 was 1181 in
+    29:01 and C7 adds ten tests -- one in `test_fermentation.py` for the
+    template-made species and `tests/test_stereo_keys.py` (9).
+
+    ⚠⚠⚠ **C7 RAN IT TWICE ON IDENTICAL SOURCE AND THAT SETTLES C6's
+    METHODOLOGICAL CLAIM.** Run 1 was 1182 in 29:58, run 2 was 1191 in 28:00:
+    per test **1.5214 then 1.4114 -- 6.6% apart, same code, same session, same
+    box.** C6 offered the per-test total as the stable statistic (*"quote the
+    per-test total, never a row"*) on the strength of landing within 0.03% of
+    C5 across an engine change. **That agreement was a coincidence.** The
+    statistic is not reliable to better than ~7%. *Two runs can say a statistic
+    is noisy; only two runs of the SAME code can say how noisy.*
+
+    ⚠⚠⚠ **THE TOLERANCE AUDIT WAS OWED AND IS CLEAN, AND IT CORRECTED ITS OWN
+    COST.** A provider-lookup change is a data-table change, so C6's widened rule
+    applies. Every row C6 recorded comes back exactly -- `named_routes` raises,
+    `workshop` 2 lines / 1.98e-04, `activity` 1.28e-03, `mercury_retort` 0 lines
+    and 1.00x, `multistep_prep` 8 lines / worst 1.07e-03. **Nothing moved.**
+
+    ⚠⚠⚠ **AND IT IS ~10 MINUTES, NOT THE 2 h 35 m C6 RECORDED.** Timed
+    01:33:22 -> 01:43:53 = **10 m 31 s**, and the summary's own per-example wall
+    clocks sum to **622 s**, which bounds it independently. C6 measured
+    16:26:05 -> 19:01:39 and attributed the whole interval to the audit. **The
+    repo's original "ten minutes" was right; it was replaced by a measurement of
+    something else and quoted forward twice, including into the estimate C7 gave
+    the user for what this session would cost.** *A wall-clock interval is not a
+    duration unless something was watching the process.*

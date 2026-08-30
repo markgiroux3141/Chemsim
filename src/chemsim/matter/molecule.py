@@ -261,3 +261,30 @@ class Molecule:
                 self._mol_h = Chem.AddHs(Chem.Mol(self._mol))
             target = self._mol_h
         return target.GetSubstructMatches(query, uniquify=True)
+
+
+# ---------------------------------------------------------------------------
+# THE STEREOCHEMISTRY-FREE SPELLING OF A MOLECULE
+# ---------------------------------------------------------------------------
+def stereo_free_smiles(smiles: str) -> str:
+    """The same canonical SMILES with every stereochemical annotation removed.
+
+    This is NOT an identity operation on species -- see the module docstring:
+    two stereoisomers are two species and nothing here merges them. It exists so
+    that a table keyed by one spelling can be ASKED about another, which the
+    property providers do as a last-resort fallback and describe in their own
+    terms.
+
+    ⚠⚠ **IT IS NOT ``MolToSmiles(mol, isomericSmiles=False)``, AND THAT
+    DISTINCTION IS LOAD-BEARING.** That flag drops ISOTOPE labels as well as
+    stereochemistry: it turns ``[2H][2H]`` into ``[H][H]`` and ``[13CH4]`` into
+    ``C``. A fallback built on it would hand deuterium hydrogen's record -- two
+    species merged by a flag that was reached for to do something else.
+    ``RemoveStereochemistry`` touches only stereochemistry, which is what the
+    name of this function claims.
+    """
+    mol = Chem.MolFromSmiles(smiles)
+    if mol is None:
+        raise ValueError(f"invalid SMILES: {smiles!r}")
+    Chem.RemoveStereochemistry(mol)
+    return Chem.MolToSmiles(mol)

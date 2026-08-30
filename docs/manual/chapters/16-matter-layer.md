@@ -32,7 +32,20 @@ a centre.
 ::: {.trap title="The identity model is ahead of the reaction model"}
 Templates do not yet *control* stereochemistry, so a graph rewrite can lose it.
 Distinguishing what you cannot control is the safer of the two failure modes,
-but it is still a mismatch, and it is recorded as one.
+but it is still a mismatch --- and it costs something measurable.
+
+**Not one template in the library spells stereochemistry on its product side**
+(0 of 50). So a rewrite that makes or touches a centre emits the *flat* species,
+and the flat species is not the one the corpus spells: hydrogenating isopulegol
+gives `CC1CCC(C(C)C)C(O)C1` where the catalog's menthol is
+`CC(C)[C@@H]1CC[C@@H](C)C[C@H]1O`. Both are real species by the rule above, and
+only one of them used to reach menthol's measured boiling point --- the other
+fell to Joback, 43 K away, in the middle of a route the engine runs.
+
+The *identity* half of that mismatch stands, deliberately. The *lookup* half is
+closed: a property table will now answer across an unspecified centre, under
+rules that never merge two species (Chapter 17). Making templates control
+stereochemistry remains future work.
 :::
 
 **3. No RDKit object escapes.** Every method returns a string, a number, a

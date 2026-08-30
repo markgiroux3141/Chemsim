@@ -34,6 +34,7 @@ from chemsim.properties.element_data import (
 from chemsim.properties.joback import JobackError, estimate
 from chemsim.properties.mineral_data import MINERALS
 from chemsim.properties.physical_data import MEASURED_PHYSICAL
+from chemsim.properties.stereo_keys import StereoFallback, fallback_note
 
 
 @dataclass(frozen=True)
@@ -404,6 +405,7 @@ class ThermochemistryProvider:
         extra_curated: dict[str, ThermoData] | None = None,
         benson: bool = True,
         measured_physical: bool = True,
+        stereo_fallback: bool = True,
     ):
         # ``benson=False`` reproduces the Joback-only basis, kept so the
         # difference can be measured rather than only described -- the same
@@ -411,34 +413,39 @@ class ThermochemistryProvider:
         # ``measured_physical=False`` does the same for the Wilson-Jasperson /
         # Fedors / measured-Tb route, so the coverage this session added can be
         # switched off and the difference measured rather than asserted.
+        # ``stereo_fallback=False`` reads every table on the EXACT canonical
+        # spelling and nothing else, which is what this provider did before
+        # ``stereo_keys`` existed. Same purpose as the two flags above: the
+        # session that added a tier has to be able to measure what it bought.
         self._benson = benson
         self._measured_physical = measured_physical
-        self._physical = {
+        self._physical = StereoFallback({
             Molecule.from_smiles(smi).smiles: v
             for smi, v in MEASURED_PHYSICAL.items()
-        }
-        self._curated_physical = {
+        }, stereo_fallback)
+        self._curated_physical = StereoFallback({
             Molecule.from_smiles(smi).smiles: v
             for smi, v in PHYSICAL_PROPERTIES.items()
-        }
+        }, stereo_fallback)
         # Re-key by canonical SMILES so lookups are form-independent.
         self._curated: dict[str, ThermoData] = {}
         for smi, data in _CURATED_RAW.items():
             self._curated[Molecule.from_smiles(smi).smiles] = data
         for smi, data in (extra_curated or {}).items():
             self._curated[Molecule.from_smiles(smi).smiles] = data
-        self._fusion = {
+        self._curated = StereoFallback(self._curated, stereo_fallback)
+        self._fusion = StereoFallback({
             Molecule.from_smiles(smi).smiles: v
             for smi, v in _CURATED_FUSION.items()
-        }
-        self._formation = {
+        }, stereo_fallback)
+        self._formation = StereoFallback({
             Molecule.from_smiles(smi).smiles: v
             for smi, v in IDEAL_GAS_FORMATION.items()
-        }
-        self._derived_formation = {
+        }, stereo_fallback)
+        self._derived_formation = StereoFallback({
             Molecule.from_smiles(smi).smiles: v
             for smi, v in DERIVED_GAS_FORMATION.items()
-        }
+        }, stereo_fallback)
         self._cache: dict[str, ThermoData] = {}
 
     # ---- the physical half --------------------------------------------------
@@ -452,10 +459,12 @@ class ThermochemistryProvider:
         # they must keep winning: their Tc/Pc/Vc are measured and their Cp is
         # least-squares fitted to the kernel's polynomial form, which neither
         # estimator below can reproduce.
-        if smi in self._curated_physical:
+        curated_key = self._curated_physical.key(smi)
+        if curated_key is not None:
             return _Physical(
-                **self._curated_physical[smi],
-                source="curated measured (CRC/NIST) with a fitted Cp",
+                **self._curated_physical.get(smi),
+                source="curated measured (CRC/NIST) with a fitted Cp"
+                + fallback_note(smi, curated_key),
             )
 
         # Tier 2: a measured boiling point, plus critical constants -- measured
@@ -463,8 +472,9 @@ class ThermochemistryProvider:
         # otherwise. This is the tier that closes the coverage gap, because
         # Wilson-Jasperson takes Tb as an INPUT: supply a boiling point and the
         # rest follows, for a species Joback cannot fragment at all.
-        if self._measured_physical and smi in self._physical:
-            m = self._physical[smi]
+        physical_key = self._physical.key(smi) if self._measured_physical else None
+        if physical_key is not None:
+            m = self._physical.get(smi)
             if m.Tb is not None:
                 try:
                     est = estimate_physical(
@@ -488,7 +498,7 @@ class ThermochemistryProvider:
                         Tm=m.Tm.value if m.Tm else None,
                         Hfus=m.Hfus.value if m.Hfus else None,
                         Cp_coeffs=None,             # supplied by the formation half
-                        source=est.source,
+                        source=est.source + fallback_note(smi, physical_key),
                     )
         # Tier 3: Joback, for everything he can fragment.
         if joback is not None:
@@ -504,24 +514,46 @@ class ThermochemistryProvider:
         # A measured melting point overlays whatever won above. Two cases, and
         # both are real:
         #
-        #   * Joback fragmented the species but has no boiling point for it, or
-        #     his Tm is the weak output it usually is -- a measurement replaces
-        #     it. Nothing in the measured table is a species Joback already
-        #     prices completely (the builder checks and reports), so no existing
-        #     record's fusion pair moves.
+        #   * Joback could not give the species a boiling point at all, so
+        #     nothing else supplies a fusion pair and the measurement lands.
+        #
+        # ⚠⚠⚠ THE SECOND HALF OF THAT CASE IS NOT IMPLEMENTED, AND C7 MEASURED
+        # WHAT IT COSTS. This comment used to continue "...or his Tm is the weak
+        # output it usually is -- a measurement replaces it", and the gate below
+        # says ``half.Tb is None``, so a measured melting point NEVER replaces a
+        # Joback one: supply a boiling point and Joback's melting point comes
+        # with it. **214 species in MEASURED_PHYSICAL hold a Tm that does not
+        # reach their record, worst by 877 K** (methotrexate, measured
+        # 468.1 K against Joback's 1344.7). Tm drives crystallisation and enters
+        # the solubility law exponentially.
+        #
+        # ⚠⚠ AND THE SENTENCE THAT MADE IT LOOK HARMLESS WAS FALSE. It read
+        # "Nothing in the measured table is a species Joback already prices
+        # completely (the builder checks and reports), so no existing record's
+        # fusion pair moves." ``tools/build_physical_data.py`` classifies each
+        # candidate and does NOT exclude on it -- **855 of the 1239 entries are
+        # stamped ``Joback: complete`` in the generated file.** A check that
+        # reports is not a check that filters.
+        #
+        # Left as it stands rather than fixed inside a session about spellings:
+        # closing it moves 214 melting points at once and the two changes would
+        # not be separable. ``validation/stereo_keying.py`` panel 8 is the
+        # measurement and the fragility list carries the row.
         #   * NOTHING boils this species. Saccharin, glyphosate, thiourea and
         #     p-toluenesulfonic acid decompose before they boil and no source
         #     tabulates a boiling point for any of them, so non-volatile is the
         #     CORRECT physical answer rather than a shortfall -- and the melting
         #     point still drives crystallisation, which is how those species are
         #     actually handled on a bench.
-        if self._measured_physical and smi in self._physical:
-            m = self._physical[smi]
+        overlay_key = self._physical.key(smi) if self._measured_physical else None
+        if overlay_key is not None:
+            m = self._physical.get(smi)
             if m.Tm is not None and half.Tb is None:
                 note = (
                     f"measured Tm ({m.Tm.database}); NO boiling point is "
                     "tabulated for this species in any source consulted, so it "
                     "has no vapour-pressure curve and is correctly non-volatile"
+                    + fallback_note(smi, overlay_key)
                 )
                 half = replace(
                     half,
@@ -554,12 +586,17 @@ class ThermochemistryProvider:
             Cp = joback.Cp_coeffs
 
         # Tier 1: curated measured formation data.
-        if smi in self._formation:
-            Hf, Gf = self._formation[smi]
-            return Hf, Gf, Cp, "experimental formation data (CRC/NIST/ATCT)"
-        if smi in self._derived_formation:
-            Hf, Gf = self._derived_formation[smi]
-            return Hf, Gf, Cp, "formation data derived from the measured liquid entry"
+        formation_key = self._formation.key(smi)
+        if formation_key is not None:
+            Hf, Gf = self._formation.get(smi)
+            return (Hf, Gf, Cp, "experimental formation data (CRC/NIST/ATCT)"
+                    + fallback_note(smi, formation_key))
+        derived_key = self._derived_formation.key(smi)
+        if derived_key is not None:
+            Hf, Gf = self._derived_formation.get(smi)
+            return (Hf, Gf, Cp,
+                    "formation data derived from the measured liquid entry"
+                    + fallback_note(smi, derived_key))
 
         # Tier 2: Benson group additivity. BELOW measured data and ABOVE Joback:
         # a better estimator, not a measurement. Measured head to head on the 82
@@ -772,8 +809,12 @@ class ThermochemistryProvider:
 
         # A fully curated entry is ONE measured record; splitting it into halves
         # would only let the two drift apart.
-        if smi in self._curated:
-            data = self._curated[smi]
+        curated_key = self._curated.key(smi)
+        if curated_key is not None:
+            data = self._curated.get(smi)
+            if curated_key != smi:
+                data = replace(
+                    data, source=data.source + fallback_note(smi, curated_key))
             self._cache[smi] = data
             return data
 
@@ -834,9 +875,11 @@ class ThermochemistryProvider:
         # two in how much dissolves.
         Tm, Hfus = physical.Tm, physical.Hfus
         fusion_source = ""
-        if smi in self._fusion:
-            Tm, Hfus = self._fusion[smi]
-            fusion_source = "; fusion: experimental Tm/Hfus (CRC/NIST)"
+        fusion_key = self._fusion.key(smi)
+        if fusion_key is not None:
+            Tm, Hfus = self._fusion.get(smi)
+            fusion_source = ("; fusion: experimental Tm/Hfus (CRC/NIST)"
+                             + fallback_note(smi, fusion_key))
 
         data = ThermoData(
             Hf=Hf, Gf=Gf,

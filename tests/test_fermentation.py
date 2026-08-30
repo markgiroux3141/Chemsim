@@ -39,6 +39,7 @@ from chemsim.properties import (  # noqa: E402
 )
 from chemsim.reactions.synthesis import (  # noqa: E402
     acetonic_fermentation,
+    alkene_hydrogenation,
     butanolic_fermentation,
     ethanolic_fermentation,
     fermentation_chemistry,
@@ -338,30 +339,37 @@ def test_the_plain_pattern_would_make_BOTH_lactic_enantiomers():
     assert set(products(homolactic_fermentation().smarts)) == {LACTIC_FLAT}
 
 
-def test_a_stereo_spelling_SELECTS_A_DATA_TIER(thermo):
-    """⚠⚠⚠ **AND MEASURING THAT TURNED UP SOMETHING GENERAL.** The property
-    tables are keyed by canonical SMILES, so a stereocentre changes the key --
-    and the two HALVES of a ThermoData are keyed the opposite way round:
+def test_a_stereo_spelling_NO_LONGER_SELECTS_A_DATA_TIER(thermo):
+    """⚠⚠⚠ **C4 FOUND THIS AND C7 CLOSED IT. THIS TEST IS THE INVERSE OF THE
+    ONE THAT USED TO BE HERE**, and the old assertions are kept below as the
+    thing that must NOT come back.
 
-      * the PHYSICAL tables carry the chiral spelling. 29 corpus compounds
-        reach a measured Tb chiral and fall to Joback flat, sorbitol by 184 K.
-      * the FORMATION table carries the FLAT spelling. Lactic acid's flat form
-        reaches an experimental record; the corpus's chiral one falls to Benson.
+    C4's finding: the property tables are keyed by canonical SMILES, so a
+    stereocentre changes the key, and for lactic acid the two halves of a record
+    were keyed opposite ways -- the chiral spelling reached a measured Tb and
+    fell to Benson for its formation, the flat spelling did the reverse.
+    **Neither spelling got both halves off the best source available.**
 
-    A spelling carries no thermochemical information at all -- no estimator here
-    tells one enantiomer from another (S7) -- so for these compounds the tier is
-    selected by an orthographic accident. ``validation/fermentation.py`` panel 8
-    counts it: **31 of 146 stereo-spelled corpus rows.**
+    C7 measured what that costs (``validation/stereo_keying.py``) and put a
+    stereochemistry-free FALLBACK in the lookup: S6's rule, a fallback and never
+    an override, and it may only cross an AMBIGUITY. Both spellings now resolve
+    to the same numbers, and the provenance says which spelling answered.
 
-    ⚠ NOT fixed here. The fix is a stereo-insensitive FALLBACK in the lookup
-    (S6's rule: a fallback, never an override), which touches the provider every
-    number in this project comes out of.
+    ⚠⚠ **THE SORBITOL HALF STILL SPLITS, AND THAT IS THE GUARD WORKING.**
+    ``OCC(O)C(O)C(O)C(O)CO`` is the skeleton of BOTH sorbitol and mannitol and
+    ``MEASURED_PHYSICAL`` holds both, so no single record may answer a query
+    that names neither. It falls to Joback exactly as before -- **a fallback
+    that guessed between them would be wrong with a measurement's authority.**
     """
     chiral, flat = thermo.get(LACTIC_L), thermo.get(LACTIC_FLAT)
-    assert "Benson" in chiral.source
+    assert "experimental" in chiral.source           # was Benson, and was wrong
     assert "experimental" in flat.source
-    assert abs(chiral.Tb - flat.Tb) > 100.0
+    assert "stereochemistry-free" in chiral.source   # and it SAYS so
+    assert chiral.Tb == pytest.approx(flat.Tb)
+    assert chiral.Hf == pytest.approx(flat.Hf)
+    assert chiral.Gf == pytest.approx(flat.Gf)
 
+    # The ambiguous skeleton, unchanged and deliberately so.
     sorb_c = thermo.get(_c("OC[C@H](O)[C@@H](O)[C@H](O)[C@H](O)CO"))
     sorb_f = thermo.get(_c("OCC(O)C(O)C(O)C(O)CO"))
     assert "Joback" not in sorb_c.physical_source     # chiral wins HERE
@@ -369,9 +377,50 @@ def test_a_stereo_spelling_SELECTS_A_DATA_TIER(thermo):
     assert abs(sorb_c.Tb - sorb_f.Tb) > 100.0
 
 
+def test_a_template_makes_a_flat_species_and_it_reaches_the_record_now(thermo):
+    """⚠⚠⚠ **THE HALF OF C4's FINDING THAT WAS LIVE, AND NOBODY HAD MEASURED
+    IT FOR THREE SESSIONS.** A missed record costs nothing unless something
+    looks a species up FLAT, and the corpus never does. A TEMPLATE does: no
+    template in this library spells stereochemistry on its product side, so
+    ``alkene_hydrogenation`` on isopulegol emits ``CC1CCC(C(C)C)C(O)C1`` where
+    the corpus spells menthol ``CC(C)[C@@H]1CC[C@@H](C)C[C@H]1O``.
+
+    That species used to price its boiling point off Joback at **530.3 K**
+    against the corpus row's measured **487.1 K**, in the middle of a catalog
+    route the engine can actually run (``menthol-route`` step 2). It is the
+    same record now.
+    """
+    flat_menthol = _c("CC1CCC(C(C)C)C(O)C1")
+    corpus_menthol = _c("CC(C)[C@@H]1CC[C@@H](C)C[C@H]1O")
+    # isopulegol, exactly as the corpus spells it -- itself already flat.
+    made = {
+        p.smiles
+        for tup in alkene_hydrogenation().run((
+            Molecule.from_smiles("CC1CCC(C(C)=C)C(O)C1"),
+            Molecule.from_smiles("[H][H]"),
+        ))
+        for p in tup
+    }
+    assert flat_menthol in made                     # and it IS the flat one
+    assert corpus_menthol not in made
+    a, b = thermo.get(flat_menthol), thermo.get(corpus_menthol)
+    assert a.Tb == pytest.approx(b.Tb)
+    assert a.Tb == pytest.approx(487.15, abs=0.1)
+    assert "Joback" not in (a.physical_source or "")
+    assert "stereochemistry-free" in a.source
+
+
 def test_the_size_of_the_stereo_keying_gap_is_pinned():
     """⚠ 146 corpus rows carry a stereo marker. The count is pinned so a data
-    session that fixes the keying has to come here and say so."""
+    session that fixes the keying has to come here and say so.
+
+    ⚠⚠ C7 came here and said so: the count is a property of the CORPUS and
+    did not move, because the fix is in the lookup rather than in the data. What
+    moved is the 49 of those rows that resolved to a different source flat than
+    chiral -- see ``validation/stereo_keying.py`` panel 5. ⚠ And the filter
+    below is why C4's headline was 31 rather than 49: ``"@"`` is a filter on
+    TETRAHEDRAL stereochemistry and 66 more corpus rows carry an E/Z spelling.
+    """
     path = os.path.join(_ROOT, "data", "catalog", "compounds")
     n = 0
     for fn in sorted(os.listdir(path)):

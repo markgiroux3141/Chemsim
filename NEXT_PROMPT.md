@@ -2,363 +2,301 @@ We're building chemsim, an emergent chemistry simulator (game inspired by Nile
 Red) in d:\Claude Code Projects\Chemistry Simulator.
 
 **The plan is `MILESTONES.md`. Read it first — it is the authority on what to
-build and in what order.** **M0–M6, M8, M12, S1–S13, G1–G6 and C1–C6 are DONE.**
+build and in what order.** **M0–M6, M8, M12, S1–S13, G1–G6 and C1–C7 are DONE.**
 
-# ⚠⚠⚠ WHAT C7 SHOULD DO: THE STEREO-KEYING JOB — AND ITS HEADLINE NUMBER DOES NOT REPRODUCE
+# ⚠⚠⚠ WHAT C8 SHOULD DO: THE MELTING-POINT GATE (fragility 0c-i)
 
-**Take fragility 0c.** C4 found it, C5 declined it, C6 declined it. It is the
-only item left that is well scoped and high value — and every session that
-defers it does so because something louder turned up, which is an argument that
-will keep working forever.
+**Take 0c-i.** C7 found it while chasing something else, measured it end to end,
+and deliberately did not fix it. It is the biggest live number in this file and
+it is completely scoped.
 
-## ⚠⚠⚠ BUT THE FIRST DELIVERABLE IS A RE-MEASUREMENT, NOT A FIX
+    MEASURED_PHYSICAL entries                                    1239
+    ... holding a melting point and NO boiling point               376
+    ... whose measured Tm NEVER REACHES the resolved record        214
+    worst gap                                                    877 K
 
-**C6 tried to reproduce C4's number before recommending the session, and could
-not.** Measured 2026-08-30 against `data/catalog/compounds/*.psv` (headerless
-PSV, SMILES is column 3), testing membership of `physical_data.MEASURED_PHYSICAL`
-and of `formation_data.IDEAL_GAS_FORMATION | LIQUID_FORMATION` for each
-compound's canonical spelling versus its `RemoveStereochemistry` twin:
+`ThermochemistryProvider._physical_half` overlays a measured melting point only
+`if m.Tm is not None and half.Tb is None`. Joback supplies a boiling point for
+anything he can fragment — **and then he supplies the melting point too**, so
+the measurement in the table is discarded. Methotrexate melts at 468.1 K and its
+record says 1344.7.
 
-    quantity                                   RECORDED (C4)   MEASURED (C6)
-    corpus compounds parsed                              --            1539
-    canonical spelling carries stereochemistry           146             205
-    rows reaching different tables chiral vs flat         31             145
+⚠⚠ **THE COMMENT BESIDE THAT GATE ARGUED IT WAS HARMLESS ON A CLAIM THE
+GENERATED FILE CONTRADICTS.** It read *"Nothing in the measured table is a
+species Joback already prices completely (the builder checks and reports), so no
+existing record's fusion pair moves."* `tools/build_physical_data.py` classifies
+each candidate and does **not** exclude on it: **855 of the 1239 entries are
+stamped `Joback: complete` in the generated file itself.** C7 corrected the
+comment and left the gate. *A check that reports is not a check that filters.*
 
-⚠⚠⚠ **AND THE MECHANISM ON RECORD IS NOT THE MAIN STORY EITHER.** 0c says *the
-two halves of a record are keyed OPPOSITE ways* — PHYSICAL chiral, FORMATION
-flat. By direction:
+## ⚠ WHY IT IS WORTH MORE THAN THE THING C7 WAS DOING
 
-    143   physical=Y form=-   ->  flat reaches NOTHING   (falls through to Joback)
-      1   physical=Y form=-   ->  flat reaches FORMATION
-      1   physical=- form=-   ->  flat reaches FORMATION
+Tm drives crystallisation and enters the solubility law exponentially — the
+provider's own comment says *"a 40 K miss is nearly a factor of two in how much
+dissolves"*, and this is 877. **The stereo job C7 closed moved two corpus rows'
+own numbers; this moves 214 records.**
 
-**143 of 145 are ONE-SIDED**: the physical table holds the chiral spelling and a
-flat lookup misses outright. **The advertised opposite-keying is TWO ROWS.**
+## ⚠⚠⚠ AND IT IS AN ORDERING CONSTRAINT ON THE NEXT ITEM AFTER IT
 
-⚠ C6's method may differ from C4's — C6 measured TABLE MEMBERSHIP where C4 may
-have measured WHICH VALUE CAME BACK — so the first job is to settle which
-question is the right one and answer it. **A 4.7x gap on a headline is not a
-methodological rounding**, and this project has been caught by exactly this six
-sessions running (C1 a price not in the chemistry, C2 a price in another table,
-C3 a class refused on one of two rows, C4 a class refused on formatting, C5 a
-class half-credited, C6 a fragility filed in the wrong layer).
+C6 ranked the **negative liquid Cp** (fragility 19 / engine item 10) below the
+stereo job *only on ordering*: a stereo fix would change which record a compound
+gets, hence its Tm/Tb/Tc, hence its Cp fit. ⚠ **That argument has been measured
+and it did NOT apply to the stereo fix** — only two corpus rows moved their own
+numbers. **It applies in full to this one.** 214 melting points is exactly the
+input a Cp fit reads. *Do the change that moves everything before the
+measurement that reads against it.*
 
-## ⚠⚠⚠ AND THE SECOND MEASUREMENT DECIDES WHETHER IT IS LIVE AT ALL
+## THE SHAPE OF THE WORK, AND THE TWO THINGS TO MEASURE FIRST
 
-A missed record costs nothing unless something looks these compounds up **flat**.
-Nothing in the corpus does — the corpus spells them chirally and that spelling
-hits. **What can is a TEMPLATE**: C4 measured `homolactic_fermentation` making a
-new stereocentre out of a sugar carbon with RDKit inheriting an unspecified
-chirality, emitting one L-lactic acid and one D-. C5's `[C;H1;@,@@:n]` device
-makes substrate matching stereo-blind, and C5's `run` fix re-parses every product
-from its own canonical SMILES.
+1. **DOES A MEASUREMENT ALWAYS BEAT JOBACK's Tm?** The obvious fix is to drop
+   `and half.Tb is None`. Measure what that moves before writing it: 214 records
+   change their Tm, and some of them feed a crystallisation that a test pins.
+   ⚠ C7's own instrument lesson applies — compare with a TOLERANCE, because
+   Benson's Cp coefficients are not bit-reproducible across spellings and an
+   `==` reads that as a failure.
+2. **DOES `Hfus` HAVE THE SAME GATE?** The overlay carries `Hfus` alongside
+   `Tm` and nothing has measured whether the pair moves together. A Tm from one
+   source beside an Hfus from another is exactly the mixed-basis error
+   `formation_data.py` refuses in its own entries.
 
-**So the question that decides the session's size is:**
-
-> does a species a TEMPLATE MADE carry a flat spelling, and does it then miss the
-> record its corpus twin hits?
-
-⚠⚠ **Answer that BEFORE writing the fallback.** If yes, this is a real
-correctness bug over up to 143 compounds. If no, it is latent and the session is
-a two-row footnote plus a guard — and C7 should say so and take something else.
-*C6's whole finding was a fragility whose stated cause was a true measurement
-pointing at the wrong layer; do not repeat it one entry down the list.*
-
-## THE FIX SHAPE, IF THE MEASUREMENTS SUPPORT IT
-
-A stereo-insensitive **FALLBACK** in the provider lookup — S6's rule, *a fallback
-and never an override*, the same construction that took species-ready 49 → 65
-(`chemsim-species-ready-minerals`). ⚠ A spelling carries no thermochemical
-information, but it DOES carry identity: `matter/molecule.py` is explicit that
-two stereoisomers are different SPECIES. **The fallback must not merge them** —
-it may only supply a value when the exact spelling has none.
+⚠ **AND CHECK `_CURATED_FUSION` FIRST.** It has four rows and it is applied
+LATER, unconditionally, in `get()` — so it already does what this gate does not.
+Whether the fix is "widen the gate" or "route the measured Tm through the fusion
+overlay" is a real design choice and the second is closer to what already works.
 
 ## WHAT IT COSTS
 
-Small fix, expensive re-baselining. Full suite **~29 min**, and
-`tolerance_audit.py` **IS owed** (a provider-lookup change is a data-table
-change). ⚠⚠⚠ **The audit is ~2 h 35 m, NOT the "ten minutes" this file said for
-three sessions** — C6 timed it 16:26:05 → 19:01:39. Budget **over three hours of
-runs** and expect a crop of level-pins to move.
+Small fix, cheap re-baselining. Full suite **~29 min**, and
+`tolerance_audit.py` **IS owed** — a change to the physical half is a data-table
+change and C6's widened rule covers it. ⚠⚠ **The audit is ~10 MINUTES**, not
+the 2 h 35 m this file said for one session: C7 timed it 01:33:22 -> 01:43:53
+and the summary's own per-example wall clocks sum to 622 s. **Budget ~40
+minutes of runs, not three hours.**
 
-⚠ **AND C6 WIDENED THE RULE FOR WHEN THAT AUDIT IS OWED**, which C7 inherits: an
-RHS edit owes it, **and so does a change to network CONSTRUCTION**, because a
-species that exists is a state-vector entry. C5 declared it not owed while
-editing `ReactionTemplate.run`, and C6's audit found `multistep_prep` had moved.
+## ⚠ THE ALTERNATIVES, RANKED, WITH THE REASON EACH IS BELOW IT
 
-## ⚠ THE TWO ALTERNATIVES C6 WEIGHED AND RANKED BELOW IT, WITH THE ORDERING ARGUMENT
+* **The negative liquid Cp** (fragility 19). 99 compounds, count is pre-S13 and
+  stale, first step is to re-measure. **Blocked behind 0c-i by the ordering
+  argument above**, which is now measured rather than assumed.
+* **`electrolyte._PAIRS` keyed flat** (fragility 0c-ii). Two rows, both lactic
+  acid, live: a corpus-spelled lactic acid does not dissociate. ⚠ It is a
+  network-CONSTRUCTION change — `_PAIRS` decides which ions exist — so it owes
+  the audit on its own, which makes it a poor standalone session and a good
+  rider on one that already owes it.
+* **The enantiomer extension** (C7 §6). One row, priced: `pla-unit` is D-lactic
+  acid and the table holds the L, 107 K of Joback. ⚠ The reason C7 refused it is
+  the row NEXT to it: `elaidic-acid` would take oleic acid's boiling point, and
+  those are different compounds 128 K apart. **A rule that took the sibling
+  would be right once and wrong once.** Building it means inverting every centre
+  and comparing.
+* **A content row from `PLAYABLE.md` §8b.** Untouched for TWO sessions now —
+  C6 and C7 both bought nothing on the scoreboard. Still five classes tied at
+  +1, still flat, and the warning below it still stands.
+* ⚠ **The `n_i / sum(n)` sweep C6 named and left**, ~1 hour, no audit owed:
+  the vessel RHS's own mole fractions were never checked for the
+  composition-over-nothing shape.
 
-* **The negative liquid Cp** (fragility 19 / engine item 10) is worse IN KIND — a
-  negative Cp means adding heat LOWERS the temperature, and S10 measured it
-  reachable (3.96 mol of liquid mercury, negative total thermal mass). Its count
-  (99) is pre-S13 and the item itself says the first thing it needs is to be
-  measured again. ⚠⚠ **It is ranked second only on ORDERING**: a stereo fix
-  changes which record up to 143 compounds get, hence their Tm/Tb/Tc, hence their
-  Cp fit — so measuring Cp first means measuring it twice. **Do the change that
-  moves everything before the measurements that read against it.** If C7's two
-  measurements above come back LATENT, this is the item to switch to.
-* **A content row from `PLAYABLE.md` §8b** builds more routes on a property layer
-  that selects records by spelling. §8b is flat (five classes tied at +1) so
-  nothing there is time-sensitive.
-* ⚠ **And one cheap thing C6 left undone and named**: no other `n_i / sum(n)` in
-  the engine was swept for the composition-over-nothing shape. The vapour edge
-  was measured clean and the drain is first order by construction; **the vessel
-  RHS's own mole fractions were never checked.** ~1 hour, no audit owed.
+## ⚠⚠ AND THE SCOREBOARD HAS NOT MOVED IN TWO SESSIONS, WHICH IS A DECISION SOMEBODY SHOULD MAKE ON PURPOSE
 
-## ⚠ THE ALTERNATIVE, IF C7 WANTS CONTENT INSTEAD
-
-`PLAYABLE.md` §8b is **exactly as C5 left it** — C6 bought nothing on the
-scoreboard, deliberately — so the table below is unchanged and still flat: five
-classes tied at +1, 24 at +0.
-
-| row | route | the catch |
-|---|---|---|
-| `oxidative-complexation` | `iron-gall-ink` | **LIVE FALSE CREDIT** -- the corpus deliberately does not spell the product |
-| `pyrolysis` | `coal-gas`, `wood-distillation` | coal-gas is DEAD (a rock with no graph); the other is a genuine radical-chain lump |
-| `molten-salt-electrolysis` | `downs-cell` | needs a MELT, which is engine work the coverage queue already records |
-| `biological-transformation` | `tyrian-purple-route` | TWO-row class, needs the read-every-row check; its gate is ALIVE (C4's unclosed hole) |
-| `direct-combination` | `vermilion-route` | looks free and is NOT -- `cinnabar` IS a `mineral_data` lattice and there is **no `sulfur` MineralRecord**, so the modelling decision is the job |
-
-⚠ **Six sessions running, the blocker named in that table was not the blocker.**
-C1: a price for a species not in the chemistry. C2: a price in a different table.
-C3: a class refused on one of two rows. C4: a class refused on FORMATTING. C5: a
-class that would have been half-credited. C6: a fragility whose stated cause was
-a true measurement **pointing at the wrong layer**. *Read the rows, then measure,
-before costing anything in that table.*
+21 of 173 playable, tiers 10/10/1, 59/240 classes, 38/173 BOTH, ceiling 45 —
+unchanged since C5. C6 bought nothing (one engine line), C7 bought nothing (one
+lookup module). Both were the right call on their own terms and neither asked
+whether three sessions of engine honesty in a row is the right shape. **If the
+answer is that it is, say so; if it is not, §8b is where the routes are.**
 
 ---
 
 # ⚠⚠⚠ START HERE: THE SUITE AND WHAT IS OWED
 
-    1181 passed / 0 failed in 29:01        <- run ALONE, nothing else on the box
+    1191 passed / 0 failed in 28:00        <- run ALONE, nothing else on the box
 
-⚠⚠ **AND ITS CLOCK IDENTIFIED WHICH OF C5's TWO RUNS WAS THE ANOMALY.** C5 saw
-the burner move **+67.3%** and the rig azeotrope **+54.5%** between two untouched
-runs and concluded a single `--durations` row is not an instrument. C6 is a THIRD
-run and lands on C5's **RUN 1**, within **0.6%** on catalysis, the burner AND the
-azeotrope — so run 2 was the outlier and their ordinary values are ~51 s and
-~22 s. **Two runs can say a row is unreliable; it takes a third to say which run
-was wrong.** ⚠⚠⚠ Meanwhile the noise moved to a DIFFERENT row: the one rig test
-is **+28.5% / +30.3%** against both of C5's runs, and **it is not C6's doing —
-`test_still` has no meter edge at all.** *The spread lands on ONE big row at a
-time and which row is not stable between runs.* **Quote the per-test total, never
-a row:** C6 is **1.47454 s** against C5's **1.47498** — 0.03% across an engine
-change to the rig RHS.
+C6 was **1181 in 29:01**. C7 adds ten tests: one in `test_fermentation.py` for
+the template-made species, and `tests/test_stereo_keys.py` (9).
+
+⚠⚠⚠ **AND C7 RAN THE SUITE TWICE ON IDENTICAL SOURCE, WHICH SETTLES A
+METHODOLOGICAL CLAIM C6 MADE.** The first run was **1182 in 29:58**, the second
+**1191 in 28:00** with 1.14 s of new tests between them:
+
+    run          tests    total / s    SECONDS PER TEST
+    C6            1181       1741.4              1.4745
+    C7 run 1      1182       1798.2              1.5214
+    C7 run 2      1191       1681.0              1.4114
+
+**The same source, the same session, the same box, and the per-test total moves
+6.6%.** C6 offered that statistic as the stable one -- *"quote the per-test
+total, never a row"* -- on the strength of landing within **0.03%** of C5 across
+an engine change. ⚠ **That agreement was a coincidence.** The per-test total is
+not reliable to better than ~7%, and C7 measured that CONTROLLED rather than
+across sessions, which is the first time anything here has. *Two runs can say a
+statistic is noisy; only two runs of the SAME code can say how noisy.*
 
 ```bash
 python -m pytest -q --durations=25
 ```
 
-⚠ **`tolerance_audit.py` WAS OWED THIS SESSION AND WAS RUN.** C6 edited the RHS
-— the METER branch lives inside `RigIntegrator.make_rhs` — so C5's exemption
-(*"no RHS edit and no data-table edit"*) did not carry over. **Do not reuse an
-exemption; re-derive it from what the session actually touched.**
 
-⚠⚠ **THE AUDIT IS CLEAN FOR C6, AND IT FOUND TWO THINGS ANYWAY.** Four of the
-five rows C2 recorded as the baseline come back **exactly**: `named_routes`
-raises (the diagnosed entry), `workshop` 2 lines / 1.98e-04, `activity`
-1.28e-03, `mercury_retort` — the harness's own self-check — 0 lines and 1.01x.
 
-**ONE ROW MOVED: `multistep_prep`, 6 lines / worst `inf` -> 8 lines / worst
-1.07e-03.** ⚠⚠⚠ **It is not C6's.** That example has **no `Rig` and no meter
-edge at all** (its single grep hit for "rig" is the word *outright*), and C6's
-only executable change runs inside the rig's edge loop under `kind == METER`.
+⚠⚠⚠ **THE AUDIT IS ~10 MINUTES, NOT 2 h 35 m -- C6's CORRECTION WAS ITSELF
+WRONG, AND C7 QUOTED IT FORWARD BEFORE MEASURING IT.** Timed **01:33:22 ->
+01:43:53, 10 m 31 s**, and the run's own summary bounds it independently: the
+twelve examples' loose and tight wall clocks sum to **622 s**, which is the
+whole of the work it does. C6 recorded 16:26:05 -> 19:01:39 and attributed that
+entire interval to the audit. **The repo's original "ten minutes" was right, was
+replaced by a measurement of something else, and was then quoted forward twice
+-- into C7's plan and into the question C7 put to the user about what the
+session would cost.** ⚠ *A wall-clock interval is not a duration unless
+something was watching the process.*
 
-⚠⚠⚠ **IT IS C5's, AND C5 DECLARED THIS AUDIT NOT OWED.** C5's ground was *"no
-RHS edit and no data-table edit"* — and C5 edited `ReactionTemplate.run`, which
-changes **which species exist**, which is the state vector itself. The prep's
-acetic acid dissociates in the caustic pot now (C5's speciation fix), and the
-baseline moved with it. **So the rule as written is necessary and not
-sufficient:**
+⚠⚠ **AND THE AUDIT IS CLEAN FOR C7: EVERY ROW C6 RECORDED COMES BACK EXACTLY.**
+`named_routes` raises (the diagnosed entry), `workshop` 2 lines / 1.98e-04,
+`activity` 1.28e-03, `mercury_retort` -- the harness's own self-check -- 0 lines
+and 1.00x, and **`multistep_prep` 8 lines / worst 1.07e-03**, which is where
+C5's speciation fix left it and where C6 found it. **Nothing moved**, which is
+the right answer for a change that gives two spellings of one substance the same
+numbers rather than changing what any single species integrates.
 
-> an RHS edit owes the audit — **and so does a change to network CONSTRUCTION**,
-> because a species that exists is a state-vector entry.
+The two quotable-digit rows are unchanged and still quotable-digit rows:
+`activity` at 0.1277% and `multistep_prep` at 0.1073%. Four more move below
+0.1%. Tight is faster in 5 of 12 and slower in 7, worst 4.6x.
 
-⚠ C5 came within one sentence of this. Its own handoff says of `electrolyte._PAIRS`
-that *"`_PAIRS` decides which ions exist, and an ion that exists is a state-vector
-entry"* — it applied that reasoning to a data table and not to its own engine
-change.
+```bash
+python validation/tolerance_audit.py            # ~10 min, and OWED by any change
+                                                # to an RHS, a data table, or
+                                                # network CONSTRUCTION
+```
 
-⚠⚠ **AND THE MOVE IS AN IMPROVEMENT: FRAGILITY 26 IS CLOSED.** The `inf` is gone
-from the audit output entirely — `multistep_prep`'s worst is a finite 1.07e-03 on
-`[OH-]` 0.0931 vs 0.0932. **`pH = inf` had been printed since S13**; a pot whose
-acid could not dissociate had no hydroxide to take a logarithm of. *C5 closed a
-fragility it did not know it was touching, and only running the audit found out.*
-
-⚠ **TWO CORRECTIONS TO WHAT THIS AUDIT COSTS AND REPORTS.**
-* **It is ~2 h 35 m, not "ten minutes."** Measured 16:26:05 -> 19:01:39 on this
-  box. The "ten-minute run" figure in HANDOFF is stale and was quoted forward
-  twice. **Budget two and a half hours.**
-* **`multistep_prep`'s tight WALL CLOCK reads 95172.31 s, which is 26 hours and
-  is impossible** — the whole audit was 9334 s. The field is a plain
-  `time.time()` delta around `runpy.run_path`, so only a clock jump can produce
-  it and none was confirmed. **It is a TIMING field and the audit's verdicts are
-  string diffs, so no numerical conclusion rests on it.** Recorded rather than
-  explained.
 
 ---
 
-# ⚠⚠⚠ WHAT C6 TURNED OUT TO BE
+# ⚠⚠⚠ WHAT C7 TURNED OUT TO BE
 
-**C6 took fragility 00, the rig singularity, on the argument that C5's four-line
-reproduction was PERISHABLE — its trigger is a permutation of the reaction list,
-and any future template edit re-rolls it.** The reproduction turned out to be
-robust and the *diagnosis* was the perishable thing. **No route, no class, no
-species, no data row: one engine line.** Playable stays **21** (tiers 10/10/1),
-classes **59/240**, BOTH **38**, ceiling **45**. C5's `max_species=10` cap is
-**LIFTED**. HANDOFF §110, MILESTONES §C6.
+**The stereo-keying job: both recorded numbers were right, about different
+questions — and the biggest thing in the session is not stereochemistry.** No
+route, no class, no species, no data row. Playable stays **21**, classes
+**59/240**, BOTH **38**, ceiling 45. New: `properties/stereo_keys.py`,
+`matter.stereo_free_smiles`, `validation/stereo_keying.py`. HANDOFF §111,
+MILESTONES §C7.
 
-## ⚠⚠⚠ 1. THE FRAGILITY WAS FILED IN THE WRONG LAYER, ON A TRUE MEASUREMENT
+⚠ The regenerated artefacts say what moved and what did not.
+`COVERAGE_REPORT.md`'s **formation half measured goes 146 -> 148** -- lactic acid
+and pla-unit -- and `lactic-acid`'s LIMITING tier becomes `compilation`, because
+its formation half is measured now and its physical half is a YAWS boiling point.
+`PLAYABLE.md` comes back **byte-identical**.
 
-C5 filed it as *"a numerics session on the rig integrator"*, in the same family
-as the zero-Jacobian-column pathology, with evidence taken both ways round: the
-pre-C5 engine fails on the post-C5 ordering and vice versa. **The evidence was
-sound and the conclusion was inverted.** A permutation changes which step size
-`num_jac` lands on; **the number it was scaling was meaningless at every step
-size.** The cause is one line in `rig_integrator`'s METER branch.
+## ⚠⚠⚠ 1. BOTH RECORDED COUNTS REPRODUCED, TO THE UNIT
 
-## ⚠⚠⚠ 2. IT IS THE SPARSE LU PATH THAT RAISES, AND THAT IS THE FIRST SURPRISE
+NEXT_PROMPT warned that *"a 4.7x gap on a headline is not a methodological
+rounding"*. It is exactly a methodological difference:
 
-`useful_sparsity` hands this rig a pattern — **62 groups of 82 columns at cap 10,
-92 of 122 at cap 15** — so `num_jac` returns a SPARSE `J` and BDF branches to
-`splu`. **"Factor is exactly singular" is SuperLU's message.** Forced onto the
-dense path, the identical network runs:
+    what was asked                                      count
+    canonical spelling carries stereochemistry            212
+    ... of those, TETRAHEDRAL ('@')                       146   <- C4's population
+    ... of those, E/Z only                                 66
+    the two spellings reach different TABLES              149   <- C6's question
+    the two spellings resolve to a different SOURCE        49   <- C4's question
+    ... of those, tetrahedral                              31   <- C4's headline
 
-    cap  LU        result                             NITRIC left
-     10  sparse    elapsed=29.985000000               1.000000000000e-04
-     14  sparse    elapsed=29.985000000               1.000000000000e-04
-     15  sparse    RAISED Factor is exactly singular
-     15  dense     elapsed=29.985000000               9.999999999999e-05
+C4 filtered candidates on `"@"` in the raw SMILES column, which is a filter on
+TETRAHEDRAL stereochemistry — a double bond carries a spelling too. C6 asked
+about table MEMBERSHIP. **Membership counts records; only the resolved value
+counts numbers.**
 
-**A rank-deficient `I - c*J` is a hard crash on one path and a rejected step on
-the other**, and nothing in the chemistry chooses between them.
+## ⚠⚠⚠ 2. THE 100 COMPOUNDS BETWEEN THE TWO ANSWERS WERE A DIFFERENT BUG
 
-## ⚠⚠⚠ 3. AND THE MATRIX IS NOT SINGULAR — IT IS SCALED
+For **102** compounds the record exists under one spelling and changes nothing.
+Chasing that is how 0c-i was found. *The gap between two correct measurements
+was the session's biggest finding.*
 
-No zero rows, no zero columns, no duplicate rows or columns, and `lu_factor`
-accepts it with **min|U_ii| = 1.5064e-03, zero pivots, no warnings**. What it has
-is **cond = 4.038e+23**, top singular value **6.9575e+19** against a smallest of
-2e-04. ⚠ LAPACK's default `matrix_rank` says **26 of 122**, which reads like a
-rank deficiency and is not one: its tolerance is `122 * eps * 6.96e19 ~ 1.9e+06`.
-*A rank at a default tolerance on a matrix spanning 23 decades describes the
-dynamic range, not the rank.*
+## ⚠⚠⚠ 3. THE MECHANISM ON RECORD WAS TWO ROWS, AND THE REAL ONE IS ABOUT HOW A TABLE CAME TO EXIST
 
-## ⚠⚠⚠ 4. THE 1e+19 ENTRIES ARE NOT DERIVATIVES, AND ONE SWEEP SETTLES IT
+0c said the two halves of a record are keyed opposite ways. That is lactic acid
+and pla-unit. **The only table with stereochemistry in its keys is the GENERATED
+one** — `MEASURED_PHYSICAL`, 146 of 1239 — and every hand-typed table is flat:
+0 of 82 ideal-gas formation, 0 of 58 liquid, 0 of 50 curated, 0 of 4 fusion, 0
+of 29 pKa. S13 built the generated one from the corpus and it inherited the
+corpus's spelling; a human types the simple form.
 
-All ten largest live in ONE row — `pot.T` — against funnel LIQUID columns holding
-1e-39 to 1e-44 mol:
+## ⚠⚠⚠ 4. IT WAS LIVE, AND A TEMPLATE IS WHAT MADE IT LIVE
 
-    h            f(y + h e_j)[pot.T]     quotient
-    1.0e-20          -1.322448e+00      -1.6e+20
-    1.0e-12          -1.322448e+00      -1.6e+12
-    1.0e-09          -1.322448e+00      -1.6e+09
-    1.0e+00          -1.322448e+00      -1.6e+00
-    3.6e+02          -1.322448e+00      -4.5e-03
+**0 of 50 templates spell stereochemistry on their product side.** A rewrite
+cannot emit a spelling its SMARTS does not name, so every centre a template
+makes or touches comes out unspecified:
 
-**`f` is CONSTANT across twenty decades of `h`.** It is a STEP: `Delta f` is fixed
-and the quotient is exactly `Delta f / h`, so **`num_jac` reports its own probe
-size.** ⚠ Same shape as `jacobian.py`'s burner column — a difference that does not
-move with `h` — arriving from the opposite side: there the model had projected the
-derivative away, here it is a discontinuity.
+    step                     emitted                     Tb was      Tb now
+    perkin-route 1           O=C(O)C=Cc1ccccc1        581.9 Job    573.1 CRC
+    knoevenagel-route 1      O=C(O)C=Cc1ccccc1        581.9 Job    573.1 CRC
+    menthol-route 2          CC1CCC(C(C)C)C(O)C1      530.3 Job    487.1 CRC
+    lactic-acid-pla 1        CC(O)C(=O)O              505.5 Job    398.1 YAWS
+    biodiesel-route 1        the CONTROL -- unchanged, and it is the point
 
-## ⚠⚠⚠ 5. THE STEP IS A COMPOSITION TAKEN OVER NOTHING
+`transesterification` does not touch the C=C, so RDKit carries the spelling
+through and the emitted methyl oleate IS the corpus's. **A template loses a
+spelling only where it rewrites one.** ⚠ `matter/molecule.py` has said this in
+prose since v1 and nothing had ever priced it.
 
-The funnel is drained — **7.30e-26 mol** after the RHS's own clamp. Adding
-**1e-20 mol**, twenty-one decades below `atol`:
+## ⚠⚠ 5. THE GUARD IS NOT DEFENSIVE PROGRAMMING — IT FIRES
 
-    base     total=7.295132e-26   dominant species index  3 at x = 0.159137
-    probed   total=1.000007e-20   dominant species index 14 at x = 0.999993
+The fallback may cross an AMBIGUITY and never a DIFFERENCE, and the unspecified
+side must be answered by **exactly one** record. `MEASURED_PHYSICAL` holds
+**seven** skeletons with more than one stereoisomer; the worst is
+`O=C(O)C=CC(=O)O` — **maleic and fumaric acid, 230.1 K apart**. Without the
+guard a flat butenedioic acid takes one of them by dictionary order. *A fallback
+that guesses is worse than the estimator it replaces, because it is wrong with a
+measurement's authority.*
 
-**A mole fraction is SCALE-INVARIANT, so an empty vessel's composition is
-infinitely sensitive.** A meter carries the donor's composition and its enthalpy
-into the receiver, so `f[pot.T]` steps `+0.2903 -> -1.3224`. ⚠ **The control is
-exact: the same probe on the POT, holding 1.10 mol, moves it by 0.000000e+00.**
+## ⚠⚠ 6. THE STRIP ITSELF HAD THE TRAP, AND C7's OWN FIRST PROBE FELL IN IT
 
-## ⚠⚠⚠ 6. THE GUARD WAS A 0/0 CLAMP DOING A GATE'S JOB, ALREADY FORBIDDEN IN WRITING
+`Chem.MolToSmiles(mol, isomericSmiles=False)` drops ISOTOPE labels along with
+stereochemistry: `[2H][2H]` becomes `[H][H]`, `[13CH4]` becomes `C`. A fallback
+built on it hands **deuterium hydrogen's record**. `stereo_free_smiles` uses
+`RemoveStereochemistry`. ⚠ C7's first probe used the wrong one and counted
+deuterium as a stereoisomer — *the instrument had the bug it was looking for*,
+which is S6's raw-vs-canonical trap arriving one layer down.
 
-The branch read `... if tot_a > 0.0 else zeros`, against
-`MOLE_FRACTION_DENOM`'s own comment: *"a clamp that exists to avoid 0/0 must not
-double as a second gate"* — **the exact defect, one module over, stated long
-before it was met here.**
+## ⚠ 7. AND THE AUDIT CAUGHT AN INSTRUMENT ERROR ON ITSELF
 
-⚠⚠ **A METER IS THE ONLY EDGE EXPOSED, STRUCTURALLY.** A VAPOUR edge's flux is
-`k dP x_a` with `dP` proportional to the same `nG_a` the composition is taken
-over; a DRAIN is `k nL_a`. Both are first order in the holdup. **A meter's driver
-is a DECLARED CONSTANT** — which is the property `validation/dropwise.py` panel 1
-had written down as a *virtue*: *"nothing in the flux law slows it down as the
-funnel drains."* ⚠ Measured, not argued: a live vapour edge gives a worst quotient
-of **2.487e+03 FLAT across probe sizes** (a real derivative), and at a drained
-donor its worst quotient is **0.0**.
+Panel 5 first said **16** compounds still disagree after the fix. Ten of them
+agree to 2e-16: **Benson sums its group contributions in SMILES atom order**, so
+a re-spelled molecule gives Cp coefficients differing in the last bits, and `==`
+reads that as a failure. The panel compares to 1e-12 now and reports the
+bit-noise separately. *A group-contribution sum is not bit-reproducible across
+spellings* — nowhere else recorded.
 
-## ⚠⚠ 7. THE FIX, AND THE CAP CAME OFF WITHOUT MOVING THE ANSWER
+## ⚠ 8. WHAT C7 DID NOT DO, SAID OUT LOUD
 
-`_smoothstep(tot_a / DRYOUT_MOLES)` is the GATE, `MOLE_FRACTION_DENOM` (24
-decades lower) is the CLAMP. Flux becomes `k u^2 (3 - 2u)` — **QUADRATIC in the
-holdup, self-limiting harder than a drain.** Measured against the closed form to
-every digit, and:
-
-**`elapsed` is 29.985000000 s at every cap from 4 to 60**, the same value the ten
-capped runs agreed on before the fix. `test_dropping_funnel` is back at
-`max_species=60`. ⚠ Panel 1 of `dropwise.py` is UNCHANGED — 0.0 left, 0.5
-delivered at every rate — because the smoothstep tail still drains: **the gate
-attenuates the flux, it does not strand the charge.**
-
-## ⚠⚠⚠ 8. AND C6 NEARLY WROTE THE OPPOSITE OF ITS OWN FINDING INTO THE ENGINE
-
-The donor total reaching **-6.29e-03 mol** was measured over RHS EVALUATIONS and
-went into a code comment as *"the funnel is pumped 6.29 mmol past empty"*. **That
-is false.** `solve_ivp`'s own returned solution: **150 accepted points, NONE
-negative, bottoming out at +1.500000e-04 mol.** Those are Newton trial iterates.
-
-⚠⚠⚠ **The corrected statement is the transferable one:**
-
-> **an RHS is not only evaluated on its trajectory, and a term that is defensible
-> only there is not defensible.**
-
-*A measurement was right and the sentence drawn from it was wrong — C5's
-permutation finding, happening to C6, inside the same session that diagnosed it.*
-
-## ⚠⚠ 9. A DOCSTRING HAD GONE STALE IN THE ONE WAY THAT MATTERED
-
-`useful_sparsity` said the pattern is pure overhead *"for every rig in this repo's
-test suite"*. G1's funnel arrived after that was written, is joined by a METER,
-and GROUPS — so it takes the sparse path. **The code was right and only the prose
-was wrong**, but the sparse path is the one that RAISES, so a reader trusting the
-sentence would have concluded the crashing branch was unreachable here.
-*"Measured per rig rather than assumed once" saved the behaviour; nothing was
-re-measuring the sentence.*
-
-## ⚠ 10. WHAT C6 DID NOT DO, SAID OUT LOUD
-
-* **Nothing on the scoreboard**, knowingly. §8b is untouched.
-* **`splu`'s raise is not caught.** C6 removed the CAUSE, not the CONSEQUENCE: a
-  rank-deficient `I - c*J` on a rig that earns a sparsity pattern is still a hard
-  `RuntimeError` where the dense path rejects the step. **That is now the whole
-  of fragility 00** — narrower than C5 left it, and no longer resting on a
-  scenario that has been fixed.
-* **No other `n_i / sum(n)` was audited.** The vapour edge was measured clean and
-  the drain is first order by construction; the vessel RHS's own mole fractions
-  were not swept. **That is the obvious next numerics job and it is cheap.**
-* **The stereo-keying job is untouched for the third session running.**
+* **Nothing on the scoreboard**, for the second session running.
+* **The Tm gate is measured and open.** 214 species, 877 K. Fragility 0c-i, and
+  the recommendation above.
+* **`electrolyte._PAIRS` is not wrapped.** Two rows. Fragility 0c-ii.
+* **The enantiomer extension is priced and not built.** One row, 107 K.
+* **Templates still do not control stereochemistry.** Only the lookup half of
+  that mismatch is closed.
+* **The SOLID tables were never swept** for the same keying shape.
+* ⚠ **The root README's coverage table was several regenerations behind and is
+  now copied from the generated report.** It was quoting a formation coverage
+  **155 compounds too high** (921 against 766), a class count against the wrong
+  denominator (51/229 against 59/240) and a BOTH column of 31 against 38. C7 did
+  not cause that drift and the memory note about it said "one regeneration
+  behind"; it was more. **The front door of the repo is the one number nobody
+  re-runs.**
 
 ---
 
-# ⚠ C5, IN ONE PARAGRAPH (the full record is MILESTONES §C5 / HANDOFF §109)
+# ⚠ C6, IN ONE PARAGRAPH (the full record is MILESTONES §C6 / HANDOFF §110)
 
-**The sugar-to-furan dehydrations: 20 → 21 playable, three templates, one bundle,
-one ENGINE fix, one pKa row, no taxonomy split.** `dehydration-cyclisation`'s two
-rows are ONE mechanism — an acid-catalysed triple dehydration, a pentose giving
-furfural and a ketohexose giving 5-HMF — so **the same rule that split C4's class
-says DO NOT SPLIT here, and the credit needs BOTH templates.** ⚠⚠⚠ Its engine
-finding: `ReactionTemplate.run` returned products carrying RDKit's `noImplicit`
-flag, so **the engine could not ferment sugar it had inverted itself** — invisible
-to every single-template test, because catching it takes one template to MAKE what
-another consumes. Fixed in the TYPE (re-parse each product from its own canonical
-SMILES), which also removed an **accidental generation cap** on `kolbe_schmitt`.
-⚠⚠ The full suite then found NINE, of which two were not levels: **a flagship prep
-had been making an ester in caustic soda** (a carboxylic acid sitting neutral in
-0.093 mol of free hydroxide), and **a green test was resting on the order of two
-identical stoichiometry rows** — which is the fragility C6 has now closed.
+**The rig singularity, handed forward as a numerics session, and it was a pump
+running dry.** C5 filed it as *"a 15-species rig network with twelve
+structurally-zero columns factors `I - c*J` exactly singular, and whether it does
+turns on a permutation that changes nothing physical"*. It is **one line in
+`rig_integrator`'s METER branch**: the guard read `if tot_a > 0.0`, a 0/0 clamp
+doing a gate's job, so a funnel holding **7.30e-26 mol** still delivered its full
+rate of a composition one molecule rewrites. **A mole fraction is
+SCALE-INVARIANT**, so the receiver's temperature row became a STEP and `num_jac`
+reported `df/h` -- its own probe size, 1.6e20 at h=1e-20. ⚠⚠ Its transferable
+sentence: **an RHS is not only evaluated on its trajectory, and a term that is
+defensible only there is not defensible.** ⚠ It also widened the tolerance
+audit's rule -- an RHS edit owes it, **and so does a change to network
+CONSTRUCTION** -- and that rule is what made C7 owe it too.
 
 ---
 
@@ -474,6 +412,15 @@ python validation/furans.py                     # ⚠⚠ C5's, ~2 min. NEW -- re
                                                #   another template MADE, measured on C4's
                                                #   fermentation. Panel 7's second half is
                                                #   an INERT SPECTATOR moving a yield
+python validation/stereo_keying.py              # ⚠⚠ C7's, ~60 s. NEW -- read every
+                                               #   panel. ⚠⚠⚠ PANEL 8 IS NOT ABOUT
+                                               #   STEREOCHEMISTRY: it is 214 measured
+                                               #   melting points that never reach their
+                                               #   record, worst 877 K, and it is the
+                                               #   session's largest finding. Panels 1
+                                               #   and 3 are why C4's 31 and C6's 145 are
+                                               #   both right; panel 4 is the liveness
+                                               #   proof; panel 6 is the guard firing
 python validation/fermentation.py               # ⚠ C4's, ~30 s. read panels
                                                #   1, 4, 5 and 8. ⚠⚠⚠ PANEL 5 REFUTES
                                                #   M10's own cheap version, and PANEL 8
@@ -531,7 +478,11 @@ python -m pytest -q --durations=25             # ~27 min, expect 1179.
                                                #   `ReactionTemplate.run`, which every
                                                #   network is built through. ⚠ C2's "+25%
                                                #   from a concurrent job" was REFUTED
-python validation/tolerance_audit.py           # ⚠ ~2 h 35 m, NOT 10 min (C6 timed it).
+python validation/tolerance_audit.py           # ⚠⚠ ~10 MIN. C6 recorded 2 h 35 m
+                                               #   and that was a wall-clock interval,
+                                               #   not the run: C7 timed it at 10 m 31 s
+                                               #   and the summary's own per-example
+                                               #   clocks sum to 622 s. RUN IT.
                                                #   RAN it, and it CAUGHT a crash the whole
                                                #   green test suite missed. ⚠ C3, C4 and
                                                #   C5 do NOT owe it: no RHS edit and no
@@ -1012,7 +963,11 @@ its refusals are down to **416 of 1583** as of C2 and did not move in C3.
 
 **0b. ⚠⚠⚠ AN ORDER-ZERO REACTANT MANUFACTURES MATTER AND THE RUN REPORTS SUCCESS (C4).** No availability gate exists outside the solid block, so the substrate is **clamped at 0.0 in the reported state while the products grow past the stoichiometric ceiling** -- 1.79 mol of ethanol out of 0.5 mol of glucose, for ~1900 simulated hours before the hard guard refuses. ⚠⚠ **`conservation_report()` sees every mole and calls four tenths of one "round-off it could not settle"**: the check is load-bearing and its own label is calibrated for the case it was written for. ⚠ No template in the repo declares a zero order today and `test_no_fermentation_template_declares_an_order` keeps it that way; **M10's cheap door is measured shut.**
 
-**0c. ⚠⚠ A STEREO SPELLING SELECTS A DATA TIER (C4) -- AND C6 COULD NOT REPRODUCE THE COUNT OR THE MECHANISM.** The property tables are keyed by canonical SMILES. C4 recorded that the **PHYSICAL** tables carry the chiral spelling (sorbitol reaches a measured Tb chiral and **Joback 184 K away** flat) while the **FORMATION** table carries the flat one (lactic acid experimental flat, **Benson** chiral), and put it at **31 of 146** stereo-spelled corpus rows. ⚠⚠⚠ **C6 re-measured on 2026-08-30 and got 145 of 205, out of 1539 compounds parsed** -- and by direction **143 of the 145 are ONE-SIDED**: the physical table holds the chiral spelling and a flat lookup reaches NOTHING, falling through to Joback. **The advertised opposite-keying is TWO ROWS.** ⚠ C6 tested TABLE MEMBERSHIP where C4 may have tested WHICH VALUE CAME BACK, so the methods may not be the same question -- but a 4.7x gap on a headline is not a rounding. ⚠⚠ **AND NOBODY HAS MEASURED WHETHER IT IS LIVE.** A miss costs nothing unless something looks these up FLAT; the corpus does not, and the only thing that can is a TEMPLATE that makes a stereocentre with unspecified chirality (C4 measured `homolactic_fermentation` doing exactly that). **Settle that before building the fallback.** The fix, if it survives, is a stereo-insensitive FALLBACK in the lookup (S6's rule) that may supply a value where the exact spelling has none and **must not merge two species** -- `matter/molecule.py` is explicit that stereoisomers are different species.
+**0c. ✅ CLOSED BY C7 -- A STEREO SPELLING SELECTED A DATA TIER, AND BOTH RECORDED NUMBERS WERE ANSWERS TO DIFFERENT QUESTIONS.** C4 put it at **31 of 146**; C6 re-measured **145 of 205** and could not reconcile them. C7 reproduced BOTH exactly and they are not the same question. C4 asked which SOURCE a species resolves to, filtering candidates on `"@"` in the raw SMILES -- **TETRAHEDRAL stereochemistry only**, which is why it saw 146 and not the 212 whose canonical spelling carries a marker. C6 asked whether the two spellings reach the same TABLES, over the wider population. ⚠⚠⚠ **THE TWO DIFFER BY 102 COMPOUNDS WHERE THE RECORD EXISTS AND CONTRIBUTES NOTHING** -- it holds a melting point and no boiling point, and the Tm overlay is gated on `half.Tb is None`, so Joback's Tb keeps Joback's Tm. **Membership counts records; only the resolved value counts numbers, and that number is 49** (31 tetrahedral + 18 E/Z). ⚠⚠ **AND THE ADVERTISED MECHANISM -- "the two halves are keyed OPPOSITE ways" -- IS TWO ROWS OF THE 49.** The real shape is structural: **the ONLY table with stereochemistry in its keys is the GENERATED one**, `MEASURED_PHYSICAL`, which inherited the corpus's spelling when S13 built it from the corpus; every hand-typed table is flat (0 of 82 formation, 0 of 58 liquid, 0 of 50 curated, 0 of 29 pKa). ⚠⚠⚠ **IT WAS LIVE, AND THE THING THAT MADE IT LIVE IS A TEMPLATE.** No template in the library spells stereochemistry on its product side (0 of 50), so `perkin_condensation` emits flat cinnamic acid (Tb 581.9 Joback against the corpus row's 573.1 CRC) and `alkene_hydrogenation` emits flat menthol (530.3 against 487.1) in the middle of catalog routes the engine runs. **Fixed** by `properties/stereo_keys.py`: a fallback, never an override, that may cross an AMBIGUITY and never a DIFFERENCE, and only where exactly ONE record answers the skeleton. `validation/stereo_keying.py`.
+
+**0c-i. ⚠⚠⚠ 214 MEASURED MELTING POINTS NEVER REACH THEIR RECORD, AND THIS IS THE BIGGEST THING C7 FOUND (C7, NOT FIXED).** The physical half overlays a measured Tm only `if half.Tb is None`, so a species Joback can fragment keeps **Joback's** melting point and the measurement in `MEASURED_PHYSICAL` is discarded. 376 entries hold a Tm and no Tb; **214 of them resolve to a different Tm than the table's**, worst **877 K** (methotrexate, measured 468.1 K against Joback's 1344.7). ⚠⚠ **The comment beside that gate argued it was harmless on a claim the generated file contradicts**: *"Nothing in the measured table is a species Joback already prices completely (the builder checks and reports)"* -- `tools/build_physical_data.py` classifies and does NOT exclude, and **855 of the 1239 entries are stamped `Joback: complete`**. *A check that reports is not a check that filters.* ⚠ Tm drives crystallisation and enters the solubility law exponentially. Deliberately left for its own session: closing it moves 214 melting points at once and neither change would be attributable inside a session about spellings. `validation/stereo_keying.py` panel 8.
+
+**0c-ii. ⚠⚠ ONE FLAT-KEYED TABLE IS STILL NOT WRAPPED, AND IT IS TWO ROWS (C7).** `electrolyte._PAIRS` prices lactic acid as `CC(O)C(=O)O` and the corpus spells it `C[C@H](O)C(=O)O`, so **a corpus-spelled lactic acid in water does not dissociate.** It is excluded from C7's fallback on purpose: `_PAIRS` decides WHICH IONS EXIST, so widening it changes the state vector rather than a number in it, and C6's rule makes that a network-construction change with its own owed audit. Two rows, measured, live. `validation/stereo_keying.py` panel 7.
 
 **0d. ⚠ EVERY FERMENTATION YIELD IS AN UPPER BOUND, BY A MECHANISM NOTHING HERE CAN EXPRESS (C4).** A real ABE batch stalls near 20 g/L of butanol because **butanol dissolves the organism that makes it**, and a product cannot poison a catalyst that is not in the flask. Same shape as C3's missing over-oxidation channel, different cause.
 

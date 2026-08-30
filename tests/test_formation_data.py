@@ -17,6 +17,7 @@ from chemsim.properties.formation_data import (
     LIQUID_FORMATION,
     PHYSICAL_PROPERTIES,
 )
+from chemsim.properties.stereo_keys import StereoFallback
 from chemsim.properties.thermochemistry import _CURATED_RAW, ThermochemistryProvider
 from chemsim.properties.volatility import VolatilityProvider
 from chemsim.reactions import ReactionTemplate, reaction_deltas
@@ -175,13 +176,19 @@ def test_an_ordinary_liquid_agrees_with_the_route_it_replaces(volatility):
 
 
 def _psat_route(volatility, smiles):
-    """The R T ln(Psat) shift, bypassing the curated table."""
-    saved = dict(ss._CURATED_LIQUID)
-    ss._CURATED_LIQUID.clear()
+    """The R T ln(Psat) shift, bypassing the curated table.
+
+    ⚠ The table is SWAPPED rather than emptied in place. It is a
+    ``StereoFallback`` now, not a dict -- it owns a stereochemistry-free index
+    built from its keys, so clearing the keys underneath it would leave the
+    index answering for records that are no longer there.
+    """
+    saved = ss._CURATED_LIQUID
+    ss._CURATED_LIQUID = StereoFallback({})
     try:
         return ss.shift(smiles, volatility)
     finally:
-        ss._CURATED_LIQUID.update(saved)
+        ss._CURATED_LIQUID = saved
 
 
 def test_esterification_reaction_enthalpy_is_the_measured_one(thermo):

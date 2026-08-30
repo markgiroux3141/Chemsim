@@ -18,7 +18,29 @@ question about one species and stamps its answer with a source.
 | electrolyte provider | pKa-anchored ion formation data and the dissociation templates | `electrolyte.py` |
 
 Everything is keyed by **canonical SMILES**, which is the only identity in the
-system.
+system --- and canonical SMILES is *isomeric*, so a spelling is part of the key.
+
+::: {.trap title="A spelling used to select a data tier"}
+Exactly one property table carries stereochemistry in its keys: the **generated**
+one, `MEASURED_PHYSICAL`, which inherited the corpus's spelling when it was built
+from the corpus. Every hand-typed table is flat, because a human types the simple
+form --- 0 of 82 ideal-gas formation entries, 0 of 58 liquid, 0 of 50 curated
+records, 0 of 29 pKa rows. For 49 of the 212 corpus compounds spelled with
+stereochemistry that meant the two spellings of one substance resolved to
+*different sources*, and for lactic acid it meant neither spelling reached the
+best available record for both halves at once.
+
+`properties/stereo_keys.py` lets a lookup cross that, under two limits that are
+the whole of its safety. It may cross an **ambiguity** and never a
+**difference**: a query naming no stereochemistry may take a record that names
+some, and a query naming some may take a flat record, but two differently
+specified spellings never share one --- those are two species. And the
+unspecified side must be answered by **exactly one** record. That second guard
+fires: `MEASURED_PHYSICAL` holds seven skeletons with more than one stereoisomer,
+and without it a flat butenedioic acid would take maleic or fumaric acid's
+boiling point depending on dictionary order --- **230 K apart**. Every value that
+arrives this way says so in its provenance string.
+:::
 
 ## Resolution order
 

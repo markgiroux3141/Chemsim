@@ -36,6 +36,13 @@ general: the property tables are keyed by canonical SMILES, so **a corpus row
 spelled with stereochemistry can miss its own measured record and fall through to
 an estimator.** Panel 8 counts how many of the 1583 corpus compounds that is.
 
+⚠⚠⚠ **C7 CLOSED THAT, AND PANEL 8 NOW MEASURES ITS OWN SUBJECT OFF A PROVIDER
+WITH THE FIX SWITCHED OFF.** The number it prints is the gap that WAS there; the
+live provider is shown underneath it. Two of the panel's sentences did not
+survive re-measurement and are corrected in place -- the count is 31 only
+because the filter is `"@"`, and the advertised opposite-keying is two rows of
+forty-nine. `validation/stereo_keying.py` is where that lives now.
+
 Run: ``python validation/fermentation.py`` (~30 s).
 
 ⚠ EVERY PRINTED LINE HERE IS ASCII. The console is cp1252 and a warning glyph in
@@ -92,6 +99,12 @@ CO2, H2 = _c("O=C=O"), _c("[H][H]")
 LACTIC_FLAT, LACTIC_L = _c("CC(O)C(=O)O"), _c("C[C@H](O)C(=O)O")
 
 THERMO = ThermochemistryProvider()
+# ⚠⚠ PANEL 8's SUBJECT IS CLOSED, AND THIS IS HOW IT KEEPS REPORTING ITS SIZE.
+# C7 put a stereochemistry-free fallback in the provider lookup, so ``THERMO``
+# no longer splits on a spelling. The panel measures the gap that WAS there off
+# a provider with the fallback switched off -- the flag exists for exactly this
+# -- and then shows what the live provider does with the same two spellings.
+THERMO_EXACT = ThermochemistryProvider(stereo_fallback=False)
 VOL = VolatilityProvider(THERMO)
 TIGHT = dict(rtol=1e-8, atol=1e-12)
 
@@ -394,12 +407,13 @@ def panel7():
 def panel8():
     rule("PANEL 8 -- AND THE PRICE OF SPELLING A STEREOCENTRE, ACROSS THE "
          "WHOLE CORPUS")
-    print("  lactic acid, two spellings of one compound:")
+    print("  lactic acid, two spellings of one compound, WITH THE FALLBACK")
+    print("  SWITCHED OFF -- which is what every session before C7 saw:")
     print("     spelling                  Hf(gas)     Gf(gas)      Tb    "
           "source")
     for label, smi in (("corpus  C[C@H](O)C(=O)O", LACTIC_L),
                        ("flat    CC(O)C(=O)O   ", LACTIC_FLAT)):
-        d = THERMO.get(smi)
+        d = THERMO_EXACT.get(smi)
         tb = f"{d.Tb:7.1f}" if d.Tb else "      -"
         print(f"     {label:24s} {d.Hf:9.2f}  {d.Gf:10.2f} {tb}  "
               f"{d.source[:30]}")
@@ -454,11 +468,11 @@ def panel8():
                     continue
                 stereo += 1
                 try:
-                    a = THERMO.get(mol.smiles)
+                    a = THERMO_EXACT.get(mol.smiles)
                 except Exception:                             # noqa: BLE001
                     a = None
                 try:
-                    b = THERMO.get(_c(flat))
+                    b = THERMO_EXACT.get(_c(flat))
                 except Exception:                             # noqa: BLE001
                     b = None
                 if a is None or b is None:
@@ -530,11 +544,29 @@ def panel8():
     print("  thermochemical information at all, because no estimator here")
     print("  tells one enantiomer from another (S7, and panel 7).")
     print()
-    print("  NOT FIXED HERE, and deliberately: the fix is a stereo-insensitive")
-    print("  FALLBACK in the lookup (S6's rule -- a fallback, never an")
-    print("  override), which touches the provider every number in this")
-    print("  project comes out of. Recorded with a size, which is what makes")
-    print("  it costable.")
+    print("  CLOSED BY C7, AND THE NUMBER ABOVE IS WHAT IT CLOSED. The fix is")
+    print("  the stereo-insensitive FALLBACK this panel called for (S6's rule")
+    print("  -- a fallback, never an override), in the provider lookup. The")
+    print("  same two spellings, off the LIVE provider:")
+    print()
+    print("     spelling                  Hf(gas)     Gf(gas)      Tb    "
+          "source")
+    for label, smi in (("corpus  C[C@H](O)C(=O)O", LACTIC_L),
+                       ("flat    CC(O)C(=O)O   ", LACTIC_FLAT)):
+        d = THERMO.get(smi)
+        tb = f"{d.Tb:7.1f}" if d.Tb else "      -"
+        print(f"     {label:24s} {d.Hf:9.2f}  {d.Gf:10.2f} {tb}  "
+              f"{d.source[:30]}")
+    print()
+    print("  Two corrections this panel earned by being re-run, both in")
+    print("  validation/stereo_keying.py:")
+    print("    * the count above is 31 because the row filter is '@' in the")
+    print("      SMILES, which is TETRAHEDRAL stereochemistry only. Counting")
+    print("      E/Z as well makes it 49.")
+    print("    * 'the two halves are keyed the opposite way round' is TWO of")
+    print("      those 49. The real shape is ONE table against all the others:")
+    print("      the only table with stereochemistry in its keys is the")
+    print("      GENERATED one, which inherited the corpus's spelling.")
 
 
 def main() -> None:

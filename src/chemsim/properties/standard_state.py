@@ -65,6 +65,7 @@ from dataclasses import dataclass
 from chemsim.constants import P_STD_BAR, R
 from chemsim.matter import Molecule
 from chemsim.properties.formation_data import LIQUID_FORMATION
+from chemsim.properties.stereo_keys import StereoFallback, fallback_note
 from chemsim.properties.volatility import Volatility, VolatilityProvider
 
 LN10 = math.log(10.0)
@@ -110,9 +111,14 @@ def enthalpy_of_vaporization(vol: Volatility, T: float) -> float:
     return R * T * T * LN10 * vol.B / (denom * denom) / 1000.0
 
 
-_CURATED_LIQUID: dict[str, tuple[float, float]] = {
+# ⚠ WRAPPED FOR THE SAME REASON THE GAS TABLE IS: every one of these 58 keys is
+# typed FLAT, so a species spelled with its stereochemistry -- which is how the
+# corpus spells 212 of them -- misses the liquid standard state and is left on
+# the ideal-gas basis through the R T ln(Psat) route. ``stereo_keys`` states the
+# rule and its two limits.
+_CURATED_LIQUID = StereoFallback({
     Molecule.from_smiles(smi).smiles: v for smi, v in LIQUID_FORMATION.items()
-}
+})
 
 _MEASURED = (
     "measured liquid formation data (CRC/NIST/ATCT); no vapour-pressure "
@@ -153,10 +159,14 @@ def shift(
         )
 
     key = Molecule.from_smiles(smiles).smiles
-    if key in _CURATED_LIQUID:
+    liquid_key = _CURATED_LIQUID.key(key)
+    if liquid_key is not None:
         gas = volatility.thermo.get(key)
-        Hf_l, Gf_l = _CURATED_LIQUID[key]
-        return StandardStateShift(Hf_l - gas.Hf, Gf_l - gas.Gf, True, _MEASURED)
+        Hf_l, Gf_l = _CURATED_LIQUID.get(key)
+        return StandardStateShift(
+            Hf_l - gas.Hf, Gf_l - gas.Gf, True,
+            _MEASURED + fallback_note(key, liquid_key),
+        )
 
     coefficient = vol.coefficient(T)
     if coefficient < PSAT_FLOOR_BAR:

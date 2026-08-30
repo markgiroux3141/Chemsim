@@ -442,20 +442,26 @@ python tools/build_route_index.py      # feedstocks -> intermediates -> products
 python validation/catalog_coverage.py  # the audit
 ```
 
+⚠ Regenerated 2026-08-30 (C7). **Every row below is copied from
+`data/catalog/COVERAGE_REPORT.md`, which is generated**; this table had drifted
+several regenerations behind it and was quoting a formation coverage 155
+compounds too high and a class count off by two denominators.
+
 | | |
 |---|---|
-| formation half measured or Benson | **921 / 1583 (58%)** |
+| formation half measured or Benson | **766 / 1583 (48%)** |
 | ... of which priced as a LATTICE, on the solid basis | 25 |
-| formation half falls back to Joback | 232 (15%) |
-| refused | 430 (27%), of which ~166 are charged organics the Born model correctly declines |
+| formation half falls back to Joback | 401 (25%) |
+| refused | 416 (26%), of which ~166 are charged organics the Born model correctly declines |
 | ⚠⚠ **PHYSICAL half measured (S13)** | **652 / 1583 (41%)**, against **40 (2.5%)** before |
 | ... plus compilation-tier (published, not auditable to a measurement) | 47 |
 | physical half falls back to Joback | 333 (21%), against 964 (61%) before |
-| UNIFAC-decomposable (can enter an LLE) | 843 (53%) |
-| routes species-ready | **80 / 173** (was 49) |
-| reaction classes with a template | **51 / 229** (was 12) |
-| routes template-ready | 41 / 173 (was 7) |
-| ⚠⚠ **routes template-ready AND species-ready — the one to quote** | **31 / 173** |
+| UNIFAC-decomposable (can enter an LLE) | 857 (54%) |
+| routes species-ready | **85 / 173** (was 49) |
+| reaction classes with a template | **59 / 240** (was 12 / 229) |
+| routes template-ready | 46 / 173 (was 7) |
+| ⚠⚠ **routes template-ready AND species-ready — the one to quote** | **38 / 173** |
+| ⚠⚠ **routes a player can actually REACH from natural materials** | **21 / 173**, in 3 tiers |
 
 ⚠⚠ **S13 CLOSED THE HAND-TYPED LIST.** `properties/physical_data.py` is generated,
 and until S13 it was generated from **37 hand-typed names** — everything else in a
