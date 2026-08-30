@@ -4,34 +4,106 @@ Red) in d:\Claude Code Projects\Chemistry Simulator.
 **The plan is `MILESTONES.md`. Read it first — it is the authority on what to
 build and in what order.** **M0–M6, M8, M12, S1–S13, G1–G6 and C1–C6 are DONE.**
 
-# ⚠⚠⚠ WHAT C7 SHOULD DO: THE STEREO-KEYING JOB, AND IT HAS NOW BEEN HANDED FORWARD THREE TIMES
+# ⚠⚠⚠ WHAT C7 SHOULD DO: THE STEREO-KEYING JOB — AND ITS HEADLINE NUMBER DOES NOT REPRODUCE
 
 **Take fragility 0c.** C4 found it, C5 declined it, C6 declined it. It is the
-only item left that is *well scoped, high value, and already measured* — and
-every session that defers it does so because something louder turned up, which
-is an argument that will keep working forever.
+only item left that is well scoped and high value — and every session that
+defers it does so because something louder turned up, which is an argument that
+will keep working forever.
 
-**What it is:** the two halves of a `ThermoData` are keyed **opposite ways** with
-respect to stereochemistry. The **PHYSICAL** tables carry the chiral spelling
-(sorbitol reaches a measured Tb chiral and **Joback 184 K away** flat) and the
-**FORMATION** table carries the flat one (lactic acid reaches an experimental
-record flat and **Benson** chiral). **31 of the 146 stereo-spelled corpus rows
-price off a different source depending on an orthographic accident**, and a
-spelling carries no thermochemical information at all.
+## ⚠⚠⚠ BUT THE FIRST DELIVERABLE IS A RE-MEASUREMENT, NOT A FIX
 
-**What it costs:** it moves every number this project produces, so it wants the
-full suite behind it (~29 min) and it will move a crop of level-pins. **It is a
-session of its own and that is the whole reason it keeps losing.**
+**C6 tried to reproduce C4's number before recommending the session, and could
+not.** Measured 2026-08-30 against `data/catalog/compounds/*.psv` (headerless
+PSV, SMILES is column 3), testing membership of `physical_data.MEASURED_PHYSICAL`
+and of `formation_data.IDEAL_GAS_FORMATION | LIQUID_FORMATION` for each
+compound's canonical spelling versus its `RemoveStereochemistry` twin:
 
-**The fix shape is already decided:** a stereo-insensitive **FALLBACK** in the
-provider lookup — S6's rule, *a fallback and never an override*, which is the
-same construction that took species-ready 49 → 65 and is written up in
-`chemsim-species-ready-minerals`.
+    quantity                                   RECORDED (C4)   MEASURED (C6)
+    corpus compounds parsed                              --            1539
+    canonical spelling carries stereochemistry           146             205
+    rows reaching different tables chiral vs flat         31             145
 
-⚠⚠ **AND `tolerance_audit.py` WILL BE OWED**, because a provider-lookup change is
-a DATA-TABLE change by NEXT_PROMPT's own rule. ⚠⚠⚠ **Budget it properly: it is
-~2 h 35 m, NOT the "ten minutes" this file said for three sessions** -- C6
-measured it 16:26:05 -> 19:01:39. With the suite that is over three hours.
+⚠⚠⚠ **AND THE MECHANISM ON RECORD IS NOT THE MAIN STORY EITHER.** 0c says *the
+two halves of a record are keyed OPPOSITE ways* — PHYSICAL chiral, FORMATION
+flat. By direction:
+
+    143   physical=Y form=-   ->  flat reaches NOTHING   (falls through to Joback)
+      1   physical=Y form=-   ->  flat reaches FORMATION
+      1   physical=- form=-   ->  flat reaches FORMATION
+
+**143 of 145 are ONE-SIDED**: the physical table holds the chiral spelling and a
+flat lookup misses outright. **The advertised opposite-keying is TWO ROWS.**
+
+⚠ C6's method may differ from C4's — C6 measured TABLE MEMBERSHIP where C4 may
+have measured WHICH VALUE CAME BACK — so the first job is to settle which
+question is the right one and answer it. **A 4.7x gap on a headline is not a
+methodological rounding**, and this project has been caught by exactly this six
+sessions running (C1 a price not in the chemistry, C2 a price in another table,
+C3 a class refused on one of two rows, C4 a class refused on formatting, C5 a
+class half-credited, C6 a fragility filed in the wrong layer).
+
+## ⚠⚠⚠ AND THE SECOND MEASUREMENT DECIDES WHETHER IT IS LIVE AT ALL
+
+A missed record costs nothing unless something looks these compounds up **flat**.
+Nothing in the corpus does — the corpus spells them chirally and that spelling
+hits. **What can is a TEMPLATE**: C4 measured `homolactic_fermentation` making a
+new stereocentre out of a sugar carbon with RDKit inheriting an unspecified
+chirality, emitting one L-lactic acid and one D-. C5's `[C;H1;@,@@:n]` device
+makes substrate matching stereo-blind, and C5's `run` fix re-parses every product
+from its own canonical SMILES.
+
+**So the question that decides the session's size is:**
+
+> does a species a TEMPLATE MADE carry a flat spelling, and does it then miss the
+> record its corpus twin hits?
+
+⚠⚠ **Answer that BEFORE writing the fallback.** If yes, this is a real
+correctness bug over up to 143 compounds. If no, it is latent and the session is
+a two-row footnote plus a guard — and C7 should say so and take something else.
+*C6's whole finding was a fragility whose stated cause was a true measurement
+pointing at the wrong layer; do not repeat it one entry down the list.*
+
+## THE FIX SHAPE, IF THE MEASUREMENTS SUPPORT IT
+
+A stereo-insensitive **FALLBACK** in the provider lookup — S6's rule, *a fallback
+and never an override*, the same construction that took species-ready 49 → 65
+(`chemsim-species-ready-minerals`). ⚠ A spelling carries no thermochemical
+information, but it DOES carry identity: `matter/molecule.py` is explicit that
+two stereoisomers are different SPECIES. **The fallback must not merge them** —
+it may only supply a value when the exact spelling has none.
+
+## WHAT IT COSTS
+
+Small fix, expensive re-baselining. Full suite **~29 min**, and
+`tolerance_audit.py` **IS owed** (a provider-lookup change is a data-table
+change). ⚠⚠⚠ **The audit is ~2 h 35 m, NOT the "ten minutes" this file said for
+three sessions** — C6 timed it 16:26:05 → 19:01:39. Budget **over three hours of
+runs** and expect a crop of level-pins to move.
+
+⚠ **AND C6 WIDENED THE RULE FOR WHEN THAT AUDIT IS OWED**, which C7 inherits: an
+RHS edit owes it, **and so does a change to network CONSTRUCTION**, because a
+species that exists is a state-vector entry. C5 declared it not owed while
+editing `ReactionTemplate.run`, and C6's audit found `multistep_prep` had moved.
+
+## ⚠ THE TWO ALTERNATIVES C6 WEIGHED AND RANKED BELOW IT, WITH THE ORDERING ARGUMENT
+
+* **The negative liquid Cp** (fragility 19 / engine item 10) is worse IN KIND — a
+  negative Cp means adding heat LOWERS the temperature, and S10 measured it
+  reachable (3.96 mol of liquid mercury, negative total thermal mass). Its count
+  (99) is pre-S13 and the item itself says the first thing it needs is to be
+  measured again. ⚠⚠ **It is ranked second only on ORDERING**: a stereo fix
+  changes which record up to 143 compounds get, hence their Tm/Tb/Tc, hence their
+  Cp fit — so measuring Cp first means measuring it twice. **Do the change that
+  moves everything before the measurements that read against it.** If C7's two
+  measurements above come back LATENT, this is the item to switch to.
+* **A content row from `PLAYABLE.md` §8b** builds more routes on a property layer
+  that selects records by spelling. §8b is flat (five classes tied at +1) so
+  nothing there is time-sensitive.
+* ⚠ **And one cheap thing C6 left undone and named**: no other `n_i / sum(n)` in
+  the engine was swept for the composition-over-nothing shape. The vapour edge
+  was measured clean and the drain is first order by construction; **the vessel
+  RHS's own mole fractions were never checked.** ~1 hour, no audit owed.
 
 ## ⚠ THE ALTERNATIVE, IF C7 WANTS CONTENT INSTEAD
 
@@ -940,7 +1012,7 @@ its refusals are down to **416 of 1583** as of C2 and did not move in C3.
 
 **0b. ⚠⚠⚠ AN ORDER-ZERO REACTANT MANUFACTURES MATTER AND THE RUN REPORTS SUCCESS (C4).** No availability gate exists outside the solid block, so the substrate is **clamped at 0.0 in the reported state while the products grow past the stoichiometric ceiling** -- 1.79 mol of ethanol out of 0.5 mol of glucose, for ~1900 simulated hours before the hard guard refuses. ⚠⚠ **`conservation_report()` sees every mole and calls four tenths of one "round-off it could not settle"**: the check is load-bearing and its own label is calibrated for the case it was written for. ⚠ No template in the repo declares a zero order today and `test_no_fermentation_template_declares_an_order` keeps it that way; **M10's cheap door is measured shut.**
 
-**0c. ⚠⚠ A STEREO SPELLING SELECTS A DATA TIER, AND THE TWO HALVES OF A RECORD DISAGREE ABOUT IT (C4).** The property tables are keyed by canonical SMILES: the **PHYSICAL** tables carry the chiral spelling (sorbitol reaches a measured Tb chiral and **Joback 184 K away** flat) and the **FORMATION** table carries the flat one (lactic acid reaches an experimental record flat and **Benson** chiral). **31 of the 146 stereo-spelled corpus rows price off a different source depending on an orthographic accident**, and a spelling carries no thermochemical information at all. ⚠ The fix is a stereo-insensitive **FALLBACK** in the lookup (S6's rule) and it touches every number this project produces, so it is a session of its own.
+**0c. ⚠⚠ A STEREO SPELLING SELECTS A DATA TIER (C4) -- AND C6 COULD NOT REPRODUCE THE COUNT OR THE MECHANISM.** The property tables are keyed by canonical SMILES. C4 recorded that the **PHYSICAL** tables carry the chiral spelling (sorbitol reaches a measured Tb chiral and **Joback 184 K away** flat) while the **FORMATION** table carries the flat one (lactic acid experimental flat, **Benson** chiral), and put it at **31 of 146** stereo-spelled corpus rows. ⚠⚠⚠ **C6 re-measured on 2026-08-30 and got 145 of 205, out of 1539 compounds parsed** -- and by direction **143 of the 145 are ONE-SIDED**: the physical table holds the chiral spelling and a flat lookup reaches NOTHING, falling through to Joback. **The advertised opposite-keying is TWO ROWS.** ⚠ C6 tested TABLE MEMBERSHIP where C4 may have tested WHICH VALUE CAME BACK, so the methods may not be the same question -- but a 4.7x gap on a headline is not a rounding. ⚠⚠ **AND NOBODY HAS MEASURED WHETHER IT IS LIVE.** A miss costs nothing unless something looks these up FLAT; the corpus does not, and the only thing that can is a TEMPLATE that makes a stereocentre with unspecified chirality (C4 measured `homolactic_fermentation` doing exactly that). **Settle that before building the fallback.** The fix, if it survives, is a stereo-insensitive FALLBACK in the lookup (S6's rule) that may supply a value where the exact spelling has none and **must not merge two species** -- `matter/molecule.py` is explicit that stereoisomers are different species.
 
 **0d. ⚠ EVERY FERMENTATION YIELD IS AN UPPER BOUND, BY A MECHANISM NOTHING HERE CAN EXPRESS (C4).** A real ABE batch stalls near 20 g/L of butanol because **butanol dissolves the organism that makes it**, and a product cannot poison a catalyst that is not in the flask. Same shape as C3's missing over-oxidation channel, different cause.
 
