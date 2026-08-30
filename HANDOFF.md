@@ -7538,3 +7538,256 @@ RESOLVED since the last handoff:
     and without it C5 is **1.3927 s per test, +2.8% on C4** -- back inside the
     band G6/C3/C4 sit in. ⚠ The S12->S13 eight minutes is still unbisected, and
     is now measured against a much wider single-row floor than anyone allowed for.
+
+110. ✔✔ **C6 — THE RIG SINGULARITY, AND IT WAS NEVER A NUMERICS BUG: A METER
+    EDGE PUMPED A DRY DONOR.** C5 handed forward fragility 00 as *"a 15-species
+    rig network with twelve structurally-zero columns factors `I - c*J` exactly
+    singular, and whether it does turns on a permutation that changes nothing
+    physical"*, scoped as a numerics session on the rig integrator. It is one
+    line in `rig_integrator`'s METER branch, the ordering was never the cause,
+    and the fix removes C5's `max_species` cap entirely. **No new chemistry, no
+    data row, one engine line.**
+
+    ⚠⚠⚠ **THE CHAIN, EACH LINK MEASURED, AND THE FIRST ONE ALREADY MOVES THE
+    QUESTION.** `useful_sparsity` hands the funnel rig a pattern -- **62 groups
+    of 82 columns at cap 10, 92 of 122 at cap 15** -- so `num_jac` returns a
+    SPARSE `J` and scipy's BDF branches to `splu`. **"Factor is exactly
+    singular" is SuperLU's message**, raised at the unguarded
+    `LU = self.lu(self.I - c * J)` in `_step_impl`. Forced onto the DENSE path
+    the identical network runs:
+
+        cap  LU        result                          NITRIC left
+         10  sparse    elapsed=29.985000000            1.000000000000e-04
+         10  dense     elapsed=29.985000000            1.000000000000e-04
+         14  sparse    elapsed=29.985000000            1.000000000000e-04
+         15  sparse    RAISED Factor is exactly singular
+         15  dense     elapsed=29.985000000            9.999999999999e-05
+
+    ⚠⚠ **SO THE MATRIX IS NOT RANK-DEFICIENT.** Captured at the failing
+    factorisation: no zero rows, no zero columns, no duplicate rows or columns,
+    and `lu_factor` accepts it with **min|U_ii| = 1.5064e-03, zero pivots and no
+    warnings**. What it is, is SCALED: **cond = 4.038e+23**, top singular value
+    **6.9575e+19** against a smallest of 2e-04. (LAPACK's default-tolerance
+    `matrix_rank` says 26 of 122, which is an artefact of that dynamic range and
+    not a rank.) SuperLU's own factorisation produces an exactly-zero pivot
+    where LAPACK's ordering does not.
+
+    ⚠⚠⚠ **AND THE 1e+19 ENTRIES ARE NOT DERIVATIVES.** All ten of the largest
+    live in ONE row -- `pot.T` -- differentiated against funnel LIQUID columns
+    holding 1e-39 to 1e-44 mol. Swept on one of them:
+
+        h            f(y + h e_j)[pot.T]     quotient
+        1.0e-30           2.903164e-01      -1.9e+25
+        1.0e-20          -1.322448e+00      -1.6e+20
+        1.0e-12          -1.322448e+00      -1.6e+12
+        1.0e-09          -1.322448e+00      -1.6e+09
+        1.0e-06          -1.322448e+00      -1.6e+06
+        1.0e+00          -1.322448e+00      -1.6e+00
+        3.6e+02          -1.322448e+00      -4.5e-03
+
+    **`f` is CONSTANT across twenty decades of h.** It is a STEP, not a slope,
+    so `Delta f = -1.6128` is fixed and the quotient is exactly `-1.6128 / h`:
+    **`num_jac` reports whatever probe size it happened to choose.** That is the
+    whole of the 1e+19, and it is why C5's permutation looked causal -- **a
+    permutation changes which `h` the differencing lands on, and the number it
+    scales is meaningless at every `h`.**
+
+    ⚠⚠⚠ **THE STEP IS A COMPOSITION TAKEN OVER NOTHING.** At the failing state
+    the funnel is drained: its liquid-1 block sums to -1.66e-05 raw and
+    **7.30e-26 mol after the RHS's own clamp**. Adding 1e-20 mol of
+    hexanitrobenzene -- twenty-one decades below `atol` -- takes that species
+    from 0% of the layer to **99.9993%**, because **a mole fraction is
+    SCALE-INVARIANT and an empty vessel's composition is infinitely sensitive**.
+    The meter carries the donor's composition, and its enthalpy, into the pot,
+    so `f[pot.T]` steps `+2.903355e-01 -> -1.322434e+00`. ⚠ The control is
+    exact: **the same 1e-20 probe on the POT, which holds 1.10 mol, moves
+    `f[pot.T]` by 0.000000e+00.**
+
+    ⚠⚠ **THE GUARD WAS A 0/0 CLAMP DOING A GATE'S JOB, WHICH THIS CODEBASE HAD
+    ALREADY WRITTEN DOWN AS FORBIDDEN.** The METER branch read
+
+        moves = ([(0, k * nL1_a / tot_a), ...] if tot_a > 0.0
+                 else [(0, np.zeros(n))])
+
+    and `MOLE_FRACTION_DENOM`'s own comment says *"a clamp that exists to avoid
+    0/0 must not double as a second gate"* -- the exact defect, one module over,
+    stated years before it was met here. At `tot_a = 7.3e-26` the test passes,
+    the division is finite, and the pump delivers its full `k` mol/s.
+    ⚠ **A METER IS THE ONLY RIG EDGE EXPOSED TO THIS, and the reason is
+    structural**: a VAPOUR edge's flux is `k dP x_a` with `dP` proportional to
+    the same `nG_a` the composition is taken over, and a DRAIN is `k nL_a`
+    outright -- both first order in the holdup. **A meter's driver is a DECLARED
+    CONSTANT.** Measured rather than argued: with a live control showing the
+    probe can see something (quotient 2.487e+03, and FLAT across probe sizes --
+    the signature of a real derivative), the vapour edge's worst quotient at a
+    drained donor is **0.0**.
+
+    ⚠ **THE FIX IS THE CODEBASE'S OWN TWO-PART CONSTRUCTION, WITH THE TWO SCALES
+    KEPT APART.** `_smoothstep(tot_a / DRYOUT_MOLES)` is the GATE -- zero AND
+    FLAT at zero, so a drained funnel is an honestly flat column instead of a
+    cliff -- and `MOLE_FRACTION_DENOM`, 24 decades lower, is the 0/0 CLAMP. The
+    delivered flux becomes `k u^2 (3 - 2u)`: **QUADRATIC in the donor's holdup,
+    self-limiting harder than a drain's first order.** Measured against the
+    closed form to every digit printed:
+
+        funnel holds   delivered mol/s   fraction of k    closed form
+            1.00e-02      1.000000e-02    1.000000e+00   1.000000e+00
+            1.00e-06      1.000000e-02    1.000000e+00   1.000000e+00
+            1.00e-08      2.980000e-06    2.980000e-04   2.980000e-04
+            1.00e-10      2.999800e-10    2.999800e-08   2.999800e-08
+            1.00e-20      3.000000e-30    3.000000e-28   3.000000e-28
+
+    ⚠⚠⚠ **THE CAP IS LIFTED AND THE ANSWER DID NOT MOVE, WHICH IS WHAT SAYS IT
+    IS A FIX AND NOT A RETUNE.** `elapsed` is **29.985000000 s at every cap from
+    4 to 60** -- the same value the ten capped runs agreed on before it --
+    and `test_dropping_funnel` is back at `max_species=60`.
+
+    ⚠⚠⚠ **AND C6 NEARLY WROTE THE OPPOSITE OF ITS OWN BEST FINDING INTO THE
+    ENGINE.** The measurement that the donor total reaches **-6.29e-03 mol** was
+    taken over RHS EVALUATIONS, and it went into a code comment as *"the funnel
+    is pumped 6.29 mmol past empty -- 2% of its charge"*. That is FALSE. Checked
+    against `solve_ivp`'s own returned solution: **150 accepted points, NONE
+    negative, bottoming out at +1.500000e-04 mol**, which is exactly where the
+    run stops. Those negatives are Newton trial iterates. **The corrected
+    statement is the more transferable one:**
+
+        an RHS is not only evaluated on its trajectory, and a term that is
+        defensible only there is not defensible
+
+    The dry donor appears at Newton iterates and `num_jac` probe points --
+    states the ANSWER never visits and the SOLVER always does -- and BDF
+    differences the function there. ⚠ *The measurement was right and the
+    sentence drawn from it was wrong, which is C5's permutation finding
+    happening to C6.*
+
+    ⚠⚠ **AND A DOCSTRING HAD GONE STALE IN THE ONE WAY THAT MATTERED.**
+    `useful_sparsity` said the pattern is pure overhead *"for every rig in this
+    repo's test suite"*. G1's dropping funnel arrived after that was written, is
+    joined by a METER -- two LIQUID blocks and a temperature, not a reach through
+    the gas volume -- and it GROUPS, so it takes the sparse path. **The code was
+    right (`useful_sparsity` measures per rig) and only the prose was wrong** --
+    but the sparse path is the one that RAISES where the dense one recovers by
+    rejecting the step, so a reader who believed the sentence would have
+    concluded the crashing branch was unreachable here. *"Measured per rig rather
+    than assumed once" saved the behaviour; nothing was re-measuring the
+    sentence.*
+
+    ⚠ **A LATENT UNIT MISMATCH IN `factor_bound`, FOUND AND NOT FIRED.**
+    `BoundedJacobian`'s bound is `|h_j| <= max_i |y_i|` -- *"you cannot learn
+    anything about a state by moving one of its components further than the whole
+    state extends"*. On this rig `max|y|` is **356.0482, a TEMPERATURE in
+    kelvin**, and it is spent as a ceiling on a MOLE COUNT: the bound permits a
+    probe of **356 mol** into a species holding 1e-39. It did not fire here (the
+    solver asked for factor 2.2204e-13, peak 1.49e-02 over the run, **0 clamps in
+    20 Jacobians**), so nothing is changed -- it is recorded as fragility 00b
+    because the argument for the bound is stated in units it does not have.
+
+    ⚠ **WHAT THE VALIDATION SCRIPT'S OWN PROSE SAID.** `validation/dropwise.py`
+    panel 1 read: *"a meter's flux is intensive in the donor (k mol/s of
+    solution, whatever is left), so NOTHING IN THE FLUX LAW SLOWS IT DOWN as the
+    funnel drains."* An accurate description of the code, written as a VIRTUE,
+    and it is the whole defect. Corrected, with a new panel 1b carrying the flux
+    law. ⚠ Panel 1's table is UNCHANGED -- 0.000000000000 left and 0.500000000000
+    delivered at every rate from 0.001 to 10 mol/s -- because it reads at
+    t = 1000 s and the smoothstep's tail still drains: **the gate attenuates the
+    flux, it does not strand the charge.**
+
+    ⚠⚠ **THE TESTS PIN THE MECHANISM AND WERE CHECKED AGAINST THE OLD CODE.**
+    `test_a_metered_edge_stops_pumping_as_its_donor_dries` asserts the closed
+    form rather than a threshold; `test_a_drained_donor_does_not_make_the_
+    receiver_a_step_function` asserts the QUOTIENT and not the step -- because a
+    funnel handed 1e-9 mol really does hold 1e-9 mol and the tap really does
+    crack open, so a non-zero step is correct and **a quotient that GROWS as the
+    probe SHRINKS is the defect**. Temporarily reverting the METER branch:
+
+        pre-C6, donor at 1e-8 mol      delivers 0.01 where the law says 2.98e-06
+        pre-C6, quotients over h       5.9e+18, 5.9e+14, 5.9e+10, 5.9e+07
+        pre-C6, uncapped funnel        RuntimeError: Factor is exactly singular
+
+    **Four decades of quotient per four decades of probe -- exactly 1/h.** ⚠ The
+    revert itself needed the CRLF trap this file already records: the first
+    attempt matched on `\n` against a CRLF file and silently found nothing.
+
+    ⚠⚠⚠ **THE SUITE: 1181 passed / 0 failed in 29:01, run alone -- AND ITS CLOCK
+    IDENTIFIES WHICH OF C5's TWO RUNS WAS THE ANOMALY.** C5 ran the suite twice
+    in one session with nothing touched between, saw the burner move +67.3% and
+    the rig azeotrope +54.5%, and concluded that **a single `--durations` row is
+    not an instrument and the per-test total is.** C6 is a THIRD run of the same
+    box, and it lands on C5's **RUN 1**:
+
+                            C5 run 1   C5 run 2       C6   vs run 1   vs run 2
+        total / s             1660.8     1739.0   1741.4     +4.9%      +0.1%
+        tests                   1179       1179     1181
+        SECONDS PER TEST      1.40865    1.47498  1.47454     +4.7%     -0.03%
+        catalysis               72.2       72.4    72.65      +0.6%      +0.3%
+        burner @1e-8            50.8       85.0    51.12      +0.6%     -39.9%
+        rig azeotrope           22.2       34.3    22.30      +0.5%     -35.0%
+        the ONE RIG test       160.8      158.5   206.60     +28.5%     +30.3%
+
+    ⚠⚠ **C6 IS WITHIN 0.6% OF C5's RUN 1 ON ALL THREE OF THE ROWS C5 COULD ONLY
+    CALL "MOVED".** So C5's run 2 was the outlier on the burner and the azeotrope,
+    and their ordinary values are ~51 s and ~22 s. **Two runs can say a row is
+    unreliable; it takes a third to say which run was wrong.**
+
+    ⚠⚠⚠ **AND THE NOISE MOVED TO A DIFFERENT ROW.** The one rig test is
+    **+28.5% / +30.3%** against BOTH of C5's runs -- a new high on the largest row
+    in the suite, in the session that matches C5's run 1 everywhere else. **It is
+    not C6's doing: `test_still` has no meter edge at all** (its two mentions of
+    the word are prose), so nothing C6 changed is reachable from it. *The spread
+    is not spread evenly across rows -- it lands on ONE big row at a time, and
+    which row is not stable between runs.* That is a stronger form of C5's
+    conclusion and it points the same way: **quote the per-test total, never a
+    row.**
+
+    ⚠ **PER TEST, C6 IS 1.47454 s AGAINST C5's 1.47498 -- a difference of 0.03%
+    across an engine change to the rig RHS**, which is the number worth keeping.
+    The two new tests are ~5 s of the total.
+
+                            G6        C2        C3        C4        C5        C6
+        total / s         1383.0    1795.0    1494.6    1569.5    1739.0    1741.4
+        tests               1045      1097      1128      1159      1179      1181
+        SECONDS PER TEST  1.3234    1.6363    1.3250    1.3542    1.4750    1.4745
+
+    ⚠ The S12->S13 eight minutes is still unbisected.
+
+    ⚠⚠ **THE AUDIT IS CLEAN FOR C6, AND IT FOUND TWO THINGS ANYWAY.** Four of the
+    five rows C2 recorded as the baseline come back **exactly**: `named_routes`
+    raises (the diagnosed entry), `workshop` 2 lines / 1.98e-04, `activity`
+    1.28e-03, `mercury_retort` — the harness's own self-check — 0 lines and 1.01x.
+
+    **ONE ROW MOVED: `multistep_prep`, 6 lines / worst `inf` -> 8 lines / worst
+    1.07e-03.** ⚠⚠⚠ **It is not C6's.** That example has **no `Rig` and no meter
+    edge at all** (its single grep hit for "rig" is the word *outright*), and C6's
+    only executable change runs inside the rig's edge loop under `kind == METER`.
+
+    ⚠⚠⚠ **IT IS C5's, AND C5 DECLARED THIS AUDIT NOT OWED.** C5's ground was *"no
+    RHS edit and no data-table edit"* — and C5 edited `ReactionTemplate.run`, which
+    changes **which species exist**, which is the state vector itself. The prep's
+    acetic acid dissociates in the caustic pot now (C5's speciation fix), and the
+    baseline moved with it. **So the rule as written is necessary and not
+    sufficient:**
+
+    > an RHS edit owes the audit — **and so does a change to network CONSTRUCTION**,
+    > because a species that exists is a state-vector entry.
+
+    ⚠ C5 came within one sentence of this. Its own handoff says of `electrolyte._PAIRS`
+    that *"`_PAIRS` decides which ions exist, and an ion that exists is a state-vector
+    entry"* — it applied that reasoning to a data table and not to its own engine
+    change.
+
+    ⚠⚠ **AND THE MOVE IS AN IMPROVEMENT: FRAGILITY 26 IS CLOSED.** The `inf` is gone
+    from the audit output entirely — `multistep_prep`'s worst is a finite 1.07e-03 on
+    `[OH-]` 0.0931 vs 0.0932. **`pH = inf` had been printed since S13**; a pot whose
+    acid could not dissociate had no hydroxide to take a logarithm of. *C5 closed a
+    fragility it did not know it was touching, and only running the audit found out.*
+
+    ⚠ **TWO CORRECTIONS TO WHAT THIS AUDIT COSTS AND REPORTS.**
+    * **It is ~2 h 35 m, not "ten minutes."** Measured 16:26:05 -> 19:01:39 on this
+      box. The "ten-minute run" figure in HANDOFF is stale and was quoted forward
+      twice. **Budget two and a half hours.**
+    * **`multistep_prep`'s tight WALL CLOCK reads 95172.31 s, which is 26 hours and
+      is impossible** — the whole audit was 9334 s. The field is a plain
+      `time.time()` delta around `runpy.run_path`, so only a clock jump can produce
+      it and none was confirmed. **It is a TIMING field and the audit's verdicts are
+      string diffs, so no numerical conclusion rests on it.** Recorded rather than
+      explained.

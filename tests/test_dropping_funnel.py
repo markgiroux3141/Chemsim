@@ -51,32 +51,35 @@ def _scenario(funnel_volume: float = 2.0) -> Scenario:
     enough for a drip rate to matter: -141 kJ/mol for the first substitution,
     against an esterification's -3.2. See ``validation/dropwise.py``.
 
-    ⚠⚠⚠ **THE CAP IS LOAD-BEARING, AND SAYING IT IS NOT TUNING TOOK A
-    MEASUREMENT.** ``aromatic_nitration`` FEEDS ITSELF -- its own docstring says
-    so, and ``aromatic_chemistry``'s says to cap the expansion. Left at
-    ``max_species=60`` it enumerates benzene all the way to HEXAnitrobenzene: 15
-    species, twelve of which cannot form at 280 K in the seconds this scenario
-    runs and sit at structural zero. **At 15 species BDF's ``I - c*J`` factors
-    exactly singular -- and whether it does depends on the ORDER OF TWO
-    CHEMICALLY EQUIVALENT STOICHIOMETRY ROWS**, same reactions, same A, same Ea,
-    different positions in the list.
+    ⚠⚠⚠ **THE CAP IS GONE AGAIN, AND WHAT IT WAS HIDING WAS NOT AN ORDERING.**
+    C5 capped this scenario at ``max_species=10`` because at the full 15 --
+    ``aromatic_nitration`` feeds itself all the way to HEXAnitrobenzene -- BDF's
+    ``I - c*J`` factored exactly singular, and C5 measured that whether it did
+    turned on the ORDER of two chemically equivalent stoichiometry rows. That
+    measurement was right and the conclusion drawn from it was not: **a
+    permutation changes which step size ``num_jac`` lands on, and the number it
+    was scaling was meaningless at any step size.**
 
-    ⚠⚠ C5 measured it both ways round rather than assuming: **the pre-C5 engine
-    FAILS on the post-C5 ordering and the post-C5 engine PASSES on the pre-C5
-    one**, so the ordering is the whole cause and neither engine is. C5 changed
-    ``ReactionTemplate.run``, which re-rolled that order and made a green test
-    red without touching anything it was about.
+    ⚠⚠ C6 found the cause one layer down, in the METER EDGE. A meter is the one
+    rig edge whose flux is a declared RATE times the donor's COMPOSITION, and its
+    dry-donor guard was ``tot_a > 0.0`` -- a 0/0 clamp doing duty as a gate. A
+    composition is SCALE-INVARIANT, so at a drained donor holding 7.3e-26 mol one
+    added molecule rewrites it completely, and every quantity built on it becomes
+    a STEP in an amount far below ``atol``. ``num_jac`` differenced that step and
+    reported ``df/h``: **1.6e+20 at h = 1e-20 and 1.6e+9 at h = 1e-9, with ``f``
+    itself constant across twenty decades of h.** Those entries land in the pot's
+    TEMPERATURE row, take the matrix to cond 4e+23, and SuperLU's factorisation
+    produces an exactly-zero pivot where LAPACK's ordering does not. See ``rig_integrator``'s METER branch.
 
-    ⚠ **The evidence that the cap costs nothing is that the answer does not
-    move**: ``elapsed`` is **29.985 s at every cap from 4 to 14**, and the run
-    only fails at 15. *A test that passes on the order of two identical rows was
-    not passing for its own reason.* The underlying fragility belongs to the rig
-    integrator and is handed forward -- see NEXT_PROMPT's fragilities.
+    ⚠ **THE FIX IS IN THE ENGINE AND THE ANSWER DID NOT MOVE**, which is what
+    says it is a fix and not a retune: ``elapsed`` is **29.985000000 s at every
+    cap from 4 to 60**, the same value the ten capped runs agreed on before it.
+    The cap is back at 60 because it never needed to be anything else.
     """
     return Scenario(
         feed_species=[BENZENE, NITRIC, WATER],
         templates=[TemplateSpec.of(aromatic_nitration())],
-        max_species=10,
+        max_species=60,
         vessels={
             "funnel": VesselSpec(volume=funnel_volume, T=280.0, T_env=280.0,
                                  UA=1.0e6, kla=0.0, k_vent=0.0, k_diss=0.0,

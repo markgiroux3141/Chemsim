@@ -2,488 +2,291 @@ We're building chemsim, an emergent chemistry simulator (game inspired by Nile
 Red) in d:\Claude Code Projects\Chemistry Simulator.
 
 **The plan is `MILESTONES.md`. Read it first — it is the authority on what to
-build and in what order.** **M0–M6, M8, M12, S1–S13, G1–G6 and C1–C5 are DONE.**
+build and in what order.** **M0–M6, M8, M12, S1–S13, G1–G6 and C1–C6 are DONE.**
 
-# ⚠⚠⚠ WHAT C6 SHOULD DO: THREE OPTIONS, AND THE RECOMMENDATION IS NOT A CONTENT ROW
+# ⚠⚠⚠ WHAT C7 SHOULD DO: THE STEREO-KEYING JOB, AND IT HAS NOW BEEN HANDED FORWARD THREE TIMES
 
-**The C-series work order is FLAT.** `PLAYABLE.md` §8b has **five classes tied at
-+1 and 24 at +0** -- C4 took the last +2, C5 took the last row with a runnable
-bonus. From here every row buys one route or none, so picking between them is a
-judgement about which chemistry is worth having rather than an arithmetic. Three
-of the five carry a trap that is named below and in §8b itself.
+**Take fragility 0c.** C4 found it, C5 declined it, C6 declined it. It is the
+only item left that is *well scoped, high value, and already measured* — and
+every session that defers it does so because something louder turned up, which
+is an argument that will keep working forever.
+
+**What it is:** the two halves of a `ThermoData` are keyed **opposite ways** with
+respect to stereochemistry. The **PHYSICAL** tables carry the chiral spelling
+(sorbitol reaches a measured Tb chiral and **Joback 184 K away** flat) and the
+**FORMATION** table carries the flat one (lactic acid reaches an experimental
+record flat and **Benson** chiral). **31 of the 146 stereo-spelled corpus rows
+price off a different source depending on an orthographic accident**, and a
+spelling carries no thermochemical information at all.
+
+**What it costs:** it moves every number this project produces, so it wants the
+full suite behind it (~29 min) and it will move a crop of level-pins. **It is a
+session of its own and that is the whole reason it keeps losing.**
+
+**The fix shape is already decided:** a stereo-insensitive **FALLBACK** in the
+provider lookup — S6's rule, *a fallback and never an override*, which is the
+same construction that took species-ready 49 → 65 and is written up in
+`chemsim-species-ready-minerals`.
+
+⚠⚠ **AND `tolerance_audit.py` WILL BE OWED**, because a provider-lookup change is
+a DATA-TABLE change by NEXT_PROMPT's own rule. ⚠⚠⚠ **Budget it properly: it is
+~2 h 35 m, NOT the "ten minutes" this file said for three sessions** -- C6
+measured it 16:26:05 -> 19:01:39. With the suite that is over three hours.
+
+## ⚠ THE ALTERNATIVE, IF C7 WANTS CONTENT INSTEAD
+
+`PLAYABLE.md` §8b is **exactly as C5 left it** — C6 bought nothing on the
+scoreboard, deliberately — so the table below is unchanged and still flat: five
+classes tied at +1, 24 at +0.
 
 | row | route | the catch |
 |---|---|---|
 | `oxidative-complexation` | `iron-gall-ink` | **LIVE FALSE CREDIT** -- the corpus deliberately does not spell the product |
-| `pyrolysis` | `coal-gas`, `wood-distillation` | coal-gas is DEAD (a rock with no graph, correctly refused); the other is a genuine radical-chain lump |
+| `pyrolysis` | `coal-gas`, `wood-distillation` | coal-gas is DEAD (a rock with no graph); the other is a genuine radical-chain lump |
 | `molten-salt-electrolysis` | `downs-cell` | needs a MELT, which is engine work the coverage queue already records |
-| `biological-transformation` | `tyrian-purple-route` | TWO-row class, needs the read-every-row check; and its gate is ALIVE (C4's unclosed hole) |
-| `direct-combination` | `vermilion-route` | the cleanest -- but see the measurement below |
+| `biological-transformation` | `tyrian-purple-route` | TWO-row class, needs the read-every-row check; its gate is ALIVE (C4's unclosed hole) |
+| `direct-combination` | `vermilion-route` | looks free and is NOT -- `cinnabar` IS a `mineral_data` lattice and there is **no `sulfur` MineralRecord**, so the modelling decision is the job |
 
-⚠⚠ **`direct-combination` LOOKS LIKE THE FREE ROW AND IS NOT, AND C5 CHECKED
-RATHER THAN ASSUMED.** One row, one class, `mercury + sulfur-s8 -> mercury-sulfide`,
-and S4 already built the retort that runs it BACKWARDS. C3's landmine note says
-what actually blocks it, and the data agrees when you look: **`cinnabar` IS a
-`mineral_data` lattice and there is no `sulfur` MineralRecord** -- native sulfur
-is the molecular `S1SSSSSSS1`, and a `SurfaceReaction`'s solid participant must be
-a lattice. So the modelling decision (surface? solid-state term? liquid mercury
-dissolving S8?) is the job, and it is not a SMARTS string. *Five sessions running,
-the blocker named in the table was not the blocker.*
-
-## ⚠⚠⚠ AND THE RECOMMENDATION IS THE RIG SINGULARITY -- FRAGILITY 00, WHICH C5 CREATED THE REPRODUCTION FOR
-
-Not because one test broke. **Because C5 found THREE tests in one session that
-were passing on a numerical accident**, and that is a pattern rather than an
-incident:
-
-* `test_dropping_funnel` -- passing on the ORDER of two chemically identical
-  stoichiometry rows (§11).
-* the same test -- asserting which SIDE of a solver ROOT it stopped on
-  (`< 1.0e-4` against a root at 1.0000000000000826e-04).
-* `test_prep_side_products` -- asserting a NEUTRAL carboxylic acid in 0.09 mol
-  of free hydroxide, which is not chemistry and had been green for milestones.
-
-⚠⚠ The reproduction is four lines and it is fresh: **a 15-species rig network
-with twelve structurally-zero columns factors `I - c*J` exactly singular, and
-whether it does turns on a permutation that changes nothing physical.** It will
-be far more expensive to find again in six months than it is to take now. The
-scenario is capped so the suite is green; **the fragility is untouched.**
-
-⚠ **THE THIRD OPTION IS C4's STEREO-KEYING JOB** (fragility 0c): 31 corpus
-compounds select a data tier by an orthographic accident, because the PHYSICAL
-tables key on the chiral spelling and the FORMATION table on the flat one. Well
-scoped, high value, and it moves every number the project produces -- so it wants
-the full suite behind it and it is a session of its own. It has now been handed
-forward twice.
-
-⚠⚠ **ONE ARGUMENT TO REFUSE, STATED SO IT DOES NOT GET MADE BY DEFAULT:** *"C5
-was engine work, so C6 should be content to correct the balance."* MILESTONES
-does record that engine sessions keep displacing content -- but C5's content row
-was blocked by an engine bug nobody could see, and the debt it left is real.
-**Balance the series over the series, not over one session.**
+⚠ **Six sessions running, the blocker named in that table was not the blocker.**
+C1: a price for a species not in the chemistry. C2: a price in a different table.
+C3: a class refused on one of two rows. C4: a class refused on FORMATTING. C5: a
+class that would have been half-credited. C6: a fragility whose stated cause was
+a true measurement **pointing at the wrong layer**. *Read the rows, then measure,
+before costing anything in that table.*
 
 ---
 
-# ⚠⚠⚠ START HERE: THE SUITE IS GREEN AND NOTHING IS OWED
+# ⚠⚠⚠ START HERE: THE SUITE AND WHAT IS OWED
 
-    1179 passed / 0 failed in 28:59        <- run ALONE, nothing else on the box
+    1181 passed / 0 failed in 29:01        <- run ALONE, nothing else on the box
+
+⚠⚠ **AND ITS CLOCK IDENTIFIED WHICH OF C5's TWO RUNS WAS THE ANOMALY.** C5 saw
+the burner move **+67.3%** and the rig azeotrope **+54.5%** between two untouched
+runs and concluded a single `--durations` row is not an instrument. C6 is a THIRD
+run and lands on C5's **RUN 1**, within **0.6%** on catalysis, the burner AND the
+azeotrope — so run 2 was the outlier and their ordinary values are ~51 s and
+~22 s. **Two runs can say a row is unreliable; it takes a third to say which run
+was wrong.** ⚠⚠⚠ Meanwhile the noise moved to a DIFFERENT row: the one rig test
+is **+28.5% / +30.3%** against both of C5's runs, and **it is not C6's doing —
+`test_still` has no meter edge at all.** *The spread lands on ONE big row at a
+time and which row is not stable between runs.* **Quote the per-test total, never
+a row:** C6 is **1.47454 s** against C5's **1.47498** — 0.03% across an engine
+change to the rig RHS.
 
 ```bash
-python -m pytest -q --durations=25          # expect 1179
+python -m pytest -q --durations=25
 ```
 
-⚠⚠⚠ **AND C5 OWED THAT RUN RATHER THAN CHOOSING IT, WHICH IS THE FIRST THING TO
-KNOW ABOUT THIS SESSION.** C5 edited `ReactionTemplate.run` — the one method every
-network in the project is built through — and the fix makes networks BIGGER.
-**C5 green-lit ~150 tests across the files most likely to be affected and the
-full suite still found NINE**, of which four were real and two of those were not
-what any subset would have suggested: **a flagship prep that had been making an
-ester in caustic soda**, and **a green test resting on the order of two identical
-stoichiometry rows** (§11). **A green subset is not evidence for an engine change
-of that width**; the suite is. ⚠ It was then run a SECOND time to confirm the
-nine fixes, which is where the noise measurement below comes from.
+⚠ **`tolerance_audit.py` WAS OWED THIS SESSION AND WAS RUN.** C6 edited the RHS
+— the METER branch lives inside `RigIntegrator.make_rhs` — so C5's exemption
+(*"no RHS edit and no data-table edit"*) did not carry over. **Do not reuse an
+exemption; re-derive it from what the session actually touched.**
 
-⚠⚠ **AND C3's DISCIPLINE WAS KEPT FOR A THIRD SESSION.** C5 regenerated
-`COVERAGE_REPORT.md`, `PLAYABLE.md` and `ROUTE_INDEX.md` **and ran the tests that
-pin them in the same breath**: eight `test_playable` assertions moved, two
-`test_vanillin` ones, and **one `test_playable` test was RENAMED** — see §8 below,
-which is the most transferable thing in this file.
+⚠⚠ **THE AUDIT IS CLEAN FOR C6, AND IT FOUND TWO THINGS ANYWAY.** Four of the
+five rows C2 recorded as the baseline come back **exactly**: `named_routes`
+raises (the diagnosed entry), `workshop` 2 lines / 1.98e-04, `activity`
+1.28e-03, `mercury_retort` — the harness's own self-check — 0 lines and 1.01x.
 
-⚠ **`tolerance_audit.py` IS NOT OWED.** No RHS edit and no data-table edit — the
-salicylate pKa is an `electrolyte._PAIRS` row, which is a network-CONSTRUCTION
-input rather than a term in the right-hand side. Its last measured state is still
-C2's, recorded in HANDOFF §106. ⚠⚠ *That judgement is worth a second's thought
-before trusting it: `_PAIRS` decides which ions exist, and an ion that exists is a
-state-vector entry. The reason it is still safe is that C5 added a row nothing in
-any AUDITED network reaches — the Kolbe cascade is the only path to it and it is
-capped at generation 3.*
+**ONE ROW MOVED: `multistep_prep`, 6 lines / worst `inf` -> 8 lines / worst
+1.07e-03.** ⚠⚠⚠ **It is not C6's.** That example has **no `Rig` and no meter
+edge at all** (its single grep hit for "rig" is the word *outright*), and C6's
+only executable change runs inside the rig's edge loop under `kind == METER`.
 
-## ⚠⚠ THE CLOCK: C5 RAN THE SUITE TWICE IN ONE SESSION, AND THAT IS THE BEST NOISE MEASUREMENT THIS PROJECT HAS
+⚠⚠⚠ **IT IS C5's, AND C5 DECLARED THIS AUDIT NOT OWED.** C5's ground was *"no
+RHS edit and no data-table edit"* — and C5 edited `ReactionTemplate.run`, which
+changes **which species exist**, which is the state vector itself. The prep's
+acetic acid dissociates in the caustic pot now (C5's speciation fix), and the
+baseline moved with it. **So the rule as written is necessary and not
+sufficient:**
 
-**1179 passed / 0 failed in 28:59**, run alone. C5 owed a second run after fixing
-the nine the first one found, so for once there are TWO full runs of the same box
-in the same session, 18 minutes apart:
+> an RHS edit owes the audit — **and so does a change to network CONSTRUCTION**,
+> because a species that exists is a state-vector entry.
 
-                        run 1     run 2   change     touched between?
-    total / s          1660.8    1739.0    +4.7%
-    tests                1179      1179       --
-    the ONE RIG test    160.8     158.5    -1.4%     no
-    catalysis            72.2      72.4    +0.2%     no
-    burner @1e-8         50.8      85.0   **+67.3%** NO
-    rig azeotrope        22.2      34.3   **+54.5%** NO
+⚠ C5 came within one sentence of this. Its own handoff says of `electrolyte._PAIRS`
+that *"`_PAIRS` decides which ions exist, and an ion that exists is a state-vector
+entry"* — it applied that reasoning to a data table and not to its own engine
+change.
 
-⚠⚠⚠ **TWO ROWS MOVED MORE THAN HALF THEIR OWN VALUE WITH NOTHING TOUCHED, IN THE
-SAME SESSION, WHILE THE TOTAL MOVED 4.7%.** Neither test nor anything either one
-depends on was edited between the runs. **That settles what four sessions of
-cross-session comparison could only bound: a single `--durations` row is not an
-instrument, and the per-test total is.** C3 measured the between-run spread at
-~20% on every big row; C5 measures it at **67% on one row and 0.2% on another in
-the same pair of runs**, which is a stronger and less flattering answer.
+⚠⚠ **AND THE MOVE IS AN IMPROVEMENT: FRAGILITY 26 IS CLOSED.** The `inf` is gone
+from the audit output entirely — `multistep_prep`'s worst is a finite 1.07e-03 on
+`[OH-]` 0.0931 vs 0.0932. **`pH = inf` had been printed since S13**; a pot whose
+acid could not dissociate had no hydroxide to take a logarithm of. *C5 closed a
+fragility it did not know it was touching, and only running the audit found out.*
 
-Against the session series:
-
-                        G6        C2        C3        C4        C5     C4->C5
-    total / s         1383.0    1795.0    1494.6    1569.5    1739.0    +10.8%
-    tests               1045      1097      1128      1159      1179     +1.7%
-    the ONE RIG test   176.9     199.3     163.2     156.2     158.5     +1.5%
-    catalysis           75.1      91.5      73.5      81.0      72.4    -10.6%
-    burner @1e-8        52.8      64.8      51.0      52.9      85.0    +60.7%
-    SECONDS PER TEST  1.3234    1.6363    1.3250    1.3542    1.4750     +8.9%
-
-⚠⚠ **PER TEST, C5 IS 1.4750 s AGAINST C4's 1.3542 -- AND MOST OF THAT IS WORK
-THAT WAS ADDED RATHER THAN SLOWED.** `tests/test_furans.py` is ~125 s of new
-integration; take it out and C5 is **1.3927 s per test, +2.8% on C4**, back
-inside the band G6/C3/C4 sit in. ⚠ The rest is the burner row, and the two-run
-control above says what that is worth.
-
-⚠ **THE S12->S13 EIGHT MINUTES IS STILL UNBISECTED**, and it is now measured
-against a noise floor that is much wider on a single row than anyone had
-allowed for.
+⚠ **TWO CORRECTIONS TO WHAT THIS AUDIT COSTS AND REPORTS.**
+* **It is ~2 h 35 m, not "ten minutes."** Measured 16:26:05 -> 19:01:39 on this
+  box. The "ten-minute run" figure in HANDOFF is stale and was quoted forward
+  twice. **Budget two and a half hours.**
+* **`multistep_prep`'s tight WALL CLOCK reads 95172.31 s, which is 26 hours and
+  is impossible** — the whole audit was 9334 s. The field is a plain
+  `time.time()` delta around `runpy.run_path`, so only a clock jump can produce
+  it and none was confirmed. **It is a TIMING field and the audit's verdicts are
+  string diffs, so no numerical conclusion rests on it.** Recorded rather than
+  explained.
 
 ---
 
-# ⚠⚠⚠ WHAT C5 TURNED OUT TO BE
+# ⚠⚠⚠ WHAT C6 TURNED OUT TO BE
 
-**C5 took `PLAYABLE.md` §8b's top row — `dehydration-cyclisation`, +1 playable and
-+2 runnable, the biggest runnable gain on a table C4 flattened.** 20 → 21
-playable (tiers **10 / 10 / 1**), 42 → 44 runnable, 57/240 → **59/240** classes,
-45 → 46 template-ready, 37 → **38** BOTH. Species-ready UNCHANGED at 85. Three
-templates, one bundle, **one ENGINE fix**, one pKa row, no taxonomy split.
-HANDOFF §109, MILESTONES §C5, NEXT_SESSION's last block.
+**C6 took fragility 00, the rig singularity, on the argument that C5's four-line
+reproduction was PERISHABLE — its trigger is a permutation of the reaction list,
+and any future template edit re-rolls it.** The reproduction turned out to be
+robust and the *diagnosis* was the perishable thing. **No route, no class, no
+species, no data row: one engine line.** Playable stays **21** (tiers 10/10/1),
+classes **59/240**, BOTH **38**, ceiling **45**. C5's `max_species=10` cap is
+**LIFTED**. HANDOFF §110, MILESTONES §C6.
 
-## ⚠⚠⚠ 1. THE RULE THAT SPLIT C4's CLASS SAYS *DO NOT SPLIT* HERE
+## ⚠⚠⚠ 1. THE FRAGILITY WAS FILED IN THE WRONG LAYER, ON A TRUE MEASUREMENT
 
-C3 bought a class by reading its SECOND row. C4 bought one by SPLITTING it five
-ways. Both were applying the same rule — *read every row before crediting the
-class* — and here it points the other way:
+C5 filed it as *"a numerics session on the rig integrator"*, in the same family
+as the zero-Jacobian-column pathology, with evidence taken both ways round: the
+pre-C5 engine fails on the post-C5 ordering and vice versa. **The evidence was
+sound and the conclusion was inverted.** A permutation changes which step size
+`num_jac` lands on; **the number it was scaling was meaningless at every step
+size.** The cause is one line in `rig_integrator`'s METER branch.
 
-    hmf-route      1   fructose + H2SO4 -> 5-HMF    + water + H2SO4
-    furfural-route 2   xylose   + H2SO4 -> furfural + water + H2SO4
+## ⚠⚠⚠ 2. IT IS THE SPARSE LU PATH THAT RAISES, AND THAT IS THE FIRST SURPRISE
 
-**One mechanism.** An acid-catalysed triple dehydration of a sugar into a furan, a
-pentose giving furfural and a ketohexose giving 5-HMF, each balancing exactly 1:1
-with three waters. So the class STANDS — **and the credit needs BOTH templates.**
-Grant it off the HMF row alone and `furfural-route` goes template-ready with
-nothing in the engine able to make furfural, which is C4's false credit arriving
-from the other direction.
+`useful_sparsity` hands this rig a pattern — **62 groups of 82 columns at cap 10,
+92 of 122 at cap 15** — so `num_jac` returns a SPARSE `J` and BDF branches to
+`splu`. **"Factor is exactly singular" is SuperLU's message.** Forced onto the
+dense path, the identical network runs:
 
-⚠⚠⚠ **THAT IS FIVE SESSIONS RUNNING.** C1 — a route blocked on a price for a
-species **not in its chemistry**. C2 — a price **in a different table**. C3 — a
-class refused on **one of its two rows**. C4 — a class refused on its row's
-**FORMATTING**. C5 — a class that would have been **half-credited by a session
-that read only the row it was sold on**. *The check that catches a false credit
-and the check that catches a lazy lump are the same check, and which way it
-points is a property of the rows.*
+    cap  LU        result                             NITRIC left
+     10  sparse    elapsed=29.985000000               1.000000000000e-04
+     14  sparse    elapsed=29.985000000               1.000000000000e-04
+     15  sparse    RAISED Factor is exactly singular
+     15  dense     elapsed=29.985000000               9.999999999999e-05
 
-## ⚠⚠⚠ 2. THE CORPUS SPELLING C4 CALLED A LOST SUBSTRATE IS LOAD-BEARING HERE — FOR ONE ROW OF TWO
+**A rank-deficient `I - c*J` is a hard crash on one path and a rejected step on
+the other**, and nothing in the chemistry chooses between them.
 
-C4 measured that its hexopyranose pattern misses fructose *"because the corpus
-spells fructose as a FURANOSE"*, and booked it as a corpus limit. It is not a
-defect. Measured out of RDKit's own reactant-to-product atom tags:
+## ⚠⚠⚠ 3. AND THE MATRIX IS NOT SINGULAR — IT IS SCALED
 
-    fructose -> 5-HMF      5 of 5 product ring atoms from the SUGAR'S OWN ring
-    xylose   -> furfural   3 of 5
+No zero rows, no zero columns, no duplicate rows or columns, and `lu_factor`
+accepts it with **min|U_ii| = 1.5064e-03, zero pivots, no warnings**. What it has
+is **cond = 4.038e+23**, top singular value **6.9575e+19** against a smallest of
+2e-04. ⚠ LAPACK's default `matrix_rank` says **26 of 122**, which reads like a
+rank deficiency and is not one: its tolerance is `122 * eps * 6.96e19 ~ 1.9e+06`.
+*A rank at a default tolerance on a matrix spanning 23 decades describes the
+dynamic range, not the rank.*
 
-* **fructose** — the β-D-fructofuranose ring C2-C3-C4-C5-O **IS** 5-HMF's furan
-  ring. No ring bond is formed or broken.
-* **xylose** — xylofuranose's ring is C1-C2-C3-C4-O and furfural's is
-  C2-C3-C4-C5-O. **The WRONG ring.** C5 and its hydroxyl are pulled IN, the
-  sugar's own ring oxygen leaves as one of the three waters, C1 is pushed OUT to
-  become the aldehyde.
+## ⚠⚠⚠ 4. THE 1e+19 ENTRIES ARE NOT DERIVATIVES, AND ONE SWEEP SETTLES IT
 
-⚠⚠ **A COEFFICIENT VECTOR CANNOT SEE THAT** — both rows are 1:1:3. It is
-`corpus_balance`'s blindness arriving on two rows that are both RIGHT, where C3's
-and C4's standing examples are rows that are both WRONG in opposite ways.
+All ten largest live in ONE row — `pot.T` — against funnel LIQUID columns holding
+1e-39 to 1e-44 mol:
 
-## ⚠⚠⚠ 3. THE ENGINE COULD NOT FERMENT SUGAR IT HAD INVERTED ITSELF
+    h            f(y + h e_j)[pot.T]     quotient
+    1.0e-20          -1.322448e+00      -1.6e+20
+    1.0e-12          -1.322448e+00      -1.6e+12
+    1.0e-09          -1.322448e+00      -1.6e+09
+    1.0e+00          -1.322448e+00      -1.6e+00
+    3.6e+02          -1.322448e+00      -4.5e-03
 
-**`ReactionTemplate.run` handed back products carrying RDKit's `noImplicit` flag,
-and no template can run on such a molecule.** A product-template atom written with
-an H count (`[CH3:2]`, `[OH1:8]`) comes back with its hydrogens counted EXPLICIT.
-Substructure matching cannot see it — the total H count is identical — so the
-species is discovered, priced, charged and reported exactly as normal. Then
-`RunReactants` hands the flag to the NEXT template's products, any product atom
-that template did not itself spell an H count for inherits an H it must not have,
-and `run` catches the valence error and returns an **empty list**.
+**`f` is CONSTANT across twenty decades of `h`.** It is a STEP: `Delta f` is fixed
+and the quotient is exactly `Delta f / h`, so **`num_jac` reports its own probe
+size.** ⚠ Same shape as `jacobian.py`'s burner column — a difference that does not
+move with `h` — arriving from the opposite side: there the model had projected the
+derivative away, here it is a discontinuity.
 
-    template                     BEFORE   AFTER
-    ethanolic_fermentation            0        1
-    butanolic_fermentation            0        1
-    acetonic_fermentation             0        1
-    homolactic_fermentation           1        1
+## ⚠⚠⚠ 5. THE STEP IS A COMPOSITION TAKEN OVER NOTHING
 
-    charge SUCROSE + water   4 species, 1 rxn, ethanol FALSE  ->  9 / 4 / TRUE
-    charge GLUCOSE + water   7 species, 3 rxn, ethanol TRUE   ->  7 / 3 / TRUE
+The funnel is drained — **7.30e-26 mol** after the RHS's own clamp. Adding
+**1e-20 mol**, twenty-one decades below `atol`:
 
-⚠⚠⚠ **C4's DOCSTRING SAYS A BREWER *"has to invert the sugar first"*, AND A
-BREWER WHO DID GOT NOTHING.** The claim was right about the chemistry and false
-about the engine. **It is invisible to every single-template test**: catching it
-takes one template to MAKE what another consumes, and every fermentation test C4
-wrote charges glucose directly. The general sweep — every unimolecular template
-against every species any template can make from a corpus substrate — found
-**8 disagreements before and 0 after** — seven of the eight a fermentation template on inverted sugar, and the eighth C4's own lactic acid failing to reach a dehydration. **Every one of them was C4's chemistry.**
+    base     total=7.295132e-26   dominant species index  3 at x = 0.159137
+    probed   total=1.000007e-20   dominant species index 14 at x = 0.999993
 
-⚠⚠ **THE FOURTH ROW IS THE INSTRUCTIVE ONE.** `homolactic_fermentation` was never
-broken, and not because it is more careful in general: it happens to spell an H
-count for the ONE atom that carried the flag, where the other three send that atom
-into a CO2 they wrote `[O:6]=[C:9]=[O:10]`. **Spelling an H count on every product
-atom IS a valid fix — and it is a rule an author has to remember on every atom of
-every template, which is why the fix went into the TYPE.** One line: re-parse each
-product from its own canonical SMILES. `Molecule`'s docstring already states the
-contract — *equal iff their canonical SMILES match* — and two molecules were
-satisfying it while behaving differently.
+**A mole fraction is SCALE-INVARIANT, so an empty vessel's composition is
+infinitely sensitive.** A meter carries the donor's composition and its enthalpy
+into the receiver, so `f[pot.T]` steps `+0.2903 -> -1.3224`. ⚠ **The control is
+exact: the same probe on the POT, holding 1.10 mol, moves it by 0.000000e+00.**
 
-⚠⚠ **AND REMOVING THE BUG REMOVED AN ACCIDENTAL GENERATION CAP.** `kolbe_schmitt`
-feeds itself through the phenoxide it makes: carboxylate to salicylate, take the
-PHENOL proton at pKa 13.4, and the dianion is a phenoxide it carboxylates again.
-The bug had been stopping that at generation 2. Generation 4 wants
-2-hydroxyisophthalate, which the corpus does not price, so
-`tests/test_named_routes.py` DECLARES `generations=3` — what `aromatic_chemistry`
-already tells a reader to do for a self-feeding template, at zero cost to the
-other five cases in that test. **An accidental cap is still a cap.**
+## ⚠⚠⚠ 6. THE GUARD WAS A 0/0 CLAMP DOING A GATE'S JOB, ALREADY FORBIDDEN IN WRITING
 
-⚠ **THE pKa ROW WAS EXPOSED, NOT MISSED.** Nothing could reach the salicylate
-mono-anion with a template before. *C2's rule from the other side: a table can be
-short a row for years if nothing can get far enough to ask for it.*
+The branch read `... if tot_a > 0.0 else zeros`, against
+`MOLE_FRACTION_DENOM`'s own comment: *"a clamp that exists to avoid 0/0 must not
+double as a second gate"* — **the exact defect, one module over, stated long
+before it was met here.**
 
-## ⚠⚠ 4. THE +0 ROW IS WHAT MAKES THE +1 ROW MEAN ANYTHING
+⚠⚠ **A METER IS THE ONLY EDGE EXPOSED, STRUCTURALLY.** A VAPOUR edge's flux is
+`k dP x_a` with `dP` proportional to the same `nG_a` the composition is taken
+over; a DRAIN is `k nL_a`. Both are first order in the holdup. **A meter's driver
+is a DECLARED CONSTANT** — which is the property `validation/dropwise.py` panel 1
+had written down as a *virtue*: *"nothing in the flux law slows it down as the
+funnel drains."* ⚠ Measured, not argued: a live vapour edge gives a worst quotient
+of **2.487e+03 FLAT across probe sizes** (a real derivative), and at a drained
+donor its worst quotient is **0.0**.
 
-`hmf-route` row 2 is `hydration-ring-opening`, priced **+0** in `PLAYABLE.md`
-because the route's target is reached at row 1 — and the corpus names it *"the
-side reaction that limits yield"*. C5 built it anyway and re-measured the +0,
-which is real. **Without it a flask of fructose in acid runs to 100% HMF and
-reports a number no laboratory has ever seen.** With it the HMF rises, peaks and
-falls, and the peak is where two barriers cross rather than where somebody
-declared a stopping time.
+## ⚠⚠ 7. THE FIX, AND THE CAP CAME OFF WITHOUT MOVING THE ANSWER
 
-⚠ *A row worth nothing on the scoreboard can be the row that makes the
-scoreboard's number mean something.*
+`_smoothstep(tot_a / DRYOUT_MOLES)` is the GATE, `MOLE_FRACTION_DENOM` (24
+decades lower) is the CLAMP. Flux becomes `k u^2 (3 - 2u)` — **QUADRATIC in the
+holdup, self-limiting harder than a drain.** Measured against the closed form to
+every digit, and:
 
-## ⚠⚠⚠ 5. AND ITS BARRIER IS THE LOWER ONE, WHICH PREDICTED SOMETHING NOTHING WAS AIMED AT
+**`elapsed` is 29.985000000 s at every cap from 4 to 60**, the same value the ten
+capped runs agreed on before the fix. `test_dropping_funnel` is back at
+`max_species=60`. ⚠ Panel 1 of `dropwise.py` is UNCHANGED — 0.0 left, 0.5
+delivered at every rate — because the smoothstep tail still drains: **the gate
+attenuates the flux, it does not strand the charge.**
 
-     T/K    peak HMF yield     at t/h
-     390          39.85%      155.71
-     405          46.31%       42.01
-     420          52.34%       11.33
-     435          58.28%        3.06
-     450          63.33%        0.83
+## ⚠⚠⚠ 8. AND C6 NEARLY WROTE THE OPPOSITE OF ITS OWN FINDING INTO THE ENGINE
 
-**SELECTIVITY IMPROVES WITH TEMPERATURE AND THE BATCH GETS SHORTER.** Destruction
-110 kJ/mol against formation 140 makes the destruction the less
-temperature-sensitive step, and hot-and-short is exactly how the process is
-operated. Only the LEVEL is fitted; the DIRECTION is the part that could have come
-out wrong. *S11's competing-templates finding on a CONSECUTIVE pair.*
+The donor total reaching **-6.29e-03 mol** was measured over RHS EVALUATIONS and
+went into a code comment as *"the funnel is pumped 6.29 mmol past empty"*. **That
+is false.** `solve_ivp`'s own returned solution: **150 accepted points, NONE
+negative, bottoming out at +1.500000e-04 mol.** Those are Newton trial iterates.
 
-⚠⚠ **AND A SECOND LEVER FELL OUT THAT NOBODY ASKED FOR: AN INERT SPECTATOR.**
-Glucose touches nothing in this network, and adding 0.5 mol takes the peak from
-**52.4% to 61.6%**. It occupies liquid volume, [H2O] falls, and the rehydration is
-second order in water while the dehydration is zeroth. **A chemically inert
-species moves the yield through the volume** — which is `hmf-route` step 1's own
-condition column, *"420 K, DMSO or biphasic"*, explaining itself. **This engine has
-no solvent model and gets the direction of that trick anyway, because water is a
-REACTANT in the rate law rather than a background.**
+⚠⚠⚠ **The corrected statement is the transferable one:**
 
-## ⚠⚠ 6. ONE NUMBER IS FITTED, AND IT CHECKS AGAINST SOMETHING IT WAS NOT FITTED TO
+> **an RHS is not only evaluated on its trajectory, and a term that is defensible
+> only there is not defensible.**
 
-C4 fitted three pre-exponentials and could check none. C5 fits **one** — the
-rehydration's `A` — because a peak yield is a RATIO of two rates, and two barriers
-fix only how that ratio moves with temperature, never its value at one
-temperature. 5.0e5 L²/mol²/s puts the peak at **52.5% at 420 K** against a
-reported ~50-55%.
+*A measurement was right and the sentence drawn from it was wrong — C5's
+permutation finding, happening to C6, inside the same session that diagnosed it.*
 
-⚠ **THE CHECK:** folded against the flask's own water (~52.6 mol/L) that is an
-effective first-order 1.4e9 /s — about 7000× below a bare transition-state
-frequency factor, an entropy of activation near **−74 J/(mol K)**, which is what
-ordering TWO waters into a transition state costs. *A fitted constant that lands
-on a physically sensible ΔS‡ is a different kind of number from one that only
-reproduces its own target.*
+## ⚠⚠ 9. A DOCSTRING HAD GONE STALE IN THE ONE WAY THAT MATTERED
 
-## ⚠⚠ 7. STEREO-BLIND, AND EVERY EXTRA HIT IS RIGHT
+`useful_sparsity` said the pattern is pure overhead *"for every rig in this repo's
+test suite"*. G1's funnel arrived after that was written, is joined by a METER,
+and GROUPS — so it takes the sparse path. **The code was right and only the prose
+was wrong**, but the sparse path is the one that RAISES, so a reader trusting the
+sentence would have concluded the crashing branch was unreachable here.
+*"Measured per rig rather than assumed once" saved the behaviour; nothing was
+re-measuring the sentence.*
 
-Swept over all 1583 corpus compounds:
+## ⚠ 10. WHAT C6 DID NOT DO, SAID OUT LOUD
 
-    ketofuranose_dehydration   fructose, sorbose           -> 5-HMF    (2 hits)
-    aldofuranose_dehydration   ribose, xylose, arabinose   -> furfural (3 hits)
-    hmf_rehydration            5-hydroxymethylfurfural     -> LA + FA  (1 hit)
-
-**All five substrate hits are correct chemistry and none was aimed at.** Every
-pentose gives furfural in hot acid — that is what a pentosan assay IS — and
-L-sorbose is a ketohexose that dehydrates like fructose. C4's `[C;H1;@,@@:n]`
-device is what makes them stereo-blind. ⚠ **Sucrose is inert to both** (no free
-anomeric -OH), so a syrup has to be inverted first — which is the chain §3 fixed —
-and **furfural is inert to the rehydration**, which is why furfural is the furan
-that survives what destroys HMF.
-
-## ⚠⚠⚠ 8. TIER 1 IS A MINORITY FOR THE FIRST TIME, AND A TEST HAD TO BE RENAMED AGAIN
-
-| session | granted | fed-but-unrunnable | ceiling | playable | tiers |
-|---|---|---:|---:|---:|---|
-| G3 | — | 21 | 37 | 12 | 8 / 3 / 1 |
-| C1 | 1 route | 24 | 41 | 14 | 9 / 4 / 1 |
-| C2 | 2 rows | 22 | 41 | 16 | 9 / 6 / 1 |
-| C3 | 2 classes | 20 | 41 | 18 | 9 / 8 / 1 |
-| C4 | 1 class | 23 | **45** | 20 | 10 / 9 / 1 |
-| **C5** | **1 class** | **22** | **45** | **21** | **10 / 10 / 1** |
-
-⚠⚠⚠ **10 OF 21.** G3's finding was *most playable routes are tier 1* — a bush and
-not a tree. C3 took it to exactly half and asserted the equality, writing that
-whoever broke it would be the session where a real tier appeared. C5 broke it, and
-the operator in `test_the_tech_tree_is_a_shallow_bush` has now gone `>`, `==`,
-`<`. ⚠ **Tier 3 is STILL one route, six sessions running**, and that is the half
-of G3's finding nothing has moved.
-
-⚠⚠ **AND C5 IS THE FIRST SESSION SINCE C2 THAT DID NOT MOVE THE CEILING.** C4
-moved it 41 → 45 because four solvents on the shelf FEED four more routes. 5-HMF
-and levulinic acid feed nothing — no corpus route takes either as an input. **A
-route can be worth a playable point and worth nothing to the goal it is scored
-against**, and which of the two a session gets is a property of the corpus rather
-than of the chemistry built.
-
-⚠⚠ **AND A TEST HAD TO BE RENAMED FOR THE SECOND SESSION RUNNING, BY C4's OWN
-RULE.** `test_the_answer_is_twenty_playable_three_tiers_deep` carried a LEVEL in
-its name, and C4 had written down that *a test that pins a level will be
-re-numbered by the next session that moves it, and the claim will quietly become
-someone else's arithmetic*. It is
-`test_the_headline_and_the_tiers_are_what_the_report_says` now — a name that states
-the RELATION, so future sessions change only the numbers inside. ⚠⚠ Meanwhile
-`test_the_PAIR_is_worth_more_than_the_sum_of_its_parts` survived a second time
-with every level moved and its finding untouched, **because it asserts
-DIFFERENCES**. Two sessions, two data points, same conclusion.
-
-⚠ `hmf-route` stands on **TWO tier-1 routes at once** — `invert-sugar` for the
-fructose and C1's `vitriol-distillation` for the acid that catalyses it — which no
-other tier-2 route in the file does.
-
-## ⚠ 9. A LATENT SCORING ARTEFACT SURFACED THE MOMENT A ROUTE WENT RUNNABLE
-
-`furfural-route` step 1 is written `xylose + water -> xylose`: the corpus has no
-pentosan graph, so the row uses its own product as a stand-in feedstock. **A
-species on both sides of a step is exactly what `route_roles` calls a CATALYST**,
-so the `with_catalysts=False` counterfactual hands the route's actual SUGAR over
-for free and calls it playable.
-
-⚠⚠ **THE HEADLINE IS IMMUNE, AND THAT IS THE POINT.** `needs()` decides by ORDER
-(PLAYABLE.md's rule 2, measured wrong first in G3), and by order xylose is used at
-the step that first makes it, so it is external and the route is correctly not
-playable. The artefact appears only in the one counterfactual where `route_roles`
-still gets to answer, and it was latent until C5 made `furfural-route` runnable.
-*A rule already known to be right is what kept a corpus wart out of the headline.*
-
-
-## ⚠ 10. WHAT C5 DID NOT DO, SAID OUT LOUD
-
-* **`furfural-route` is RUNNABLE and NOT playable**, and the blocker is xylose:
-  nothing in 173 routes makes a pentose. +1 runnable, +0 playable, measured.
-* **Furfural runs to 100% and that is an upper bound.** Real yields stop near 50%
-  because furfural RESINIFIES into humins, and this project has no representation
-  for an amorphous polymer. `hmf-route` got a yield-limiting row because the
-  CORPUS wrote one down; `furfural-route` did not. **The difference between the
-  two flasks is a property of the catalog, not of the chemistry.**
-* **`aldofuranose_dehydration` is NOT in `furan_chemistry`.** Same class, different
-  feedstock — a bundle carrying both would report a flask nobody runs.
-* **All three reactions MIX STANDARD STATES on the sugar side** — dH −14.4 (gas)
-  against −191.3 (liquid) for the dehydration, and 9 apart for the rehydration,
-  which has no sugar in it. **It costs the K and nothing else**; all three are
-  irreversible and dG is strongly negative on either basis. C3's notice, C4's
-  notice, and now printed beside the numbers it applies to.
-* **C4's stereo-keying job is untouched.** 31 corpus compounds still select a data
-  tier by an orthographic accident. It is still a session of its own.
-
-
-## ⚠⚠⚠ 11. THE SUITE FOUND NINE, AND TWO OF THEM WERE NOT LEVELS
-
-C5 green-lit ~150 tests across the files most likely to be affected and the full
-suite still found nine. **Five were level-pins C5 legitimately moved** — three in
-`test_fermentation.py`, the ion count 29 → 30 in `test_protonation.py` (an ANION
-again, exactly as that test's own docstring predicts), and `furfural-route`'s
-uncovered classes 4 → 3 in `test_vitriol.py`. **The other four are why the run
-was owed.**
-
-### ⚠⚠⚠ THE FLAGSHIP PREP HAD BEEN MAKING AN ESTER IN CAUSTIC SODA
-
-`test_prep_side_products.py` failed three ways, all on `total(ACETIC) == 0`:
-
-    charge, 2 h, air, saponified          BEFORE        AFTER
-    acetic acid                          positive      0.000000e+00
-    acetate                                 0.0        6.848146e-03
-    ethyl acetate                        positive      0.000000e+00
-    free hydroxide in the pot                       9.312816e-02 mol
-
-**The pot is a SAPONIFICATION and holds 0.093 mol of free hydroxide.** A
-carboxylic acid in that liquor is a carboxylATE — and until C5,
-`carboxylic_acid_dissociation` could not fire on the acetic acid because
-`peroxide_over_oxidation` had MADE it. So the acid sat neutral in caustic soda
-**and then Fischer-esterified with the ethanol.** ⚠⚠ **There is no Fischer
-esterification at pH 13, and the engine had been reporting one since the
-side-product model was written.** The cascade itself is unchanged and correct —
-6.85 mmol of acetyl at two hours — it is the SPECIATION that was wrong. The tests
-count acid plus conjugate base now, which is what *"the prep makes its own
-contaminant"* always meant. ⚠ *A two-generation bug hid a one-generation wrong
-answer: the dissociation is the SECOND template to touch that species, and
-nothing charges acetic acid into that pot by hand.*
-
-### ⚠⚠⚠ AND A GREEN TEST WAS RESTING ON THE ORDER OF TWO IDENTICAL ROWS
-
-`test_the_funnel_itself_can_be_what_is_watched` died with `RuntimeError: Factor
-is exactly singular` out of BDF's `I - c*J`. The fix changes the order `run`
-returns product sets in, so two nitrations — same name, same A, same Ea — swap
-places in the stoichiometry matrix. **Nothing else moves**: species set, species
-ORDER, every rate constant and every molecule-derived property diff to zero.
-
-    pre-C5 engine  + pre-C5 order     OK, elapsed 29.985 s
-    post-C5 engine + post-C5 order    Factor is exactly singular
-    post-C5 engine + PRE-C5 order     OK, elapsed 29.985 s
-    pre-C5 engine  + POST-C5 order    Factor is exactly singular
-
-**The ordering is the whole cause and neither engine is.** ⚠ The first three
-attempts at that experiment were NO-OPS, because `World` imports `build_network`
-into its own module namespace and the monkeypatch was going onto
-`chemsim.network.builder`. *An experiment that returns the answer you expected is
-the one to check hardest — "order is not the cause" survived two rounds of that
-before the patch was pointed at the right module.*
-
-⚠⚠ **THE SCENARIO IS WHAT IS FRAGILE.** `aromatic_nitration` FEEDS ITSELF and
-the funnel let it run to `max_species=60` — 15 species, all the way to
-HEXAnitrobenzene, twelve of which cannot form at 280 K in the seconds the test
-runs and sit at structural zero. Capped it is robust: **29.985 s at every cap
-from 4 to 14, failing only at 15.** The answer not moving across ten caps is what
-says the cap is not tuning. `aromatic_chemistry` has said *"CAP THE EXPANSION"*
-since M5, and **this is the SECOND place in one session where removing an
-accidental cap meant writing a real one down** — the other is the Kolbe cascade.
-
-⚠ **AND THE SAME TEST HAD A SMALLER VERSION OF THE SAME DISEASE.** Capped, it
-then failed on `assert funnel.total(NITRIC) < 1.0e-4` reading
-**1.0000000000000826e-04**. `consumed` is a ROOT and a root is zero to solver
-precision; a strict `<` asserts which SIDE of a root the solver stopped on, which
-nothing guarantees. It is `pytest.approx(1.0e-4, rel=1e-9)` now.
-
-⚠⚠⚠ **THE FRAGILITY ITSELF IS NOT FIXED AND IS HANDED FORWARD.** What C5 fixed
-is a test that was passing for the wrong reason. **A 15-species rig network with
-twelve structurally-zero columns can factor exactly singular, and whether it does
-turns on a row permutation that changes nothing physical.** That belongs to the
-rig integrator and to a numerics session, and it is reproducible in four lines.
-
+* **Nothing on the scoreboard**, knowingly. §8b is untouched.
+* **`splu`'s raise is not caught.** C6 removed the CAUSE, not the CONSEQUENCE: a
+  rank-deficient `I - c*J` on a rig that earns a sparsity pattern is still a hard
+  `RuntimeError` where the dense path rejects the step. **That is now the whole
+  of fragility 00** — narrower than C5 left it, and no longer resting on a
+  scenario that has been fixed.
+* **No other `n_i / sum(n)` was audited.** The vapour edge was measured clean and
+  the drain is first order by construction; the vessel RHS's own mole fractions
+  were not swept. **That is the obvious next numerics job and it is cheap.**
+* **The stereo-keying job is untouched for the third session running.**
 
 ---
 
-# ⚠ C4, IN ONE PARAGRAPH (the full record is MILESTONES §C4 / HANDOFF §108)
+# ⚠ C5, IN ONE PARAGRAPH (the full record is MILESTONES §C5 / HANDOFF §109)
 
-**The ABE fermentation: 18 → 20 playable, four templates, a five-way taxonomy
-split, no data rows and no engine code.** M5 had refused `fermentation` as *"a
-metabolic NETWORK, not a transformation"* and NEXT_PROMPT recorded its row as
-balancing only at 5:2:2:2:12:8 — *"which is not a graph rewrite"*. Both were right
-and neither was about the mechanism: **the lump was a LINE BREAK**, and
-clostridial solventogenesis is three branches each balancing exactly on ONE
-glucose. ⚠⚠⚠ The class then had to be **split five ways** or the +2 was a false
-credit — a template written off ABE cannot make citric acid, glutamic acid or
-penicillin G — costing +4 on the denominator against +2 covered (S7: *a split that
-lowers the headline is a split working*). ⚠⚠ Its engine finding is a refutation:
-**§M10's cheap version is measured shut** — an order-zero substrate is CLAMPED at
-zero in the reported state while the products grow past the stoichiometric
-ceiling, and `conservation_report` calls four tenths of a mole "round-off". ⚠⚠ And
-it handed forward a job C5 did not take: **the two halves of a `ThermoData` are
-keyed opposite ways with respect to stereochemistry**, so 31 corpus compounds
-select a data tier by an orthographic accident.
+**The sugar-to-furan dehydrations: 20 → 21 playable, three templates, one bundle,
+one ENGINE fix, one pKa row, no taxonomy split.** `dehydration-cyclisation`'s two
+rows are ONE mechanism — an acid-catalysed triple dehydration, a pentose giving
+furfural and a ketohexose giving 5-HMF — so **the same rule that split C4's class
+says DO NOT SPLIT here, and the credit needs BOTH templates.** ⚠⚠⚠ Its engine
+finding: `ReactionTemplate.run` returned products carrying RDKit's `noImplicit`
+flag, so **the engine could not ferment sugar it had inverted itself** — invisible
+to every single-template test, because catching it takes one template to MAKE what
+another consumes. Fixed in the TYPE (re-parse each product from its own canonical
+SMILES), which also removed an **accidental generation cap** on `kolbe_schmitt`.
+⚠⚠ The full suite then found NINE, of which two were not levels: **a flagship prep
+had been making an ester in caustic soda** (a carboxylic acid sitting neutral in
+0.093 mol of free hydroxide), and **a green test was resting on the order of two
+identical stoichiometry rows** — which is the fragility C6 has now closed.
 
 ---
 
@@ -656,7 +459,7 @@ python -m pytest -q --durations=25             # ~27 min, expect 1179.
                                                #   `ReactionTemplate.run`, which every
                                                #   network is built through. ⚠ C2's "+25%
                                                #   from a concurrent job" was REFUTED
-python validation/tolerance_audit.py           # ~10 min. ⚠⚠ C2 OWED it (RHS edit),
+python validation/tolerance_audit.py           # ⚠ ~2 h 35 m, NOT 10 min (C6 timed it).
                                                #   RAN it, and it CAUGHT a crash the whole
                                                #   green test suite missed. ⚠ C3, C4 and
                                                #   C5 do NOT owe it: no RHS edit and no
@@ -1129,7 +932,9 @@ its refusals are down to **416 of 1583** as of C2 and did not move in C3.
 
 # ⚠ THE FRAGILITIES
 
-**00. ⚠⚠⚠ A 15-SPECIES RIG NETWORK CAN FACTOR EXACTLY SINGULAR, AND WHETHER IT DOES TURNS ON A ROW PERMUTATION THAT CHANGES NOTHING PHYSICAL (C5). THIS IS THE NEWEST AND THE ONE WITH A FOUR-LINE REPRODUCTION.** `test_dropping_funnel`'s scenario let `aromatic_nitration` -- which FEEDS ITSELF -- run to `max_species=60`: 15 species all the way to hexanitrobenzene, twelve of them at structural zero at 280 K. BDF's `I - c*J` then factors exactly singular. ⚠⚠ **Measured both ways round: the pre-C5 engine FAILS on the post-C5 reaction ordering and the post-C5 engine PASSES on the pre-C5 one**, with the species set, the species ORDER, every rate constant and every molecule-derived property identical -- so the ordering is the whole cause and neither engine is. ⚠ C5 capped the scenario (`max_species=10`) and measured that the cap costs nothing: **29.985 s at every cap from 4 to 14, failing only at 15**. **The FRAGILITY IS NOT FIXED** -- that is a numerics session on the rig integrator, and it is the same family as the zero-Jacobian-column pathology this file already carries. ⚠ Two other tests in the suite were passing on the same kind of accident: one asserted which SIDE of a solver ROOT it stopped on (`< 1.0e-4` against a root at 1.0000000000000826e-04), and one asserted a neutral acid in 0.09 mol of free hydroxide.
+**00. ⚠⚠ A SINGULAR `I - c*J` IS A HARD CRASH ON THE SPARSE LU PATH AND A REJECTED STEP ON THE DENSE ONE (C6). NARROWED FROM C5's VERSION, AND THE SCENARIO THAT CARRIED IT IS FIXED.** C5 filed this as *"a 15-species rig network factors exactly singular, and whether it does turns on a row permutation"* and scoped it as a numerics session. **C6 took it and found the cause one layer down** -- a METER edge pumping a dry donor, whose scale-invariant composition made the receiver's temperature row a STEP that `num_jac` differenced into 1e+19 entries. That is FIXED, the `max_species` cap is lifted, and `elapsed` did not move (29.985000000 s at every cap from 4 to 60). ⚠⚠ **WHAT REMAINS IS THE CONSEQUENCE AND IT IS REAL.** `useful_sparsity` passes a pattern whenever it groups anything -- **62 of 82 columns at cap 10, and G1's funnel is one of the rigs that qualifies** -- so `num_jac` returns a sparse `J` and BDF calls `splu`. SuperLU raises `RuntimeError: Factor is exactly singular` at the unguarded `LU = self.lu(self.I - c*J)`, where dense `lu_factor` merely warns and lets BDF reject the step and halve `h`. **Any future rig that produces a genuinely rank-deficient Jacobian dies on one path and recovers on the other, for no physical reason.** ⚠ The fix, if it is ever wanted, is to make the singular factorisation a step rejection rather than a raise; C6 deliberately removed the cause instead, because the crash it had was not a rank deficiency at all (`min|U_ii| = 1.5064e-03`, zero pivots, **cond 4.038e+23** -- a scaling problem SuperLU's pivot order could not survive).
+
+**00b. ⚠ `factor_bound`'s BOUND IS STATED IN UNITS IT DOES NOT HAVE, AND IT HAS NOT FIRED (C6).** `BoundedJacobian` caps the probe at `|h_j| <= max_i |y_i|`, argued as *"you cannot learn anything about a state by moving one of its components further than the whole state extends"*. On a rig, `max|y|` is a **TEMPERATURE in kelvin** -- 356.0482 on the dropping funnel -- and it is spent as a ceiling on a **MOLE COUNT**: the bound permits a probe of **356 mol** into a species holding 1e-39 mol. ⚠ It did not fire on this run (the solver asked for factor 2.2204e-13, peak 1.49e-02, **0 clamps in 20 Jacobians**), and `jacobian.py`'s own sweep shows every finite ceiling from 1e2 to 1e14 fixing the burner, so the VALUE is not what makes it work -- finiteness is. **Nothing is changed and nothing is claimed broken**; it is recorded because the argument for the bound is not an argument about the quantity the bound is applied to, and the next session to touch that module should not re-derive the reasoning from the docstring alone.
 
 **0a. ⚠⚠⚠ A FLASK OF STERILE SUGAR WATER FERMENTS (C4).** The four fermentation templates have **no gate**, because a fermentation's gate is ALIVE and the corpus has no graph for a Clostridium. Every other gate here is chargeable -- an acid, a base, a lattice, a voltage, a pinch of NO2 -- and `_maybe_catalyse` needs a species. The `catalyst=` parameter is there for the day the corpus has one to charge. ⚠⚠ The hole is under all **eight** of M10's biological routes, and it is a **LIMIT TO REMOVE**: an inventory item for a culture is a GAME_DESIGN answer, not an engine one.
 
@@ -1248,8 +1053,7 @@ as a SEALED flask, which buys a real pressure (13.7 bar for the Skraup at 450 K)
 HARMLESS where it fires. Nothing has found WHICH call passes a T that low.
 **Engine queue item 6.**
 
-**26. ⚠⚠ `multistep_prep` PRINTS `pH = inf` (pre-existing, visible since S13).**
-**Engine queue item 7.**
+**26. ✔ CLOSED (C6 measured it; C5 fixed it). `multistep_prep` NO LONGER PRINTS `pH = inf`.** It had done so since S13: the saponification pot's acetic acid could not dissociate -- `peroxide_over_oxidation` had MADE it, and until C5's `ReactionTemplate.run` fix a species one template made was invisible to the next -- so a pot holding 0.093 mol of free hydroxide had nothing to take a logarithm of. ⚠⚠ **C5 closed it without knowing, because C5 declared `tolerance_audit.py` NOT OWED**; C6 ran the audit and the `inf` was simply gone, `multistep_prep`'s worst now a finite 1.07e-03. *A fragility can be closed by a session that never reads its entry, and only a standing audit will say so.*
 
 **27. ⚠ `named_routes` CANNOT BE SWEPT at rtol 1e-8 (S13) — AND IT IS NOT NEW.**
 The PRE-S13 data raises too, at **rtol 1e-7**, one decade closer to the default

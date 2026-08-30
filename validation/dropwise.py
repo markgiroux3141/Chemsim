@@ -27,6 +27,7 @@ from chemsim.engine.events import SET_EDGE
 from chemsim.engine.scenario import TemplateSpec
 from chemsim.matter import Molecule
 from chemsim.network import build_network
+from chemsim.numerics.vessel_integrator import DRYOUT_MOLES
 from chemsim.properties import ThermochemistryProvider
 from chemsim.reactions import alcohol_chemistry
 from chemsim.reactions.synthesis import aromatic_nitration
@@ -64,11 +65,17 @@ print("PANEL 1  DOES A METER EDGE DELIVER ITS RATE, AND DOES THE FUNNEL RUN OUT?
 print(BAR)
 print("""   The brief's item 4 -- "THE RESERVOIR IS NOT STATE ... it is a DURATION,
    total/rate, derived". It is state, it is a VESSEL, and it empties by itself.
-   What matters is whether it empties CLEANLY: a meter's flux is intensive in
-   the donor (k mol/s of solution, whatever is left), so nothing in the flux law
-   slows it down as the funnel drains. If the clamp at zero were leaky the pot
-   would receive matter the funnel never had.
-""")
+   What matters is whether it empties CLEANLY. If the clamp at zero were leaky
+   the pot would receive matter the funnel never had.
+
+   *** AND THIS PANEL'S OWN PROSE USED TO STATE THE C6 BUG AS A VIRTUE. It read:
+   "a meter's flux is intensive in the donor (k mol/s of solution, whatever is
+   left), so NOTHING IN THE FLUX LAW SLOWS IT DOWN as the funnel drains." That
+   was an accurate description of the code and it is the whole defect: a
+   composition is scale-invariant, so `k mol/s of whatever is left` is still
+   k mol/s out of a funnel holding 1e-26 mol, and every quantity built on that
+   composition becomes a STEP in an amount far below atol. Something in the flux
+   law slows it down now -- see PANEL 1b -- and this table is unchanged.""")
 print("   0.5 mol of acetic acid, drained at four rates, read at t = 1000 s")
 print(f"   {'rate mol/s':>11s} {'funnel left':>18s} {'pot got':>18s} "
       f"{'the pair':>18s}")
@@ -86,7 +93,56 @@ for rate in (0.001, 0.1, 1.0, 10.0):
 print("""
    Exact at every rate, including one that empties the funnel in 50 ms. A feed
    term whose reservoir was a DERIVED DURATION would have had to reproduce this
-   and could not have done it better than exactly.""")
+   and could not have done it better than exactly. *** THE GATE DOES NOT COST
+   THIS ROW ANYTHING: the table is read at t = 1000 s, and the smoothstep's tail
+   still drains -- it attenuates the flux, it does not strand the charge.""")
+
+# ---------------------------------------------------------------------------
+print()
+print(BAR)
+print("PANEL 1b  AND WHAT THE FLUX LAW DOES AS THE FUNNEL EMPTIES  (C6)")
+print(BAR)
+print("""   A vapour edge dies with dP and a drain is first order in the holdup,
+   so both stop themselves. A METER is a DECLARED RATE times a composition and
+   stops itself at nothing -- which is why it is the one edge that had to be
+   told. The gate is _smoothstep(total / DRYOUT_MOLES), so below the scale the
+   delivered flux is k * u^2 * (3 - 2u): QUADRATIC in the donor's holdup, which
+   self-limits harder than a drain's first order.
+
+   The point is not the constant. It is that a drained donor is now a FLAT
+   column instead of a cliff, so num_jac differences a derivative rather than a
+   step. Before this, the same probe read 1.6e+20 at h=1e-20 and 1.6e+09 at
+   h=1e-09 -- a number set by the probe size and not by the physics.
+""")
+print(f"   {'funnel holds':>14s} {'delivered mol/s':>18s} {'fraction of k':>15s}"
+      f" {'closed form':>15s}")
+_RATE = 0.01
+for total in (1.0e-2, 1.0e-4, 1.0e-6, 1.0e-8, 1.0e-10, 1.0e-20):
+    rig = Rig()
+    fn = rig.add("funnel", funnel(esters, 298.15, volume=1.0))
+    pot = rig.add("pot", Vessel(esters, volume=1.0, T=298.15, T_env=298.15,
+                                UA=0.0, kla=0.0, k_vent=0.0, k_diss=0.0,
+                                lle=False))
+    rig.meter("funnel", "pot", rate=_RATE)
+    fn.charge({ACOH: total})
+    integ = rig.integrator()
+    rhs = integ.make_rhs()
+    y = integ.pack([v.integrator.pack(v._nL, v._nL2, v._nG, v._nS, v.T)
+                    for v in rig.vessels.values()])
+    n = integ.n
+    f = rhs(0.0, y)
+    out = -float(f[0:n].sum() + f[n:2 * n].sum())
+    u = min(total / DRYOUT_MOLES, 1.0)
+    print(f"   {total:14.2e} {out:18.6e} {out / _RATE:15.6e}"
+          f" {u * u * (3.0 - 2.0 * u):15.6e}")
+print("""
+   Full rate at and above the 1e-6 mol scale, and the closed form to every digit
+   below it. *** THE STATE THIS MATTERS AT IS ONE THE ANSWER NEVER VISITS: the
+   dropping funnel's accepted trajectory never empties (150 accepted points,
+   none negative, bottoming out at +1.5e-4 mol). The drained donor appears at
+   Newton trial iterates and num_jac probe points. An RHS is not only evaluated
+   on its trajectory, and a term that is defensible only there is not
+   defensible.""")
 
 # ---------------------------------------------------------------------------
 print()

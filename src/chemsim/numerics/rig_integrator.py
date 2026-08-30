@@ -49,8 +49,15 @@ first.
     time window evaluated inside the RHS: a hard on/off in ``t`` is a
     discontinuity mid-solve, whereas an event at a step boundary is exactly the
     mechanism Layer 6 already uses to stay deterministic.
+    ⚠⚠ **AND IT IS THE ONE EDGE HERE THAT DOES NOT SELF-LIMIT FOR FREE**, which
+    is a consequence of that fixed rate: a vapour edge dies with ``dP`` and a
+    drain is first order in the holdup, but a declared rate times a
+    SCALE-INVARIANT composition is still ``k`` mol/s out of a funnel holding
+    1e-26 mol. C6 gated it on ``DRYOUT_MOLES``, which makes its flux QUADRATIC
+    in the donor's holdup -- self-limiting harder than a drain. See the METER
+    branch of ``make_rhs``, and the third item below.
 
-## Two things that are easy to get wrong
+## Three things that are easy to get wrong
 
 **Enthalpy has to travel with the material.** Venting to ambient never needed an
 explicit term -- gas leaves at ``T`` and the shrinking heat capacity accounts for
@@ -79,6 +86,26 @@ a full stream of the donor's composition plus an inflow-only correction, so ever
 outward term is proportional to the donor's own amount. See ``backflow_part`` in
 ``vessel_integrator``, which is also where the smoothing scale is argued -- it is
 zero, and the sweep that put it there is in ``validation/vent_leak.py``.
+
+**A COMPOSITION IS SCALE-INVARIANT, SO AN EMPTY VESSEL'S COMPOSITION IS
+INFINITELY SENSITIVE -- and the RHS has to survive that at states the ANSWER
+never visits.** Any edge that carries ``n_i / sum(n)`` is reading a quantity that
+one added molecule can rewrite completely once the donor is drained, and a
+quantity built on it is then a STEP in an amount far below ``atol``. ``num_jac``
+differences the step and reports ``df/h`` -- measured on the dropping funnel,
+1.6e+20 at h = 1e-20 and 1.6e+9 at h = 1e-9, with ``f`` CONSTANT across twenty
+decades of h -- which took ``I - c*J`` to a condition number of 4e+23 and made
+SuperLU's sparse factorisation produce an exactly-zero pivot where
+LAPACK's ordering does not.
+⚠⚠ **THE STATE THAT DOES IT IS NOT ON THE TRAJECTORY.** The funnel's accepted
+solution never empties: 150 accepted points, none negative, bottoming out at
++1.5e-4 mol. The drained donor appears only at Newton trial iterates and
+``num_jac`` probe points. **An RHS is not only evaluated on its trajectory, and a
+term that is defensible only there is not defensible.**
+⚠ The fix pattern is the codebase's standing one and its two halves must not
+share a scale: ``_smoothstep`` on ``DRYOUT_MOLES`` is the GATE, and
+``MOLE_FRACTION_DENOM`` -- 24 decades lower -- is the 0/0 CLAMP. A ``> 0.0`` test
+is a clamp being asked to do a gate's job, which is what the METER edge had.
 """
 
 from __future__ import annotations
@@ -93,8 +120,11 @@ from chemsim.numerics import vessel_integrator as vessel_core
 from chemsim.numerics.jacobian import BoundedJacobian
 from chemsim.numerics.vessel_integrator import (
     CP_MIN,
+    DRYOUT_MOLES,
+    MOLE_FRACTION_DENOM,
     V_GAS_MIN,
     VesselIntegrator,
+    _smoothstep,
     _Stationary,
     _poly,
     backflow_part,
@@ -274,14 +304,75 @@ class RigIntegrator:
                     moves = [(0, k * nL1_a), (n, k * nL2_a)]      # one-way, a -> b
                     Cp_donor = CpL_a
                 elif kind == METER:
+                    # A pump moves the donor's solution, not pure anything --
+                    # so its flux is a declared RATE times the donor's own
+                    # COMPOSITION, and that is what makes this the one edge kind
+                    # here whose magnitude does not vanish with the donor's
+                    # contents. A vapour edge is driven by dP and a drain is
+                    # first order in the holdup, so both go to zero on their
+                    # own; a meter has to be TOLD.
+                    #
+                    # ⚠⚠⚠ AND UNTIL C6 IT WAS NOT, WHICH RAN A PUMP DRY. The
+                    # guard was ``tot_a > 0.0``, which is a 0/0 clamp doing duty
+                    # as a gate -- exactly what ``MOLE_FRACTION_DENOM``'s own
+                    # comment forbids: *a clamp that exists to avoid 0/0 must not
+                    # double as a second gate*. At ``tot_a = 7.3e-26`` the test
+                    # passes, ``nL1_a / tot_a`` is a perfectly finite unit
+                    # vector, and the pump delivers its full ``k`` mol/s of
+                    # whatever numerical debris the drained donor happens to
+                    # hold.
+                    #
+                    # ⚠⚠⚠ AND THE STATE WHERE THAT HAPPENS IS NEVER ON THE
+                    # ANSWER -- WHICH IS THE WHOLE POINT, AND C6 NEARLY WROTE THE
+                    # OPPOSITE DOWN. On ``test_dropping_funnel``'s own scenario,
+                    # at the cap it was already green at, the ACCEPTED trajectory
+                    # never empties this funnel: 150 accepted points, none
+                    # negative, bottoming out at +1.50e-04 mol where the run
+                    # stops. The dry donor appears only at states the SOLVER
+                    # VISITS -- Newton trial iterates and ``num_jac`` probe
+                    # points -- where the raw total reaches -6.29e-03, and the
+                    # old guard still passed on a sub-microgram donor in 54 of
+                    # the 210 RHS evaluations that saw one. **An RHS is not only
+                    # evaluated on its trajectory, and a term that is defensible
+                    # only there is not defensible.** BDF differences this
+                    # function at the states it visits, so those are the states
+                    # it has to be sane at.
+                    #
+                    # ⚠⚠ THE DAMAGE IS NOT THE MATTER -- MATTER IS FINE -- IT IS
+                    # THAT A COMPOSITION IS SCALE-INVARIANT. A mole fraction over
+                    # 1e-26 mol is rewritten completely by one added molecule, so
+                    # every quantity built on it becomes a STEP function of an
+                    # amount far below ``atol``. ``num_jac`` then differences a
+                    # step and reports ``df/h`` -- a number set by the probe size
+                    # and not by the physics. Measured on that state, the same
+                    # perturbation gives a quotient of 1.6e+20 at h = 1e-20 and
+                    # 1.6e+9 at h = 1e-9, with ``f`` itself CONSTANT across
+                    # twenty decades of h. Those entries land in the receiver's
+                    # TEMPERATURE row, because a meter carries enthalpy with its
+                    # material, and take ``I - c*J`` to a condition number of
+                    # 4e+23. Dense LU survives that; SuperLU's sparse pivoting
+                    # produces an exactly-zero pivot and raises **Factor
+                    # is exactly singular**. ⚠ That is the whole of C5's
+                    # ``max_species`` fragility, and it is why the row PERMUTATION
+                    # looked like the cause: a permutation changes which ``h``
+                    # ``num_jac`` lands on, which scales a meaningless number by
+                    # decades. See NEXT_PROMPT's fragility 00 and MILESTONES §C6.
+                    #
+                    # ⚠ SO THE FIX IS THE CODEBASE'S OWN TWO-PART CONSTRUCTION,
+                    # and the two parts must NOT share a scale. ``_smoothstep``
+                    # on ``DRYOUT_MOLES`` is the GATE -- it closes the tap as the
+                    # donor dries, and is zero AND FLAT at zero, so an empty
+                    # funnel's column is honestly zero rather than carrying a
+                    # fictional 1/DRYOUT_MOLES knee. ``MOLE_FRACTION_DENOM`` is
+                    # the 0/0 CLAMP, 24 decades lower, whose only job is to keep
+                    # the division defined where the gate has already shut it.
+                    # ⚠ The gate scale is two decades BELOW the 1e-4 mol root
+                    # this scenario stops on, so it is fully open where the
+                    # answer is decided -- measured, ``elapsed`` does not move.
                     tot_a = float(nL1_a.sum() + nL2_a.sum())
-                    # A pump moves the donor's solution, not pure anything. With
-                    # a dry donor it moves nothing rather than dividing by zero.
-                    moves = (
-                        [(0, k * nL1_a / tot_a), (n, k * nL2_a / tot_a)]
-                        if tot_a > 0.0
-                        else [(0, np.zeros(n))]
-                    )
+                    rate = k * _smoothstep(tot_a / DRYOUT_MOLES)
+                    denom = max(tot_a, MOLE_FRACTION_DENOM)
+                    moves = [(0, rate * nL1_a / denom), (n, rate * nL2_a / denom)]
                     Cp_donor = CpL_a
                 else:
                     raise ValueError(f"unknown edge kind {kind}")
@@ -397,8 +488,27 @@ class RigIntegrator:
     def useful_sparsity(self) -> np.ndarray | None:
         """The pattern, or ``None`` when passing it would be pure overhead.
 
-        ⚠ **AND FOR EVERY RIG IN THIS REPO'S TEST SUITE IT IS PURE OVERHEAD**,
-        which was not what anybody expected and is the useful finding here.
+        ⚠ **AND FOR EVERY VAPOUR-COUPLED RIG IT IS PURE OVERHEAD**, which was not
+        what anybody expected and is the useful finding here.
+
+        ⚠⚠⚠ **THAT USED TO READ "FOR EVERY RIG IN THIS REPO'S TEST SUITE" AND C6
+        MEASURED IT FALSE.** G1's dropping funnel arrived after this was written
+        and is joined by a METER, which couples two LIQUID blocks and a
+        temperature rather than reaching through the gas volume -- so it groups,
+        and it takes the SPARSE path:
+
+            cap  species  N     groups   sparse path
+             10       10   82       62   YES
+             14       14  114       86   YES
+             15       15  122       92   YES
+
+        **The code was right and the prose above it had gone stale**, which
+        matters more than a stale comment usually does: the sparse path is the
+        one that RAISES on a rank-deficient factorisation, where the dense path
+        recovers by rejecting the step. A reader who believed the old sentence
+        would have concluded the crashing branch was unreachable here. *"Measured
+        per rig rather than assumed once" is what saved the behaviour; nothing
+        was re-measuring the sentence.*
 
         Sparsity only ever buys column GROUPS. Measured with the same
         ``group_columns`` that BDF's own sparse path uses, on the topology the slow

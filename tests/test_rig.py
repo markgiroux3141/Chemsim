@@ -12,6 +12,7 @@ import pytest
 
 from chemsim.network import build_network
 from chemsim.numerics.rig_integrator import DRAIN, THERMAL, VAPOUR
+from chemsim.numerics.vessel_integrator import DRYOUT_MOLES
 from chemsim.properties import ThermochemistryProvider
 from chemsim.reactions import ReactionTemplate
 from chemsim.vessel import Rig, Vessel
@@ -378,6 +379,130 @@ def test_a_metered_edge_delivers_its_set_rate_and_a_closed_tap_delivers_nothing(
     rig.set_rate(tap, 0.002)             # mol/s
     rig.run(100.0)
     assert rig.state()["flask"].n_liquid[ETOH] == pytest.approx(0.2, rel=0.02)
+
+
+def _drained_meter_rig(net, donor_total: float):
+    """A funnel holding ``donor_total`` mol of solution over a full flask, tap
+    open. Returns (integrator, rhs, packed state, n)."""
+    rig = Rig()
+    funnel = rig.add("funnel", Vessel(net, volume=0.5, T=300.0, T_env=300.0,
+                                      UA=10.0, kla=0.0, k_vent=0.0))
+    flask = rig.add("flask", Vessel(net, volume=1.0, T=340.0, T_env=340.0,
+                                    UA=10.0, kla=0.0, k_vent=0.0))
+    rig.meter("funnel", "flask", rate=0.01)
+    funnel.charge({ETOH: donor_total * 0.5, WATER: donor_total * 0.5})
+    flask.charge({WATER: 1.0})
+    integ = rig.integrator()
+    rhs = integ.make_rhs()
+    y = integ.pack([
+        v.integrator.pack(v._nL, v._nL2, v._nG, v._nS, v.T)
+        for v in rig.vessels.values()
+    ])
+    return integ, rhs, y, integ.n
+
+
+def test_a_metered_edge_stops_pumping_as_its_donor_dries(net):
+    """⚠⚠⚠ A METER IS THE ONE EDGE HERE WHOSE FLUX DOES NOT VANISH ON ITS OWN.
+
+    A vapour edge is driven by ``dP`` and a drain is first order in the holdup,
+    so an empty donor stops both by construction. A meter's flux is a DECLARED
+    RATE times the donor's COMPOSITION -- and a composition is scale-invariant,
+    so it is perfectly well defined for a funnel holding 1e-26 mol and says the
+    pump should keep delivering its full ``k`` mol/s.
+
+    ⚠ That is what ``tot_a > 0.0`` used to permit: a 0/0 clamp standing in for a
+    gate, which is exactly what ``MOLE_FRACTION_DENOM``'s own comment forbids.
+    What is asserted here is the PROPERTY, not a constant -- the delivered flux
+    must go to zero with the donor, and faster than linearly, so that a drained
+    funnel is a flat column rather than a cliff.
+    """
+    RATE, DRY = 0.01, DRYOUT_MOLES
+    delivered = {}
+    for total in (1.0e-2, 1.0e-4, 1.0e-6, 1.0e-8, 1.0e-10, 1.0e-20):
+        integ, rhs, y, n = _drained_meter_rig(net, total)
+        f = rhs(0.0, y)
+        # what LEAVES the funnel's two liquid blocks, per second
+        delivered[total] = -float(f[0:n].sum() + f[n:2 * n].sum())
+
+    for total, out in delivered.items():
+        assert out <= RATE * (1.0 + 1e-12), "a meter may never exceed its set rate"
+        assert out >= -1e-12, "and it is one-directional"
+
+    for total in (1.0e-2, 1.0e-4):
+        assert delivered[total] == pytest.approx(RATE, rel=1e-9), (
+            "a donor at or above the dryout scale gets the full declared rate"
+        )
+
+    # ⚠ AND BELOW IT THE LAW IS THE SMOOTHSTEP'S OWN, WHICH IS QUADRATIC IN THE
+    # HOLDUP -- so a meter self-limits HARDER than a drain, whose flux is merely
+    # first order. That is what makes a drained donor a flat column rather than
+    # a cliff, and it is asserted as the closed form rather than as a threshold.
+    for total in (1.0e-8, 1.0e-10, 1.0e-20):
+        u = total / DRY
+        assert delivered[total] == pytest.approx(RATE * u * u * (3.0 - 2.0 * u),
+                                                 rel=1e-9), total
+
+    ordered = [delivered[t] for t in sorted(delivered)]
+    assert all(a <= b * (1.0 + 1e-12) for a, b in zip(ordered, ordered[1:])), (
+        f"the tap may only open as the funnel fills: {ordered}"
+    )
+
+
+def test_a_drained_donor_does_not_make_the_receiver_a_step_function(net):
+    """⚠⚠⚠ THE REGRESSION FOR "Factor is exactly singular", AND IT IS ABOUT
+    CONTINUITY RATHER THAN ABOUT ANY LEVEL.
+
+    A meter carries enthalpy with its material, so the donor's composition
+    reaches the RECEIVER'S TEMPERATURE ROW. With the composition taken over a
+    drained donor, adding 1e-20 mol of one species made that species ~100% of
+    the stream, and ``d(T_flask)/dt`` JUMPED -- a step in an amount twenty-one
+    decades below ``atol``.
+
+    ⚠ ``num_jac`` cannot help but difference that step, and it reports
+    ``df/h``: C6 measured the same perturbation give 1.6e+20 at h = 1e-20 and
+    1.6e+9 at h = 1e-9, with ``f`` CONSTANT across twenty decades of h -- a
+    number set entirely by the probe size. Those entries took ``I - c*J`` to a
+    condition number of 4e+23, and SuperLU's sparse factorisation produced an
+    exactly-zero pivot where LAPACK's ordering did not. **C5 saw that as a fragility about the ORDER of two
+    identical stoichiometry rows; the ordering only decided which ``h`` the
+    solver landed on.**
+
+    ⚠⚠ THE STATE ASSERTED ON IS ONE THE SOLVER VISITS AND THE ANSWER NEVER DOES.
+    A drained donor does not appear on the accepted trajectory of the funnel
+    scenario at all -- 150 accepted points, none negative, bottoming out at
+    +1.5e-4 mol. It appears at Newton trial iterates and ``num_jac`` probe
+    points. **An RHS is not only evaluated on its trajectory, and a term that is
+    defensible only there is not defensible.**
+    """
+    integ, rhs, y, n = _drained_meter_rig(net, 1.0e-24)
+    T_ROW = 2 * (4 * n + 1) - 1                      # the flask's temperature
+    f0 = np.asarray(rhs(0.0, y), dtype=float)
+    PROBES = (1.0e-20, 1.0e-16, 1.0e-12, 1.0e-9)
+
+    # ⚠ THE ASSERTION IS ON THE QUOTIENT AND NOT ON THE STEP, because the
+    # quotient is what ``num_jac`` reports and a step is legitimately non-zero:
+    # a funnel handed 1e-9 mol really does hold 1e-9 mol, and the tap really
+    # does crack open. What may NOT happen is the quotient growing as the probe
+    # shrinks -- that is the signature of differencing a discontinuity, and it
+    # is what took the matrix to cond 4e+23.
+    for col in range(n):                             # every donor liquid species
+        quotients = []
+        for h in PROBES:
+            yp = y.copy()
+            yp[col] += h
+            fp = np.asarray(rhs(0.0, yp), dtype=float)
+            quotients.append(abs(fp[T_ROW] - f0[T_ROW]) / h)
+
+        assert max(quotients) < 1.0e6, (
+            f"species {col}: d(T_flask)/dt per mol reached {max(quotients):g} "
+            f"K/(s mol) at probes {PROBES} -- before C6 this read 1.6e+20"
+        )
+        # flat at zero: a smaller probe may not find a STEEPER slope
+        assert all(a <= b * (1.0 + 1e-9) + 1e-30
+                   for a, b in zip(quotients, quotients[1:])), (
+            f"species {col}: the quotient grows as the probe shrinks "
+            f"{quotients} -- that is a step being differenced, not a derivative"
+        )
 
 
 def test_vapour_carries_its_enthalpy_into_the_receiver(net):
