@@ -1,0 +1,26 @@
+---
+title: "The chemsim Manual"
+subtitle: "An emergent chemistry engine, explained from the beginning"
+author: "Generated from the chemsim repository"
+date: "29 August 2026"
+documentclass: report
+classoption:
+  - 11pt
+  - openany
+geometry:
+  - top=25mm
+  - bottom=25mm
+  - left=32mm
+  - right=28mm
+mainfont: "Cambria"
+sansfont: "Calibri"
+monofont: "Consolas"
+mathfont: "Cambria Math"
+fontsize: 11pt
+linestretch: 1.05
+colorlinks: true
+linkcolor: "csblue"
+urlcolor: "csblue"
+toccolor: "black"
+lang: en-GB
+---
