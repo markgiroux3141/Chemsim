@@ -7894,3 +7894,57 @@ RESOLVED since the last handoff:
     something else and quoted forward twice, including into the estimate C7 gave
     the user for what this session would cost.** *A wall-clock interval is not a
     duration unless something was watching the process.*
+
+112. ✔ **P0 — THE ARC CHANGED: THE C-SERIES IS PAUSED AND THE P-SERIES IS
+    THE LIVE WORK.** Not a session's findings but a direction, taken after the
+    question *"is this always going to be a slow slog, or are we writing
+    specialised code for every single reaction?"* was put to the C-series work
+    order. The answer is measured in `validation/playable_levers.py` (new) and
+    pinned in `tests/test_playable_levers.py`.
+
+    ⚠⚠⚠ **22 TEMPLATE SESSIONS BUY +10 ROUTES, NOT +24.** `PLAYABLE.md`
+    §8b's ceiling of 45 is a JOINT grant of templates AND prices; §8b ranks
+    each class holding prices fixed. Measured: templates alone 21 -> **31**,
+    prices alone 21 -> **25**, both 21 -> **45**. **The parts sum to +14 and the
+    joint is +24**, so every row of the work order is understated and its total
+    is overstated. *A ranking that holds everything else fixed cannot price a
+    joint grant, and §8b says 10 of its rows are joint.*
+
+    ⚠⚠⚠ **AND THE "NO LEVER" FINDING WAS MEASURED ONE SPECIES AT A TIME.**
+    §7 grants a single species, gets +2 at best, and concludes there is no
+    lever. True of singles, silent about sets: routes block each other, so a
+    species is worth +1 only while the thing it unblocks is blocked by something
+    else too. **23 routes are RUNNABLE today and merely unreachable** — the
+    engine executes them, their feedstocks come from other stranded routes —
+    and granting the 28 species they want takes playable **21 -> 41 with no new
+    chemistry of any kind.** That is four times the whole template work order,
+    and it is a decision about the starting shelf.
+
+    ⚠⚠ **THE ENGINE WAS NEVER THE PROBLEM, AND THE SAME AUDIT SAYS SO.** One
+    template, `esterification`, matches **166 acids x 190 alcohols ~ 31 500
+    reactions**; the catalog credits its class with **9 route steps**. **169 of
+    the 240 classes appear in exactly one route step**, because the catalog is a
+    list of named industrial processes and a named process is a one-off by
+    construction — and the remaining §8b rows are overwhelmingly
+    metallurgical, which is the chemistry with no family structure to exploit.
+    *The slog is a property of the target list, not of the architecture.*
+
+    ⚠⚠ **AND THE THING THAT MAKES THE GAME TRACTABLE IS THE MECHANIC THAT WAS
+    WANTED ANYWAY.** Five ordinary bench reagents explored `generations=2` deep
+    hit the 400-species cap in **12.4 s**; twelve explored one deep give 77
+    species in **0.43 s**. **One generation is exactly "what can the things in
+    this flask do, once"**, which is step-by-step play. ⚠ But it is an
+    approximation that touches MATTER, which §3 forbids, so it is admissible
+    only under *coverage limits are never silent* — and **the generation limit
+    is the one limit in `builder.py` that does NOT report itself**: it breaks out
+    with a non-empty frontier and says nothing, while `max_species`, oversize
+    molecules and mixed standard states all report. **That is P1.**
+
+    Written up as `MILESTONES.md` §THE P-SERIES (P1-P4) and `GAME_DESIGN.md`
+    §8 (the shelf, the stock and the step, with the shelf's three tiers and
+    what the loop may not do). ⚠ §8.5's `intermediate` tier is what lets the
+    shelf SHRINK later: reduce a stranded route and its rows are deleted because
+    the player earns them instead. The C-series is paused, not cancelled.
+
+    ⚠ Nothing on the scoreboard moved and nothing in `src/` changed: 21 of 173
+    playable, 59/240 classes, 38 BOTH. Suite **1196** (1191 + 5 new pins).

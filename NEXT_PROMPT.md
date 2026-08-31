@@ -4,118 +4,104 @@ Red) in d:\Claude Code Projects\Chemistry Simulator.
 **The plan is `MILESTONES.md`. Read it first — it is the authority on what to
 build and in what order.** **M0–M6, M8, M12, S1–S13, G1–G6 and C1–C7 are DONE.**
 
-# ⚠⚠⚠ WHAT C8 SHOULD DO: THE MELTING-POINT GATE (fragility 0c-i)
+# ⚠⚠⚠ THE ARC CHANGED ON 2026-08-31. THE LIVE WORK IS THE **P-SERIES**.
 
-**Take 0c-i.** C7 found it while chasing something else, measured it end to end,
-and deliberately did not fix it. It is the biggest live number in this file and
-it is completely scoped.
+**Read `MILESTONES.md` → `# THE P-SERIES` and `GAME_DESIGN.md` → `# 8`. Those
+two are the brief. This file is the state of the box.**
 
-    MEASURED_PHYSICAL entries                                    1239
-    ... holding a melting point and NO boiling point               376
-    ... whose measured Tm NEVER REACHES the resolved record        214
-    worst gap                                                    877 K
+The C-series (grind out `PLAYABLE.md` §8b, one route per session) is **PAUSED**.
+It was paused on a measurement, not a mood, and the measurement is
+`validation/playable_levers.py` (~2 min, new in C7/P0):
 
-`ThermochemistryProvider._physical_half` overlays a measured melting point only
-`if m.Tm is not None and half.Tb is None`. Joback supplies a boiling point for
-anything he can fragment — **and then he supplies the melting point too**, so
-the measurement in the table is discarded. Methotrexate melts at 468.1 K and its
-record says 1344.7.
+    what                                                     playable (of 173)
+    today                                                                   21
+    grant all 27 missing CLASSES  (~22 template sessions)                   31
+    grant every species a price   (data work)                               25
+    grant BOTH                                                              45
+    grant the 28 stranded-route SPECIES  (a shelf decision)                 41
 
-⚠⚠ **THE COMMENT BESIDE THAT GATE ARGUED IT WAS HARMLESS ON A CLAIM THE
-GENERATED FILE CONTRADICTS.** It read *"Nothing in the measured table is a
-species Joback already prices completely (the builder checks and reports), so no
-existing record's fusion pair moves."* `tools/build_physical_data.py` classifies
-each candidate and does **not** exclude on it: **855 of the 1239 entries are
-stamped `Joback: complete` in the generated file itself.** C7 corrected the
-comment and left the gate. *A check that reports is not a check that filters.*
+⚠⚠⚠ **22 TEMPLATE SESSIONS BUY +10 ROUTES, NOT +24.** §8b's ceiling of 45 is a
+JOINT grant of templates AND prices, and §8b ranks each class holding prices
+fixed. **The two streams are super-additive: +10 and +4 apart, +24 together.**
 
-## ⚠ WHY IT IS WORTH MORE THAN THE THING C7 WAS DOING
+⚠⚠⚠ **AND 23 ROUTES ARE ALREADY RUNNABLE AND MERELY UNREACHABLE** — the engine
+executes them today, they are stranded because their feedstocks come from other
+stranded routes. **28 species take 21 → 41 with no new chemistry at all.**
 
-Tm drives crystallisation and enters the solubility law exponentially — the
-provider's own comment says *"a 40 K miss is nearly a factor of two in how much
-dissolves"*, and this is 877. **The stereo job C7 closed moved two corpus rows'
-own numbers; this moves 214 records.**
-
-## ⚠⚠⚠ AND IT IS AN ORDERING CONSTRAINT ON THE NEXT ITEM AFTER IT
-
-C6 ranked the **negative liquid Cp** (fragility 19 / engine item 10) below the
-stereo job *only on ordering*: a stereo fix would change which record a compound
-gets, hence its Tm/Tb/Tc, hence its Cp fit. ⚠ **That argument has been measured
-and it did NOT apply to the stereo fix** — only two corpus rows moved their own
-numbers. **It applies in full to this one.** 214 melting points is exactly the
-input a Cp fit reads. *Do the change that moves everything before the
-measurement that reads against it.*
-
-## THE SHAPE OF THE WORK, AND THE TWO THINGS TO MEASURE FIRST
-
-1. **DOES A MEASUREMENT ALWAYS BEAT JOBACK's Tm?** The obvious fix is to drop
-   `and half.Tb is None`. Measure what that moves before writing it: 214 records
-   change their Tm, and some of them feed a crystallisation that a test pins.
-   ⚠ C7's own instrument lesson applies — compare with a TOLERANCE, because
-   Benson's Cp coefficients are not bit-reproducible across spellings and an
-   `==` reads that as a failure.
-2. **DOES `Hfus` HAVE THE SAME GATE?** The overlay carries `Hfus` alongside
-   `Tm` and nothing has measured whether the pair moves together. A Tm from one
-   source beside an Hfus from another is exactly the mixed-basis error
-   `formation_data.py` refuses in its own entries.
-
-⚠ **AND CHECK `_CURATED_FUSION` FIRST.** It has four rows and it is applied
-LATER, unconditionally, in `get()` — so it already does what this gate does not.
-Whether the fix is "widen the gate" or "route the measured Tm through the fusion
-overlay" is a real design choice and the second is closer to what already works.
-
-## WHAT IT COSTS
-
-Small fix, cheap re-baselining. Full suite **~29 min**, and
-`tolerance_audit.py` **IS owed** — a change to the physical half is a data-table
-change and C6's widened rule covers it. ⚠⚠ **The audit is ~10 MINUTES**, not
-the 2 h 35 m this file said for one session: C7 timed it 01:33:22 -> 01:43:53
-and the summary's own per-example wall clocks sum to 622 s. **Budget ~40
-minutes of runs, not three hours.**
-
-## ⚠ THE ALTERNATIVES, RANKED, WITH THE REASON EACH IS BELOW IT
-
-* **The negative liquid Cp** (fragility 19). 99 compounds, count is pre-S13 and
-  stale, first step is to re-measure. **Blocked behind 0c-i by the ordering
-  argument above**, which is now measured rather than assumed.
-* **`electrolyte._PAIRS` keyed flat** (fragility 0c-ii). Two rows, both lactic
-  acid, live: a corpus-spelled lactic acid does not dissociate. ⚠ It is a
-  network-CONSTRUCTION change — `_PAIRS` decides which ions exist — so it owes
-  the audit on its own, which makes it a poor standalone session and a good
-  rider on one that already owes it.
-* **The enantiomer extension** (C7 §6). One row, priced: `pla-unit` is D-lactic
-  acid and the table holds the L, 107 K of Joback. ⚠ The reason C7 refused it is
-  the row NEXT to it: `elaidic-acid` would take oleic acid's boiling point, and
-  those are different compounds 128 K apart. **A rule that took the sibling
-  would be right once and wrong once.** Building it means inverting every centre
-  and comparing.
-* **A content row from `PLAYABLE.md` §8b.** Untouched for TWO sessions now —
-  C6 and C7 both bought nothing on the scoreboard. Still five classes tied at
-  +1, still flat, and the warning below it still stands.
-* ⚠ **The `n_i / sum(n)` sweep C6 named and left**, ~1 hour, no audit owed:
-  the vessel RHS's own mole fractions were never checked for the
-  composition-over-nothing shape.
-
-## ⚠⚠ AND THE SCOREBOARD HAS NOT MOVED IN TWO SESSIONS, WHICH IS A DECISION SOMEBODY SHOULD MAKE ON PURPOSE
-
-21 of 173 playable, tiers 10/10/1, 59/240 classes, 38/173 BOTH, ceiling 45 —
-unchanged since C5. C6 bought nothing (one engine line), C7 bought nothing (one
-lookup module). Both were the right call on their own terms and neither asked
-whether three sessions of engine honesty in a row is the right shape. **If the
-answer is that it is, say so; if it is not, §8b is where the routes are.**
+⚠⚠ **THE ENGINE WAS NEVER THE PROBLEM.** One template, `esterification`, matches
+166 acids × 190 alcohols ≈ **31 500 reactions**; the catalog credits its class
+with **9 route steps**. **169 of the 240 classes appear in exactly one route
+step**, because a named industrial process is a one-off by construction. *The
+slog is a property of the target list, not the architecture.*
 
 ---
 
-# ⚠⚠⚠ START HERE: THE SUITE AND WHAT IS OWED
+# ⚠⚠⚠ WHAT P1 SHOULD DO: GIVE THE NOTICES SOMEWHERE TO GO
+
+**Half a session, and everything after it is easier to debug.** Two parts.
+
+## 1. Route `build_network`'s notices into the `Snapshot`
+
+`build_network` **prints to stdout**. A mix-anything game generates hundreds of
+NOTICE lines per step — measured, **397 for five reagents at two generations** —
+and stdout is not a place a player looks. `chemsim.ui` already publishes an
+immutable `Snapshot` from the worker thread and already has a **reports panel**
+showing `conservation_report`, `lle_report`, `electrolyte_report` and the rest.
+The notices belong there.
+
+⚠ **DO NOT SUPPRESS THEM.** The engine's rule is that nothing is silently
+approximated, and the reports panel exists because that rule is worth nothing if
+nobody is shown what it said. `app.py`'s own docstring records the refluxing rig
+destroying 0.34 mol of its air *on a channel that was reported all along and that
+nothing read.*
+
+## 2. ⚠⚠⚠ CLOSE THE ONE COVERAGE LIMIT THAT DOES NOT REPORT ITSELF
+
+`network/builder.py`, in `build_network`:
+
+```python
+    while frontier and not state.capped:
+        if generations is not None and rounds >= generations:
+            break                      # <- non-empty frontier, and SILENT
+```
+
+`max_species` reports (`state.report`), oversize molecules report, mixed standard
+states report. **The generation limit breaks out with a non-empty frontier and
+says nothing.** The P-series runs `generations=1` on every single step, so this
+is the difference between a declared bound and a silent lie about the contents of
+a flask.
+
+⚠⚠ **THIS IS WHAT MAKES ONE-GENERATION PLAY ADMISSIBLE AT ALL.** `GAME_DESIGN.md`
+§3 says *no approximation that touches MATTER* — and a generation limit does
+touch matter: if A + B makes C and C would react on to D, one generation shows C
+and never D. It is allowed only under the other standing rule, *coverage limits
+are never silent*. **Report `len(frontier)` and the species in it.** §8.2.
+
+⚠ And the design consequence, which is P4's and worth knowing now: **the player
+controls the bound.** A "react further" control that raises the generation limit
+turns a computational cap into a game verb. *A limit the player can see and lift
+is not an approximation; it is a choice.*
+
+## What P1 owes
+
+The full suite (~29 min) — it is an engine edit. ⚠ **`tolerance_audit.py` IS
+owed**: `build_network` is network construction, which is C6's widened rule
+exactly (*"a species that exists is a state-vector entry"*). It is **~10 min**,
+not the 2 h 35 m that stood in this file for one session — C7 timed it.
+
+## Then P2, P3, P4 — in `MILESTONES.md`, not repeated here
+
+P2 is `Stock` + the shelf (two verbs: BOTTLE and CHARGE). P3 is
+`data/catalog/shelf.psv` with three tiers. P4 is the picker and playing it.
+
+---
+
+# ⚠⚠⚠ START HERE: THE STATE OF THE BOX
 
     1191 passed / 0 failed in 28:00        <- run ALONE, nothing else on the box
 
-C6 was **1181 in 29:01**. C7 adds ten tests: one in `test_fermentation.py` for
-the template-made species, and `tests/test_stereo_keys.py` (9).
-
 ⚠⚠⚠ **AND C7 RAN THE SUITE TWICE ON IDENTICAL SOURCE, WHICH SETTLES A
-METHODOLOGICAL CLAIM C6 MADE.** The first run was **1182 in 29:58**, the second
-**1191 in 28:00** with 1.14 s of new tests between them:
+METHODOLOGICAL CLAIM C6 MADE.**
 
     run          tests    total / s    SECONDS PER TEST
     C6            1181       1741.4              1.4745
@@ -123,184 +109,68 @@ METHODOLOGICAL CLAIM C6 MADE.** The first run was **1182 in 29:58**, the second
     C7 run 2      1191       1681.0              1.4114
 
 **The same source, the same session, the same box, and the per-test total moves
-6.6%.** C6 offered that statistic as the stable one -- *"quote the per-test
-total, never a row"* -- on the strength of landing within **0.03%** of C5 across
-an engine change. ⚠ **That agreement was a coincidence.** The per-test total is
-not reliable to better than ~7%, and C7 measured that CONTROLLED rather than
-across sessions, which is the first time anything here has. *Two runs can say a
-statistic is noisy; only two runs of the SAME code can say how noisy.*
+6.6%.** C6 offered that statistic as the stable one — *"quote the per-test total,
+never a row"* — on the strength of landing within **0.03%** of C5. ⚠ **That
+agreement was a coincidence.** *Two runs can say a statistic is noisy; only two
+runs of the SAME code can say how noisy.*
 
 ```bash
 python -m pytest -q --durations=25
 ```
 
+⚠⚠⚠ **THE TOLERANCE AUDIT IS ~10 MINUTES, NOT 2 h 35 m.** C6 timed an interval
+(16:26 → 19:01) rather than the run and wrote the big figure into this file; C7
+quoted it forward into a cost estimate given to the user, then measured
+**10 m 31 s**, bounded independently by the summary's own per-example wall clocks
+summing to 622 s. **The repo's original "ten minutes" was right.** *A wall-clock
+interval is not a duration unless something was watching the process.*
 
-
-⚠⚠⚠ **THE AUDIT IS ~10 MINUTES, NOT 2 h 35 m -- C6's CORRECTION WAS ITSELF
-WRONG, AND C7 QUOTED IT FORWARD BEFORE MEASURING IT.** Timed **01:33:22 ->
-01:43:53, 10 m 31 s**, and the run's own summary bounds it independently: the
-twelve examples' loose and tight wall clocks sum to **622 s**, which is the
-whole of the work it does. C6 recorded 16:26:05 -> 19:01:39 and attributed that
-entire interval to the audit. **The repo's original "ten minutes" was right, was
-replaced by a measurement of something else, and was then quoted forward twice
--- into C7's plan and into the question C7 put to the user about what the
-session would cost.** ⚠ *A wall-clock interval is not a duration unless
-something was watching the process.*
-
-⚠⚠ **AND THE AUDIT IS CLEAN FOR C7: EVERY ROW C6 RECORDED COMES BACK EXACTLY.**
-`named_routes` raises (the diagnosed entry), `workshop` 2 lines / 1.98e-04,
-`activity` 1.28e-03, `mercury_retort` -- the harness's own self-check -- 0 lines
-and 1.00x, and **`multistep_prep` 8 lines / worst 1.07e-03**, which is where
-C5's speciation fix left it and where C6 found it. **Nothing moved**, which is
-the right answer for a change that gives two spellings of one substance the same
-numbers rather than changing what any single species integrates.
-
-The two quotable-digit rows are unchanged and still quotable-digit rows:
-`activity` at 0.1277% and `multistep_prep` at 0.1073%. Four more move below
-0.1%. Tight is faster in 5 of 12 and slower in 7, worst 4.6x.
+⚠ **The audit is CLEAN as of C7**: `named_routes` raises (the diagnosed entry),
+`workshop` 2 lines / 1.98e-04, `activity` 1.28e-03, `mercury_retort` 0 lines and
+1.00x, `multistep_prep` 8 lines / worst 1.07e-03. Nothing moved.
 
 ```bash
-python validation/tolerance_audit.py            # ~10 min, and OWED by any change
-                                                # to an RHS, a data table, or
+python validation/tolerance_audit.py            # ~10 min. OWED by any change to
+                                                # an RHS, a data table, or
                                                 # network CONSTRUCTION
 ```
 
+**Scoreboard, unchanged since C5:** 21 of 173 playable, tiers 10/10/1, 59/240
+classes, 46 template-ready, 85 species-ready, 38 BOTH, ceiling 45.
 
 ---
 
-# ⚠⚠⚠ WHAT C7 TURNED OUT TO BE
+# ⚠ C7, IN ONE PARAGRAPH (the full record is MILESTONES §C7 / HANDOFF §111)
 
-**The stereo-keying job: both recorded numbers were right, about different
-questions — and the biggest thing in the session is not stereochemistry.** No
-route, no class, no species, no data row. Playable stays **21**, classes
-**59/240**, BOTH **38**, ceiling 45. New: `properties/stereo_keys.py`,
-`matter.stereo_free_smiles`, `validation/stereo_keying.py`. HANDOFF §111,
-MILESTONES §C7.
-
-⚠ The regenerated artefacts say what moved and what did not.
-`COVERAGE_REPORT.md`'s **formation half measured goes 146 -> 148** -- lactic acid
-and pla-unit -- and `lactic-acid`'s LIMITING tier becomes `compilation`, because
-its formation half is measured now and its physical half is a YAWS boiling point.
-`PLAYABLE.md` comes back **byte-identical**.
-
-## ⚠⚠⚠ 1. BOTH RECORDED COUNTS REPRODUCED, TO THE UNIT
-
-NEXT_PROMPT warned that *"a 4.7x gap on a headline is not a methodological
-rounding"*. It is exactly a methodological difference:
-
-    what was asked                                      count
-    canonical spelling carries stereochemistry            212
-    ... of those, TETRAHEDRAL ('@')                       146   <- C4's population
-    ... of those, E/Z only                                 66
-    the two spellings reach different TABLES              149   <- C6's question
-    the two spellings resolve to a different SOURCE        49   <- C4's question
-    ... of those, tetrahedral                              31   <- C4's headline
-
-C4 filtered candidates on `"@"` in the raw SMILES column, which is a filter on
-TETRAHEDRAL stereochemistry — a double bond carries a spelling too. C6 asked
-about table MEMBERSHIP. **Membership counts records; only the resolved value
-counts numbers.**
-
-## ⚠⚠⚠ 2. THE 100 COMPOUNDS BETWEEN THE TWO ANSWERS WERE A DIFFERENT BUG
-
-For **102** compounds the record exists under one spelling and changes nothing.
-Chasing that is how 0c-i was found. *The gap between two correct measurements
-was the session's biggest finding.*
-
-## ⚠⚠⚠ 3. THE MECHANISM ON RECORD WAS TWO ROWS, AND THE REAL ONE IS ABOUT HOW A TABLE CAME TO EXIST
-
-0c said the two halves of a record are keyed opposite ways. That is lactic acid
-and pla-unit. **The only table with stereochemistry in its keys is the GENERATED
-one** — `MEASURED_PHYSICAL`, 146 of 1239 — and every hand-typed table is flat:
-0 of 82 ideal-gas formation, 0 of 58 liquid, 0 of 50 curated, 0 of 4 fusion, 0
-of 29 pKa. S13 built the generated one from the corpus and it inherited the
-corpus's spelling; a human types the simple form.
-
-## ⚠⚠⚠ 4. IT WAS LIVE, AND A TEMPLATE IS WHAT MADE IT LIVE
-
-**0 of 50 templates spell stereochemistry on their product side.** A rewrite
-cannot emit a spelling its SMARTS does not name, so every centre a template
-makes or touches comes out unspecified:
-
-    step                     emitted                     Tb was      Tb now
-    perkin-route 1           O=C(O)C=Cc1ccccc1        581.9 Job    573.1 CRC
-    knoevenagel-route 1      O=C(O)C=Cc1ccccc1        581.9 Job    573.1 CRC
-    menthol-route 2          CC1CCC(C(C)C)C(O)C1      530.3 Job    487.1 CRC
-    lactic-acid-pla 1        CC(O)C(=O)O              505.5 Job    398.1 YAWS
-    biodiesel-route 1        the CONTROL -- unchanged, and it is the point
-
-`transesterification` does not touch the C=C, so RDKit carries the spelling
-through and the emitted methyl oleate IS the corpus's. **A template loses a
-spelling only where it rewrites one.** ⚠ `matter/molecule.py` has said this in
-prose since v1 and nothing had ever priced it.
-
-## ⚠⚠ 5. THE GUARD IS NOT DEFENSIVE PROGRAMMING — IT FIRES
-
-The fallback may cross an AMBIGUITY and never a DIFFERENCE, and the unspecified
-side must be answered by **exactly one** record. `MEASURED_PHYSICAL` holds
-**seven** skeletons with more than one stereoisomer; the worst is
-`O=C(O)C=CC(=O)O` — **maleic and fumaric acid, 230.1 K apart**. Without the
-guard a flat butenedioic acid takes one of them by dictionary order. *A fallback
-that guesses is worse than the estimator it replaces, because it is wrong with a
-measurement's authority.*
-
-## ⚠⚠ 6. THE STRIP ITSELF HAD THE TRAP, AND C7's OWN FIRST PROBE FELL IN IT
-
-`Chem.MolToSmiles(mol, isomericSmiles=False)` drops ISOTOPE labels along with
-stereochemistry: `[2H][2H]` becomes `[H][H]`, `[13CH4]` becomes `C`. A fallback
-built on it hands **deuterium hydrogen's record**. `stereo_free_smiles` uses
-`RemoveStereochemistry`. ⚠ C7's first probe used the wrong one and counted
-deuterium as a stereoisomer — *the instrument had the bug it was looking for*,
-which is S6's raw-vs-canonical trap arriving one layer down.
-
-## ⚠ 7. AND THE AUDIT CAUGHT AN INSTRUMENT ERROR ON ITSELF
-
-Panel 5 first said **16** compounds still disagree after the fix. Ten of them
-agree to 2e-16: **Benson sums its group contributions in SMILES atom order**, so
-a re-spelled molecule gives Cp coefficients differing in the last bits, and `==`
-reads that as a failure. The panel compares to 1e-12 now and reports the
-bit-noise separately. *A group-contribution sum is not bit-reproducible across
-spellings* — nowhere else recorded.
-
-## ⚠ 8. WHAT C7 DID NOT DO, SAID OUT LOUD
-
-* **Nothing on the scoreboard**, for the second session running.
-* **The Tm gate is measured and open.** 214 species, 877 K. Fragility 0c-i, and
-  the recommendation above.
-* **`electrolyte._PAIRS` is not wrapped.** Two rows. Fragility 0c-ii.
-* **The enantiomer extension is priced and not built.** One row, 107 K.
-* **Templates still do not control stereochemistry.** Only the lookup half of
-  that mismatch is closed.
-* **The SOLID tables were never swept** for the same keying shape.
-* ⚠ **The root README's coverage table was several regenerations behind and is
-  now copied from the generated report.** It was quoting a formation coverage
-  **155 compounds too high** (921 against 766), a class count against the wrong
-  denominator (51/229 against 59/240) and a BOTH column of 31 against 38. C7 did
-  not cause that drift and the memory note about it said "one regeneration
-  behind"; it was more. **The front door of the repo is the one number nobody
-  re-runs.**
+**The stereo-keying job, and both recorded counts were right about different
+questions.** C4 filed fragility 0c at 31 of 146; C6 re-measured 145 of 205 and
+warned that *"a 4.7x gap on a headline is not a methodological rounding"*. It is
+exactly that, and C7 reproduced **both** to the unit: C4 filtered on `"@"`, which
+is TETRAHEDRAL stereochemistry only, and C6 asked about table MEMBERSHIP where C4
+asked which SOURCE came back. 212 corpus compounds carry a spelling, 149 reach
+different tables, **49 resolve to a different source**. ⚠⚠⚠ The advertised
+opposite-keying is **two rows of the forty-nine**; the real rule is about how a
+table came to exist — **the only stereo-keyed table is the GENERATED one**,
+`MEASURED_PHYSICAL`, and every hand-typed table is flat. ⚠⚠ It was LIVE because
+**0 of 50 templates spell stereochemistry on their product side**, so
+`alkene_hydrogenation` emitted flat menthol inside `menthol-route` step 2 —
+Tb 530.3 Joback against the corpus row's measured 487.1. Fixed by
+`properties/stereo_keys.py`: a fallback, never an override, crossing an
+AMBIGUITY and never a DIFFERENCE, and only where exactly one record answers the
+skeleton. ⚠ **The biggest thing it found is not stereochemistry** — see
+fragility 0c-i, **214 measured melting points that never reach their record,
+worst 877 K**, still open.
 
 ---
 
-# ⚠ C6, IN ONE PARAGRAPH (the full record is MILESTONES §C6 / HANDOFF §110)
+# ⚠⚠ REFERENCE: `data/catalog/PLAYABLE.md` §8b, THE **PAUSED** C-SERIES WORK ORDER
 
-**The rig singularity, handed forward as a numerics session, and it was a pump
-running dry.** C5 filed it as *"a 15-species rig network with twelve
-structurally-zero columns factors `I - c*J` exactly singular, and whether it does
-turns on a permutation that changes nothing physical"*. It is **one line in
-`rig_integrator`'s METER branch**: the guard read `if tot_a > 0.0`, a 0/0 clamp
-doing a gate's job, so a funnel holding **7.30e-26 mol** still delivered its full
-rate of a composition one molecule rewrites. **A mole fraction is
-SCALE-INVARIANT**, so the receiver's temperature row became a STEP and `num_jac`
-reported `df/h` -- its own probe size, 1.6e20 at h=1e-20. ⚠⚠ Its transferable
-sentence: **an RHS is not only evaluated on its trajectory, and a term that is
-defensible only there is not defensible.** ⚠ It also widened the tolerance
-audit's rule -- an RHS edit owes it, **and so does a change to network
-CONSTRUCTION** -- and that rule is what made C7 owe it too.
-
----
-
-# ⚠ WHERE THE WORK ORDER STANDS: `data/catalog/PLAYABLE.md` §8b, RE-GENERATED
+⚠⚠⚠ **DO NOT START HERE.** The P-series is the live arc and this table
+is what it paused. Kept because every row is measured and because the
+P-series' shelf tiers are derived from it. ⚠ And re-read it against
+`validation/playable_levers.py` panel 2 before costing anything: **every
+row below is priced holding prices fixed, so each is understated and the
+ceiling of 45 is a joint grant that 22 template sessions do not reach.**
 
 **22 routes are already FED from natural materials and blocked only on a template
 or a price. Grant all 22 and playability goes 21 → 45.**
@@ -412,6 +282,13 @@ python validation/furans.py                     # ⚠⚠ C5's, ~2 min. NEW -- re
                                                #   another template MADE, measured on C4's
                                                #   fermentation. Panel 7's second half is
                                                #   an INERT SPECTATOR moving a yield
+python validation/playable_levers.py           # ⚠⚠⚠ P0's, ~2 min. NEW -- THIS IS
+                                               #   THE FILE THAT CHANGED THE ARC. Panel 2
+                                               #   is why 22 template sessions buy +10 and
+                                               #   not +24; panel 3 is the 28 species that
+                                               #   take 21 -> 41 with no chemistry; panel 5
+                                               #   is why a STEP is one generation; panel 6
+                                               #   is why a shelf tops out at 1167
 python validation/stereo_keying.py              # ⚠⚠ C7's, ~60 s. NEW -- read every
                                                #   panel. ⚠⚠⚠ PANEL 8 IS NOT ABOUT
                                                #   STEREOCHEMISTRY: it is 214 measured

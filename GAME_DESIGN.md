@@ -550,9 +550,152 @@ derived, and mixing two tabulations inside one entry is forbidden.
 
 ---
 
+# 8. THE SHELF, THE STOCK AND THE STEP -- the playable loop
+
+Sections 1-7 describe what a stock IS and what must never be built. This section
+is the loop that uses them, and it exists because the engine has been able to run
+this for a long time and nothing has ever asked it to. `grep -r inventory src/`
+returns engine internals and nothing else.
+
+**The goal of the P-series is one sentence:** a player opens a shelf, pours two
+things into a flask, does something to it, reads what came out, and puts the
+result back on the shelf under a name. Everything below is in service of that
+sentence and nothing else.
+
+## 8.1 The loop, and the two verbs that are missing
+
+`chemsim.ui` already has the hard half: a worker thread that owns the `World`, an
+immutable `Snapshot` the view polls, a command queue (`Do` / `Step` /
+`WaitUntil` / `Reset` / `Load`), a live recipe panel and a reports panel. What it
+does not have is any notion that the player owns anything. It loads one of four
+hardcoded scenarios and resets to the start.
+
+Two verbs close the loop:
+
+    BOTTLE   vessel -> shelf     name the current VesselState and store it
+    CHARGE   shelf  -> vessel    pour a stored stock into a flask
+
+That is the whole mechanic. Both are serialisation against a structure
+`SAVE_VERSION` already writes, because **a stock is a `VesselState`** (section
+1) -- a per-phase mole vector plus a temperature, not `(name, purity)`.
+
+## 8.2 A step is ONE GENERATION, and that is not a compromise
+
+Measured (`validation/playable_levers.py` panel 5), full template library:
+
+    gens  charged   species  reactions  seconds
+       1        5        45         36     0.63
+       1       12        77         67     0.43
+       2        5       400        766    12.38
+       2       12       400        743     4.03
+
+**Five ordinary bench reagents explored two generations deep hit the 400-species
+cap in twelve seconds.** Twelve reagents explored one deep cost under half a
+second. An open inventory is only tractable one generation at a time.
+
+The fortunate part is that this is also the mechanic that was wanted for its own
+sake: *mix two things, see what you get, then use that in the next step.* **One
+generation is exactly "what can the things in this flask do, once."** The
+products of that step become reactants only when the player takes another step,
+which is what a bench feels like anyway.
+
+⚠⚠ **BUT IT IS AN APPROXIMATION THAT TOUCHES MATTER, WHICH SECTION 7 FORBIDS,
+AND THE RESOLUTION IS THAT IT MUST NOT BE SILENT.** If A + B makes C and C would
+immediately react on to D, one generation shows C and never D. That changes the
+contents of the flask, which is the one thing section 3 says may never be
+approximated. It is admissible only under this project's other standing rule --
+*coverage limits are never silent* -- so:
+
+* **the unexplored frontier must be reported.** `build_network` breaks out of its
+  expansion loop with a non-empty frontier and says nothing, while `max_species`,
+  oversize molecules and mixed standard states all report. **That is a real hole
+  and it is P1**, because the game runs `generations=1` on every single step;
+* **the player controls the bound.** A "react further" control that raises the
+  generation limit turns a computational cap into a game verb. A flask that has
+  more to give should say so and let the player ask for it.
+
+*A limit the player can see and lift is not an approximation; it is a choice.*
+
+## 8.3 What a shelf may hold, and why it is not everything
+
+**416 of the 1583 corpus compounds are REFUSED a price**, so an "all chemicals"
+inventory tops out near **1167**. That refusal is the element floor doing its
+job: group-contribution estimators are fitted to neutral, multi-element molecules
+and outside that domain they return a well-formed number that means nothing
+(Joback prices Cl2 at -74.81 kJ/mol where the answer is 0 by definition).
+
+**A refused species must be visible in the picker, greyed, with its reason.** It
+may not be silently absent and it may not be chargeable-then-failing. A player
+who cannot find sodium metal deserves to be told that the engine declines to
+price it, not left to conclude the game is broken.
+
+## 8.4 What goes on the shelf, measured rather than chosen
+
+`validation/playable_levers.py` panel 3. Twenty-three routes are RUNNABLE today
+and merely unreachable, and they split into two kinds that are not
+interchangeable:
+
+* **19 are a CHAIN problem** -- they want a species some other route makes, and
+  that route is itself stranded. 24 distinct species; granting them takes
+  playable **21 -> 40**. These can eventually be EARNED, which is why the
+  reduction work is deferred rather than cancelled.
+* **4 are a BOTTLE problem** -- `benzaldehyde`, `malonic-acid`, `4-nitrophenol`,
+  `bromoethane` are made by nothing in 173 routes. Worth only +1 together,
+  because each of their routes is short of something else as well. These can only
+  be bought, or the corpus grows a route for them.
+
+Granting all 28 gives **41 of 173 playable**. ⚠ For comparison: 22 template
+sessions on their own give **31** (panel 2). *The shelf is the cheapest distance
+on the board by a wide margin, and it is a design decision rather than chemistry.*
+
+## 8.5 The shelf as data, not code
+
+Same shape as the rest of the corpus -- a PSV under `data/catalog/`, so it can be
+diffed, tested and regenerated:
+
+    # shelf.psv -- id | tier | amount | phase | note
+    water            | natural      | 5.0  | liquid | -
+    sulfuric-acid    | natural      | 1.0  | liquid | oil of vitriol
+    benzaldehyde     | bottle       | 0.5  | liquid | nothing in the corpus makes it
+    nickel           | intermediate | 0.1  | solid  | chain: made by a stranded route
+
+Three tiers, and the tier is the whole design argument:
+
+    natural        on the shelf because it comes out of the ground or a plant
+    intermediate   on the shelf because a stranded route would make it (EARNABLE)
+    bottle         on the shelf because nothing in the corpus makes it at all
+
+⚠ **The tier is what lets the shelf shrink later.** When a session makes a
+stranded route reachable, its `intermediate` rows are deleted and the player
+earns them instead. Nothing about that is possible if the shelf is a flat list of
+names, and it is the whole reason the tier column exists on day one.
+
+**And an "everything" toggle is a separate axis from the tiers** -- the
+all-chemicals cheat is every priced species at once, for exploration and for
+testing the picker against 1167 rows. It is not a fourth tier.
+
+## 8.6 What this section does NOT license
+
+Section 7 already forbids a purity scalar, a recipe unlock list, a success flag
+and any `if` that reads a purity. Three more that this loop makes tempting:
+
+* **No "recipe succeeded" moment.** The answer to an experiment is a composition
+  and a yield -- *71% conversion, 4% of a side product, 0.3 g left in the crust*
+  -- and reading the flask IS the game. A green tick over the top of it would
+  destroy the only thing this engine has that nothing else does.
+* **No shelf entry that is not a real `VesselState`.** The moment a bottle is a
+  noun with a number, section 1 is gone and every gate becomes decoration.
+* **No silent generation limit.** Section 8.2. If the frontier is non-empty the
+  player is told.
+
+---
+
 # Every number above, and how to re-measure it
 
 ```bash
+# section 8, the shelf and the step: every number is printed by
+#   validation/playable_levers.py (~2 min). Panels 3, 5 and 6 are the
+#   ones section 8 quotes.
 # section 2, the dilution gate: 20.9 / 48.8 / 74.1% conversion
 #   0.83 mol acetic acid + 2.05 mol ethanol at 353 K, sealed under N2, 2 h,
 #   varying only the water charged (50 / 12 / 3 mol). ~0.2 s each.
