@@ -139,6 +139,32 @@ class Snapshot:
     # ethanol and ethyl acetate turns up in the list without being asked for.
     species: tuple[str, ...] = ()
     vessel_names: tuple[str, ...] = ()
+    # ⚠ WHAT ``build_network`` SAID WHILE DISCOVERING THIS NETWORK. It used to
+    # say it to stdout and nowhere else, which for a script is a channel and for
+    # a player is a bin: a mix-anything game generates hundreds of these -- 397
+    # for five reagents at two generations, measured -- and nobody is watching a
+    # console. They are the SAME strings the builder prints, carried rather than
+    # replaced, and they include the generation-limit notice, which is the one
+    # coverage limit that says something about the CONTENTS of the flask rather
+    # than about what was registered.
+    #
+    # ⚠ NETWORK-WIDE AND NOT PER-VESSEL, which is why they are here and not on
+    # ``VesselView``. One world has one network; every flask in a rig shares it,
+    # and attaching a network's commentary to a vessel would say it once per
+    # vessel and imply it was about that vessel.
+    notices: tuple[str, ...] = ()
+    # The species the network discovered and never expanded, because a bound --
+    # ``generations`` or ``max_species`` -- stopped it. Non-empty means this
+    # flask has more to give and the engine has not looked: the state a "react
+    # further" control exists to offer, and the reason the notice above is not
+    # merely informative.
+    #
+    # ⚠ ALWAYS EMPTY TODAY, AND THAT IS HONEST RATHER THAN BROKEN.
+    # ``World.__post_init__`` passes no ``generations`` to ``build_network``, so
+    # a session always builds to a fixpoint and there is nothing left on the
+    # frontier. Making it reachable is a ``Scenario`` field and a SAVE_VERSION
+    # bump -- P2's, because P2 opens that file anyway.
+    unexpanded: tuple[str, ...] = ()
     # The last refusal, verbatim. Engine refusals name a cause and a fix and are
     # the most useful thing here when something goes wrong.
     error: str = ""
@@ -515,6 +541,8 @@ class Session:
             script=tuple(self.world.script),
             species=tuple(str(sp) for sp in self.world.network.species),
             vessel_names=tuple(self.world.vessels),
+            notices=tuple(self.world.network.notices),
+            unexpanded=tuple(self.world.network.unexpanded),
         )
         self._snapshot = replace(base, **fields)
 

@@ -298,7 +298,7 @@ def panel5():
     print(f"  template library                                 {len(lib):5d}")
     print()
     print(f"     {'gens':>4} {'charged':>8} {'species':>8} {'reactions':>10}"
-          f" {'seconds':>8}")
+          f" {'seconds':>8} {'notices':>8} {'frontier':>9}")
     for gens in (1, 2):
         for n in (3, 5, 8, 12):
             sp = [Molecule.from_smiles(s).smiles for s in BENCH[:n]]
@@ -308,18 +308,37 @@ def panel5():
                 net = build_network(sp, list(lib), thermo=th, volatility=vol,
                                     max_species=400, generations=gens)
             print(f"     {gens:>4} {n:>8} {len(net.species):>8} "
-                  f"{len(net.reactions):>10} {time.time() - t0:>8.2f}")
+                  f"{len(net.reactions):>10} {time.time() - t0:>8.2f} "
+                  f"{len(net.notices):>8} {len(net.unexpanded):>9}")
     print()
     print("  Five ordinary reagents explored two deep hit the cap. Twelve")
     print("  explored one deep cost under half a second. STEP-BY-STEP PLAY IS")
     print("  THE TRACTABLE CASE, and it is also the mechanic that was wanted.")
     print()
-    print("  AND THE GENERATION LIMIT IS THE ONE COVERAGE LIMIT THAT DOES NOT")
-    print("  REPORT ITSELF. builder.py breaks out of the expansion loop with a")
-    print("  non-empty frontier and says nothing; max_species reports, oversize")
-    print("  molecules report, mixed standard states report. That has to be")
-    print("  closed before a game runs generations=1 on every step -- see")
-    print("  MILESTONES section P1.")
+    print("  THE LAST TWO COLUMNS ARE P1, AND BOTH USED TO BE UNREADABLE.")
+    print("  'notices' is what build_network SAID while discovering each row --")
+    print("  it printed them to a stdout no windowed application has, and they")
+    print("  are now carried on the network and published in the Snapshot the")
+    print("  reports panel already renders. 'frontier' is species DISCOVERED and")
+    print("  never expanded: the generation limit used to break out of the loop")
+    print("  with a non-empty frontier and say nothing, while max_species,")
+    print("  oversize molecules and mixed standard states all reported.")
+    print()
+    print("  IT IS THE STRONGEST OF THE THREE CLAIMS AND WAS THE SILENT ONE.")
+    print("  The other two are about species never REGISTERED; this one is about")
+    print("  species that are in the flask and whose onward chemistry was never")
+    print("  looked for -- an approximation touching MATTER, which GAME_DESIGN")
+    print("  section 3 forbids outright and section 8.2 readmits only because a")
+    print("  coverage limit is never silent.")
+    print()
+    print("  AND THIS PANEL CAUGHT P1'S OWN FIRST VERSION BEING WRONG. The gens=2")
+    print("  rows hit max_species BEFORE the generation bound, so the generation")
+    print("  branch never ran, and reading the frontier only on that branch")
+    print("  reported 0 for a 400-species network truncated mid-round. THE BOUND")
+    print("  THAT BIT IS NOT ALWAYS THE BOUND THAT WAS DECLARED: the frontier is")
+    print("  now taken on either exit and the notice says which one stopped it.")
+    print("  On a capped row it is a LOWER bound -- the interrupted round left")
+    print("  combinations of the previous frontier untried as well.")
 
 
 def panel6():

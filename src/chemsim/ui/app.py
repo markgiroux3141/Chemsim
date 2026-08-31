@@ -18,10 +18,13 @@ Three things on screen exist because of measurements rather than taste:
   simulated time, and a player who cannot see that will read a slow moment as a
   hung program;
 * **the reports panel** -- ``conservation_report``, ``integrability_report``,
-  ``lle_report``, ``electrolyte_report`` and the rest. The engine's rule is that
-  nothing is silently approximated, which is only worth anything if somebody is
-  shown what it said. The refluxing rig destroyed 0.34 mol of its air for months
-  on a channel that was reported all along and that nothing read;
+  ``lle_report``, ``electrolyte_report`` and the rest, plus everything
+  ``build_network`` said while discovering the reaction set. The engine's rule is
+  that nothing is silently approximated, which is only worth anything if somebody
+  is shown what it said. The refluxing rig destroyed 0.34 mol of its air for
+  months on a channel that was reported all along and that nothing read -- and
+  the builder's notices were on exactly such a channel until P1, printed to a
+  stdout that a windowed application does not have;
 * **the recipe panel** -- the script, growing as the player works. A run is a pure
   function of (scenario, script), so this is the artifact, and it is visible
   rather than hidden behind a Save button.
@@ -39,6 +42,10 @@ from chemsim.ui.session import DEFAULT_CHUNK, Load, Session
 from chemsim.vessel import Condition
 
 POLL_MS = 120
+
+# The reports panel's heading, kept as a constant because the panel appends the
+# unexplored-frontier count to it and has to be able to take it off again.
+REPORTS_HEAD = "What the engine has to say"
 
 # (label, condition kind, default value, needs a species). The eleven conditions,
 # named the way a chemist would ask for them rather than by their kind strings.
@@ -161,11 +168,25 @@ class App:
             tree.pack(fill=tk.BOTH, expand=True)
             self.tables[phase] = tree
 
-        ttk.Label(parent, text="What the engine has to say", style="Head.TLabel").pack(
-            anchor=tk.W, pady=(6, 0))
-        self.reports = tk.Text(parent, height=7, wrap=tk.WORD, relief=tk.FLAT,
-                               background="#fbf8f2", font=("Segoe UI", 9))
-        self.reports.pack(fill=tk.BOTH, expand=False, pady=(2, 4))
+        self.reports_head = ttk.Label(parent, text=REPORTS_HEAD, style="Head.TLabel")
+        self.reports_head.pack(anchor=tk.W, pady=(6, 0))
+        # ⚠ THE ONLY SCROLLBAR IN THIS WINDOW, and it is here because this panel
+        # was given something it cannot fit. It used to hold at most seven short
+        # vessel reports; it now also holds everything ``build_network`` said,
+        # which is 397 lines for five reagents two generations deep. A panel that
+        # shows the first seven of four hundred notices and offers no way to
+        # reach the rest is the same failure as printing them to a console nobody
+        # reads -- one that lets the engine claim it reported something nobody
+        # could have seen.
+        box = ttk.Frame(parent)
+        box.pack(fill=tk.BOTH, expand=False, pady=(2, 4))
+        bar = ttk.Scrollbar(box, orient=tk.VERTICAL)
+        bar.pack(side=tk.RIGHT, fill=tk.Y)
+        self.reports = tk.Text(box, height=9, wrap=tk.WORD, relief=tk.FLAT,
+                               background="#fbf8f2", font=("Segoe UI", 9),
+                               yscrollcommand=bar.set)
+        self.reports.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        bar.configure(command=self.reports.yview)
 
     def _build_drive(self, parent) -> None:
         book = ttk.Notebook(parent)
@@ -505,10 +526,36 @@ class App:
             tree.delete(*tree.get_children())
             for species, mol in getattr(view, phase).items():
                 tree.insert("", tk.END, text=species, values=(f"{mol:.6g}",))
-        _set_text(self.reports, "\n\n".join(view.reports)
+        # ⚠ THE FLASK'S REPORTS AND THE NETWORK'S NOTICES IN ONE PANEL, IN THAT
+        # ORDER, AND LABELLED. The vessel's are about the state on screen right
+        # now; the network's are about how the reaction set that produced it was
+        # discovered, and were said once at build time. Both are the engine
+        # refusing to approximate silently and both belong where the player is
+        # already looking -- but running them together unlabelled would make a
+        # standing property of the network read as something that just happened.
+        blocks = list(view.reports)
+        if snap.notices:
+            plural = "" if len(snap.notices) == 1 else "s"
+            blocks.append(f"--- from building the reaction network "
+                          f"({len(snap.notices)} notice{plural}) ---")
+            blocks.extend(snap.notices)
+        _set_text(self.reports, "\n\n".join(blocks)
                   or "Nothing to report: no conservation residue, no capped "
                      "activity coefficient, no refused phase split, no latent "
-                     "integration fragility.")
+                     "integration fragility, and the network was built to a "
+                     "fixpoint with nothing dropped.")
+        # ⚠ THE UNEXPLORED FRONTIER GOES IN THE HEADING RATHER THAN IN THE TEXT,
+        # because it is a fact about the flask and not a note about it: one
+        # generation showed what these species ARE and never what they would
+        # become. Its notice is the last of possibly hundreds, so leaving it only
+        # in the panel would put the one line that changes what the player should
+        # do next below the fold. The control that LIFTS the bound is P4's; this
+        # is the state that control exists to offer.
+        self.reports_head.configure(
+            text=REPORTS_HEAD if not snap.unexpanded else
+            f"{REPORTS_HEAD}   [{len(snap.unexpanded)} species discovered and "
+            f"not reacted further -- this flask has more to give]"
+        )
 
     def close(self) -> None:
         self.session.close()
@@ -532,8 +579,21 @@ def _float(box, fallback: float) -> float:
 
 
 def _set_text(widget, text: str) -> None:
+    """Replace a Text widget's contents without throwing away the reader.
+
+    ⚠ THE EARLY RETURN AND THE RESTORED SCROLL POSITION ARE BOTH LOAD-BEARING,
+    and they became so the moment a panel here grew longer than its own height.
+    This runs on every poll -- eight times a second -- so a bare
+    delete-and-insert scrolls a reader back to the top before they can finish a
+    sentence. The engine's reports are only worth carrying to the view if they
+    can be read while the run they describe is still going.
+    """
+    if widget.get("1.0", tk.END).rstrip("\n") == text.rstrip("\n"):
+        return
+    top = widget.yview()[0]
     widget.delete("1.0", tk.END)
     widget.insert(tk.END, text)
+    widget.yview_moveto(top)
 
 
 def _recipe_lines(script) -> str:

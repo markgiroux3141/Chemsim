@@ -77,6 +77,46 @@ that is merely incomplete, because the omission would look like a chemical
 result.
 :::
 
+## The third bound, and the one that was silent
+
+There is a third bound and for a long time it was the exception to the rule
+above. `generations=n` stops expansion after *n* rounds instead of running to a
+fixpoint. `max_species` reported when it bit, `max_molar_mass` reported and named
+what it dropped, a mixed standard state reported --- and the generation limit
+broke out of the loop with a **non-empty frontier and said nothing.**
+
+It is the strongest of the three claims, not the weakest. The other two concern
+species that were never *registered*; this one concerns species that **are in the
+flask** and whose onward chemistry was never looked for. If A + B makes C and C
+would go on to D, one generation shows C and never D --- an approximation that
+changes the *contents* of a vessel rather than the completeness of a catalogue.
+
+It matters because step-by-step play runs `generations=1` on every single step,
+and that is not a compromise but the mechanic: *what can the things in this flask
+do, once.* Measured across the full template library, five ordinary bench
+reagents explored two generations deep hit a 400-species cap in twelve seconds,
+while twelve reagents explored one deep cost under half a second.
+
+So the limit now reports, in two forms:
+
+- a **notice**, naming the count and the species left unexpanded; and
+- `ReactionNetwork.unexpanded`, the same set as data, because a frontend asking
+  *does this flask have more to give* needs an answer it can act on rather than a
+  sentence it has to parse.
+
+The frontier is taken on **either** exit from the expansion loop, which was a
+correction to the first version of this: the two bounds compete, and at
+`generations=2` the species cap bit first, so reading the frontier only on the
+generation branch reported an empty one for a 400-species network that had been
+truncated mid-round. Against a species cap the set is a lower bound and the cap's
+notice says so --- the interrupted round left combinations untried as well.
+
+::: {.keypoint}
+A limit the player can see and lift is not an approximation; it is a choice. The
+same notices are carried on the network itself, because `print` is a channel a
+script reads and a windowed application does not have one.
+:::
+
 ## Rate-based refinement, and why it lives at Layer 4.5
 
 Structural discovery answers *what can form?* The question that actually matters

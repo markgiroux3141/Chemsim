@@ -2,7 +2,8 @@ We're building chemsim, an emergent chemistry simulator (game inspired by Nile
 Red) in d:\Claude Code Projects\Chemistry Simulator.
 
 **The plan is `MILESTONES.md`. Read it first — it is the authority on what to
-build and in what order.** **M0–M6, M8, M12, S1–S13, G1–G6 and C1–C7 are DONE.**
+build and in what order.** **M0–M6, M8, M12, S1–S13, G1–G6, C1–C7, P0 and P1
+are DONE. P2 IS NEXT.**
 
 # ⚠⚠⚠ THE ARC CHANGED ON 2026-08-31. THE LIVE WORK IS THE **P-SERIES**.
 
@@ -36,83 +37,80 @@ slog is a property of the target list, not the architecture.*
 
 ---
 
-# ⚠⚠⚠ WHAT P1 SHOULD DO: GIVE THE NOTICES SOMEWHERE TO GO
+# ⚠⚠⚠ WHAT P2 SHOULD DO: `Stock` AND THE SHELF -- THE TWO VERBS THAT CLOSE THE LOOP
 
-**Half a session, and everything after it is easier to debug.** Two parts.
+**`MILESTONES.md` §P2 is the brief.** Two verbs and nothing else:
 
-## 1. Route `build_network`'s notices into the `Snapshot`
+    BOTTLE   vessel -> shelf     name the current VesselState and store it
+    CHARGE   shelf  -> vessel    pour a stored stock into a flask
 
-`build_network` **prints to stdout**. A mix-anything game generates hundreds of
-NOTICE lines per step — measured, **397 for five reagents at two generations** —
-and stdout is not a place a player looks. `chemsim.ui` already publishes an
-immutable `Snapshot` from the worker thread and already has a **reports panel**
-showing `conservation_report`, `lle_report`, `electrolyte_report` and the rest.
-The notices belong there.
+⚠ **A STOCK IS A `VesselState`, NEVER `(name, purity)`** — `GAME_DESIGN.md` §1,
+and §8.6 says a shelf entry that is not a real `VesselState` deletes every gate
+in the design. `vessel.py:150` is already plain data (four per-phase mole dicts,
+a `T` and a `t`) and `SAVE_VERSION` already writes it, so this is mostly
+plumbing. Purity is DERIVED for display; impurities are carried individually and
+forever, which is the whole loop: a contaminant introduced in step 1 can ruin
+step 6 and the player can trace it back.
 
-⚠ **DO NOT SUPPRESS THEM.** The engine's rule is that nothing is silently
-approximated, and the reports panel exists because that rule is worth nothing if
-nobody is shown what it said. `app.py`'s own docstring records the refluxing rig
-destroying 0.34 mol of its air *on a channel that was reported all along and that
-nothing read.*
+⚠ A stock carries its own script, so "how did I make this" is answerable and
+re-runnable — and because the script stores CONDITIONS rather than instants,
+re-running at 10x scale waits the right length of time. That fork was taken in
+the wait-until session for exactly this.
 
-## 2. ⚠⚠⚠ CLOSE THE ONE COVERAGE LIMIT THAT DOES NOT REPORT ITSELF
+⚠ **`charge` IS ALREADY AN EVENT KIND** (`engine/events.py:59`, payload
+`{amounts, phase}`) and `Session.do("charge", ...)` already reaches it. CHARGE
+from a shelf is that event with its amounts read off a stored `VesselState`
+rather than typed. **BOTTLE is the new direction and has no event at all.**
 
-`network/builder.py`, in `build_network`:
+## ⚠⚠ WHAT P1 FOUND AND HANDED TO P2: `generations` IS NOT A `Scenario` FIELD
 
-```python
-    while frontier and not state.capped:
-        if generations is not None and rounds >= generations:
-            break                      # <- non-empty frontier, and SILENT
-```
+`World.__post_init__` calls `build_network` with no `generations` argument, so it
+always builds to a fixpoint and **nothing can request one-generation play through
+the UI at all.** `Snapshot.unexpanded` is therefore correct and currently always
+empty in a session — P1's second half is live in the engine and unreachable from
+the game. Closing it is a `Scenario` field, a `to_dict`/`from_dict` pair and a
+**`SAVE_VERSION` bump from 6 to 7** — and P2 is opening that file anyway for the
+shelf. **Do it in the same pass, or P4 cannot run its own mechanic.**
 
-`max_species` reports (`state.report`), oversize molecules report, mixed standard
-states report. **The generation limit breaks out with a non-empty frontier and
-says nothing.** The P-series runs `generations=1` on every single step, so this
-is the difference between a declared bound and a silent lie about the contents of
-a flask.
+## What P2 owes
 
-⚠⚠ **THIS IS WHAT MAKES ONE-GENERATION PLAY ADMISSIBLE AT ALL.** `GAME_DESIGN.md`
-§3 says *no approximation that touches MATTER* — and a generation limit does
-touch matter: if A + B makes C and C would react on to D, one generation shows C
-and never D. It is allowed only under the other standing rule, *coverage limits
-are never silent*. **Report `len(frontier)` and the species in it.** §8.2.
+The full suite. ⚠ `tolerance_audit.py` is owed only if P2 touches an RHS, a data
+table or network CONSTRUCTION — serialisation and a shelf are none of those, so
+say so explicitly rather than skipping it silently.
 
-⚠ And the design consequence, which is P4's and worth knowing now: **the player
-controls the bound.** A "react further" control that raises the generation limit
-turns a computational cap into a game verb. *A limit the player can see and lift
-is not an approximation; it is a choice.*
+## Then P3, P4 — in `MILESTONES.md`, not repeated here
 
-## What P1 owes
-
-The full suite (~29 min) — it is an engine edit. ⚠ **`tolerance_audit.py` IS
-owed**: `build_network` is network construction, which is C6's widened rule
-exactly (*"a species that exists is a state-vector entry"*). It is **~10 min**,
-not the 2 h 35 m that stood in this file for one session — C7 timed it.
-
-## Then P2, P3, P4 — in `MILESTONES.md`, not repeated here
-
-P2 is `Stock` + the shelf (two verbs: BOTTLE and CHARGE). P3 is
-`data/catalog/shelf.psv` with three tiers. P4 is the picker and playing it.
+P3 is `data/catalog/shelf.psv` with three tiers. P4 is the picker, the step UI,
+the "react further" control — **P1 built the STATE that control offers and not
+the verb** — and then actually playing it.
 
 ---
 
 # ⚠⚠⚠ START HERE: THE STATE OF THE BOX
 
-    1191 passed / 0 failed in 28:00        <- run ALONE, nothing else on the box
+    1202 passed / 0 failed in 30:52        <- run ALONE, nothing else on the box
 
-⚠⚠⚠ **AND C7 RAN THE SUITE TWICE ON IDENTICAL SOURCE, WHICH SETTLES A
-METHODOLOGICAL CLAIM C6 MADE.**
+⚠⚠⚠ **THE PER-TEST TOTAL IS NOT A STABLE STATISTIC, AND FOUR RUNS NOW SAY SO.**
 
     run          tests    total / s    SECONDS PER TEST
     C6            1181       1741.4              1.4745
     C7 run 1      1182       1798.2              1.5214
     C7 run 2      1191       1681.0              1.4114
+    P1            1202       1852.4              1.5410
 
-**The same source, the same session, the same box, and the per-test total moves
-6.6%.** C6 offered that statistic as the stable one — *"quote the per-test total,
-never a row"* — on the strength of landing within **0.03%** of C5. ⚠ **That
-agreement was a coincidence.** *Two runs can say a statistic is noisy; only two
-runs of the SAME code can say how noisy.*
+C7 ran the suite **twice on identical source** and the per-test total moved
+**6.6%**; across all four runs the spread is now **9.2%**. C6 offered that
+statistic as the stable one — *"quote the per-test total, never a row"* — on the
+strength of landing within **0.03%** of C5. ⚠ **That agreement was a
+coincidence.** *Two runs can say a statistic is noisy; only two runs of the SAME
+code can say how noisy — and once it is known to be noisy, a 4% move between
+sessions is not a finding.*
+
+⚠ **P1 KILLED ITS FIRST SUITE RUN NINE MINUTES IN** because a comment and a
+parameter name had been edited after the run started. The edits were
+non-semantic and the call site was positional, so the run would have passed.
+*A green suite on bytes that no longer exist is not evidence, and the cheap
+version of that mistake is the one that teaches nothing.*
 
 ```bash
 python -m pytest -q --durations=25
@@ -125,9 +123,16 @@ quoted it forward into a cost estimate given to the user, then measured
 summing to 622 s. **The repo's original "ten minutes" was right.** *A wall-clock
 interval is not a duration unless something was watching the process.*
 
-⚠ **The audit is CLEAN as of C7**: `named_routes` raises (the diagnosed entry),
-`workshop` 2 lines / 1.98e-04, `activity` 1.28e-03, `mercury_retort` 0 lines and
-1.00x, `multistep_prep` 8 lines / worst 1.07e-03. Nothing moved.
+⚠ **The audit is CLEAN as of P1, and byte-identical to C7's record**:
+`named_routes` raises (the diagnosed entry), `workshop` 2 lines / 1.98e-04,
+`activity` 1.28e-03, `mercury_retort` 0 lines and 1.00x, `multistep_prep`
+8 lines / worst 1.07e-03. Nothing moved. ⚠ It **exits 1** and always has —
+`serious` is the two quotable-digit movers, which are the standing state, so a
+non-zero exit here is not a regression.
+
+⚠ **AND P1 CONFIRMED THE ~10 MINUTE FIGURE INDEPENDENTLY: 10 m 36 s**
+(01:25:54 → 01:36:30), against C7's 10 m 31 s. The 2 h 35 m that stood in this
+file for one session is dead twice over.
 
 ```bash
 python validation/tolerance_audit.py            # ~10 min. OWED by any change to
@@ -137,6 +142,34 @@ python validation/tolerance_audit.py            # ~10 min. OWED by any change to
 
 **Scoreboard, unchanged since C5:** 21 of 173 playable, tiers 10/10/1, 59/240
 classes, 46 template-ready, 85 species-ready, 38 BOTH, ceiling 45.
+
+---
+
+# ⚠ P1, IN ONE PARAGRAPH (the full record is MILESTONES §P1 / HANDOFF §113)
+
+**The notices got somewhere to go, and the audit written to describe the job
+caught the job being wrong.** `build_network` printed to stdout and nowhere else
+— 397 notices for five bench reagents two generations deep — so
+`ReactionNetwork.notices` now carries every string it emitted, `Snapshot.notices`
+publishes them off the worker thread, and the reports panel renders them beneath
+the vessel's own reports under a labelled rule. ⚠ The `print` **stays** and a
+test asserts the two channels are the same strings; `_ExpansionState.report`
+became `reports` and RETURNS its strings, because a method that prints can only
+serve one destination and that was the bug. The panel needed the window's only
+scrollbar and `_set_text` had to stop resetting the scroll position eight times a
+second. And the generation limit — the one coverage limit that broke out with a
+non-empty frontier and said nothing — now reports, with
+`ReactionNetwork.unexpanded` as the structured half and the count promoted into
+the panel's HEADING, because *this flask has more to give* is a fact about the
+flask rather than a note about it. ⚠⚠⚠ **The finding is that the bound that BIT
+is not always the bound that was DECLARED**: `playable_levers.py` panel 5,
+extended here to print `notices` and `frontier` columns (which also re-measured
+P0's 397 to the unit), reported **frontier 0 on every `gens=2` row** because
+`max_species` bit first and the first version read the frontier only on the
+generation branch — a "react further" control would have declined to offer itself
+on exactly the flask with the most left to give. The frontier is now taken on
+either exit, and against a species cap it is a **LOWER bound**, because the
+interrupted round left combinations of the previous frontier untried as well.
 
 ---
 

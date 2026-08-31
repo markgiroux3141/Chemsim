@@ -15,7 +15,7 @@ import time
 
 import pytest
 
-from chemsim.engine.scenario import Scenario, VesselSpec
+from chemsim.engine.scenario import Scenario, TemplateSpec, VesselSpec
 from chemsim.ui.examples import catalogue, load, titles
 from chemsim.ui.session import Load, Reset, Session
 from chemsim.vessel import conditions as cond
@@ -197,6 +197,64 @@ def test_a_condition_already_true_returns_at_once(session):
     snap = session.snapshot()
     assert snap.t == pytest.approx(0.0)
     assert "already" in snap.outcome
+
+
+# -- what the engine said while building --------------------------------------
+
+
+def noisy() -> Scenario:
+    """One flask and one template that cannot possibly have the barrier it
+    declares, so ``build_network`` has something to say about it.
+
+    The ester hydrolysis below is endothermic by more than its declared Ea, which
+    detailed balance refuses -- a barrier under the reaction enthalpy makes the
+    REVERSE barrier negative. The builder raises it and says so. That notice is a
+    real one, it fires deterministically, and before P1 the only place it went
+    was stdout.
+    """
+    return Scenario(
+        feed_species=["CCOC(C)=O", WATER],
+        templates=[TemplateSpec(
+            name="impossible_hydrolysis",
+            smarts="[CX3:1](=[O:2])[OX2:3][CX4:4].[OX2H2:5]"
+                   ">>[CX3:1](=[O:2])[OX2H1:5].[O:3][C:4]",
+            A=1.0e6, Ea=1_000.0, reversible=True,
+        )],
+        vessels={"flask": VesselSpec(volume=1.0, T=298.15, T_env=298.15)},
+        max_species=20,
+    )
+
+
+def test_the_builder_s_notices_reach_the_snapshot(capsys):
+    """⚠ STDOUT IS NOT A PLACE A PLAYER LOOKS, AND A WINDOWED APPLICATION DOES
+    NOT HAVE ONE.
+
+    The engine's rule is that nothing is silently approximated, and the reports
+    panel exists because that rule is worth nothing if nobody is shown what it
+    said -- ``app.py``'s own docstring records the refluxing rig destroying
+    0.34 mol of its air on a channel that was reported all along and that nothing
+    read. ``build_network`` was on exactly such a channel: a mix-anything game
+    generates hundreds of these notices per step, 397 for five reagents two
+    generations deep, into a console nobody is watching.
+
+    ⚠ CARRIED, NOT MOVED. The print stays -- a harness and a validation script
+    both read it -- so this asserts the two channels say the SAME thing.
+    """
+    with Session(noisy()) as s:
+        printed = capsys.readouterr().out
+        snap = s.snapshot()
+        assert snap.notices, "the clamp notice fired and nothing carried it"
+        assert any("raised to" in n for n in snap.notices)
+        assert all(n in printed for n in snap.notices)
+        assert snap.notices == tuple(s.world.network.notices)
+
+
+def test_a_quiet_network_carries_no_notices(session):
+    """Empty is a positive statement here. ``tiny()`` has no templates at all, so
+    nothing was clamped, dropped or left unexpanded, and the panel's fallback
+    text -- "nothing to report" -- has to be true when it is shown."""
+    assert session.snapshot().notices == ()
+    assert session.snapshot().unexpanded == ()
 
 
 # -- refusing ----------------------------------------------------------------

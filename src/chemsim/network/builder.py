@@ -90,6 +90,16 @@ from chemsim.reactions.thermo import COLLISION_LIMIT, FARADAY, T_REF
 # rate law*, and this one is *the label would change the thermodynamics*.
 PHASE_INDEX = {"liquid": 0, "gas": 1}
 
+# How many species a notice names before it summarises the rest. A bound can
+# leave dozens on the frontier -- 59 for twelve bench reagents at
+# ``generations=1``, and 355 where ``max_species`` bit, both measured in
+# ``validation/playable_levers.py`` panel 5 -- and a notice that pastes three
+# hundred SMILES into a report panel has hidden itself as effectively as printing
+# nothing would. The COUNT is always exact and the elision always says how many
+# it elided; the full list is ``ReactionNetwork.unexpanded``, which is where
+# anything that means to ACT on it should look anyway.
+_NOTICE_SPECIES = 12
+
 
 @dataclass
 class KineticArrays:
@@ -167,6 +177,8 @@ class ReactionNetwork:
         reactions: list[ConcreteReaction],
         thermo: ThermochemistryProvider | None = None,
         volatility: VolatilityProvider | None = None,
+        notices: tuple[str, ...] = (),
+        unexpanded: tuple[str, ...] = (),
     ):
         self.molecules = molecules
         self.species = list(molecules.keys())  # insertion order -> stable indices
@@ -175,6 +187,29 @@ class ReactionNetwork:
         # Retained for the same reason, and so a Vessel can reuse the fitted
         # volatility models rather than refitting Lee-Kesler for every species.
         self.volatility = volatility
+        # ⚠ EVERYTHING ``build_network`` SAID WHILE DISCOVERING THIS NETWORK,
+        # VERBATIM AND IN ORDER -- the same strings it printed, carried rather
+        # than only emitted. Printing is a channel for a script; a player is not
+        # reading stdout, and this project's standing rule is not "print the
+        # approximations" but "never approximate silently". A frontend that
+        # cannot reach stdout can reach here, which is what Layer 7's
+        # ``Snapshot.notices`` does. The list is empty for the ordinary case of a
+        # network built to a fixpoint with nothing dropped.
+        self.notices = tuple(notices)
+        # Species that were DISCOVERED and never expanded, because a bound --
+        # ``generations`` or ``max_species`` -- stopped the loop with them still
+        # on the frontier. A structured companion to the notices that name them:
+        # it is the answer to "does this flask have more to give", which a
+        # "react further" control has to ask before it can offer itself. Empty
+        # when expansion ran to a fixpoint, and empty is then a positive
+        # statement rather than an absence of information.
+        #
+        # ⚠ IT IS A LOWER BOUND WHEN ``max_species`` BIT, and the cap's notice
+        # says so: the round the cap interrupted was left unfinished, so
+        # combinations of the PREVIOUS frontier went untried as well and those
+        # species are not in this list. Against a generation limit -- the case
+        # the game runs on every step -- it is exact.
+        self.unexpanded = tuple(unexpanded)
 
     def to_arrays(
         self, thermo: ThermochemistryProvider | None = None
@@ -277,15 +312,21 @@ def build_network(
 ) -> ReactionNetwork:
     """Discover the reaction network reachable from the initial species.
 
-    Iterates template application to a fixpoint. If ``max_species`` is hit, the
-    expansion stops and a notice is printed -- coverage limits are never silent.
+    Iterates template application to a fixpoint. If ``max_species`` is hit, or
+    ``max_molar_mass``, or ``generations``, the expansion stops and a notice is
+    issued -- coverage limits are never silent. Every notice is printed AND
+    carried on the returned network as ``notices``, because stdout is not a place
+    a player looks.
 
     Args:
         generations: stop after this many rounds of template application instead
             of running to a fixpoint. One generation is the "edge" of the current
             species set, which is what rate-based refinement needs to look at
             without enumerating an entire oligomer series first -- see
-            ``chemsim.discovery``.
+            ``chemsim.discovery``. ⚠ Stopping with species still on the frontier
+            is REPORTED, both as a notice and as ``ReactionNetwork.unexpanded``:
+            unlike the other bounds this one changes what is in the flask rather
+            than what was registered, so it is the one that most needs saying.
         max_molar_mass: refuse to register species heavier than this (g/mol). The
             honest bound for an oligomerising system, which would otherwise grow
             without limit. Everything dropped is reported.
@@ -374,8 +415,10 @@ def build_network(
 
     frontier = list(molecules.values())   # first round considers everything
     rounds = 0
+    stopped_early = False
     while frontier and not state.capped:
         if generations is not None and rounds >= generations:
+            stopped_early = True
             break
         rounds += 1
         frontier = _expand_once(
@@ -383,11 +426,54 @@ def build_network(
             notices, state, frontier, cell_potential,
         )
 
-    for msg in notices.values():
-        print(msg)
-    state.report(max_species)
+    # ⚠ THE GENERATION LIMIT IS THE ONE COVERAGE LIMIT THAT USED TO SAY NOTHING.
+    # ``max_species`` reports, ``max_molar_mass`` reports, a mixed standard state
+    # reports -- and this loop broke out with a NON-EMPTY FRONTIER and no comment
+    # at all. It is the same class of claim as the other two and a stronger one:
+    # the species left on the frontier were discovered, are in the flask, and
+    # whatever they would have gone on to do was never looked for. If A + B makes
+    # C and C would react on to D, one generation shows C and never D, and that
+    # is an approximation TOUCHING MATTER -- the one thing GAME_DESIGN.md 3 says
+    # may never be approximated. It is admissible only under the other standing
+    # rule, that a coverage limit is never silent, so here is the limit saying so.
+    #
+    # ⚠ ONLY WHEN THE LIMIT ACTUALLY BIT. A network that reaches a fixpoint on
+    # the last permitted round leaves an EMPTY frontier and exits through the
+    # ``while`` instead, and there is genuinely nothing unexplored to declare --
+    # ``generations=3`` on a system that closes in two is not an approximation.
+    # And a run that hit ``max_species`` is reported by ``state`` instead, on the
+    # cap that actually stopped it rather than on the bound it never reached.
+    #
+    # ⚠ AND THE FRONTIER IS TAKEN FOR *EITHER* EXIT, NOT ONLY FOR THIS ONE.
+    # Whatever stopped the loop, the species sitting on ``frontier`` were
+    # registered and never expanded, and a caller asking "has this flask more to
+    # give" needs the same answer either way. Reading it only on the generation
+    # branch was measured wrong in ``validation/playable_levers.py`` panel 5:
+    # five bench reagents at ``generations=2`` hit ``max_species`` first, so the
+    # generation bound never bit, and the frontier came back EMPTY on a network
+    # that had 400 species and was truncated mid-round. The NOTICE distinguishes
+    # which bound stopped it; the frontier does not have to.
+    unexpanded = tuple(m.smiles for m in frontier)
+    if stopped_early and unexpanded:
+        shown = ", ".join(unexpanded[:_NOTICE_SPECIES])
+        if len(unexpanded) > _NOTICE_SPECIES:
+            shown += f", ... (+{len(unexpanded) - _NOTICE_SPECIES} more)"
+        notices["generation-limit"] = (
+            f"[build_network] NOTICE: stopped at generations={generations} with "
+            f"{len(unexpanded)} species still unexpanded, so any reaction they "
+            "would go on to undergo was not discovered. What is in the flask is "
+            "real; what it would become next was not looked for. Raise "
+            "generations to go further. Unexpanded: " + shown
+        )
 
-    return ReactionNetwork(molecules, list(reactions.values()), thermo, volatility)
+    messages = list(notices.values()) + state.reports(max_species, len(unexpanded))
+    for msg in messages:
+        print(msg)
+
+    return ReactionNetwork(
+        molecules, list(reactions.values()), thermo, volatility,
+        notices=tuple(messages), unexpanded=unexpanded,
+    )
 
 
 @dataclass
@@ -400,10 +486,18 @@ class _ExpansionState:
     oversize: dict[str, float] = field(default_factory=dict)
     tried: set = field(default_factory=set)
 
-    def report(self, max_species: int) -> None:
+    def reports(self, max_species: int, n_unexpanded: int = 0) -> list[str]:
+        """The cap notices, as strings rather than as side effects.
+
+        ⚠ RETURNED AND NOT PRINTED, because a notice now has two destinations:
+        stdout, which a script reads, and ``ReactionNetwork.notices``, which a
+        frontend reads. A method that prints can only serve the first, and the
+        version of this that printed is why P1 existed.
+        """
+        out: list[str] = []
         if self.oversize:
             heaviest = sorted(self.oversize.items(), key=lambda kv: -kv[1])[:3]
-            print(
+            out.append(
                 f"[build_network] NOTICE: {len(self.oversize)} species exceeded "
                 f"max_molar_mass={self.max_molar_mass:.0f} g/mol and were not "
                 "registered. A growing series like this usually means the system "
@@ -412,10 +506,14 @@ class _ExpansionState:
                 + ", ".join(f"{s} ({m:.0f})" for s, m in heaviest)
             )
         if self.capped:
-            print(
+            out.append(
                 f"[build_network] NOTICE: hit max_species={max_species}; network "
-                f"truncated. Coverage is incomplete -- raise the cap to go further."
+                f"truncated. Coverage is incomplete -- raise the cap to go "
+                f"further. The round it stopped in was left unfinished, so what "
+                f"was not looked at is MORE than the {n_unexpanded} registered "
+                f"species that were never expanded."
             )
+        return out
 
 
 def _expand_once(

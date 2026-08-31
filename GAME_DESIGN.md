@@ -606,13 +606,25 @@ contents of the flask, which is the one thing section 3 says may never be
 approximated. It is admissible only under this project's other standing rule --
 *coverage limits are never silent* -- so:
 
-* **the unexplored frontier must be reported.** `build_network` breaks out of its
-  expansion loop with a non-empty frontier and says nothing, while `max_species`,
-  oversize molecules and mixed standard states all report. **That is a real hole
-  and it is P1**, because the game runs `generations=1` on every single step;
+* **the unexplored frontier must be reported.** `build_network` used to break out
+  of its expansion loop with a non-empty frontier and say nothing, while
+  `max_species`, oversize molecules and mixed standard states all reported.
+  ⚠ **CLOSED IN P1**: the limit now issues a notice naming the count and the
+  species, and `ReactionNetwork.unexpanded` carries the same set as data so a
+  frontend can act on it rather than parse a sentence. ⚠ And the frontier is
+  taken on EITHER exit from the loop, which was P1's own correction to itself:
+  the bounds compete, and at `generations=2` the species cap bites first, so
+  reading the frontier only on the generation branch reported an empty one for a
+  400-species network truncated mid-round. Panel 5 caught it. Against a species
+  cap the set is a LOWER bound and that notice says so;
 * **the player controls the bound.** A "react further" control that raises the
   generation limit turns a computational cap into a game verb. A flask that has
-  more to give should say so and let the player ask for it.
+  more to give should say so and let the player ask for it. ⚠ P1 built the
+  SAYING -- the count sits in the reports panel's heading, where it is legible
+  without scrolling past possibly hundreds of notices. **The ASKING is P4**, and
+  it needs `generations` to become a `Scenario` field, which it is not yet:
+  `World` builds its network to a fixpoint and nothing can currently request
+  one-generation play through the UI at all.
 
 *A limit the player can see and lift is not an approximation; it is a choice.*
 

@@ -441,3 +441,119 @@ def test_generations_limits_expansion_depth(thermo):
     one = build_network(feed, [fischer], thermo=thermo, generations=1, max_species=500)
     two = build_network(feed, [fischer], thermo=thermo, generations=2, max_species=500)
     assert len(one.species) < len(two.species)
+
+
+def test_the_generation_limit_reports_the_frontier_it_left(thermo, capsys):
+    """⚠ THE ONE COVERAGE LIMIT THAT USED TO SAY NOTHING.
+
+    ``max_species`` reported, ``max_molar_mass`` reported, a mixed standard state
+    reported -- and the generation limit broke out of the expansion loop with a
+    non-empty frontier and no comment. It is the strongest of the three claims,
+    not the weakest: the other two are about species that were never REGISTERED,
+    while this one is about species that are in the flask and whose onward
+    chemistry was never looked for. A game that runs ``generations=1`` on every
+    step would otherwise lie about the contents of every flask it ever showed.
+    """
+    fischer = ReactionTemplate(
+        name="fischer",
+        smarts="[CX3:1](=[O:2])[OX2H1:3].[OX2H1:4][CX4:5]"
+               ">>[CX3:1](=[O:2])[O:4][CX4:5].[OH2:3]",
+        A=1.0e6, Ea=50_000, reversible=True,
+    )
+    feed = ["OC(=O)CCC(=O)O", "OCCO", WATER]
+    net = build_network(feed, [fischer], thermo=thermo, generations=1,
+                        max_species=500)
+    out = capsys.readouterr().out
+
+    assert net.unexpanded, "a polyesterification is not finished after one round"
+    assert all(s in net.species for s in net.unexpanded), (
+        "the frontier is what was DISCOVERED and not expanded, so every member "
+        "of it is a species of this network"
+    )
+    assert "generations=1" in out
+    assert f"{len(net.unexpanded)} species still unexpanded" in out
+    # And the notice is carried, not merely emitted -- a windowed frontend has
+    # no stdout to read.
+    assert any("still unexpanded" in n for n in net.notices)
+    assert all(n in out for n in net.notices), (
+        "the carried notices must be the SAME strings that were printed"
+    )
+
+
+def test_a_generation_bound_that_never_bit_says_nothing(thermo, capsys):
+    """⚠ THE COMPANION MEASUREMENT, AND IT IS WHAT MAKES THE NOTICE MEAN ANYTHING.
+
+    A bound that is declared but not reached is not an approximation, and a
+    notice that fires whenever ``generations`` was passed would be reporting the
+    ARGUMENT rather than the outcome. Esterification of a monoacid with a
+    monoalcohol closes in two rounds; asked for six, the loop exits through its
+    own ``while`` with an empty frontier and there is genuinely nothing
+    unexplored to declare.
+    """
+    fischer = ReactionTemplate(
+        name="fischer",
+        smarts="[CX3:1](=[O:2])[OX2H1:3].[OX2H1:4][CX4:5]"
+               ">>[CX3:1](=[O:2])[O:4][CX4:5].[OH2:3]",
+        A=1.0e6, Ea=50_000, reversible=True,
+    )
+    bounded = build_network(["CC(=O)O", "CCO"], [fischer], thermo=thermo,
+                            generations=6)
+    free = build_network(["CC(=O)O", "CCO"], [fischer], thermo=thermo)
+    out = capsys.readouterr().out
+
+    assert bounded.species == free.species, "the bound was never reached"
+    assert bounded.unexpanded == ()
+    assert "unexpanded" not in out
+
+
+def test_the_species_cap_leaves_a_frontier_too(thermo, capsys):
+    """⚠ THE BOUND THAT BIT IS NOT ALWAYS THE BOUND THAT WAS DECLARED, and
+    reading the frontier only on the generation branch got this wrong.
+
+    Measured in ``validation/playable_levers.py`` panel 5: five bench reagents at
+    ``generations=2`` hit ``max_species`` first, so the generation limit never
+    fired -- and the first version of this feature therefore reported an EMPTY
+    frontier for a network of 400 species that had been truncated mid-round. A
+    "react further" control reading that would have declined to offer itself on
+    precisely the flask with the most left to give.
+
+    ⚠ And the cap's own notice has to say the frontier is a LOWER bound there,
+    because the interrupted round left combinations of the previous frontier
+    untried as well and those species are not in the list.
+    """
+    fischer = ReactionTemplate(
+        name="fischer",
+        smarts="[CX3:1](=[O:2])[OX2H1:3].[OX2H1:4][CX4:5]"
+               ">>[CX3:1](=[O:2])[O:4][CX4:5].[OH2:3]",
+        A=1.0e6, Ea=50_000, reversible=True,
+    )
+    feed = ["OC(=O)CCC(=O)O", "OCCO", WATER]
+    net = build_network(feed, [fischer], thermo=thermo, max_species=12)
+    out = capsys.readouterr().out
+
+    assert len(net.species) == 12, "the cap is what stopped this"
+    assert "hit max_species=12" in out
+    assert "unexpanded" not in out.split("hit max_species")[0], (
+        "the generation limit did not bite and must not claim to have"
+    )
+    assert net.unexpanded, "a truncated network has more to give and must say so"
+    assert all(s in net.species for s in net.unexpanded)
+    assert f"MORE than the {len(net.unexpanded)} registered" in out
+
+
+def test_generations_zero_reports_the_whole_charge(thermo, capsys):
+    """The degenerate bound is the clearest statement of what the notice claims:
+    nothing was expanded, so every species charged is on the frontier."""
+    fischer = ReactionTemplate(
+        name="fischer",
+        smarts="[CX3:1](=[O:2])[OX2H1:3].[OX2H1:4][CX4:5]"
+               ">>[CX3:1](=[O:2])[O:4][CX4:5].[OH2:3]",
+        A=1.0e6, Ea=50_000, reversible=True,
+    )
+    net = build_network(["CC(=O)O", "CCO"], [fischer], thermo=thermo,
+                        generations=0)
+    out = capsys.readouterr().out
+
+    assert not net.reactions
+    assert set(net.unexpanded) == set(net.species)
+    assert "2 species still unexpanded" in out

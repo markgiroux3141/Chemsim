@@ -7948,3 +7948,94 @@ RESOLVED since the last handoff:
 
     ⚠ Nothing on the scoreboard moved and nothing in `src/` changed: 21 of 173
     playable, 59/240 classes, 38 BOTH. Suite **1196** (1191 + 5 new pins).
+
+113. ✔ **P1 — THE NOTICES HAVE SOMEWHERE TO GO, AND THE LAST SILENT COVERAGE
+    LIMIT IS CLOSED.** Two parts, both built; the interesting part is that the
+    audit written to describe the second one caught it being wrong.
+
+    **1. `build_network`'s notices are CARRIED, not moved.** They went to stdout
+    and nowhere else — a channel a validation script reads and a windowed
+    application does not have — at a rate of **397 for five bench reagents two
+    generations deep**. `ReactionNetwork.notices` now holds every string it
+    emitted, `Snapshot.notices` publishes them off the worker thread, and the
+    reports panel renders them beneath the vessel's own reports under a labelled
+    rule. ⚠ **The `print` stays** and a test asserts the two channels are the
+    same strings: `app.py`'s docstring already records the refluxing rig
+    destroying 0.34 mol of its air *on a channel that was reported all along and
+    that nothing read*, and the fix for that is not to move a channel.
+    `_ExpansionState.report` became `reports` and RETURNS its strings — **a
+    method that prints can only ever serve one destination, which was the bug.**
+
+    ⚠ **THE PANEL NEEDED A SCROLLBAR AND `_set_text` NEEDED TO STOP SCROLLING
+    THE READER TO THE TOP.** It was seven lines tall and now holds four hundred
+    notices; it is the only scrollbar in the window. And `_set_text` runs on
+    every 120 ms poll, so a bare delete-and-insert reset the view eight times a
+    second. *Showing the first seven of four hundred is the same failure as
+    printing them where nobody looks.*
+
+    **2. The generation limit reports itself.** It broke out of the expansion
+    loop with a **non-empty frontier and said nothing**, while `max_species`,
+    oversize molecules and mixed standard states all reported. It is the
+    STRONGEST of those claims: the others are about species never REGISTERED,
+    this one about species that are **in the flask** and whose onward chemistry
+    was never looked for — an approximation touching MATTER, which
+    `GAME_DESIGN.md` §3 forbids and §8.2 readmits only under *coverage limits are
+    never silent*. Now a notice naming the count and the species, plus
+    `ReactionNetwork.unexpanded` as data, with the count promoted into the
+    panel's HEADING because it is a fact about the flask and not a note about it.
+
+    ⚠⚠⚠ **AND `playable_levers.py` PANEL 5 CAUGHT P1'S OWN FIRST VERSION BEING
+    WRONG.** Extended here to print `notices` and `frontier` columns — which also
+    re-measured P0's 397 to the unit — it reported **frontier 0 on every `gens=2`
+    row**, for 400-species networks that had plainly been truncated:
+
+        gens  charged  species  reactions  seconds  notices  frontier
+           1        5       45         36     0.62       31        34
+           1       12       77         67     0.43       44        59
+           2        5      400        766    12.40      397       355
+           2       12      400        743     3.99      392       323
+
+    **THE BOUND THAT BIT IS NOT ALWAYS THE BOUND THAT WAS DECLARED.** At
+    `generations=2` the species cap bites first, so the generation branch never
+    runs — and the first version read the frontier only on that branch. **A
+    "react further" control reading that empty frontier would have declined to
+    offer itself on precisely the flask with the most left to give.** The
+    frontier is now taken on either exit and the notice says which bound stopped
+    it. ⚠ Against a species cap it is a **LOWER bound** and the cap's notice says
+    so — the interrupted round left combinations of the previous frontier untried
+    as well. Against a generation limit it is exact. *An audit that only
+    describes a feature is worth less than one that measures it; this one was
+    written to describe and measured instead.*
+
+    ⚠ **A BOUND THAT NEVER BIT MUST STAY SILENT, and that is what makes the
+    notice mean anything.** `generations=6` on a system that closes in two exits
+    through the `while` with an empty frontier and says nothing. Keying the
+    notice on the ARGUMENT rather than the OUTCOME would have fired it on every
+    `refine` round in the project. Pinned as its own test beside the positive one.
+
+    ⚠⚠ **WHAT P1 FOUND AND LEFT FOR P4: `generations` IS NOT A `Scenario`
+    FIELD.** `World.__post_init__` builds to a fixpoint and nothing can request
+    one-generation play through the UI at all, so `Snapshot.unexpanded` is
+    correct and currently always empty in a session. It is a `Scenario` field, a
+    `to_dict`/`from_dict` pair and a **`SAVE_VERSION` bump** — which P2 is
+    touching anyway for BOTTLE and CHARGE, and which is why it was not bolted on
+    here.
+
+    Suite **1202 passed / 0 failed in 30:52** (1196 + 6 new pins), run alone.
+    `tolerance_audit.py` **10 m 36 s** and byte-identical to C7's record --
+    `named_routes` raises, `workshop` 2 lines / 1.98e-04, `activity` 1.28e-03,
+    `mercury_retort` 0 lines, `multistep_prep` 8 lines / 1.07e-03. Nothing moved.
+    ⚠ It exits 1 and always has: `serious` is the two quotable-digit movers,
+    which are the standing state. And the audit's ~10 minutes is now confirmed
+    twice independently, against the 2 h 35 m that stood in `NEXT_PROMPT.md` for
+    a session.
+
+    ⚠ **THE FIRST SUITE RUN WAS KILLED NINE MINUTES IN** because a comment and a
+    parameter name had been edited after it started. Non-semantic, positional
+    call site, would have passed. *A green suite on bytes that no longer exist is
+    not evidence.* ⚠ And the fourth data point sharpens C7's methodological
+    finding: the per-test total is 1.4745 / 1.5214 / 1.4114 / **1.5410** across
+    C6, C7 twice and P1 -- a **9.2% spread**, so a 4% move between sessions is
+    not a finding.
+
+    Scoreboard unchanged: 21 of 173 playable, 59/240 classes, 38 BOTH.
