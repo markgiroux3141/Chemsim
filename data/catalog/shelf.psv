@@ -1,0 +1,150 @@
+# THE PLAYER'S SHELF -- what is on it when the game starts, and WHY each row is.
+#
+# Columns:  id | tier | amount | phase | note
+#
+#   id       a `data/catalog/compounds/*.psv` compound id, and nothing else. A
+#            shelf row is a real species with a real molecular graph, because a
+#            stock is a `VesselState` (GAME_DESIGN.md section 1) and a bag of
+#            nouns cannot be charged into a flask.
+#   tier     natural | intermediate | bottle -- see below. THE WHOLE POINT OF
+#            THIS COLUMN IS THAT THE SHELF CAN SHRINK.
+#   amount   mol of the FORMULA UNIT, sized for one bench experiment in a 1 L
+#            flask rather than for a stockroom. Gases are small on purpose:
+#            0.05 mol is about 1.2 L at room conditions, and 1 mol of gas in a
+#            1 L flask is 24 bar.
+#   phase    liquid | gas | solid -- where the charge lands. DECLARED, not
+#            derived, and `tools/build_shelf.py` reports every row where the
+#            engine's own estimate disagrees. It disagrees about olive oil by
+#            550 K.
+#   note     where a player gets it, in one clause.
+#
+# ## THE THREE TIERS, AND THEY ARE MEASURED RATHER THAN CHOSEN
+#
+#   natural       out of the ground, out of the air, or pressed out of something
+#                 living. `tools/build_playable.py`'s NATURAL dict is the
+#                 declaration, and it is the one hand judgement in that file.
+#   intermediate  a route in `data/catalog` MAKES it, and that route is itself
+#                 stranded. EARNABLE: the day a session makes its route
+#                 reachable, the row is DELETED and the player earns it instead.
+#   bottle        nothing in 173 catalog routes makes it at all. Bought, or the
+#                 corpus grows a route.
+#
+# Measured by `validation/playable_levers.py` panel 3: granting the 24
+# intermediate and 4 bottle species takes playable routes from 21 to 41, with no
+# new chemistry of any kind. That is the cheapest distance on the board by a
+# factor of four, and it is why this file exists before any more templates do.
+#
+# ## FOUR THINGS THIS FILE IS NOT
+#
+# IT IS NOT A PRICE LIST. Every priced species in the corpus -- 1167 of 1583 --
+# is reachable through the picker's all-priced toggle, which is a separate axis
+# and NOT a fourth tier. This file is only what a new player starts with.
+#
+# IT IS NOT FILTERED BY WHAT THE ENGINE CAN PRICE, and that is deliberate. SEVEN
+# natural rows are REFUSED a price by the element floor -- gold, quartz, pyrite,
+# pyrrhotite, pyrolusite, borax and cryolite. They stay, because "you can dig
+# this up" is a true statement about the world whatever the estimators say, the
+# picker greys them WITH THE REASON (GAME_DESIGN.md 8.3), and the day one of
+# them is curated the row lights up with no edit here.
+#
+# TWO NATURAL SPECIES ARE MISSING AND CANNOT BE ADDED: `coal-marker` and
+# `collagen-marker`. A marker has no molecular graph -- it is a rock, a mixture
+# or a protein carried so the catalog's routes stay balanced -- so it cannot be
+# a `VesselState`, and GAME_DESIGN.md 8.6 forbids a shelf entry that is not one.
+# 45 natural species, 43 rows. The generator refuses an id it cannot resolve.
+#
+# GAME_DESIGN.md 8.5's example rows illustrate the FORMAT and not the CONTENT:
+# `sulfuric-acid` is not natural. C1's route makes it from pyrite, and putting
+# it here would delete the first route the game has.
+#
+# ## HOW A ROW BECOMES A CHARGE (`tools/build_shelf.py` resolves it, once)
+#
+# A mineral with a `mineral_data` lattice is charged AS THE LATTICE -- one solid
+# species, not its ions -- because the lattice is the species that calcines,
+# roasts and reduces, and it is also the one that dissolves: precipitation is
+# priced lattice <-> ions through a Ksp (rock salt comes out at 6.09 mol/L
+# against a measured 6.15). The two representations of CaCO3 are different
+# species that do not know about each other, so choosing wrong would have cost
+# either the kiln or the solution.
+#
+# A salt with NO lattice record is charged as its dissolved IONS, and its phase
+# says `liquid` for that reason -- there is no crystal of it in this engine.
+# --- NATURAL: 43 rows. Out of the ground, the air, or something living.
+water                      | natural      | 5     | liquid | rain, a river, the sea
+oxygen                     | natural      | 0.05  | gas    | air, 21%
+nitrogen                   | natural      | 0.2   | gas    | air, 78%
+carbon-dioxide             | natural      | 0.05  | gas    | air, and every fire
+sulfur-s8                  | natural      | 0.2   | solid  | native sulfur, Sicilian or salt-dome
+carbon-graphite            | natural      | 1     | solid  | graphite, or charcoal from wood
+gold                       | natural      | 0.05  | solid  | native metal, panned
+silver                     | natural      | 0.1   | solid  | native metal
+sodium-chloride            | natural      | 1     | solid  | rock salt, or evaporated brine
+calcium-carbonate          | natural      | 1     | solid  | limestone, chalk, shell
+silicon-dioxide            | natural      | 1     | solid  | sand, quartz, flint
+iron-iii-oxide             | natural      | 0.5   | solid  | haematite ore
+aluminium-oxide            | natural      | 0.5   | solid  | bauxite
+calcium-fluoride           | natural      | 0.5   | solid  | fluorspar
+cryolite                   | natural      | 0.2   | solid  | Ivigtut cryolite, mined until 1987
+copper-sulfide             | natural      | 0.5   | solid  | covellite ore
+lead-sulfide               | natural      | 0.5   | solid  | galena ore
+zinc-sulfide               | natural      | 0.5   | solid  | sphalerite ore
+iron-disulfide             | natural      | 0.5   | solid  | pyrite, fool's gold
+iron-ii-sulfide            | natural      | 0.5   | solid  | pyrrhotite
+mercury-sulfide            | natural      | 0.2   | solid  | cinnabar ore
+potassium-nitrate          | natural      | 0.5   | solid  | saltpetre from a nitre bed or a cave floor
+sodium-nitrate             | natural      | 0.5   | liquid | Chile saltpetre, caliche -- dissolved: no lattice record
+calcium-phosphate          | natural      | 0.5   | solid  | phosphate rock, and bone ash
+calcium-sulfate            | natural      | 0.5   | solid  | anhydrite
+gypsum                     | natural      | 0.5   | liquid | gypsum rock -- dissolved: the dihydrate has no lattice, anhydrite is the crystal
+magnesium-carbonate        | natural      | 0.5   | liquid | magnesite -- dissolved: no lattice record
+iron-ii-sulfate            | natural      | 0.3   | solid  | melanterite -- green vitriol weathers out of pyrite
+manganese-dioxide          | natural      | 0.3   | solid  | pyrolusite
+borax                      | natural      | 0.3   | solid  | tincal, from a dry lake bed
+sucrose                    | natural      | 0.5   | solid  | cane or beet
+glucose                    | natural      | 0.5   | solid  | grape sugar, honey
+starch-unit                | natural      | 0.5   | solid  | grain, potato
+cellulose-unit             | natural      | 0.5   | solid  | cotton, wood pulp
+triolein                   | natural      | 0.2   | liquid | olive oil -- and the engine's own Tm for it is 829 K, which is 550 K wrong
+oleic-acid                 | natural      | 0.3   | liquid | tallow, olive oil
+tannic-acid-core           | natural      | 0.1   | solid  | oak gall, chestnut
+indican                    | natural      | 0.1   | solid  | woad, the indigo plant
+salicin                    | natural      | 0.2   | solid  | willow bark
+eugenol                    | natural      | 0.3   | liquid | clove oil
+alpha-pinene               | natural      | 0.3   | liquid | turpentine from pine resin
+citronellal                | natural      | 0.3   | liquid | citronella oil
+lignin-monomer-coniferyl   | natural      | 0.2   | solid  | wood lignin
+
+# --- INTERMEDIATE: 24 rows. A stranded route makes each of these, so
+# every one of them is EARNABLE and this block is meant to get shorter.
+acrylonitrile              | intermediate | 0.3   | liquid | chain: propylene ammoxidation, itself stranded
+aluminium                  | intermediate | 0.3   | solid  | chain: Hall-Heroult
+aniline                    | intermediate | 0.3   | liquid | chain: nitrobenzene reduced
+aspirin                    | intermediate | 0.2   | solid  | chain: salicylic acid acetylated
+chloral                    | intermediate | 0.2   | liquid | chain: ethanol chlorinated
+chlorobenzene              | intermediate | 0.3   | liquid | chain: benzene chlorinated
+cobalt                     | intermediate | 0.05  | solid  | chain: a catalyst metal nothing in the corpus smelts
+copper-ii-ion              | intermediate | 0.1   | liquid | chain: dissolved copper -- it IS an ion, there is no lattice to charge
+copper-ii-oxide            | intermediate | 0.3   | solid  | chain: roasted copper ore
+ethylene                   | intermediate | 0.05  | gas    | chain: a cracker product
+glycerol                   | intermediate | 0.3   | liquid | chain: a fat saponified
+hydrogen-chloride          | intermediate | 0.05  | gas    | chain: salt and vitriol
+hydrogen-sulfide           | intermediate | 0.05  | gas    | chain: acid on a metal sulfide
+iodomethane                | intermediate | 0.2   | liquid | chain: methanol and hydriodic acid
+iron                       | intermediate | 0.5   | solid  | chain: the blast furnace
+methane                    | intermediate | 0.05  | gas    | chain: a cracker product -- natural gas is DELIBERATELY not natural
+nickel                     | intermediate | 0.05  | solid  | chain: a catalyst metal nothing in the corpus smelts
+nitrobenzene               | intermediate | 0.3   | liquid | chain: benzene nitrated
+nitrogen-dioxide           | intermediate | 0.02  | gas    | chain: the lead chamber's NOx carrier -- 0.5 mmol makes 40 mmol of acid
+palladium                  | intermediate | 0.02  | solid  | chain: a catalyst metal nothing in the corpus smelts
+phenol                     | intermediate | 0.3   | solid  | chain: cumene, or a fused benzenesulfonate -- and it MELTS at 314 K
+propylene                  | intermediate | 0.05  | gas    | chain: a cracker product
+sodium-acetate             | intermediate | 0.3   | liquid | chain: soda and vinegar -- dissolved: no lattice record
+xylose                     | intermediate | 0.3   | solid  | chain: hemicellulose hydrolysed
+
+# --- BOTTLE: 4 rows. NOTHING in 173 routes makes any of these, and they
+# are worth only +1 route together, because each of those routes is short
+# of something else as well. A reagent catalogue, not a work order.
+benzaldehyde               | bottle       | 0.3   | liquid | bought: no route in the corpus makes it
+malonic-acid               | bottle       | 0.2   | solid  | bought: no route in the corpus makes it
+4-nitrophenol              | bottle       | 0.2   | solid  | bought: no route in the corpus makes it
+bromoethane                | bottle       | 0.3   | liquid | bought: no route in the corpus makes it

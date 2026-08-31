@@ -17,6 +17,7 @@ unflattering.
 | `compounds/*.psv` | the compound catalog, split by family; `id \| name \| smiles \| class \| role \| domains \| notes` |
 | `routes.psv` | route headers; `route_id \| name \| era \| domain \| target \| notes` |
 | `route_steps.psv` | the steps; `route_id \| step \| name \| reactants \| products \| conditions \| class` |
+| `shelf.psv` | **P3: what a player STARTS WITH**; `id \| tier \| amount \| phase \| note`. 71 rows in three tiers (43 natural / 24 intermediate / 4 bottle), and the tier is what lets the shelf SHRINK -- an `intermediate` row is deleted the day its stranded route becomes reachable. Read by `tools/build_shelf.py`, which resolves each row against the compound tables and writes `chemsim.engine.shelf_data`. ⚠ Its header carries the resolution rule, and that rule is a chemistry decision rather than a parse: a mineral has TWO representations in this engine -- a reacting lattice, or its ions in the solid block -- with disjoint mechanics and nothing converting between them. |
 | `COVERAGE_REPORT.md` | **generated.** The audit result. |
 | `ROUTE_INDEX.md` | **generated.** Every route as feedstocks → intermediates → products. |
 | `PLAYABLE.md` | **generated.** *What can a player make, starting from what?* The tech tree scored from natural materials, and the only artefact here that RUNS anything. |

@@ -160,11 +160,11 @@ class Snapshot:
     # further" control exists to offer, and the reason the notice above is not
     # merely informative.
     #
-    # ⚠ ALWAYS EMPTY TODAY, AND THAT IS HONEST RATHER THAN BROKEN.
-    # ``World.__post_init__`` passes no ``generations`` to ``build_network``, so
-    # a session always builds to a fixpoint and there is nothing left on the
-    # frontier. Making it reachable is a ``Scenario`` field and a SAVE_VERSION
-    # bump -- P2's, because P2 opens that file anyway.
+    # ⚠ NON-EMPTY SINCE P2, AND ACTED ON SINCE P4. ``Scenario.generations`` is
+    # the bound (P2) and the Bench tab's REACT FURTHER raises it (P4), so this
+    # tuple is the state that control exists to offer. A ``generations=None``
+    # scenario builds to a fixpoint and leaves it empty, which is a different
+    # claim from "bounded, with nothing left over" -- the view says which.
     unexpanded: tuple[str, ...] = ()
     # ⚠ THE BOTTLES THIS RUN HAS PRODUCED, and they are safe to publish for the
     # same reason everything else here is: a ``Stock`` is frozen and copies its

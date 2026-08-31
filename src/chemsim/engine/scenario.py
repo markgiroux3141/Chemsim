@@ -21,7 +21,47 @@ from chemsim.reactions import ReactionTemplate
 
 @dataclass(frozen=True)
 class TemplateSpec:
-    """A ReactionTemplate reduced to plain data."""
+    """A ReactionTemplate reduced to plain data.
+
+    ⚠⚠⚠ **EVERY FIELD OF ``ReactionTemplate`` HAS TO BE HERE, AND SIX OF THEM
+    WERE MISSING FOR THREE MILESTONES.** ``alpha``'s comment below records the
+    failure mode; P4 found the same hole open for ``orders``, ``solid_catalyst``,
+    ``electrons`` and the three ``hammett_*`` fields. The first was found by
+    PLAYING the game rather than by any test. Sulfur, air, water and a trace of NO2 off the shelf would not make
+    vitriol at one atmosphere, and the reason was that ``sulfur_combustion``
+    declares ``orders=(1, 1, 0, 0, 0, 0, 0, 0, 0)`` -- first order in oxygen,
+    which S11 spent a session establishing -- and this class dropped it, so the
+    network ran the SMARTS' own ninth-body mass action instead. Measured on the
+    burner at 700 K, 0.02 mol of S8 in a sealed litre:
+
+        O2 charged    S8 burnt in an hour
+          0.05 mol       0.0000%
+          0.20 mol       0.0736%
+          0.50 mol      77.85%
+
+    That is a threshold where the declared law is a straight line, and it is what
+    an exponent of 8 on oxygen looks like. **Any scenario is affected, not only a
+    bench one**: the same drop silently un-gates every heterogeneous catalyst
+    (``solid_catalyst``, S1 -- so a reaction that requires iron runs without it)
+    and takes the driving force out of every electrode reaction (``electrons``,
+    M8 -- so an electrolysis stops). A frontend can only reach the engine through
+    a ``Scenario``, so a field missing here is a field the game does not have.
+
+    ⚠⚠ **AND THE THREE ``hammett_*`` FIELDS WERE FOUND BY THE TEST, NOT BY THE
+    PLAY.** ``tests/test_protocol.py`` asserts that every ``ReactionTemplate``
+    field is carried here, and that generic assertion turned up three the play
+    had not reached. ``aromatic_nitration()`` ships with ``hammett_rho = -6.5``,
+    so this was the DEFAULT being lost rather than an unused option: G2 made
+    nitration a PROCESS by deactivating a ring that has already been nitrated,
+    and through a ``Scenario`` every stage of a staged nitration ran at the same
+    rate. G1's dropping funnel builds exactly that template through exactly this
+    class.
+
+    *The lesson is the one this class already carried once, and it is not "add
+    the field": a new template field is not finished until it round-trips, and
+    the assertion has to be about the SET of fields rather than about whichever
+    field somebody remembered.*
+    """
 
     name: str
     smarts: str
@@ -34,6 +74,28 @@ class TemplateSpec:
     # in the family would come back with the same barrier and the reloaded run
     # would diverge from the saved one for no visible reason.
     alpha: float = 0.0
+    # ⚠ A DECLARED RATE LAW. ``None`` is ordinary mass action; a tuple is one
+    # exponent per reactant SLOT of the SMARTS. Stored as a plain list-or-tuple
+    # so a scenario stays JSON, and normalised back to a tuple on ``build``
+    # because that is what ``ReactionTemplate`` validates against its slots.
+    orders: tuple[float, ...] | list[float] | None = None
+    # ⚠ THE CRYSTAL THAT MUST BE PRESENT, by ``mineral_data`` name. A gate, not a
+    # phase: without it the reaction runs with no catalyst at all rather than
+    # slowly, which is the opposite of what a gate means.
+    solid_catalyst: str | None = None
+    # ⚠ ELECTRONS ACROSS THE EXTERNAL CIRCUIT per reaction as written. Zero is
+    # ordinary chemistry; non-zero is what makes an electrode reaction driven by
+    # ``n F E`` rather than by nothing.
+    electrons: int = 0
+    # ⚠⚠ THE HAMMETT TRIPLE (G2, G6). ``hammett_rho`` is what makes nitration a
+    # PROCESS rather than an event, and it is a sigma-PLUS scale coefficient
+    # baked at setup. ``aromatic_nitration()`` ships with -6.5, so dropping it
+    # was not a latent hole waiting for someone to set a field -- it was the
+    # DEFAULT behaviour being lost, and every stage of a staged nitration ran at
+    # the same rate. The saturation is the encounter plateau in decades (G6).
+    hammett_rho: float = 0.0
+    hammett_slot: int = 0
+    hammett_saturation: float = 2.686
 
     def build(self) -> ReactionTemplate:
         return ReactionTemplate(
@@ -44,10 +106,17 @@ class TemplateSpec:
             reversible=self.reversible,
             phase=self.phase,
             alpha=self.alpha,
+            orders=None if self.orders is None else tuple(self.orders),
+            solid_catalyst=self.solid_catalyst,
+            electrons=self.electrons,
+            hammett_rho=self.hammett_rho,
+            hammett_slot=self.hammett_slot,
+            hammett_saturation=self.hammett_saturation,
         )
 
     @classmethod
     def of(cls, tmpl: ReactionTemplate) -> TemplateSpec:
+        orders = getattr(tmpl, "orders", None)
         return cls(
             name=tmpl.name,
             smarts=tmpl.smarts,
@@ -56,6 +125,13 @@ class TemplateSpec:
             reversible=tmpl.reversible,
             phase=getattr(tmpl, "phase", "liquid"),
             alpha=getattr(tmpl, "alpha", 0.0),
+            orders=None if orders is None else tuple(orders),
+            solid_catalyst=getattr(tmpl, "solid_catalyst", None),
+            electrons=int(getattr(tmpl, "electrons", 0)),
+            hammett_rho=float(getattr(tmpl, "hammett_rho", 0.0)),
+            hammett_slot=int(getattr(tmpl, "hammett_slot", 0)),
+            hammett_saturation=float(
+                getattr(tmpl, "hammett_saturation", 2.686)),
         )
 
 
@@ -178,7 +254,18 @@ class Scenario:
     @classmethod
     def from_dict(cls, d: dict) -> Scenario:
         return cls(
-            templates=[TemplateSpec(**t) for t in d.get("templates", [])],
+            # ⚠ ``orders`` COMES BACK FROM JSON AS A LIST and has to become a
+            # tuple again, or the template it builds compares a list against its
+            # slot count and a saved declared rate law reloads as a different
+            # object than the one that was saved. ``None`` stays ``None``.
+            templates=[
+                TemplateSpec(**{
+                    **t,
+                    "orders": (None if t.get("orders") is None
+                               else tuple(t["orders"])),
+                })
+                for t in d.get("templates", [])
+            ],
             feed_species=list(d.get("feed_species", [])),
             vessels={k: VesselSpec(**v) for k, v in d.get("vessels", {}).items()},
             edges=[EdgeSpec(**e) for e in d.get("edges", [])],

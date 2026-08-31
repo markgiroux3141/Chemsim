@@ -418,8 +418,16 @@ def test_the_save_format_had_to_move_and_says_so():
 
     ⚠ And again to 7 for the SHELF and ``Scenario.generations`` -- see P2. A
     ``bottle`` is a trailing event, so a v6 reader would fail on it after
-    executing the whole recipe."""
-    assert SAVE_VERSION == 7
+    executing the whole recipe.
+
+    ⚠⚠ And to 8 for the three ``TemplateSpec`` fields that were being dropped --
+    ``orders``, ``solid_catalyst``, ``electrons`` (P4). That one is neither a
+    verb nor a structure: THE SAME BYTES MEAN SOMETHING DIFFERENT, because a
+    saved network holding a template with a declared rate law used to replay at
+    the SMARTS' own mass action. 0.07% of a sulfur charge burnt against 77.85%.
+    A save that cannot be replayed to the trajectory it recorded is what a
+    version number is for."""
+    assert SAVE_VERSION == 8
     w = _boil_world()
     w.step(1.0)
     saved = w.save()

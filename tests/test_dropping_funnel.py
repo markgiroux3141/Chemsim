@@ -330,13 +330,21 @@ def test_the_save_format_moved_because_an_unknown_verb_fails_too_late():
     same argument twice over: a v6 reader stops at the first ``bottle`` with a
     world that looks finished, and a v7 save read as v6 would drop the
     generation bound and rebuild the network to a fixpoint -- a flask with
-    products in it that the saved run never had."""
-    assert SAVE_VERSION == 7
+    products in it that the saved run never had.
+
+    ⚠⚠ At 8 since P4, and that one is neither a verb nor a structure: THE SAME
+    BYTES MEAN SOMETHING DIFFERENT. ``TemplateSpec`` was dropping six
+    ``ReactionTemplate`` fields, so a saved network holding a template with a
+    declared rate law, a solid-catalyst gate, an electron count or a Hammett rho
+    replayed WITHOUT them. This very test file is one of the callers: it builds
+    ``aromatic_nitration()`` -- which ships with ``hammett_rho = -6.5`` -- through
+    a spec, so its own nitration was un-staged."""
+    assert SAVE_VERSION == 8
     w = _charged()
     w.add_dropwise(0, 0.02, "pot", reaches(340.0), 200.0)
     blob = w.save()
-    assert blob["version"] == 7
-    for older in (4, 5, 6):
+    assert blob["version"] == SAVE_VERSION
+    for older in (4, 5, 6, 7):
         with pytest.raises(ValueError, match="version"):
             World.load(dict(blob, version=older))
         with pytest.raises(ValueError, match="version"):

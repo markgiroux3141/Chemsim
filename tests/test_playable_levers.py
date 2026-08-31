@@ -155,3 +155,49 @@ def test_one_template_is_thousands_of_reactions():
     credited = sum(1 for s in cat.load_steps() if "esterif" in s.cls)
     assert grid > 10_000, f"esterification fan-out is {slots} = {grid}"
     assert grid > 1000 * credited
+
+
+# ---------------------------------------------------------------------------
+# P3 -- and the shelf FILE has to be the measurement, not a memory of it
+# ---------------------------------------------------------------------------
+
+
+def test_the_shelf_file_holds_exactly_what_this_audit_measured(bp):
+    """⚠⚠ `data/catalog/shelf.psv`'s three tiers, against the numbers they came
+    from. This is the assertion that stops the shelf rotting: the file is
+    hand-maintained, its CONTENT is derived from panel 3, and nothing else
+    compares the two. A route that becomes reachable should DELETE its
+    intermediate rows -- if that happens and the file is not edited, this test is
+    what says so, and the failure message is the work order.
+
+    ⚠ The natural tier is asserted as an equality MINUS THE MARKERS, which is the
+    one deliberate difference: `coal-marker` and `collagen-marker` are declared
+    natural and have no molecular graph, so they cannot be shelf rows at all.
+    """
+    from chemsim.engine.shelf_data import SHELF
+
+    rows = {e.tier: {x.id for x in SHELF if x.tier == e.tier} for e in SHELF}
+    chain = {x for _rid, miss, _o in bp.BLOCKED for x in miss}
+    bottle = {x for _rid, _m, orphan in bp.BOTTLE for x in orphan}
+    markers = {c for c in bp.NATURAL_IDS if c not in bp.compounds}
+
+    assert markers == {"coal-marker", "collagen-marker"}, (
+        f"the marker set moved: {sorted(markers)}. A marker has no graph and "
+        f"cannot be a shelf row -- see shelf.psv's header."
+    )
+    assert rows["natural"] == set(bp.NATURAL_IDS) - markers, (
+        f"shelf.psv's natural tier and build_playable's NATURAL disagree.\n"
+        f"  missing from the file: {sorted(set(bp.NATURAL_IDS) - markers - rows['natural'])}\n"
+        f"  in the file and not natural: {sorted(rows['natural'] - set(bp.NATURAL_IDS))}"
+    )
+    assert rows["intermediate"] == chain, (
+        f"the CHAIN-blocked species moved -- this is the tier that is supposed "
+        f"to shrink, so this is a work order rather than a bug.\n"
+        f"  now earnable, DELETE from shelf.psv: "
+        f"{sorted(rows['intermediate'] - chain)}\n"
+        f"  newly stranded, ADD to shelf.psv: {sorted(chain - rows['intermediate'])}"
+    )
+    assert rows["bottle"] == bottle, (
+        f"the BOTTLE species moved: file {sorted(rows['bottle'])} vs measured "
+        f"{sorted(bottle)}"
+    )

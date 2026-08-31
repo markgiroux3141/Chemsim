@@ -6,7 +6,9 @@ below is measured, not estimated; the probes are reproducible from the snippets
 named in each section.
 
 ⚠⚠⚠ **THE LIVE ARC IS THE P-SERIES ("make it playable"), added 2026-08-31.
-The C-series is PAUSED. P1 and P2 are DONE; P3 is next.** Jump to `# THE P-SERIES`
+The C-series is PAUSED. P1, P2, P3 and P4 are DONE -- the loop is playable, and
+P4's own play found six `ReactionTemplate` fields that never reached the engine
+through a `Scenario`.** Jump to `# THE P-SERIES`
 near the end of this file;
 it opens with the measurement that changed the order. Everything above it is
 the record of how the engine got here and remains the authority on what was
@@ -6972,31 +6974,218 @@ touched no RHS, no data table and no network construction -- `generations` is
 plumbed THROUGH `build_network`'s existing argument and changes nothing when it
 is `None`, which is every existing scenario.
 
-## P3 -- The shelf as data, with three tiers
+## P3 -- The shelf as data, with three tiers ✔✔ **DONE 2026-08-31** *(and the obvious resolution rule strands five rows in a form no mechanic can touch)*
 
-`data/catalog/shelf.psv`, diffable and testable like the rest of the corpus:
-`id | tier | amount | phase | note`. Tiers `natural` (45 rows, out of the ground),
-`intermediate` (24 rows, EARNABLE once its stranded route is reachable) and
-`bottle` (4 rows, nothing in the corpus makes them). Plus an **all-priced cheat
-toggle** -- every one of the 1167 priced species -- which is a separate axis, not
-a fourth tier.
+`data/catalog/shelf.psv` exists: **71 rows**, `id | tier | amount | phase | note`,
+diffable and tested like the rest of the corpus. `tools/build_shelf.py` resolves
+it against the whole compound catalog and writes
+`src/chemsim/engine/shelf_data.py` (`SHELF`, 71 rows; `ROSTER`, all 1583 species
+with a verdict each); `src/chemsim/engine/inventory.py` turns a row into a real
+`Stock`, and `scenario_for` turns a SELECTION into a world.
 
-⚠ **The tier column is what lets the shelf SHRINK later.** Reduce a stranded
-route and its `intermediate` rows are deleted, because the player earns them
-instead. A flat list of names cannot express that and would make the deferral
-permanent.
+    natural       43 rows   out of the ground, the air, or something living
+    intermediate  24 rows   a STRANDED route makes it -- EARNABLE, so DELETE it
+                            the day that route becomes reachable
+    bottle         4 rows   nothing in 173 catalog routes makes it at all
+    ---
+    all_priced()  1167      the cheat axis. NOT a fourth tier.
+    roster()      1583      the picker's content, 416 of them greyed
 
-⚠ **416 of 1583 species are refused a price and may never be charged.** The
-picker shows them greyed WITH THE REASON. That refusal is the element floor
-working, not a gap.
+⚠ **45 natural species, 43 rows, and the two missing ones cannot be added.**
+`coal-marker` and `collagen-marker` have no molecular graph -- a marker is a
+rock, a mixture or a protein carried so the catalog's routes stay balanced -- so
+neither can be a `VesselState`, which §8.6 forbids outright. The generator
+refuses an unresolvable id and `tests/test_playable_levers.py` pins the marker
+set as an equality, so a third one cannot appear silently.
 
-## P4 -- The step UI, and then play it
+⚠ **Seven natural rows are REFUSED a price and stay on the shelf anyway** --
+gold, quartz, pyrite, pyrrhotite, pyrolusite, borax, cryolite. "You can dig this
+up" is a true statement about the world whatever the estimators say; the picker
+greys them WITH the engine's own reason, and the day one is curated the row
+lights up with no edit to the file.
 
-Species picker over the shelf, `generations=1`, the existing `Do`/`Step`/
-`WaitUntil` commands, and a "react further" control that raises the generation
-bound rather than hiding it. Then **actually play it**, because the interesting
-part is almost certainly impurities carrying forward, and no amount of analysis
-will tell us how that feels.
+### ⚠⚠⚠ THE FINDING: A ROCK HAS TWO REPRESENTATIONS AND THEY ARE NOT INTERCHANGEABLE
+
+The obvious rule -- *charge a mineral as its `mineral_data` lattice* -- reads
+correctly, generates a clean report, and **puts five shelf rows into the flask as
+matter no mechanic in this engine can touch.** Measured, 0.5 mol into 30 mol of
+water at 298 K for 600 s:
+
+    rock salt as [Na+] + [Cl-] in the solid block   0.5 mol dissolved, block empty
+    rock salt as the lattice '[Cl-].[Na+]'          0.5 mol of solid, for ever
+
+Because the engine holds a solid **two incompatible ways**, and each has
+mechanics the other does not:
+
+    the LATTICE as one species     calcination, roasting, gas-solid reduction
+                                   (`solid_state`, `surface`: the lattice IS the
+                                   species)
+    its IONS in the solid block    dissolution and precipitation through a Ksp
+                                   (`PrecipitationArrays`: "the lattice is not a
+                                   species and never becomes one")
+
+and **nothing converts one into the other** -- `examples/lime_cycle.py` says so
+in a comment: *the two representations of CaCO3 are different species that do not
+know about each other.* Rock salt, fluorite, saltpetre, phosphate rock and
+anhydrite have NO solid-state or surface reaction, so dissolving is the only
+thing they do. Two of the five are load-bearing: rock salt is the chlor-alkali
+feedstock, and `validation/phosphate_rock.py` charges the rock as
+`{[Ca+2]: 3, PO4(3-): 2}` in the solid block and had already recorded that
+*without the lattice the rock is INERT.* **C2 measured the failure mode this rule
+would have walked into, a session before it was written.**
+
+So the rule is MECHANISM-DRIVEN, read off the engine's own declarations:
+
+    1. a lattice a solid_state/surface reaction consumes  -> the LATTICE
+    2. else a mineral with ions and a priceable Ksp       -> its IONS, solid
+    3. else charged fragments                            -> its ions, dissolved
+    4. else                                              -> the molecule
+
+⚠ **Rules 1 and 2 COLLIDE on six rows and rule 1 wins, which costs them their
+dissolution**: calcite, covellite, galena, sphalerite, cinnabar, green vitriol
+can be calcined or roasted and **cannot be dissolved by anything**. Limestone in
+acid does nothing. That is a **NAMED ENGINE GAP** rather than a preference, and
+the way out is a mechanic that turns a lattice charge into its ions.
+
+⚠ **And the coverage audit's own tier answers a different question.** Seven rows
+audit as `ion` and are rocks: the audit asks *can this be priced at all*, the
+shelf asks *what species is in the bottle*, and the two come apart on 7 of 71.
+
+### The phase column is a DECLARATION, and olive oil is why
+
+The engine can answer "solid, liquid or gas at 298 K" for a neutral molecule --
+gas if p_sat is above 1 atm, solid if Tm is above 298.15, liquid otherwise -- and
+it is wrong about **triolein by 550 K**: Joback gives it `Tm = 828.9 K`, so a
+derived phase puts a bottle of olive oil in the SOLID block. One shelf row in 71
+disagrees with the engine and it is that one. *An estimator outside its domain
+again, one rung further out than the element floor.*
+
+⚠ A Henry's-law species is a GAS here, and reading `coefficient()` as a pressure
+put nitrogen, oxygen and carbon dioxide in the liquid on the first pass.
+
+`tolerance_audit.py` is **not owed by the PSV** -- a shelf row feeds no property
+estimator and no rate -- but see P4, which changed what a network is built from.
+
+## P4 -- The step UI, and then play it ✔✔ **DONE 2026-08-31** *(and playing it found six template fields that never reached the engine)*
+
+Both controls are built and both are in the window.
+
+**THE BENCH TAB IS THE PICKER.** 71 tiered rows, or all 1167 priced species, or
+all 1583 with the 416 refusals **greyed and carrying their reason**; tier
+checkboxes, a search box, a `generations` field and a species cap. ⚠ Choosing
+rows BUILDS THE WORLD rather than filling a list -- P2's handoff -- so
+`inventory.scenario_for` owns the two guarantees a widget cannot be trusted with:
+every charged species in `feed_species`, and `electrolyte` on whenever an ion is
+charged. `examples.bench` is an `Example` like the other four, so Reset, Save and
+Load need no special case.
+
+**REACT FURTHER raises the bound.** ⚠⚠ **AND IT RAISES THE SPECIES CAP TOO, which
+is not a convenience**: at `generations=2` four bench reagents hit 400 species, so
+the bound that BITES is the cap and a button that only bumped `generations` would
+rebuild an identical network and look broken. Measured: glucose, water and air
+give 400 species and 653 reactions at *both* 2 and 3 generations. **P1 found the
+same competition from the other side.** The Drive tab now says which bound is in
+force at all times, because "built to a fixpoint" and "bounded with nothing left
+over" are different states of the world.
+
+⚠ And it replays the RECIPE against a deeper reaction set, which is *the
+experiment re-done knowing more chemistry* and not *the flask carried on from
+here*. Stated in the message rather than left to be inferred from a number that
+moved.
+
+**The save format had to be fixed first.** It held `{"example": key, "script":
+[...]}`, which is enough only while every world is one of four hard-coded ones. A
+bench world is a shelf selection and has no key; a reacted-further world differs
+from its key's scenario by exactly the bound that was raised. Both would have
+reloaded as something else, silently. It carries `Scenario.to_dict()` now, and a
+pre-P4 file still opens.
+
+### ⚠⚠⚠ THEN IT WAS PLAYED, AND THE PLAY FOUND SIX FIELDS THE ENGINE NEVER SAW
+
+Sulfur, air, water and a trace of NO2 off the shelf -- the game's own chain 2 --
+**would not make vitriol at one atmosphere.** Two causes, in the order they were
+found, and *neither one was findable from a green suite*:
+
+**1. The bench's library was false by more than half.** It collected only
+`*_chemistry` bundles -- the rule `validation/playable_levers.py` panel 5 uses --
+and silently skipped every template exported as a function of its own:
+`sulfur_combustion`, `sulfur_trioxide_hydration`, `lead_chamber`,
+`esterification`, `cannizzaro` and about forty more. The flask gave **four
+species, no reactions and an EMPTY FRONTIER at every generation count**, which is
+the engine correctly reporting a library with no sulfur chemistry in it, while a
+blurb claiming *every template in the project* was on screen. The sweep is by
+RESULT TYPE now, so a naming convention nobody promised to keep cannot fool it.
+
+**2. ⚠⚠⚠ `TemplateSpec` WAS DROPPING SIX `ReactionTemplate` FIELDS, AND A
+FRONTEND CAN ONLY REACH THE ENGINE THROUGH A `Scenario`.** `sulfur_combustion`
+declares `orders=(1, 1, 0...)` -- first order in oxygen, which S11 spent a
+session establishing -- and the network ran the SMARTS' own **ninth-body mass
+action** instead. 0.02 mol of S8 in a sealed litre at 700 K for an hour:
+
+    O2 charged     declared 1st order     mass action (9 bodies)
+      0.05 mol         15.23%                    0.0000%
+      0.20 mol         99.44%                    0.0736%
+      0.50 mol        100.00%                   77.85%
+
+**A threshold where the declared law is a straight line**, and the shelf's own
+oxygen bottle sits at 0.05. The same drop silently **un-gated every heterogeneous
+catalyst** (`solid_catalyst`, S1 -- eleven templates declare one, and without it
+ammonia synthesis runs in a flask with no iron), **took the driving force out of
+every electrode reaction** (`electrons`, M8), and **lost G2's ring
+deactivation** (`hammett_rho`, and `aromatic_nitration()` ships with **-6.5**, so
+this was the DEFAULT being lost -- every stage of a staged nitration ran at the
+same rate). `SAVE_VERSION` is **8**: the same bytes mean something different now,
+which is the strongest reason to bump there is.
+
+⚠ **THREE OF THE SIX WERE FOUND BY A TEST AND THREE BY THE PLAY, AND THE TEST
+ONLY FOUND THEM BECAUSE IT ASSERTED THE *SET* OF FIELDS.** The play reached
+`orders`; writing `tmpl_fields <= spec_fields` turned up the three `hammett_*`
+ones immediately. *The lesson is not "add the field" -- `alpha`'s own comment
+already said a template field is not finished until it round-trips. It is that
+the assertion has to be about the set rather than about whichever field somebody
+remembered.*
+
+### And then it worked
+
+    gens  species  frontier  what appeared
+       1        6         1  SO2
+       2        8         2  SULFURIC ACID, and NO
+       3        8         0  nothing -- the network is complete and says so
+
+**Chain 2 out of the picker in two presses of a button**, from four natural rows
+and one intermediate. ⚠ The NO2 is why the `intermediate` tier exists: there is
+no template for SO2 + O2 -> SO3 without a carrier, so sulfur, air and water alone
+stop at SO2 **with an empty frontier** -- the engine saying it knows no further
+chemistry rather than declining to look.
+
+⚠ **The bench flask VENTS**, so an open flask at 700 K passes its steam and its
+oxygen out of the top (S12's lesson again) and makes 3e-5 mol of SO2 in an hour.
+And the shelf's gas amounts are deliberately small -- 0.05 mol is about a litre
+at room conditions -- so an oxidation in a 1 L flask is oxygen-starved by
+construction, which is a true thing about a bench rather than a bug: 0.2 mol of
+S8 wants 1.6 mol of O2.
+
+⚠⚠ **AND THE SHELF'S OWN WATER BOTTLE STOPS THE SHELF'S OWN SULFUR
+BURNING, WHICH IS THE PLAY'S LAST FINDING AND IS EMERGENT.** A gas-phase
+combustion is first order in GASEOUS S8, and 5 mol of water (90 mL) holds the
+sulfur in the liquid. Sealed, 700 K, one hour, 0.05 mol of oxygen throughout:
+
+    S8 charged   water    S8 in the gas    burnt
+      0.20 mol   5.0 mol      4.30e-04     0.0001%
+      0.20 mol   0.5 mol      3.32e-03     1.7369%
+      0.02 mol   5.0 mol      4.70e-05     0.0003%
+      0.02 mol   0.5 mol      3.92e-04    15.2266%
+
+**A tenth of the water is 7.7x the sulfur in the vapour and four orders of
+magnitude of conversion.** Nothing declares that: it is the phase model
+partitioning S8 into whichever liquid is there. *You do not burn sulfur in a wet
+flask*, and the engine says so without being told. ⚠ An earlier draft of this
+section said "seal it and the same charge burns", which is FALSE and was written
+from the 0.02 mol row: sealing changes almost nothing at 5 mol of water. The
+lever is how much water you pour, and the shelf's bottle is 5.0.
+
+
+`validation/shelf.py` is the standing audit for all four panels above.
 
 ## What the P-series must NOT do
 

@@ -147,6 +147,136 @@ def test_a_template_keeps_its_evans_polanyi_coefficient_through_a_scenario():
     assert round_tripped.alpha == pytest.approx(0.3)
 
 
+def test_every_template_field_survives_a_scenario_and_three_did_not():
+    """⚠⚠⚠ P4: ``orders``, ``solid_catalyst`` and ``electrons`` were dropped too.
+
+    The test above was written when ``alpha`` was found missing, and it pinned
+    ``alpha``. Three fields were added to ``ReactionTemplate`` after it -- a
+    declared rate law (S11), a heterogeneous catalyst gate (S1) and an electrode
+    reaction's electron count (M8) -- and every one of them was dropped by
+    ``TemplateSpec`` in exactly the same way, silently, for three milestones.
+
+    **It was found by playing the game, not by a test.** Sulfur, air, water and a
+    trace of NO2 taken off the shelf would not make vitriol at one atmosphere,
+    because ``sulfur_combustion`` declares first order in oxygen and the network
+    built from the scenario ran the SMARTS' own ninth-body mass action instead:
+    0.02 mol of S8 under 0.05 mol of O2 burnt 0.0000% in an hour, under 0.50 mol
+    it burnt 77.85%, which is a threshold where the declared law is a line.
+
+    So this test asserts the GENERAL property rather than three more particulars:
+    every field of a ``ReactionTemplate`` that a spec can carry, carries. A field
+    added to the template and not to the spec is a field the game does not have,
+    because a frontend can only reach the engine through a ``Scenario``.
+    """
+    import dataclasses
+
+    from chemsim.reactions.library import sulfur_combustion
+
+    tmpl = sulfur_combustion()
+    assert tmpl.orders is not None, "the burner declares its own rate law"
+
+    spec = TemplateSpec.of(tmpl)
+    rebuilt = Scenario.from_dict(Scenario(templates=[spec]).to_dict()).templates[0]
+    for field in dataclasses.fields(TemplateSpec):
+        assert getattr(rebuilt, field.name) == getattr(spec, field.name), (
+            f"{field.name} did not survive to_dict/from_dict"
+        )
+    # ⚠ AND BACK OUT THE OTHER SIDE AS A TEMPLATE, which is the half that
+    # actually reaches ``build_network``. A list from JSON is not a tuple.
+    got = rebuilt.build()
+    assert got.orders == tmpl.orders
+    assert isinstance(got.orders, tuple)
+    assert got.solid_catalyst == tmpl.solid_catalyst
+    assert got.electrons == tmpl.electrons
+
+    # every field the TEMPLATE has, the SPEC has -- the rule the three misses broke
+    spec_names = {f.name for f in dataclasses.fields(TemplateSpec)}
+    # ⚠ Private fields are excluded and only those: ``_rxn`` is a parsed-SMARTS
+    # cache, derived from ``smarts`` and rebuilt on demand, so carrying it would
+    # be putting an RDKit object in a save file. Everything without a leading
+    # underscore is state a template was CONSTRUCTED with and has to survive.
+    tmpl_names = {f.name for f in dataclasses.fields(type(tmpl))
+                  if not f.name.startswith("_")}
+    assert tmpl_names <= spec_names, (
+        f"ReactionTemplate has field(s) TemplateSpec cannot carry: "
+        f"{sorted(tmpl_names - spec_names)}. A field that does not round-trip is "
+        f"a field a saved run loses and a frontend cannot set."
+    )
+
+
+def test_a_solid_catalyst_gate_is_not_lost_on_the_way_to_a_network():
+    """The same drop, in the direction that is WORSE than losing a rate law.
+
+    A ``solid_catalyst`` is a GATE: without the crystal the reaction does not go
+    at all. Dropped, the reaction goes with no catalyst -- so the flask that was
+    supposed to need nickel reacts without it, which is the opposite of what the
+    mechanic means. Eleven templates in the library declare one.
+
+    Asserted through a BUILT NETWORK rather than on the spec, because the spec
+    being right is not the claim: the gate has to reach ``KineticArrays``.
+    """
+    from chemsim.engine.world import World
+    from chemsim.reactions.synthesis import ammonia_synthesis
+
+    tmpl = ammonia_synthesis()
+    assert tmpl.solid_catalyst == "iron"
+    scenario = Scenario(
+        templates=[TemplateSpec.of(tmpl)],
+        feed_species=["N#N", "[H][H]"],
+        vessels={"flask": VesselSpec(volume=1.0, T=700.0, T_env=700.0)},
+        max_species=12,
+    )
+    world = World(Scenario.from_dict(scenario.to_dict()))
+    made = [r for r in world.network.reactions if r.name.startswith(tmpl.name)]
+    assert made, "the template made no reaction at all"
+    # ⚠ The concrete reaction carries the LATTICE SMILES, not the mineral name --
+    # ``build_network`` resolves it, because Layer 4 gets numbers and species and
+    # never a name. Asserting the name here would have failed on a working gate.
+    assert all(r.solid_catalyst == "[Fe]" for r in made), (
+        f"the network's reactions lost their catalyst gate "
+        f"({[r.solid_catalyst for r in made]}), so ammonia synthesis will run "
+        f"in a flask with no iron in it"
+    )
+    # and BOTH directions are gated, which is what keeps detailed balance legal
+    assert len(made) == 2, "ammonia synthesis is reversible; both halves gate"
+
+
+def test_a_hammett_rho_reaches_the_network_and_not_only_the_spec():
+    """G2's ring deactivation, through a ``Scenario``. ⚠ IT IS A DEFAULT.
+
+    ``aromatic_nitration()`` ships with ``hammett_rho = -6.5``, so this was not
+    an option nobody set -- it was the shipped behaviour being lost every time a
+    frontend or a save went through ``TemplateSpec``, which is what ``examples``
+    and ``tests/test_dropping_funnel.py`` have both done since G1. Nitration
+    staged correctly in the harness and did not stage at all in the game.
+
+    The observable is the BARRIER SPREAD: with rho in force, nitrating a
+    deactivated ring costs more than nitrating benzene, so the reactions the
+    network builds do not all share one Ea. Dropped, they do.
+    """
+    from chemsim.engine.world import World
+    from chemsim.reactions.synthesis import aromatic_nitration
+
+    tmpl = aromatic_nitration()
+    assert tmpl.hammett_rho == pytest.approx(-6.5)
+    scenario = Scenario(
+        templates=[TemplateSpec.of(tmpl)],
+        feed_species=[Molecule.from_smiles("c1ccccc1").smiles,
+                      Molecule.from_smiles("O=[N+]([O-])O").smiles, WATER],
+        vessels={"flask": VesselSpec(volume=1.0, T=320.0, T_env=320.0)},
+        max_species=40,
+    )
+    world = World(Scenario.from_dict(scenario.to_dict()))
+    nitrations = [r for r in world.network.reactions if r.name == tmpl.name]
+    assert len(nitrations) >= 2, "need at least two rings to compare barriers"
+    barriers = {round(r.Ea, 6) for r in nitrations}
+    assert len(barriers) > 1, (
+        f"every nitration in the network got the same barrier "
+        f"({barriers}), so hammett_rho did not survive the scenario and a "
+        f"deactivated ring nitrates as fast as benzene"
+    )
+
+
 # ---------------------------------------------------------------------------
 # the verbs a real prep needs
 # ---------------------------------------------------------------------------
@@ -277,7 +407,7 @@ def test_the_save_version_refuses_an_older_layout():
     w = World(Scenario(feed_species=[WATER], templates=[],
                        vessels={"flask": spec}))
     blob = w.save()
-    assert blob["version"] == SAVE_VERSION == 7
+    assert blob["version"] == SAVE_VERSION == 8
     assert "script" in blob
     # the apparatus travels with the scenario, empty or not
     assert blob["scenario"]["edges"] == []

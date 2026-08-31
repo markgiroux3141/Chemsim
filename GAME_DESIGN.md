@@ -650,8 +650,19 @@ approximated. It is admissible only under this project's other standing rule --
   generation and the frontier arrives on the `Snapshot` non-empty (measured: an
   acid/alcohol flask at `generations=1` leaves ethyl acetate unexpanded and says
   so). Until then `World` always built to a fixpoint and nothing could request
-  one-generation play through the UI at all. **The ASKING -- a control that
-  raises the bound -- is still P4.**
+  one-generation play through the UI at all. ⚠ **AND P4 BUILT THE ASKING**:
+  REACT FURTHER on the Drive tab raises the bound and replays the recipe against
+  the deeper reaction set, and the tab says which bound is in force at all times.
+  ⚠⚠ **IT HAS TO RAISE THE SPECIES CAP TOO.** The two bounds compete, and at
+  `generations=2` four bench reagents hit 400 species -- glucose, water and air
+  give 400 species and 653 reactions at *both* 2 and 3 generations -- so on a
+  capped network the bound that BIT is the cap, and a button that only bumped
+  `generations` would rebuild an identical network and look broken. P1 found the
+  same competition from the other side, in the frontier report.
+  ⚠ And it replays the RECIPE, which is *the experiment re-done knowing more
+  chemistry* rather than *the flask carried on from here*: a species discovered
+  in the new generation was available from t = 0 on the replay. Said in the
+  message rather than left to be inferred from a number that moved.
 
 *A limit the player can see and lift is not an approximation; it is a choice.*
 
@@ -687,31 +698,126 @@ Granting all 28 gives **41 of 173 playable**. ⚠ For comparison: 22 template
 sessions on their own give **31** (panel 2). *The shelf is the cheapest distance
 on the board by a wide margin, and it is a design decision rather than chemistry.*
 
-## 8.5 The shelf as data, not code
+## 8.5 The shelf as data, not code -- **BUILT, P3**
 
-Same shape as the rest of the corpus -- a PSV under `data/catalog/`, so it can be
-diffed, tested and regenerated:
+`data/catalog/shelf.psv`, in the same shape as the rest of the corpus so it
+diffs, tests and regenerates like everything else:
 
     # shelf.psv -- id | tier | amount | phase | note
-    water            | natural      | 5.0  | liquid | -
-    sulfuric-acid    | natural      | 1.0  | liquid | oil of vitriol
-    benzaldehyde     | bottle       | 0.5  | liquid | nothing in the corpus makes it
-    nickel           | intermediate | 0.1  | solid  | chain: made by a stranded route
+    water            | natural      | 5.0  | liquid | rain, a river, the sea
+    sodium-chloride  | natural      | 1.0  | solid  | rock salt, or evaporated brine
+    benzaldehyde     | bottle       | 0.3  | liquid | bought: no route makes it
+    nickel           | intermediate | 0.05 | solid  | chain: nothing smelts it
 
-Three tiers, and the tier is the whole design argument:
+⚠ The sample rows above are the real file's. **`sulfuric-acid` is NOT on it**, as
+an earlier draft of this section had it: C1's route makes vitriol from pyrite, and
+putting it on the shelf would delete the first route the game has.
 
-    natural        on the shelf because it comes out of the ground or a plant
-    intermediate   on the shelf because a stranded route would make it (EARNABLE)
-    bottle         on the shelf because nothing in the corpus makes it at all
+`tools/build_shelf.py` resolves the file against the whole compound catalog and
+writes `chemsim.engine.shelf_data`; `chemsim.engine.inventory` turns a row into a
+real `Stock` and a SELECTION into a `Scenario`.
 
-⚠ **The tier is what lets the shelf shrink later.** When a session makes a
-stranded route reachable, its `intermediate` rows are deleted and the player
-earns them instead. Nothing about that is possible if the shelf is a flat list of
-names, and it is the whole reason the tier column exists on day one.
+    natural       43 rows   out of the ground, the air, or something living
+    intermediate  24 rows   a stranded route makes it (EARNABLE)
+    bottle         4 rows   nothing in 173 catalog routes makes it at all
+    ---
+    all_priced()  1167      the cheat axis. NOT a fourth tier.
+    roster()      1583      the picker's content, 416 of them greyed
 
-**And an "everything" toggle is a separate axis from the tiers** -- the
-all-chemicals cheat is every priced species at once, for exploration and for
-testing the picker against 1167 rows. It is not a fourth tier.
+⚠ **The tier is what lets the shelf shrink.** When a session makes a stranded
+route reachable, its `intermediate` rows are deleted and the player earns them
+instead. `tests/test_playable_levers.py` asserts the file's three tiers against
+`validation/playable_levers.py` panel 3, so the day a route becomes reachable the
+failure message is the work order.
+
+⚠ **45 natural species, 43 rows.** `coal-marker` and `collagen-marker` have no
+molecular graph, so neither can be a `VesselState` and 8.6 forbids them outright.
+The marker set is pinned as an equality so a third one cannot appear silently.
+
+⚠ **Seven natural rows are refused a price and stay anyway** -- gold, quartz,
+pyrite, pyrrhotite, pyrolusite, borax, cryolite. *You can dig this up* is a true
+statement about the world whatever the estimators say; the picker greys them with
+the engine's own reason (8.3), and the day one is curated the row lights up with
+no edit to the file.
+
+### ⚠⚠⚠ A ROCK HAS TWO REPRESENTATIONS AND THEY ARE NOT INTERCHANGEABLE
+
+This section said nothing about it because nothing had had to choose. The obvious
+rule -- *a mineral is charged as its `mineral_data` lattice* -- **puts five shelf
+rows into the flask as matter no mechanic in this engine can touch.** Measured,
+0.5 mol into 30 mol of water at 298 K for 600 s:
+
+    rock salt as [Na+] + [Cl-] in the solid block   0.5 mol dissolved, block empty
+    rock salt as the lattice '[Cl-].[Na+]'          0.5 mol of solid, for ever
+
+The engine holds a solid two incompatible ways, and each has mechanics the other
+does not:
+
+    the LATTICE as one species     calcination, roasting, gas-solid reduction
+    its IONS in the solid block    dissolution and precipitation through a Ksp
+
+and **nothing converts one into the other.** Rock salt, fluorite, saltpetre,
+phosphate rock and anhydrite have no solid-state or surface reaction at all, so
+dissolving is the only thing they do -- and two of the five are load-bearing:
+rock salt is the chlor-alkali feedstock, and `validation/phosphate_rock.py` had
+already recorded that *without the lattice the rock is INERT*, charging it as
+`{[Ca+2]: 3, PO4(3-): 2}` in the solid block. So the rule is mechanism-driven:
+
+    1. a lattice a solid_state/surface reaction consumes  -> the LATTICE
+    2. else a mineral with ions and a priceable Ksp       -> its IONS, solid
+    3. else charged fragments                            -> its ions, dissolved
+    4. else                                              -> the molecule
+
+⚠ **Rules 1 and 2 collide on six rows and rule 1 wins, which costs them their
+dissolution**: calcite, covellite, galena, sphalerite, cinnabar and green vitriol
+can be calcined or roasted and **cannot be dissolved by anything**. Limestone in
+acid does nothing. That is a **named engine gap** and the way out is a mechanic
+that turns a lattice charge into its ions.
+
+⚠ And a formula unit carries its own stoichiometry, because the dot-separated
+SMILES is the only place a salt's ratio is written down: fluorite is 1 calcium to
+2 fluoride, and **gypsum's two waters of crystallisation become real water in the
+flask.**
+
+### The phase column is a DECLARATION, and olive oil is why
+
+The engine can answer "solid, liquid or gas at 298 K" for a neutral molecule, and
+it is wrong about **triolein by 550 K**: Joback gives it `Tm = 828.9 K`, so a
+derived phase puts a bottle of olive oil in the solid block. One row in 71
+disagrees with the engine and it is that one -- *an estimator outside its domain
+again, one rung further out than the element floor*. The generator prints every
+disagreement rather than trusting either side.
+
+### ⚠⚠ A PLAYED SESSION FOUND THE AMOUNTS MATTER MORE THAN THE TIERS
+
+P4 played chain 2 off this shelf and the last thing in the way was **the water
+bottle**. A gas-phase combustion is first order in GASEOUS S8, and 5 mol of water
+(90 mL) holds the sulfur in the liquid. Sealed, 700 K, one hour, 0.05 mol of
+oxygen throughout:
+
+    S8 charged   water    S8 in the gas    burnt
+      0.20 mol   5.0 mol      4.30e-04     0.0001%
+      0.20 mol   0.5 mol      3.32e-03     1.7369%
+      0.02 mol   0.5 mol      3.92e-04    15.2266%
+
+**A tenth of the water is 7.7x the sulfur in the vapour and four orders of
+magnitude of conversion.** Nothing declares it -- it is the phase model
+partitioning S8 into whichever liquid is there. *You do not burn sulfur in a wet
+flask*, and the engine says so without being told.
+
+⚠ So `amount` is a game-balance number and not a formality, and it is the column
+most likely to want revisiting. The gas bottles are 0.05 mol -- about a litre at
+room conditions, because 1 mol of gas in a 1 L flask is 24 bar -- which makes any
+oxidation oxygen-starved by construction: 0.2 mol of S8 wants 1.6 mol of O2. That
+is a true thing about a bench rather than a bug (a sulfur burner is a furnace with
+a blower), but a player has to be able to find it out, and the picker's amount
+column is where they will look.
+
+### And an "everything" toggle is a separate axis from the tiers
+
+The all-chemicals cheat is every priced species at once, for exploration and for
+pointing the picker at 1167 rows to find out what that costs. It is not a fourth
+tier, and `inventory.CHEAT_TIER` is deliberately not one of `inventory.TIERS`.
 
 ## 8.6 What this section does NOT license
 

@@ -98,7 +98,19 @@ from chemsim.vessel import Condition, Rig, TransferLosses, Vessel, WaitOutcome
 #    to a FIXPOINT -- silently a different flask, with products in it that the
 #    saved run never had. That is a different experiment wearing the right name,
 #    which is what a version number is for.
-SAVE_VERSION = 7
+# 8: +the THREE TEMPLATE FIELDS ``TemplateSpec`` had been dropping --
+#    ``orders``, ``solid_catalyst`` and ``electrons``. Not a new verb and not a
+#    new structure: the same bytes MEAN something different now, which is the
+#    strongest reason to bump there is. A v7 save of a network holding
+#    ``sulfur_combustion`` replayed the burner at ninth-order mass action
+#    because the declared ``orders=(1, 1, 0...)`` never reached the network;
+#    read as a v8 save it replays at the first-order law S11 measured, and 0.02
+#    mol of sulfur under half a mole of oxygen goes from 0.07% burnt to 77.85%.
+#    The same drop un-gated every heterogeneous catalyst and took the driving
+#    force out of every electrode reaction. **A save written before the fix
+#    cannot be replayed to the trajectory it recorded**, which is exactly the
+#    condition version 4 was created for. P4 found it by playing the game.
+SAVE_VERSION = 8
 
 # Liquid holdup below which a dropping funnel counts as EMPTY, mol. The solver
 # is asked for atol=1e-9 per component and a meter edge drains its donor to a

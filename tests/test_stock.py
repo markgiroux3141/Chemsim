@@ -430,17 +430,29 @@ def test_the_save_format_moved_to_seven_for_the_shelf_and_the_bound():
     finished. And a v7 save read as a v6 one would drop ``generations`` and
     rebuild the network to a FIXPOINT -- a flask with products in it that the
     saved run never had. Both are a different experiment wearing the right name.
+
+    ⚠⚠ **AT 8 SINCE P4, AND THE BARE ``7`` ON THE LINE BELOW IS WHY THIS
+    DOCSTRING NOW SAYS SO.** P4 bumped the version, updated every
+    ``SAVE_VERSION == 7`` in the suite, and MISSED this one because it compares
+    the blob to a literal instead of to the constant — so it survived a grep for
+    the constant and only the full run found it. The comparison is against
+    ``SAVE_VERSION`` now: a test that pins a version to a hand-typed integer has
+    to be edited in two places by every session that moves it, and the second
+    place is the one that gets forgotten. Version 8 carries the six
+    ``ReactionTemplate`` fields ``TemplateSpec`` had been dropping — the same
+    bytes mean something different, so a pre-8 save cannot be replayed to the
+    trajectory it recorded.
     """
-    assert SAVE_VERSION == 7
+    assert SAVE_VERSION == 8
     w = World(_bench())
     w.now("charge", "flask", amounts={ETOH: 1.0}, phase="liquid")
     w.flush()
     w.bottle("flask", "a bottle")
     blob = w.save()
-    assert blob["version"] == 7
+    assert blob["version"] == SAVE_VERSION
     assert "shelf" in blob
     assert blob["scenario"]["generations"] is None
-    for older in (3, 4, 5, 6):
+    for older in (3, 4, 5, 6, 7):
         with pytest.raises(ValueError, match="version"):
             World.load(dict(blob, version=older))
         with pytest.raises(ValueError, match="version"):

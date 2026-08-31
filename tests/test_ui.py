@@ -471,3 +471,166 @@ def test_one_generation_play_reaches_the_snapshot(fischer_template):
         snap = s.snapshot()
         assert snap.unexpanded, "one generation must leave a frontier"
         assert any("generation" in n for n in snap.notices)
+
+
+# ---------------------------------------------------------------------------
+# P4 -- the bench, and the control that raises the bound
+# ---------------------------------------------------------------------------
+
+
+def test_the_bench_is_built_from_shelf_rows_and_carries_every_species():
+    """⚠ P2's handoff: the SELECTION IS THE SCENARIO.
+
+    ``Vessel.charge_state`` refuses a species the network does not carry and a
+    network is derived from its feed, so picking shelf rows is not filling a
+    list -- and the opening script has to charge each row into its DECLARED
+    phase, because the shelf declares that rather than deriving it.
+    """
+    from chemsim.engine import inventory as inv
+    from chemsim.ui.examples import bench
+
+    items = [inv.find(i) for i in ("water", "sodium-chloride", "oxygen")]
+    ex = bench(items, generations=1)
+    assert ex.key == "bench"
+    for item in items:
+        for smiles in item.species:
+            assert smiles in ex.scenario.feed_species
+    assert ex.scenario.electrolyte, "rock salt charges ions"
+    assert ex.scenario.generations == 1
+    phases = {e["event"]["payload"]["phase"] for e in ex.opening}
+    assert phases == {"liquid", "solid", "gas"}
+    # every opening event is a charge into the one flask
+    assert all(e["event"]["vessel"] == "flask" for e in ex.opening)
+
+
+def test_a_refused_shelf_row_never_reaches_the_flask():
+    """8.3 again, at the other end: greyed in the picker AND skipped here.
+
+    A bench built from a selection containing gold has to come out without it
+    rather than raising, because the picker is what tells the player why.
+    """
+    from chemsim.engine import inventory as inv
+    from chemsim.ui.examples import bench
+
+    gold = inv.find("gold")
+    assert not gold.chargeable
+    ex = bench([inv.find("water"), gold])
+    assert ex.scenario.feed_species == ["O"]
+    assert len(ex.opening) == 1
+
+
+def test_the_bench_library_holds_the_templates_a_name_rule_missed():
+    """⚠⚠ The bench claims *every template in the project*, and the first
+    version of that claim was false by more than half.
+
+    Collecting only ``*_chemistry`` bundles -- the rule
+    ``validation/playable_levers.py`` uses -- silently skips every template
+    exported as a function of its own. **Playing it is what found that**: sulfur,
+    air and water off the shelf gave four species, no reactions and an empty
+    frontier, which is the engine correctly reporting a library with no sulfur
+    chemistry in it.
+    """
+    from chemsim.ui.examples import full_library
+
+    names = {t.name for t in full_library()}
+    for wanted in ("sulfur_combustion", "sulfur_trioxide_hydration",
+                   "fischer_esterification", "cannizzaro_disproportionation"):
+        assert wanted in names, f"{wanted} is missing from the bench library"
+    assert len(names) >= 50
+
+
+def test_the_burner_declares_first_order_in_oxygen_through_a_scenario():
+    """⚠⚠⚠ THE PLAY FINDING, as the smallest thing that shows it.
+
+    ``sulfur_combustion`` declares ``orders=(1, 1, 0...)``; ``TemplateSpec`` used
+    to drop it, so a scenario-built network ran the SMARTS' ninth-body mass
+    action and the shelf's own oxygen bottle could not light the shelf's own
+    sulfur. The full measurement is ``validation/shelf.py`` panel 3.
+    """
+    from chemsim.engine.world import World
+    from chemsim.ui.examples import bench
+    from chemsim.engine import inventory as inv
+
+    ex = bench([inv.find(i) for i in ("sulfur-s8", "oxygen", "nitrogen")],
+               generations=1)
+    world = World(ex.scenario)
+    burners = [r for r in world.network.reactions
+               if r.name.startswith("sulfur_combustion")]
+    assert burners, "the burner template made no reaction"
+    assert all(r.orders is not None for r in burners), (
+        "the network's burner lost its declared rate law, so it is eighth order "
+        "in oxygen and will not light at one atmosphere"
+    )
+    assert burners[0].orders[:2] == (1.0, 1.0)
+
+
+def test_react_further_raises_the_bound_and_leaves_the_recipe_alone():
+    """The control, as ``examples.rebuilt``: the BOUND moves, nothing else does."""
+    from chemsim.engine import inventory as inv
+    from chemsim.ui.examples import bench, rebuilt
+
+    ex = bench([inv.find(i) for i in ("water", "glucose")], generations=1,
+               max_species=400)
+    deeper = rebuilt(ex, generations=2, max_species=700)
+    assert deeper.scenario.generations == 2
+    assert deeper.scenario.max_species == 700
+    assert ex.scenario.generations == 1, "the original must not be mutated"
+    assert deeper.scenario.feed_species == ex.scenario.feed_species
+    assert deeper.opening == ex.opening
+    assert len(deeper.scenario.templates) == len(ex.scenario.templates)
+
+
+def test_one_more_generation_actually_finds_more_chemistry():
+    """The bound is real: raise it and the network grows.
+
+    ⚠ And the frontier is what says whether there is more to ask for. An empty
+    one at a raised bound means the chemistry is exhausted rather than the budget
+    -- which is what the control has to be able to tell a player apart.
+    """
+    from chemsim.engine.world import World
+    from chemsim.ui.examples import bench, rebuilt
+    from chemsim.engine import inventory as inv
+
+    ex = bench([inv.find(i) for i in
+                ("sulfur-s8", "oxygen", "nitrogen", "water", "nitrogen-dioxide")],
+               generations=1)
+    first = World(ex.scenario).network
+    assert first.unexpanded, "one generation must leave a frontier here"
+    second = World(rebuilt(ex, generations=2).scenario).network
+    assert len(second.species) > len(first.species)
+    assert "O=S(=O)(O)O" in second.species, (
+        "the lead chamber makes sulfuric acid in the second generation; if it "
+        "no longer does, the play in validation/shelf.py panel 4 is stale"
+    )
+    third = World(rebuilt(ex, generations=3).scenario).network
+    assert not third.unexpanded, (
+        "the third generation should exhaust this network, so the control can "
+        "say 'the chemistry is finished' rather than 'the budget ran out'"
+    )
+
+
+def test_a_saved_recipe_carries_the_whole_scenario_not_only_its_key():
+    """⚠ P4 had to fix the save format before either control could ship.
+
+    The file used to be ``{"example": key, "script": [...]}``, which is enough
+    only while every world is one of four hard-coded ones. A bench world is a
+    shelf selection and has no key; a REACTED-FURTHER world differs from its
+    key's scenario by exactly the bound that was raised. Both reloaded as
+    something else, silently.
+    """
+    from chemsim.engine import inventory as inv
+    from chemsim.engine.scenario import Scenario
+    from chemsim.ui.examples import bench, rebuilt
+
+    ex = rebuilt(bench([inv.find("water"), inv.find("sodium-chloride")],
+                       generations=1), generations=3, max_species=650)
+    blob = ex.scenario.to_dict()
+    back = Scenario.from_dict(blob)
+    assert back.generations == 3
+    assert back.max_species == 650
+    assert back.feed_species == ex.scenario.feed_species
+    assert back.electrolyte == ex.scenario.electrolyte
+    assert len(back.templates) == len(ex.scenario.templates)
+    # and the fields P4 found missing survive it, template by template
+    for before, after in zip(ex.scenario.templates, back.templates, strict=True):
+        assert before == after

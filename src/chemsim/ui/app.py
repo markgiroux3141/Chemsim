@@ -28,6 +28,23 @@ Three things on screen exist because of measurements rather than taste:
 * **the recipe panel** -- the script, growing as the player works. A run is a pure
   function of (scenario, script), so this is the artifact, and it is visible
   rather than hidden behind a Save button.
+
+P4 added two more, and both are the same principle one step further on:
+
+* **the Bench tab** -- the shelf as a picker. 71 tiered rows, or all 1167 priced
+  species, or all 1583 with the 416 refusals GREYED AND CARRYING THEIR REASON.
+  A player who cannot find a species has to be told the engine declines to price
+  it, not left to conclude the game is broken (``GAME_DESIGN.md`` 8.3). ⚠ And
+  choosing rows BUILDS THE WORLD rather than filling a list: a network is derived
+  from its feed, so the selection is the scenario and the world is rebuilt when
+  it changes;
+* **REACT FURTHER** -- the control that raises the generation bound. One
+  generation is an approximation that touches MATTER, which is admissible only
+  because it is never silent; a bound the player can see and lift is a choice
+  rather than an approximation. ⚠ It raises the SPECIES CAP as well, and that is
+  not a convenience: at ``generations=2`` four bench reagents hit 400 species, so
+  the bound that BITES is the cap and bumping generations alone would have been a
+  button that did nothing. P1 found the same thing from the other side.
 """
 
 from __future__ import annotations
@@ -37,11 +54,20 @@ import time
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 
-from chemsim.ui.examples import Example, load, titles
+from chemsim.engine import inventory as inv
+from chemsim.engine.scenario import Scenario
+from chemsim.ui.examples import Example, bench, load, rebuilt, titles
 from chemsim.ui.session import DEFAULT_CHUNK, Load, Session
 from chemsim.vessel import Condition
 
 POLL_MS = 120
+
+# How far REACT FURTHER moves each bound. The generation step is 1 because a
+# generation is the mechanic; the species step is large because the cap is a
+# tractability limit rather than a chemical one and a 400 -> 401 rebuild would be
+# a button that appeared to do nothing.
+GENERATION_STEP = 1
+SPECIES_STEP = 300
 
 # The reports panel's heading, kept as a constant because the panel appends the
 # unexplored-frontier count to it and has to be able to take it off again.
@@ -220,6 +246,17 @@ class App:
         ttk.Button(drive, text="Stop", command=self.session.stop).grid(
             row=0, column=7, padx=8)
 
+        # ⚠ THE CONTROL THAT LIFTS THE BOUND, next to the one that spends time,
+        # because "this flask has more to give" is an answer to the same question
+        # Step is. The reports heading is where the player is told there is a
+        # frontier at all; this is where they do something about it.
+        self.further = ttk.Button(drive, text="React further",
+                                  command=self._react_further)
+        self.further.grid(row=2, column=0, columnspan=2, sticky=tk.W, pady=(8, 0))
+        self.further_label = ttk.Label(drive, text="", style="Dim.TLabel")
+        self.further_label.grid(row=2, column=2, columnspan=6, sticky=tk.W,
+                                pady=(8, 0))
+
         # --- charge
         charge = ttk.Frame(book, padding=6)
         book.add(charge, text="Charge")
@@ -333,6 +370,79 @@ class App:
                        "is carried into whatever you charge it into.").grid(
             row=2, column=0, columnspan=7, sticky=tk.W, pady=(6, 0))
 
+        self._build_bench(book)
+
+    def _build_bench(self, book) -> None:
+        """The picker: the shelf as data, and choosing rows BUILDS the world.
+
+        ⚠ It is a Treeview and not a Listbox for one reason that is not
+        cosmetic: a refused row has to be VISIBLE, GREYED and CARRYING ITS
+        REASON, and a Listbox has no per-row colour and no second column. 416 of
+        1583 corpus species cannot be priced, and a picker that hid them would
+        make the element floor look like a missing feature.
+        """
+        bench_tab = ttk.Frame(book, padding=6)
+        book.add(bench_tab, text="Bench")
+
+        top = ttk.Frame(bench_tab)
+        top.pack(fill=tk.X)
+        self.tier_vars: dict[str, tk.BooleanVar] = {}
+        for tier in inv.TIERS:
+            var = tk.BooleanVar(value=True)
+            self.tier_vars[tier] = var
+            ttk.Checkbutton(top, text=tier, variable=var,
+                            command=self._refill_bench).pack(side=tk.LEFT, padx=(0, 8))
+        ttk.Separator(top, orient=tk.VERTICAL).pack(side=tk.LEFT, fill=tk.Y, padx=6)
+        # ⚠ A SEPARATE AXIS AND NOT A FOURTH TIER (GAME_DESIGN.md 8.5). Every
+        # priced species at once, for exploration and for pointing the picker at
+        # 1167 rows to find out what that costs.
+        self.cheat = tk.BooleanVar(value=False)
+        ttk.Checkbutton(top, text="all priced species (cheat)", variable=self.cheat,
+                        command=self._refill_bench).pack(side=tk.LEFT)
+        self.show_refused = tk.BooleanVar(value=False)
+        ttk.Checkbutton(top, text="show refused", variable=self.show_refused,
+                        command=self._refill_bench).pack(side=tk.LEFT, padx=8)
+        ttk.Label(top, text="find").pack(side=tk.LEFT, padx=(12, 2))
+        self.search = ttk.Entry(top, width=18)
+        self.search.pack(side=tk.LEFT)
+        self.search.bind("<KeyRelease>", lambda _e: self._refill_bench())
+
+        box = ttk.Frame(bench_tab)
+        box.pack(fill=tk.BOTH, expand=True, pady=(6, 2))
+        bar = ttk.Scrollbar(box, orient=tk.VERTICAL)
+        bar.pack(side=tk.RIGHT, fill=tk.Y)
+        self.bench_tree = ttk.Treeview(
+            box, columns=("tier", "mol", "phase", "why"), show="tree headings",
+            height=8, selectmode="extended", yscrollcommand=bar.set)
+        for col, title, width, anchor in (
+            ("#0", "species", 200, tk.W), ("tier", "tier", 90, tk.W),
+            ("mol", "mol", 60, tk.E), ("phase", "phase", 60, tk.W),
+            ("why", "where it comes from, or why it is refused", 420, tk.W),
+        ):
+            self.bench_tree.heading(col, text=title)
+            self.bench_tree.column(col, width=width, anchor=anchor,
+                                   stretch=(col == "why"))
+        self.bench_tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        bar.configure(command=self.bench_tree.yview)
+        self.bench_tree.tag_configure("refused", foreground="#999999")
+        self.bench_tree.bind("<<TreeviewSelect>>", lambda _e: self._bench_picked())
+
+        foot = ttk.Frame(bench_tab)
+        foot.pack(fill=tk.X, pady=(4, 0))
+        ttk.Button(foot, text="Pour selected into a fresh flask",
+                   command=self._pour_bench).pack(side=tk.LEFT)
+        ttk.Label(foot, text="generations").pack(side=tk.LEFT, padx=(12, 2))
+        self.bench_gens = ttk.Entry(foot, width=5)
+        self.bench_gens.insert(0, "1")
+        self.bench_gens.pack(side=tk.LEFT)
+        ttk.Label(foot, text="species cap").pack(side=tk.LEFT, padx=(10, 2))
+        self.bench_cap = ttk.Entry(foot, width=6)
+        self.bench_cap.insert(0, "400")
+        self.bench_cap.pack(side=tk.LEFT)
+        self.bench_count = ttk.Label(foot, text="", style="Dim.TLabel")
+        self.bench_count.pack(side=tk.RIGHT)
+        self._refill_bench()
+
     def _build_footer(self, parent) -> None:
         bar = ttk.Frame(parent, padding=(8, 2))
         bar.pack(side=tk.TOP, fill=tk.X)
@@ -428,6 +538,156 @@ class App:
         self.session.charge_stock(self._vessel(), shelf[picked[0]],
                                   _float(self.stock_fraction, 1.0))
 
+    # -- the bench --------------------------------------------------------
+
+    def _bench_rows(self) -> list:
+        """What the picker should be showing, given the toggles and the search."""
+        if self.cheat.get():
+            items = list(inv.roster() if self.show_refused.get()
+                         else inv.all_priced())
+        else:
+            tiers = tuple(t for t in inv.TIERS if self.tier_vars[t].get())
+            items = list(inv.shelf(tiers)) if tiers else []
+            if not self.show_refused.get():
+                items = [i for i in items if i.chargeable]
+        needle = self.search.get().strip().lower()
+        if needle:
+            items = [i for i in items
+                     if needle in i.name.lower() or needle in i.id.lower()]
+        return items
+
+    def _refill_bench(self) -> None:
+        """Rebuild the picker's rows, keeping what was selected where it survives.
+
+        ⚠ Rebuilt only from a TOGGLE, never from the poll -- the vessel list and
+        the shelf list both learned that lesson. A tree rebuilt eight times a
+        second loses the selection under the player's cursor, which is the
+        selection the Pour button reads.
+        """
+        keep = {self.bench_tree.item(i, "text") for i in self.bench_tree.selection()}
+        self.bench_tree.delete(*self.bench_tree.get_children())
+        self._bench_items = {}
+        for item in self._bench_rows():
+            why = item.refusal.splitlines()[0] if item.refusal else item.note
+            iid = self.bench_tree.insert(
+                "", tk.END, text=item.name,
+                values=(item.tier, f"{item.amount:g}", item.phase, why),
+                tags=() if item.chargeable else ("refused",),
+            )
+            self._bench_items[iid] = item
+            if item.name in keep:
+                self.bench_tree.selection_add(iid)
+        refused = sum(1 for i in self._bench_items.values() if not i.chargeable)
+        self.bench_count.configure(
+            text=f"{len(self._bench_items)} rows"
+                 + (f", {refused} refused a price" if refused else "")
+        )
+
+    def _bench_picked(self) -> None:
+        """Say why a greyed row is greyed, in the engine's own words.
+
+        ⚠ 8.3: a refused species may not be silently absent AND may not be
+        chargeable-then-failing. Greying it satisfies the first; putting the
+        reason where a click lands satisfies the second, because the player finds
+        out before pouring rather than after.
+        """
+        picked = [self._bench_items[i] for i in self.bench_tree.selection()
+                  if i in self._bench_items]
+        bad = [i for i in picked if not i.chargeable]
+        if bad:
+            self._show_error(
+                f"{bad[0].name} cannot be charged into a flask.\n\n"
+                f"{bad[0].refusal}\n\n"
+                f"That refusal is the element floor working rather than a gap: a "
+                f"group-contribution estimator outside its domain returns a "
+                f"well-formed number that means nothing -- Joback prices Cl2 at "
+                f"-74.81 kJ/mol where the answer is 0 by definition. "
+                f"{inv.counts()['refused']} of {inv.counts()['corpus']} corpus "
+                f"species are refused."
+            )
+
+    def _pour_bench(self) -> None:
+        """Build a world from the selection. ⚠ THE SELECTION *IS* THE SCENARIO.
+
+        P2's finding: ``Vessel.charge_state`` refuses a species the network does
+        not carry, and a network is derived from its feed -- so choosing shelf
+        rows is not filling a list, it is defining the world, and the world has
+        to be rebuilt. ``inventory.scenario_for`` owns the two guarantees; this
+        method only collects the rows and says what happened.
+        """
+        picked = [self._bench_items[i] for i in self.bench_tree.selection()
+                  if i in self._bench_items]
+        live = [i for i in picked if i.chargeable]
+        if not live:
+            self._show_error(
+                "Pick at least one species that is not greyed. A greyed row is "
+                "refused a price by the element floor and cannot enter a flask."
+            )
+            return
+        gens = int(_float(self.bench_gens, 1.0))
+        self.example = bench(
+            live, generations=(None if gens <= 0 else gens),
+            max_species=int(_float(self.bench_cap, 400.0)),
+        )
+        self.example_box.set(self.example.title)
+        self._selected = ""
+        self._open(self.example)
+        skipped = len(picked) - len(live)
+        self._show_error(
+            f"Poured {len(live)} species into a fresh 1 L flask at "
+            f"{'a fixpoint' if gens <= 0 else f'{gens} generation(s)'}"
+            + (f"; skipped {skipped} refused row(s)" if skipped else "")
+            + ".\n\nThe network is being built on the worker thread -- watch the "
+              "reports panel. Its heading says whether the flask has more to "
+              "give, and REACT FURTHER on the Drive tab is how you ask for it."
+        )
+
+    def _react_further(self) -> None:
+        """Raise the network bounds and replay the recipe against a deeper set.
+
+        ⚠⚠ **IT RAISES THE SPECIES CAP AS WELL, AND THAT IS THE WHOLE REASON THIS
+        IS NOT A ONE-LINER.** The two bounds compete, and at ``generations=2``
+        four ordinary bench reagents hit 400 species -- so on a capped network the
+        bound that BIT is the cap, and a button that only bumped ``generations``
+        would rebuild an identical network and look broken. Measured: glucose,
+        water and air give 400 species and 653 reactions at both 2 and 3
+        generations. P1 found the same competition from the other side, in the
+        frontier report.
+
+        ⚠ And it replays the RECIPE, which is a different claim from "continue
+        from here" -- see ``examples.rebuilt``. Stated in the message rather than
+        left for a player to infer from a number that moved.
+        """
+        snap = self.session.snapshot()
+        scenario = self.example.scenario
+        if scenario.generations is None:
+            self._show_error(
+                "This world is already built to a FIXPOINT -- every reaction the "
+                "templates can find on these species is in the network, so there "
+                "is no bound left to raise. An empty frontier here is a fact "
+                "about the chemistry rather than a limit."
+            )
+            return
+        gens = scenario.generations + GENERATION_STEP
+        capped = len(snap.species) >= scenario.max_species
+        cap = scenario.max_species + (SPECIES_STEP if capped else 0)
+        self.example = rebuilt(self.example, generations=gens, max_species=cap)
+        # ⚠ The CURRENT script, not the opening: the player has done things and a
+        # replay of the opening alone would throw the experiment away.
+        self.session.submit(Load(self.example.scenario, snap.script,
+                                 self.example.title))
+        self._show_error(
+            f"Generation bound {scenario.generations} -> {gens}"
+            + (f", species cap {scenario.max_species} -> {cap} (the cap is what "
+               f"stopped the last build, not the generation bound)" if capped
+               else f", species cap left at {scenario.max_species}")
+            + f".\n\nThe {len(snap.script)}-step recipe is being replayed against "
+              f"the deeper reaction set. ⚠ That is 'the experiment re-done knowing "
+              f"more chemistry', not 'the flask carried on from here': a species "
+              f"discovered in the new generation was available from t = 0 on the "
+              f"replay. The bound is raised, not hidden."
+        )
+
     def _condition_changed(self) -> None:
         label = self.cond_box.get()
         _, _, default, needs = next(c for c in CONDITIONS if c[0] == label)
@@ -463,7 +723,17 @@ class App:
         # stores the conditions waited on and never the instants they resolved to,
         # so replaying it against a different charge waits the right length of
         # time rather than the remembered one. See ``World.script``.
+        #
+        # ⚠⚠ AND THE WHOLE SCENARIO, NOT ONLY ITS KEY, WHICH P4 HAD TO FIX BEFORE
+        # IT COULD SHIP EITHER OF ITS CONTROLS. The file used to hold
+        # ``{"example": key, "script": [...]}``, which is enough only while every
+        # world is one of four hard-coded ones. A bench world is a shelf
+        # selection and has no key; a world that has been REACTED FURTHER differs
+        # from its key's scenario by exactly the bound that was raised. Both would
+        # have reloaded as something else -- silently, and looking fine.
         payload = {"example": self.example.key,
+                   "title": self.example.title,
+                   "scenario": self.example.scenario.to_dict(),
                    "script": list(self.session.snapshot().script)}
         with open(path, "w", encoding="utf-8") as fh:
             json.dump(payload, fh, indent=1)
@@ -481,11 +751,25 @@ class App:
             with open(path, encoding="utf-8") as fh:
                 payload = json.load(fh)
             self.example = load(payload.get("example", "flask"))
+            # ⚠ THE SAVED SCENARIO WINS WHERE THERE IS ONE, and a file without
+            # one still opens: pre-P4 saves hold only the key, and the key's own
+            # scenario is the right answer for them.
+            if payload.get("scenario"):
+                from dataclasses import replace as _replace
+
+                self.example = _replace(
+                    self.example,
+                    scenario=Scenario.from_dict(payload["scenario"]),
+                    title=payload.get("title", self.example.title),
+                )
             script = tuple(payload["script"])
         except Exception as exc:                                # noqa: BLE001
             messagebox.showerror("chemsim", f"{path}\n\n{exc}")
             return
-        self.example_box.set(self.example.title)
+        self.example_box.set(
+            self.example.title if self.example.title in
+            [t for _k, t in titles()] else self.example_box.get()
+        )
         self.session.submit(Load(self.example.scenario, script, self.example.title))
 
     def _show_error(self, text: str) -> None:
@@ -640,6 +924,27 @@ class App:
             f"{REPORTS_HEAD}   [{len(snap.unexpanded)} species discovered and "
             f"not reacted further -- this flask has more to give]"
         )
+        # ⚠ THE CONTROL SAYS WHICH BOUND IS IN FORCE, ALWAYS -- not only when
+        # there is a frontier. "Built to a fixpoint" and "bounded at one
+        # generation with nothing left over" are different states of the world
+        # and a blank label would make them look the same.
+        scenario = self.example.scenario
+        if scenario.generations is None:
+            self.further_label.configure(
+                text="built to a FIXPOINT -- no bound to raise")
+            self.further.state(["disabled"])
+        else:
+            capped = len(snap.species) >= scenario.max_species
+            self.further_label.configure(
+                text=f"bound: {scenario.generations} generation(s), "
+                     f"{len(snap.species)} of at most {scenario.max_species} "
+                     f"species"
+                     + ("  <- THE CAP IS WHAT BIT, so this raises it too"
+                        if capped else "")
+                     + (f"  ({len(snap.unexpanded)} on the frontier)"
+                        if snap.unexpanded else "  (frontier empty)")
+            )
+            self.further.state(["!disabled"])
 
     def close(self) -> None:
         self.session.close()

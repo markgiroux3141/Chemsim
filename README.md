@@ -301,6 +301,26 @@ one's 10% is acetic acid and the other's is water. Impurities are therefore
 carried individually and forever: a contaminant introduced in step 1 is still
 there in step 6, and the bottle carries the script that made it.
 
+And there is a **shelf to pour from**. `data/catalog/shelf.psv` is 71 hand-kept
+rows in three tiers — `natural` (out of the ground, the air, or something
+living), `intermediate` (a stranded route makes it, so it is earnable and the row
+gets deleted the day it becomes reachable) and `bottle` (nothing in 173 routes
+makes it) — with an all-priced cheat axis of 1167 species behind it and, in the
+picker, all 1583 with **416 shown greyed and carrying the engine's own reason for
+refusing to price them**. Choosing rows BUILDS the world, because a reaction
+network is derived from its feed. A step is one generation — *what can the things
+in this flask do, once* — and the species it discovered and never expanded are
+reported, so **REACT FURTHER raises the bound rather than hiding it**.
+
+⚠ A mineral is where that gets interesting: this engine holds a solid two
+incompatible ways — as a **lattice**, which calcines, roasts and reduces, or as
+its **ions in the solid block**, which dissolve and precipitate through a
+solubility product — and nothing converts one into the other. Measured, 0.5 mol
+into 30 mol of water: rock salt as ions dissolves completely, and the same rock
+salt as its lattice sits there for ever. So every mineral row has to pick the
+representation whose mechanics exist, and on six rows the pick costs the row its
+other mechanic.
+
 ## Three phases, ions, and gas-phase reaction
 
 The vessel state is now `[n_liquid | n_gas | n_solid | T]`.

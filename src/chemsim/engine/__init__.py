@@ -4,6 +4,7 @@ World state, ``step(dt)``, save/load, and player events. See ``world.World``.
 """
 
 from chemsim.engine.events import ALL_KINDS, Event
+from chemsim.engine.inventory import ShelfItem, all_priced, scenario_for, shelf
 from chemsim.engine.scenario import (
     EDGE_KINDS,
     EdgeSpec,
@@ -25,5 +26,9 @@ __all__ = [
     "ALL_KINDS",
     "Stock",
     "Shelf",
+    "ShelfItem",
+    "shelf",
+    "all_priced",
+    "scenario_for",
     "SAVE_VERSION",
 ]
