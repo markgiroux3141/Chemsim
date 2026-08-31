@@ -1,7 +1,12 @@
 """``python -m chemsim.ui`` -- open the window.
 
 An optional example key picks what is already loaded: ``flask``, ``boil``,
-``ester`` or ``prep``.
+``ester``, ``prep`` or ``bench``.
+
+⚠ ``bench`` is the playable one (P4): a flask holding whatever was taken off
+``data/catalog/shelf.psv``, explored ONE GENERATION deep, with every template in
+the project loaded. The Bench tab re-picks the shelf and REACT FURTHER on the
+Drive tab raises the bound.
 """
 
 from __future__ import annotations
