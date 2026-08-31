@@ -277,15 +277,61 @@ class App:
         self.pour_target.grid(row=0, column=5)
         ttk.Button(move, text="Pour", command=self._transfer).grid(
             row=0, column=6, padx=8)
-        ttk.Label(move, text="Filter into").grid(row=1, column=0, sticky=tk.W,
-                                                 pady=(8, 0))
+        # ⚠ TWO DESTINATIONS, BECAUSE A FILTRATION HAS TWO STREAMS AND THIS
+        # PANEL USED TO OFFER ONE. It sent ``to=`` in the payload, which the
+        # FILTER event does not read -- its keys are ``filtrate`` and ``cake`` --
+        # so the vessel picked in the dropdown received nothing and the whole
+        # flask was DISCARDED, silently and every time. Measured on a 1 mol
+        # charge: "filter flask: cake 0.0000 mol solid + 0.0000 mol liquor ->
+        # discarded; filtrate 1.0000 mol -> discarded". The engine said so in the
+        # transfer log all along; nothing was reading it. Present since the
+        # button existed.
+        ttk.Label(move, text="Filter: filtrate to").grid(row=1, column=0,
+                                                         sticky=tk.W, pady=(8, 0))
         self.filter_target = ttk.Combobox(move, width=16, state="readonly", values=[])
-        self.filter_target.grid(row=1, column=1, columnspan=2, sticky=tk.W,
-                                pady=(8, 0))
-        ttk.Label(move, text="cake porosity").grid(row=1, column=3, padx=4)
-        self.porosity = _entry(move, "0.4", 6, row=1, col=4)
+        self.filter_target.grid(row=1, column=1, sticky=tk.W, pady=(8, 0))
+        ttk.Label(move, text="cake to").grid(row=1, column=2, padx=4)
+        self.cake_target = ttk.Combobox(move, width=16, state="readonly", values=[])
+        self.cake_target.grid(row=1, column=3, sticky=tk.W, pady=(8, 0))
+        ttk.Label(move, text="cake porosity").grid(row=1, column=4, padx=4)
+        self.porosity = _entry(move, "0.4", 6, row=1, col=5)
         ttk.Button(move, text="Filter", command=self._filter).grid(
             row=1, column=6, padx=8, pady=(8, 0))
+
+        # --- the shelf: the two verbs that close the loop
+        shelf = ttk.Frame(book, padding=6)
+        book.add(shelf, text="Shelf")
+        ttk.Label(shelf, text="Bottle").grid(row=0, column=0, sticky=tk.W)
+        self.bottle_fraction = _entry(shelf, "1.0", 6, row=0, col=1)
+        ttk.Label(shelf, text="of the").grid(row=0, column=2, padx=4)
+        self.bottle_phase = ttk.Combobox(
+            shelf, width=10, state="readonly",
+            values=("all", "liquid", "lower", "upper", "gas", "solid"))
+        self.bottle_phase.current(0)
+        self.bottle_phase.grid(row=0, column=3)
+        ttk.Label(shelf, text="as").grid(row=0, column=4, padx=4)
+        self.bottle_name = _entry(shelf, "", 26, row=0, col=5)
+        ttk.Button(shelf, text="Bottle it", command=self._bottle).grid(
+            row=0, column=6, padx=8)
+
+        ttk.Label(shelf, text="On the shelf").grid(row=1, column=0, sticky=tk.NW,
+                                                   pady=(8, 0))
+        self.shelf_list = tk.Listbox(shelf, height=4, width=72,
+                                     exportselection=False,
+                                     font=("Consolas", 8))
+        self.shelf_list.grid(row=1, column=1, columnspan=5, sticky=tk.W,
+                             pady=(8, 0))
+        pour = ttk.Frame(shelf)
+        pour.grid(row=1, column=6, sticky=tk.NW, padx=8, pady=(8, 0))
+        ttk.Button(pour, text="Charge it", command=self._charge_stock).pack()
+        self.stock_fraction = ttk.Entry(pour, width=6)
+        self.stock_fraction.insert(0, "1.0")
+        self.stock_fraction.pack(pady=2)
+        ttk.Label(shelf, style="Dim.TLabel",
+                  text="A stock is the whole composition and its temperature -- "
+                       "purity is derived for display, and every impurity in it "
+                       "is carried into whatever you charge it into.").grid(
+            row=2, column=0, columnspan=7, sticky=tk.W, pady=(6, 0))
 
     def _build_footer(self, parent) -> None:
         bar = ttk.Frame(parent, padding=(8, 2))
@@ -352,12 +398,35 @@ class App:
                         phase=self.pour_phase.get())
 
     def _filter(self) -> None:
-        target = self.filter_target.get()
-        if not target:
-            self._show_error("Pick a vessel to filter into.")
+        filtrate = self.filter_target.get()
+        cake = self.cake_target.get()
+        if not filtrate and not cake:
+            self._show_error(
+                "Pick where the filtrate and the cake go. Leaving one blank "
+                "discards that stream, which is a real bench action -- but "
+                "discarding both is not a filtration."
+            )
             return
-        self.session.do("filter", self._vessel(), to=target,
+        self.session.do("filter", self._vessel(),
+                        filtrate=filtrate or None, cake=cake or None,
                         porosity=_float(self.porosity, 0.4))
+
+    def _bottle(self) -> None:
+        self.session.bottle(
+            self._vessel(),
+            name=self.bottle_name.get().strip(),
+            fraction=_float(self.bottle_fraction, 1.0),
+            phase=self.bottle_phase.get(),
+        )
+
+    def _charge_stock(self) -> None:
+        picked = self.shelf_list.curselection()
+        shelf = self.session.snapshot().shelf
+        if not picked or picked[0] >= len(shelf):
+            self._show_error("Pick a stock on the shelf to charge.")
+            return
+        self.session.charge_stock(self._vessel(), shelf[picked[0]],
+                                  _float(self.stock_fraction, 1.0))
 
     def _condition_changed(self) -> None:
         label = self.cond_box.get()
@@ -488,11 +557,26 @@ class App:
         others = [n for n in names if n != self._selected]
         self.pour_target.configure(values=others)
         self.filter_target.configure(values=others)
+        self.cake_target.configure(values=[""] + others)
         if others and not self.pour_target.get():
             self.pour_target.set(others[0])
             self.filter_target.set(others[0])
         self.charge_species.configure(values=list(snap.species))
         self.cond_species.configure(values=list(snap.species))
+
+        # ⚠ REBUILT ONLY WHEN IT CHANGES, like the vessel list above it: this
+        # runs on every poll, and a Listbox rebuilt eight times a second loses
+        # the selection under the player's cursor -- which is the selection the
+        # Charge button reads. The same reason ``_set_text`` restores a scroll
+        # position rather than resetting it.
+        lines = [_stock_line(st) for st in snap.shelf]
+        if list(self.shelf_list.get(0, tk.END)) != lines:
+            keep = self.shelf_list.curselection()
+            self.shelf_list.delete(0, tk.END)
+            for line in lines:
+                self.shelf_list.insert(tk.END, line)
+            if keep and keep[0] < len(lines):
+                self.shelf_list.selection_set(keep[0])
 
         _set_text(self.blurb, f"{self.example.title}\n\n{self.example.blurb}")
         _set_text(self.recipe, _recipe_lines(snap.script))
@@ -615,8 +699,48 @@ def _recipe_lines(script) -> str:
             out.append(f"wait   {what}  (timeout {entry['timeout']:g} s)")
         elif do == "schedule":
             ev = entry["event"]
-            out.append(f"do     {ev['kind']} {ev.get('vessel', '')}")
+            p = ev.get("payload", {})
+            if ev["kind"] == "bottle":
+                out.append(
+                    f"bottle {ev.get('vessel', '')} as "
+                    f"{p.get('name') or '(unnamed)'}"
+                    + ("" if p.get("phase", "all") == "all"
+                       else f"  [{p['phase']} only]")
+                )
+            elif ev["kind"] == "charge_stock":
+                # ⚠ The line names the LABEL and what replays is the
+                # COMPOSITION, which are deliberately not the same thing --
+                # see ``events.CHARGE_STOCK``. So it says how much of what went
+                # where and leaves the mole vector in the file.
+                n = len(p.get("state", {}).get("n_liquid", {}))
+                out.append(
+                    f"pour   {p.get('fraction', 1.0):g} of the stock "
+                    f"{p.get('label') or '(unnamed)'} into "
+                    f"{ev.get('vessel', '')}  ({n} dissolved species)"
+                )
+            else:
+                out.append(f"do     {ev['kind']} {ev.get('vessel', '')}")
     return "\n".join(out) or "(nothing yet)"
+
+
+def _stock_line(stock) -> str:
+    """One shelf row. ⚠ The purity is a LABEL and it says which basis it is on.
+
+    ``GAME_DESIGN.md`` section 1: purity is derived for display and is never
+    state. A wet crop is 50 mol% and 13 wt% water, so a bare percentage on a
+    shelf row would be the one number that means neither -- and the count of
+    what else is in the bottle is beside it because that is the thing a player
+    actually has to reason about.
+    """
+    major = stock.major("mass")
+    if not major:
+        return f"{stock.name:<26.26}  (empty)"
+    others = len(stock.amounts()) - 1
+    return (
+        f"{stock.name:<26.26} {stock.total:9.4g} mol {stock.state.T:7.1f} K  "
+        f"{100.0 * stock.purity('mass'):6.2f} wt% {major:<18.18}"
+        + (f" +{others}" if others else "")
+    )
 
 
 def launch(example_key: str = "flask") -> None:

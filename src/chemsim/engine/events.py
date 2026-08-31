@@ -102,7 +102,41 @@ SWAP_RECEIVER = "swap_receiver"
 # Distinct from SWAP_RECEIVER because a dropping funnel is throttled, not moved.
 SET_EDGE = "set_edge"
 
+# payload: {name: str, fraction: float, phase: str, note: str}
+#
+# ⚠ THE VERB THAT CLOSES THE LOOP, AND THE ONLY ONE OF THE TWO THAT WAS MISSING.
+# It takes a share of a vessel's contents out of the world and puts it on
+# ``World.shelf`` as a ``Stock`` -- a named ``VesselState``, never a
+# ``(name, purity)`` pair (``GAME_DESIGN.md`` section 1). ``phase`` takes
+# ``Vessel.withdraw``'s words and defaults to ``"all"``: the contents of the
+# flask and not its headspace.
+#
+# ⚠ It is an ordinary Event and not a scripted verb, because the instant a
+# player bottles something is DECLARED rather than discovered -- unlike a cut
+# point or the end of a dropwise addition, which are roots. So it carries an
+# absolute ``t`` honestly, goes through the queue in submission order, and
+# appears in the script as the ``schedule`` entry it is.
+BOTTLE = "bottle"
+
+# payload: {label: str, state: {T, t, n_liquid, n_liquid2, n_gas, n_solid},
+#           fraction: float}
+#
+# The other half: pour a stored stock into a flask. ⚠ **THE COMPOSITION IS
+# INLINED IN THE PAYLOAD AND THE SHELF IS NOT CONSULTED**, for two reasons that
+# both matter. A run is a pure function of (scenario, script), so a charge that
+# named a shelf entry would depend on an inventory living outside both. And
+# section 1's whole point is that two bottles labelled the same behave
+# differently -- so a recipe that recorded the LABEL would be a recipe that
+# meant something different when replayed against a different bottle of
+# "ethanol, 95%". The label is carried too, but only as provenance for a reader.
+#
+# ⚠ Distinct from CHARGE, which adds moles at no stated temperature. A stock is
+# a STATE: it has a temperature, both liquid layers and a solid heap, and
+# pouring a hot one into a cold flask has to matter. See ``Vessel.charge_state``.
+CHARGE_STOCK = "charge_stock"
+
 ALL_KINDS = frozenset({
     CHARGE, SET_HEAT, SET_ENVIRONMENT, SET_VENT, SET_STIRRING, SET_SHAKING,
     TRANSFER, FILTER, FILL_HEADSPACE, SWAP_RECEIVER, SET_EDGE,
+    BOTTLE, CHARGE_STOCK,
 })

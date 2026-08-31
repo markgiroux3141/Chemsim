@@ -146,8 +146,88 @@ as lower layers gain phases, and a save written today must fail loudly against a
 future reader instead of silently shifting one block into another.
 :::
 
-The version has been bumped for real, once, when the dropping funnel's
-conditional drip became expressible (Chapter 22).
+The version has been bumped for real several times --- a second liquid layer, the
+script, the apparatus, the dropping funnel's conditional drip (Chapter 22), and
+the shelf below. Each time for the same reason: an older save would have *loaded
+cleanly and meant something different*.
+
+## The shelf: two verbs, and a stock is a composition
+
+The loop a player actually plays is: take two things off a shelf, pour them into
+a flask, do something, read what came out, put the result back on the shelf under
+a name. Two verbs close it.
+
+| | | |
+|---|---|---|
+| **`BOTTLE`** | vessel $\rightarrow$ shelf | name the current `VesselState` and store it |
+| **`CHARGE_STOCK`** | shelf $\rightarrow$ vessel | pour a stored stock into a flask |
+
+::: {.keypoint title="A stock is a VesselState, never (name, purity)"}
+An inventory item is the full per-phase mole vector plus a temperature. Purity is
+**derived** for display and is never state.
+
+Two bottles honestly labelled "90 mol% ethanol" behave differently if one's 10%
+is water and the other's is acetic acid --- measured, at 353 K for two hours: one
+makes ethyl acetate and the other makes none. A purity scalar cannot tell them
+apart, and every gate in the game design reads a composition.
+:::
+
+Three consequences fall out without any new physics.
+
+**Impurities are carried individually and forever**, because they are simply *in*
+the mole vector. A contaminant introduced in step 1 is still there in step 6, in
+the amount arithmetic says, and the player can trace it back --- because a stock
+also carries the **script that made it**, which is a recipe rather than a
+transcript and therefore re-runs at a different scale.
+
+**A stock can react in the bottle**, which nobody designed. It has a temperature
+and a phase layout, so advancing one is an ordinary integration: wet aspirin
+hydrolyses back to salicylic acid on a shelf, ether under air makes peroxides.
+Shelf life is emergent from an inventory of compositions and a bag of nouns
+cannot do it at any price.
+
+**Bottling loses a film and a crust**, through the same two mechanics a pour
+suffers, because bottling wets the glass. Had it moved matter perfectly it would
+have been a loss-free transfer sitting beside a lossy one --- and
+bottle-and-recharge would have been the cheapest route around holdup in the game.
+
+::: {.trap title="The composition is inlined in the event; the label is not what replays"}
+`CHARGE_STOCK` carries the mole vector in its payload and never looks the stock
+up by name. A run is a pure function of (scenario, script), so a charge that
+named an inventory entry would depend on something living outside both --- and
+since two bottles labelled the same are not the same bottle, a recipe recording
+the *label* would mean something else when replayed.
+
+For the same reason `World.shelf` is a run's **output**: bottles land in it and
+no event ever consumes from it. The player's persistent shelf lives above the
+engine and draws itself down there.
+:::
+
+::: {.trap title="A replay used to drop a trailing event, and BOTTLE is one"}
+`now` schedules for the current instant and events fire *between* integrations,
+so an action taken after the last step --- which the original run applied with
+`flush` --- was left sitting in the replayed world's queue. Measured on a
+two-event script: `set_heat` 50 W gave the original `Q_input = 50.0` and the
+replay `0.0`.
+
+Pre-existing, and invisible for as long as it was because only a *trailing* event
+can be affected: anything with a `step` after it is applied by that step.
+"Bottle it and stop" is exactly a trailing event, so the shelf would have
+replayed empty. `run_script` now flushes at the end, which is trajectory-neutral
+and adds nothing to the script.
+:::
+
+::: {.trap title="A stock's provenance cannot be `the script as it stands`"}
+The script runs **ahead of the event queue** --- entries are appended when an
+action is *scheduled*. So the same run, bottled and then replayed, produced two
+stocks with identical compositions to every digit and different provenances: the
+replayed one carried the `charge_stock` that happened *afterwards*.
+
+The recipe is therefore sliced at the entry that scheduled the bottling. A recipe
+that includes what happened to a bottle after it was filled is not that bottle's
+recipe, and reading the live script would have made the field depend on when the
+queue was flushed rather than on what was done.
+:::
 
 ## What this buys, concretely
 

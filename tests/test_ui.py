@@ -389,3 +389,85 @@ def test_a_do_command_is_ordered_against_driving_calls(session):
         for e in session.world.script
     ]
     assert kinds == ["charge", "step", "charge", "step"]
+
+
+# -- the shelf: the two verbs, from the view's side ---------------------------
+
+
+def test_a_bottle_reaches_the_view_without_the_view_touching_the_engine(session):
+    """P2. The whole loop through Layer 7: charge, bottle, read the shelf off a
+    ``Snapshot``, charge that stock back into the flask.
+
+    ⚠ ``Snapshot.shelf`` carries ``Stock`` objects and that is safe for the same
+    reason everything else on a snapshot is: a ``Stock`` is frozen and copies its
+    mole dicts on construction, so nothing on it aliases a live vessel. The view
+    gets no return value from ``bottle`` -- it reads the next snapshot, which is
+    the only channel there is.
+    """
+    session.do("charge", "flask", amounts={WATER: 2.0, ETOH: 0.5})
+    session.bottle("flask", "first crop")
+    drive(session)
+
+    shelf = session.snapshot().shelf
+    assert [s.name for s in shelf] == ["first crop"]
+    stock = shelf[0]
+    assert stock.total == pytest.approx(2.5)
+    assert stock.major("mass") == WATER
+    assert 0.0 < stock.purity("mass") < 1.0
+    # the flask is empty and its species are still known to the network
+    view = session.snapshot().vessel("flask")
+    assert sum(view.liquid.values()) == pytest.approx(0.0, abs=1e-12)
+
+    session.charge_stock("flask", stock, 0.4)
+    drive(session)
+    view = session.snapshot().vessel("flask")
+    assert sum(view.liquid.values()) == pytest.approx(1.0, rel=1e-9)
+
+
+def test_the_recipe_records_a_bottling_and_a_pour_from_a_stock(session):
+    """⚠ The recipe records the stock's COMPOSITION and not its label, because
+    two bottles labelled the same are not the same bottle -- see
+    ``events.CHARGE_STOCK``. The label rides along for a reader."""
+    from chemsim.ui.app import _recipe_lines
+
+    session.do("charge", "flask", amounts={WATER: 1.0})
+    session.bottle("flask", "some water")
+    drive(session)
+    session.charge_stock("flask", session.snapshot().shelf[0], 0.5)
+    drive(session)
+
+    script = session.snapshot().script
+    kinds = [e["event"]["kind"] for e in script if e["do"] == "schedule"]
+    assert kinds == ["charge", "bottle", "charge_stock"]
+    payload = script[-1]["event"]["payload"]
+    assert payload["state"]["n_liquid"] == {WATER: pytest.approx(1.0)}
+    assert payload["label"] == "some water"
+
+    rendered = _recipe_lines(script)
+    assert "bottle flask as some water" in rendered
+    assert "0.5 of the stock some water into flask" in rendered
+
+
+def test_one_generation_play_reaches_the_snapshot(fischer_template):
+    """⚠⚠ WHAT P1 HANDED TO P2, CLOSED. ``Snapshot.unexpanded`` was correct and
+    permanently empty because ``World`` passed no ``generations`` to
+    ``build_network``, so nothing could ask for one-generation play through the
+    UI at all -- and the "react further" control P4 builds had no state to offer.
+
+    With the bound set, the frontier the builder declined to expand arrives on
+    the snapshot as data, which is what the reports panel puts in its heading.
+    """
+    from chemsim.engine.scenario import TemplateSpec
+
+    scenario = Scenario(
+        feed_species=[WATER, ETOH, "CC(=O)O"],
+        templates=[TemplateSpec.of(fischer_template)],
+        vessels={"flask": VesselSpec(volume=1.0)},
+        max_species=12,
+        generations=1,
+    )
+    with Session(scenario) as s:
+        drive(s)
+        snap = s.snapshot()
+        assert snap.unexpanded, "one generation must leave a frontier"
+        assert any("generation" in n for n in snap.notices)

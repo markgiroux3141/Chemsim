@@ -133,6 +133,26 @@ class Scenario:
     # this project has measured was measured without them.
     edges: list[EdgeSpec] = field(default_factory=list)
     max_species: int = 500
+    # ⚠⚠ HOW MANY ROUNDS OF TEMPLATE APPLICATION, OR None FOR A FIXPOINT. This
+    # is the field ``GAME_DESIGN.md`` section 8.2 rests on and it did not exist
+    # until P2: ``World.__post_init__`` called ``build_network`` with no
+    # ``generations``, so **nothing could request one-generation play through the
+    # UI at all** and ``Snapshot.unexpanded`` was correct and permanently empty.
+    #
+    # One generation is "what can the things in this flask do, ONCE", which is
+    # both the mechanic the game wants and the only tractable bound: measured in
+    # ``validation/playable_levers.py`` panel 5, five bench reagents explored two
+    # generations deep hit the 400-species cap in twelve seconds, and twelve
+    # reagents explored one deep cost under half a second.
+    #
+    # ⚠ IT IS AN APPROXIMATION THAT TOUCHES MATTER, so it may not be silent: if
+    # A + B makes C and C would react on to D, one generation shows C and never
+    # D. That is admissible only because ``build_network`` reports the frontier
+    # it did not expand, as a notice and as ``ReactionNetwork.unexpanded``, which
+    # ``Snapshot`` publishes and the reports panel puts in its heading. None --
+    # the default -- is a fixpoint, so every number this project measured before
+    # this field existed is unchanged.
+    generations: int | None = None
     T_build: float = 340.0        # temperature used for rate-aware pruning
     prune_threshold: float = 0.0  # 0 disables pruning (structural discovery)
     # Whether the network prices IONS. Without this a scenario cannot express
@@ -149,6 +169,7 @@ class Scenario:
             "vessels": {k: asdict(v) for k, v in self.vessels.items()},
             "edges": [asdict(e) for e in self.edges],
             "max_species": self.max_species,
+            "generations": self.generations,
             "T_build": self.T_build,
             "prune_threshold": self.prune_threshold,
             "electrolyte": self.electrolyte,
@@ -162,6 +183,14 @@ class Scenario:
             vessels={k: VesselSpec(**v) for k, v in d.get("vessels", {}).items()},
             edges=[EdgeSpec(**e) for e in d.get("edges", [])],
             max_species=int(d.get("max_species", 500)),
+            # ⚠ None survives the round trip as None. ``int(d.get(...))`` would
+            # turn "build to a fixpoint" into a TypeError, and a default of 0
+            # would turn it into "apply no templates at all" -- a saved scenario
+            # that quietly built an empty network.
+            generations=(
+                None if d.get("generations") is None
+                else int(d["generations"])
+            ),
             T_build=float(d.get("T_build", 340.0)),
             prune_threshold=float(d.get("prune_threshold", 0.0)),
             electrolyte=bool(d.get("electrolyte", False)),

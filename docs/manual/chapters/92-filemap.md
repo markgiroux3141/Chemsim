@@ -72,17 +72,18 @@ Sizes are lines, as a rough guide to where the weight is.
 
 | file | lines | what |
 |---|---:|---|
-| `vessel/vessel.py` | 2,563 | assembly, reporting, `pour_into`, `filter_into` |
-| `engine/world.py` | 1,040 | the stepper, the script, save/load |
-| `ui/session.py` | 579 | the worker thread; no widgets |
-| `ui/app.py` | 572 | the Tkinter view; never calls the engine |
+| `vessel/vessel.py` | 2,747 | assembly, reporting, `pour_into`, `filter_into`, `withdraw` |
+| `engine/world.py` | 1,212 | the stepper, the script, the shelf, save/load |
+| `ui/app.py` | 756 | the Tkinter view; never calls the engine |
+| `ui/session.py` | 649 | the worker thread; no widgets |
 | `vessel/conditions.py` | 359 | the `wait_until` vocabulary |
 | `vessel/rig.py` | 343 | glassware as a graph |
+| `engine/stock.py` | 340 | a bottle on a shelf: a named `VesselState` |
 | `ui/examples.py` | 240 | four worked starting points |
+| `engine/scenario.py` | 197 | what a save contains |
 | `discovery/refine.py` | 183 | rate-based network refinement |
 | `recipes.py` | 181 | curated preparations, as data |
-| `engine/scenario.py` | 168 | what a save contains |
-| `engine/events.py` | 108 | the only things that may mutate a vessel |
+| `engine/events.py` | 142 | the only things that may mutate a vessel |
 
 ## `data/catalog/` --- the coverage corpus
 

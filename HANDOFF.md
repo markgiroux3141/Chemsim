@@ -8039,3 +8039,122 @@ RESOLVED since the last handoff:
     not a finding.
 
     Scoreboard unchanged: 21 of 173 playable, 59/240 classes, 38 BOTH.
+
+114. ✔ **P2 — THE SHELF, AND TWO PRE-EXISTING BUGS THAT ONLY A LOOP COULD
+    FIND.** `BOTTLE` and `CHARGE_STOCK` are built, `engine/stock.py` is the new
+    module, `SAVE_VERSION` is **7**, and `generations` is a `Scenario` field at
+    last. The loop closes: charge a flask, do something, name what came out, and
+    pour it into the next flask.
+
+    **A stock is a `VesselState`, and that is now a MEASUREMENT.** `GAME_DESIGN.md`
+    §1 has said since it was written that an inventory item must not be
+    `(name, purity)`. Two bottles both honestly labelled *"90 mol% ethanol"* —
+    one's 10% water, the other's 10% acetic acid — charged into identical
+    flasks at 353 K for two hours: the sour one makes **9.83e-02 mol** of ethyl
+    acetate and the wet one **3.83e-11**, under the integrator's own atol and six
+    orders down. A purity scalar cannot tell those bottles apart, which is why
+    `purity()` is a method and not a field.
+
+    ⚠⚠ **AND DERIVING PURITY IS NOT ONE NUMBER — THE ONE THING §1 DID NOT
+    SAY.** 0.05 mol of benzoic acid wet with 0.05 mol of water is **50 mol% and
+    13 wt%** water, and the BIGGEST COMPONENT of that bottle is water by mole and
+    benzoic acid by mass. So the basis is an argument to `major()` as well as to
+    `purity()`: a major fixed on moles printed beside a purity quoted by mass
+    reads *"water at 87 wt%"* — **two true numbers making one false statement**,
+    which the first draft of the shelf row did.
+
+    ⚠ **BOTTLING LOSES A FILM AND A CRUST.** `Vessel.withdraw` is `pour_into`
+    with the destination removed, and it goes through the same `_withhold_film` /
+    `_withhold_crust` path, because bottling wets the glass exactly as decanting
+    does. Otherwise BOTTLE would have been a loss-free transfer sitting beside a
+    lossy one and **bottle-and-recharge would have been the cheapest route around
+    holdup in the whole game.** Cross-checked the other way: bottling a hot flask
+    and charging the stock into a cold one gives the same moles and the same final
+    temperature **to 1e-12** as pouring one flask into the other, so
+    `charge_state` is a transfer and not a new physics.
+
+    ⚠ **`World.shelf` IS A RUN'S OUTPUT, NOT THE PLAYER'S INVENTORY**, and the
+    two had to be separated for a stated reason: a run is a pure function of
+    (scenario, script), so an inventory that events could deplete would put part
+    of the run outside both. Bottles land in `World.shelf`; the persistent
+    three-tier shelf (P3) lives above the engine and draws itself down with
+    `Shelf.take`. `CHARGE_STOCK` therefore **inlines the composition in its
+    payload and never looks a stock up by name** — also because two bottles
+    labelled the same are not the same bottle, so a recipe recording the LABEL
+    would mean something else on replay.
+
+    ⚠ `Shelf.put` **never merges** two bottles arriving under one name; the
+    second is suffixed and the caller is told what it got. Adding their mole
+    vectors would invent a bottle nobody made at a mole-weighted temperature
+    nothing was ever at, and erase the exact difference §1 exists to model.
+
+    ⚠⚠⚠ **A REPLAY DROPPED A TRAILING EVENT, AND "BOTTLE IT AND STOP" IS
+    ONE. PRE-EXISTING.** `now` schedules for the current instant and events fire
+    BETWEEN integrations, so an action taken after the last step — which the
+    original run applied with `flush` — was left sitting in the replayed world's
+    queue. Measured on a two-event script: `set_heat` 50 W gave the original
+    `Q_input = 50.0` and the replay **0.0**, with one event still pending. It
+    stayed invisible because only a **trailing** event can be bitten: anything
+    with a `step` after it is applied by that step, and `Session._load` flushed by
+    hand. *P2 would have shipped a replay with an empty shelf.* `run_script`
+    flushes at the end now — trajectory-neutral, and it adds nothing to the
+    script, so it cannot change what a replay MEANS, only stop it ending early.
+
+    ⚠⚠ **A STOCK'S PROVENANCE CANNOT BE "THE SCRIPT AS IT STANDS", BECAUSE THE
+    SCRIPT RUNS AHEAD OF THE EVENT QUEUE.** Entries are appended when an action is
+    SCHEDULED, not when it fires. The same run — bottle, then charge the bottle
+    elsewhere — saved and replayed produced two stocks with **identical
+    compositions to every digit and different provenances**: the replayed one
+    carried the `charge_stock` that happened afterwards, because the bottling
+    fired during the new flush with the whole script already in place. So
+    `_provenance(seq)` slices at the entry that scheduled the bottling. *A recipe
+    that includes what happened to a bottle after it was filled is not that
+    bottle's recipe* — and reading the live script would have made the field
+    depend on when the queue was flushed rather than on what was done.
+
+    ⚠⚠ **THE UI'S FILTER BUTTON DISCARDED THE WHOLE FLASK, SILENTLY, AND HAD
+    SINCE IT EXISTED.** `app.py` sent `to=` and the FILTER event reads `filtrate`
+    and `cake`, so the vessel picked in the dropdown received nothing and both
+    streams were binned. Measured on a 1 mol charge:
+
+        t=0.0 filter flask: cake 0.0000 mol solid + 0.0000 mol liquor
+              -> discarded; filtrate 1.0000 mol -> discarded
+
+    **That is the engine's own `transfer_log`, saying exactly what happened, for
+    as long as the button has existed — on a channel nothing in the view was
+    reading.** The refluxing rig's 0.34 mol of air again, one panel over, and the
+    same lesson that moved the builder's notices in P1. Fixed with two
+    destination pickers, because a filtration has two streams and discarding one
+    of them is a real bench action that must stay sayable. ⚠ And the Transfer
+    tab's `"all"` phase, offered since the first commit, had never been
+    implemented — `pour_into` raised on it. Implemented, because BOTTLE needs the
+    same word: **the contents of the flask and NOT its headspace**, since a bottle
+    brings its own air.
+
+    **What P1 handed over is closed.** `Scenario.generations` is a field, plumbed
+    into `build_network` (default `None` = fixpoint, so every number this project
+    measured is untouched), round-tripping with `None` preserved — `int(...)`
+    would raise and a default of 0 would silently build an EMPTY network. A
+    `generations=1` session leaves ethyl acetate on the frontier, says so in a
+    notice, and publishes it as `Snapshot.unexpanded`, so **P4's "react further"
+    control has a state to offer and a bound to lift.**
+
+    New: `tests/test_stock.py` (22) and three pins in `tests/test_ui.py`. Suite
+    **1227 passed / 0 failed in 29:23** (1763.27 s, **1.4371 s per test**), run
+    alone. ⚠ **THE FIFTH DATA POINT LANDS INSIDE THE EXISTING SPREAD AND DOES NOT
+    WIDEN IT**: 1.4745 / 1.5214 / 1.4114 / 1.5410 / **1.4371** across C6, C7
+    twice, P1 and P2 — still 9.2%, which is C7's methodological finding holding
+    up rather than a new one. A 7% drop from P1 is inside the noise and is not a
+    speed-up. ⚠ And this run is the THIRD start: the first two were stopped
+    deliberately, at 5 min and at 2 min, because a `withdraw` wart and then its
+    docstring were about to change. *P1 killed a run for a non-semantic edit and
+    called that the cheap version of the mistake; the fix is to stop early and
+    restart, not to ship a green suite describing bytes that no longer exist.*
+
+    ⚠ `tolerance_audit.py` is **NOT owed and that is stated rather than
+    skipped**: it is owed by a change to an RHS, a data table
+    or network CONSTRUCTION, and P2 touched none — `generations` goes through an
+    argument `build_network` already had and is `None` in every existing scenario.
+
+    Scoreboard unchanged: 21 of 173 playable, 59/240 classes, 38 BOTH. P2 buys no
+    chemistry by design; it buys the loop.

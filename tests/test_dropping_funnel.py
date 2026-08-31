@@ -324,13 +324,19 @@ def test_the_save_format_moved_because_an_unknown_verb_fails_too_late():
     """⚠ A version-5 reader handed this script executes every entry BEFORE the
     unknown one and only then raises, leaving a half-run world that looks like a
     finished one. That is the failure a version number exists to prevent, and it
-    is why a new VERB bumps the format the way a new FIELD does."""
-    assert SAVE_VERSION == 6
+    is why a new VERB bumps the format the way a new FIELD does.
+
+    ⚠ At 7 since P2, which added the SHELF and ``Scenario.generations``. The
+    same argument twice over: a v6 reader stops at the first ``bottle`` with a
+    world that looks finished, and a v7 save read as v6 would drop the
+    generation bound and rebuild the network to a fixpoint -- a flask with
+    products in it that the saved run never had."""
+    assert SAVE_VERSION == 7
     w = _charged()
     w.add_dropwise(0, 0.02, "pot", reaches(340.0), 200.0)
     blob = w.save()
-    assert blob["version"] == 6
-    for older in (4, 5):
+    assert blob["version"] == 7
+    for older in (4, 5, 6):
         with pytest.raises(ValueError, match="version"):
             World.load(dict(blob, version=older))
         with pytest.raises(ValueError, match="version"):

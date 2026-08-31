@@ -45,7 +45,9 @@ import numpy as np
 
 from chemsim.engine.events import (
     ALL_KINDS,
+    BOTTLE,
     CHARGE,
+    CHARGE_STOCK,
     FILL_HEADSPACE,
     FILTER,
     SET_EDGE,
@@ -59,6 +61,7 @@ from chemsim.engine.events import (
     Event,
 )
 from chemsim.engine.scenario import EDGE_KINDS, Scenario, VesselSpec
+from chemsim.engine.stock import Shelf, Stock, state_from_dict, state_to_dict
 from chemsim.network import build_network
 from chemsim.properties import (
     CondensedProvider,
@@ -85,7 +88,17 @@ from chemsim.vessel import Condition, Rig, TransferLosses, Vessel, WaitOutcome
 #    completed one. A verb is a format change for the same reason ``edges``
 #    was: the failure mode of not saying so is a different experiment wearing
 #    the right name. See ``add_dropwise`` for why it could not be an Event.
-SAVE_VERSION = 6
+# 7: +the SHELF and the GENERATION BOUND -- ``World.shelf``, the BOTTLE and
+#    CHARGE_STOCK verbs, and ``Scenario.generations``. Two changes, one version,
+#    because they are the same session's work and either one alone would earn a
+#    bump. ⚠ A v6 reader handed a v7 save is the ``add_dropwise`` failure again,
+#    worse: it would execute every script entry before the first ``bottle`` and
+#    stop with a world that looks finished and a shelf that is not there. And a
+#    v7 save read as a v6 one would lose ``generations`` and rebuild the network
+#    to a FIXPOINT -- silently a different flask, with products in it that the
+#    saved run never had. That is a different experiment wearing the right name,
+#    which is what a version number is for.
+SAVE_VERSION = 7
 
 # Liquid holdup below which a dropping funnel counts as EMPTY, mol. The solver
 # is asked for atol=1e-9 per component and a meter edge drains its donor to a
@@ -112,6 +125,13 @@ class World:
     # Everything that was ever ASKED of this world, in order: events scheduled,
     # intervals stepped, and conditions waited on. See ``script`` and ``replay``.
     _script: list[dict] = field(default_factory=list, repr=False)
+    # ⚠ THE RUN'S OUTPUT, NOT THE PLAYER'S INVENTORY. Bottles land here and
+    # nothing is ever consumed from it by an event, which is what keeps a run a
+    # pure function of (scenario, script): an inventory that events could deplete
+    # would put part of the run in neither. The player's persistent shelf -- the
+    # three-tier one ``data/catalog/shelf.psv`` will hold -- lives above the
+    # engine and draws itself down with ``Shelf.take``. See ``engine.stock``.
+    shelf: Shelf = field(default_factory=Shelf, repr=False)
 
     # -- construction --------------------------------------------------------
 
@@ -131,6 +151,13 @@ class World:
             max_species=self.scenario.max_species,
             thermo=self.thermo,
             T_ref=self.scenario.T_build,
+            # ⚠ P2. This argument was not passed at all, so a world always built
+            # to a fixpoint and ``generations=1`` play -- the mechanic
+            # ``GAME_DESIGN.md`` section 8.2 is written around -- was unreachable
+            # from anything that goes through a ``Scenario``, which is everything
+            # saveable. ``None`` is the default and is the fixpoint, so nothing
+            # measured before this line moved.
+            generations=self.scenario.generations,
         )
 
         if not self.vessels:
@@ -298,6 +325,39 @@ class World:
             self._log.append(
                 f"t={self.t:.1f} transfer {ev.vessel}->{p['to']}: {moved:.4f} mol"
             )
+        elif ev.kind == BOTTLE:
+            state = v.withdraw(
+                fraction=float(p.get("fraction", 1.0)),
+                phase=str(p.get("phase", "all")),
+            )
+            stored = self.shelf.put(Stock(
+                name=str(p.get("name", "") or f"{ev.vessel} at t={self.t:.0f} s"),
+                state=state,
+                script=tuple(self._provenance(ev.seq)),
+                source=ev.vessel,
+                note=str(p.get("note", "")),
+            ))
+            self._log.append(
+                f"t={self.t:.1f} bottle {ev.vessel} -> {stored.name!r}: "
+                f"{stored.total:.4f} mol at {stored.state.T:.1f} K"
+                + (f" ({stored.major('mass')} at "
+                   f"{100.0 * stored.purity('mass'):.1f} wt%)"
+                   if stored.major('mass') else " (empty)")
+            )
+
+        elif ev.kind == CHARGE_STOCK:
+            # ⚠ READ OFF THE PAYLOAD AND NEVER OFF THE SHELF -- see
+            # ``events.CHARGE_STOCK``. Two bottles labelled the same behave
+            # differently, so a recipe that recorded the label would mean
+            # something else on replay.
+            state = state_from_dict(p["state"])
+            moved = v.charge_state(state, fraction=float(p.get("fraction", 1.0)))
+            self._log.append(
+                f"t={self.t:.1f} charge_stock {p.get('label', '?')!r} -> "
+                f"{ev.vessel}: {moved:.4f} mol from a stock at "
+                f"{state.T:.1f} K; the flask is now at {v.T:.1f} K"
+            )
+
         elif ev.kind == SWAP_RECEIVER:
             c = self._edge(int(ev.payload["edge"]))
             to = str(ev.payload["to"])
@@ -363,6 +423,34 @@ class World:
             )
         else:  # unreachable: schedule() validates the kind
             raise ValueError(f"unhandled event kind {ev.kind!r}")
+
+    def _provenance(self, seq: int) -> list[dict]:
+        """The script up to and including the entry that scheduled event ``seq``.
+
+        What a bottled ``Stock`` records as "how did I make this", and it is a
+        SLICE rather than the whole script for a reason that took a replay to
+        show. ⚠⚠ **THE SCRIPT RUNS AHEAD OF THE EVENT QUEUE**: entries are
+        appended when an action is SCHEDULED and events are applied at step
+        boundaries, so a bottling flushed late sees a script containing
+        everything asked afterwards as well. Measured -- the same run bottled and
+        then replayed produced two stocks with identical compositions to every
+        digit and different provenances, the replayed one carrying the
+        ``charge_stock`` that came after it. A recipe that includes what happened
+        to the bottle after it was filled is not the recipe for the bottle, and
+        it would have made the field quietly depend on when the queue was
+        flushed rather than on what was done.
+
+        Falls back to the whole script when the event was never scheduled, which
+        is the ``_swap``/``_set_edge`` path: those construct an ``Event`` and
+        apply it directly, precisely because their instant was discovered.
+        """
+        for i, entry in enumerate(self._script):
+            if (
+                entry.get("do") == "schedule"
+                and entry.get("event", {}).get("seq") == seq
+            ):
+                return [dict(e) for e in self._script[: i + 1]]
+        return [dict(e) for e in self._script]
 
     # -- stepping ------------------------------------------------------------
 
@@ -781,6 +869,64 @@ class World:
                           payload={"edge": int(edge), "k": float(k)}))
         self._seq += 1
 
+    # -- the SHELF: two events, one of which reads its amounts off a state ---
+
+    def bottle(
+        self,
+        vessel: str,
+        name: str = "",
+        fraction: float = 1.0,
+        phase: str = "all",
+        note: str = "",
+    ) -> Stock:
+        """Take what is in a flask, name it, and put it on the shelf.
+
+        **One of the two verbs that close the loop** (``GAME_DESIGN.md`` section
+        8.1), and the one that did not exist in any form. A convenience over
+        ``now(BOTTLE, ...)`` plus ``flush``, because a caller wants the ``Stock``
+        back -- to show it, to write it to the player's shelf, or to charge it
+        somewhere else -- and an event returns nothing but itself.
+
+        ⚠ ``flush`` is trajectory-neutral (see ``flush``), so bottling here and
+        bottling on the next step are the same experiment. The event is in the
+        script either way, at the instant it was scheduled for.
+
+        ⚠ It LOSES a film and a crust, through ``Vessel.withdraw``, for the same
+        reason a pour does: bottling wets the glass. Without that, bottle-and-
+        recharge would have been the cheapest way around holdup in the game.
+        """
+        self.now(BOTTLE, vessel, name=name, fraction=fraction, phase=phase,
+                 note=note)
+        before = set(self.shelf.stocks)
+        self.flush()
+        made = [n for n in self.shelf.stocks if n not in before]
+        # One BOTTLE event produces exactly one entry, and ``Shelf.put`` never
+        # merges, so this is a lookup rather than a search. It is written as one
+        # anyway because ``flush`` may have applied other events that were due.
+        return self.shelf.stocks[made[-1]]
+
+    def charge_stock(
+        self, vessel: str, stock: Stock, fraction: float = 1.0
+    ) -> Event:
+        """Pour a stored stock into a flask, carrying its temperature.
+
+        The other verb, and it is CHARGE with its amounts read off a stored
+        ``VesselState`` rather than typed -- plus the heat, which plain CHARGE
+        does not carry because "add 2 mol of acetic acid" says nothing about
+        temperature and a bottle off a hot plate does.
+
+        ⚠ A ``Stock``, never a shelf NAME. ``World.shelf`` is this run's output
+        and events never consume from it; a player's inventory is drawn down
+        above the engine with ``Shelf.take``, and the composition that arrives
+        here is inlined into the event so that the recipe means the same thing
+        when it is replayed. See ``engine.stock`` and ``events.CHARGE_STOCK``.
+        """
+        return self.now(
+            CHARGE_STOCK, vessel,
+            label=stock.name, state=state_to_dict(stock.state),
+            fraction=float(fraction),
+        )
+
     # -- observation ---------------------------------------------------------
 
     @property
@@ -859,6 +1005,7 @@ class World:
             "vessels": {vid: _dump_vessel(v) for vid, v in self.vessels.items()},
             "events": [e.to_dict() for e in sorted(self._queue)],
             "script": self.script,
+            "shelf": self.shelf.to_dict(),
         }
 
     @classmethod
@@ -888,6 +1035,12 @@ class World:
         # back as the history it is rather than being re-executed. ``replay`` is
         # the other door.
         world._script = [dict(entry) for entry in data.get("script", [])]
+        # The shelf comes back the same way and for the same reason. ⚠ Under
+        # ``replay`` it is not restored at all -- it is REBUILT, because the
+        # bottle events are in the script and re-running them fills it. That the
+        # two doors agree is a test rather than an assumption; see
+        # ``tests/test_stock.py``.
+        world.shelf = Shelf.from_dict(data.get("shelf"))
         return world
 
     @classmethod
@@ -932,6 +1085,24 @@ class World:
         reimplement the walk. A second copy of it is a second thing to keep in
         step with ``script``'s format, which is exactly the drift this project
         avoids elsewhere by keeping one home for a thing.
+
+        ⚠⚠ **IT FLUSHES AT THE END, AND WITHOUT THAT A REPLAY DID NOT REPRODUCE
+        ITS RUN.** Found in P2 and PRE-EXISTING: ``now`` schedules for the
+        current instant and events fire between integrations, so an action taken
+        after the last step -- which the original run applied with ``flush`` --
+        was left sitting in the replayed world's queue. Measured on a two-event
+        script, ``set_heat`` 50 W applied and then replayed: the original had
+        ``Q_input = 50.0`` and the replay had ``0.0`` with one pending event. It
+        was invisible for as long as it was because a trailing event is the only
+        one it can bite: anything with a ``step`` after it gets applied by that
+        step. ⚠ BOTTLE is exactly a trailing event -- "bottle it and stop" is how
+        every session ends -- so P2 would have shipped a replay with an empty
+        shelf.
+
+        ⚠ The flush is trajectory-neutral and adds nothing to the script (see
+        ``flush``), so this cannot change what a replay MEANS; it only stops it
+        from ending early. Events scheduled for a future instant stay queued,
+        because they are not due.
         """
         for entry in entries:
             do = entry.get("do")
@@ -967,6 +1138,7 @@ class World:
                 )
             else:
                 raise ValueError(f"unknown script entry {do!r}")
+        self.flush()
         return self
 
 

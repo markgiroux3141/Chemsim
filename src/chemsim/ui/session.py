@@ -61,6 +61,7 @@ from dataclasses import dataclass, field, replace
 
 from chemsim.engine.events import ALL_KINDS
 from chemsim.engine.scenario import Scenario
+from chemsim.engine.stock import Stock, state_to_dict
 from chemsim.engine.world import World
 from chemsim.vessel import Condition, Vessel
 
@@ -165,6 +166,12 @@ class Snapshot:
     # frontier. Making it reachable is a ``Scenario`` field and a SAVE_VERSION
     # bump -- P2's, because P2 opens that file anyway.
     unexpanded: tuple[str, ...] = ()
+    # ⚠ THE BOTTLES THIS RUN HAS PRODUCED, and they are safe to publish for the
+    # same reason everything else here is: a ``Stock`` is frozen and copies its
+    # mole dicts on construction, so nothing on this tuple aliases a live vessel.
+    # It is the RUN'S OUTPUT and not the player's inventory -- see
+    # ``engine.stock``, which is where that distinction is argued out.
+    shelf: tuple[Stock, ...] = ()
     # The last refusal, verbatim. Engine refusals name a cause and a fix and are
     # the most useful thing here when something goes wrong.
     error: str = ""
@@ -249,7 +256,13 @@ class WaitUntil(Command):
 
 @dataclass(frozen=True)
 class Reset(Command):
-    """Rebuild the world from its scenario. The recipe survives; the run does not."""
+    """Rebuild the world from its scenario. The recipe survives; the run does not.
+
+    ⚠ AND NEITHER DOES THE SHELF, which follows from what the shelf is: bottles
+    are a run's OUTPUT (``engine.stock``), so a world rebuilt from its scenario
+    has produced none yet. A player's persistent inventory is not this object and
+    is not reset by this command.
+    """
 
     def label(self) -> str:
         return "reset"
@@ -364,6 +377,30 @@ class Session:
         want = (conditions,) if isinstance(conditions, Condition) else tuple(conditions)
         self.submit(WaitUntil(vessel, want, float(timeout), float(chunk or self.chunk)))
 
+    def bottle(self, vessel: str, name: str = "", fraction: float = 1.0,
+               phase: str = "all", note: str = "") -> None:
+        """Name what is in a flask and put it on the shelf.
+
+        An ordinary ``Do``, because BOTTLE is an ordinary event: the instant a
+        player bottles something is declared, not discovered. The ``Stock`` it
+        produces appears on the next ``Snapshot``'s ``shelf`` -- the view never
+        gets a return value from anything here, and must not.
+        """
+        self.do("bottle", vessel, name=name, fraction=fraction, phase=phase,
+                note=note)
+
+    def charge_stock(self, vessel: str, stock: Stock,
+                     fraction: float = 1.0) -> None:
+        """Pour a stored stock into a flask, carrying its temperature.
+
+        ⚠ The composition is INLINED into the event here, not looked up by name
+        when it runs. Two bottles labelled the same behave differently, so a
+        recipe that recorded the label would mean something else on replay --
+        see ``events.CHARGE_STOCK``.
+        """
+        self.do("charge_stock", vessel, label=stock.name,
+                state=state_to_dict(stock.state), fraction=float(fraction))
+
     # -- the worker's half ---------------------------------------------------
 
     def _loop(self) -> None:
@@ -432,6 +469,10 @@ class Session:
         # instants a ``wait_until`` resolved to are re-discovered against whatever
         # was actually charged. See ``World.script``.
         world.run_script(command.script)
+        # ⚠ Belt and braces: ``run_script`` flushes at the end itself, since P2
+        # found that a replay left a trailing event pending and did not reproduce
+        # its own run. Kept here because it is the line that says why a freshly
+        # loaded world already shows its opening charge in the flask.
         world.flush()
         self.world = world
         self._log.clear()
@@ -543,6 +584,7 @@ class Session:
             vessel_names=tuple(self.world.vessels),
             notices=tuple(self.world.network.notices),
             unexpanded=tuple(self.world.network.unexpanded),
+            shelf=tuple(self.world.shelf),
         )
         self._snapshot = replace(base, **fields)
 

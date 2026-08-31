@@ -11,6 +11,7 @@ from chemsim.engine.scenario import (
     TemplateSpec,
     VesselSpec,
 )
+from chemsim.engine.stock import Shelf, Stock
 from chemsim.engine.world import SAVE_VERSION, World
 
 __all__ = [
@@ -22,5 +23,7 @@ __all__ = [
     "EDGE_KINDS",
     "Event",
     "ALL_KINDS",
+    "Stock",
+    "Shelf",
     "SAVE_VERSION",
 ]

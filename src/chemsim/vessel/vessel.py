@@ -1294,6 +1294,16 @@ class Vessel:
             by themselves. With one layer present, both names mean that layer.
         ``"gas"`` / ``"solid"``
             as before.
+        ``"all"``
+            **tip the flask out** -- both liquid layers and then the solid, in
+            that order. ⚠ NOT the headspace, and that is a physical claim rather
+            than an omission: tipping a flask into another vessel leaves the gas
+            behind and the receiver keeps its own. Say ``"gas"`` to move a
+            headspace, which is a different operation. ⚠ It is exactly the two
+            calls it looks like, so the temperature is mixed twice rather than
+            once -- the same answer a caller pouring the liquid and then the
+            solid by hand would get, to the accuracy of a Cp evaluated at two
+            slightly different temperatures.
 
         **Everything liquid lands in the destination's PRIMARY layer**, whatever
         it was in here. The receiving flask then decides for itself whether it
@@ -1308,10 +1318,23 @@ class Vessel:
                 "cannot pour between vessels built on different networks -- their "
                 "species indices do not correspond"
             )
-        if phase not in self._LIQUID_PHASES and phase not in ("gas", "solid"):
+        if phase not in self._LIQUID_PHASES and phase not in ("gas", "solid", "all"):
             raise ValueError(
                 f"phase must be one of 'liquid', 'lower', 'upper', 'gas', "
-                f"'solid', got {phase!r}"
+                f"'solid', 'all', got {phase!r}"
+            )
+
+        if phase == "all":
+            # ⚠ OFFERED BY THE USER INTERFACE SINCE THE FIRST COMMIT AND NEVER
+            # IMPLEMENTED: the Transfer tab's phase list has always included
+            # "all", and clicking Pour with it selected raised the refusal above.
+            # Found while building BOTTLE, which needs the same meaning of the
+            # word -- a bottle takes the flask's contents and not its air.
+            total = 0.0
+            for src in self._liquid_blocks_for("liquid"):
+                total += self._pour_block(other, src, other._nL, fraction, "liquid")
+            return total + self._pour_block(
+                other, self._nS, other._nS, fraction, "solid"
             )
 
         if phase == "gas":
@@ -1371,6 +1394,167 @@ class Vessel:
         src -= moved
         dst += moved
         return total
+
+    # -- out of the world and back in: what a BOTTLE is ----------------------
+
+    def withdraw(self, fraction: float = 1.0, phase: str = "all") -> VesselState:
+        """Take a share of the contents OUT of the vessel and return it as state.
+
+        The vessel half of BOTTLE. ``pour_into`` needs a destination ``Vessel``,
+        and a bottle on a shelf is not one -- it is plain data with no volume, no
+        boundary and no clock. So this is the same operation with the destination
+        removed: it returns a ``VesselState``, which is precisely what
+        ``engine.stock.Stock`` stores.
+
+        ⚠⚠ **IT LOSES A FILM AND A CRUST, THROUGH THE SAME TWO MECHANICS A POUR
+        DOES.** Bottling wets the glass exactly as decanting into a flask wets
+        it, and crystals stick to a flask whether the next container is glassware
+        or a jar. Had this moved matter perfectly, BOTTLE would have been a
+        loss-free transfer sitting beside a lossy one, and the cheapest route
+        around holdup in the whole game would have been to bottle and re-charge.
+        What is withheld is not subtracted, so it stays on the wall of this
+        flask, which is where it physically is.
+
+        ⚠ **THE TWO LIQUID LAYERS ARE KEPT APART WHEN BOTH ARE TAKEN**, unlike a
+        pour, which lands everything in the destination's primary layer. A bottle
+        is not a vessel and takes no stability decision, so folding them together
+        would throw information away for nothing -- and a separated bottle IS a
+        real thing on a shelf. Charging it back into a flask mixes them, because
+        that is what pouring a separated bottle into a flask does; see
+        ``charge_state``.
+
+        ⚠ Taking ONE layer is a separatory funnel, and the bottle it fills holds
+        ONE liquid, so that lands in the primary block whichever vessel block it
+        came out of. "The second layer" is a fact about the flask it was in and
+        says nothing about a jar: a shelf row reading ``[2nd layer]`` for a jar of
+        ether drawn off the top would be describing the funnel.
+
+        ``phase`` takes the same words as ``pour_into``, ``"all"`` included, and
+        ``"all"`` means the same thing: the contents and not the headspace.
+        """
+        if not 0.0 <= fraction <= 1.0:
+            raise ValueError(f"fraction must be in [0, 1], got {fraction}")
+        if phase not in self._LIQUID_PHASES and phase not in ("gas", "solid", "all"):
+            raise ValueError(
+                f"phase must be one of 'liquid', 'liquid2', 'lower', 'upper', "
+                f"'gas', 'solid', 'all', got {phase!r}"
+            )
+
+        out_L = np.zeros_like(self._nL)
+        out_L2 = np.zeros_like(self._nL2)
+        out_G = np.zeros_like(self._nG)
+        out_S = np.zeros_like(self._nS)
+
+        # ⚠ "all" DOES NOT INCLUDE THE HEADSPACE -- see the docstring. Gas moves
+        # only when it is asked for by name.
+        if phase == "gas":
+            out_G = self._take(self._nG, fraction, "gas")
+        if phase in ("all", "solid"):
+            out_S = self._take(self._nS, fraction, "solid")
+        if phase == "all" or phase in self._LIQUID_PHASES:
+            # ⚠ THE SPLIT IS PRESERVED ONLY WHEN BOTH LAYERS ARE TAKEN. Asking
+            # for "all" or "liquid" empties a separated flask into a bottle that
+            # is itself separated, and that is worth keeping. Asking for one
+            # layer -- a separatory funnel -- fills a bottle that holds ONE
+            # liquid, so it lands in the primary block whichever vessel block it
+            # came out of: "the second layer" is a fact about the flask it was in
+            # and means nothing about a bottle, and a shelf row reading
+            # "[2nd layer]" for a jar of ether would be describing the funnel.
+            both = phase in ("all", "liquid")
+            for src in self._liquid_blocks_for("liquid" if phase == "all" else phase):
+                taken = self._take(src, fraction, "liquid")
+                if both and src is self._nL2:
+                    out_L2 = taken
+                else:
+                    out_L = out_L + taken
+
+        return VesselState(
+            n_liquid={s: float(out_L[i]) for i, s in enumerate(self.species)},
+            n_gas={s: float(out_G[i]) for i, s in enumerate(self.species)},
+            n_solid={s: float(out_S[i]) for i, s in enumerate(self.species)},
+            n_liquid2={s: float(out_L2[i]) for i, s in enumerate(self.species)},
+            T=float(self.T),
+            t=float(self.t),
+        )
+
+    def _take(self, src: np.ndarray, fraction: float, kind: str) -> np.ndarray:
+        """Remove a share of one block, withholding what wets the glass."""
+        moved = src * fraction
+        if kind == "liquid":
+            moved = self._withhold_film(moved)
+        elif kind == "solid":
+            moved = self._withhold_crust(moved)
+        src -= moved
+        return moved
+
+    def charge_state(self, state: VesselState, fraction: float = 1.0) -> float:
+        """Pour a stored ``VesselState`` in, carrying its enthalpy. Returns moles.
+
+        The vessel half of CHARGE-from-the-shelf, and the reason it is not just
+        ``charge`` in a loop: **a stock is a STATE, so it has a temperature, and
+        pouring a hot stock into a cold flask has to matter.** ``charge`` adds
+        moles and says nothing about heat -- which is right for "add 2 mol of
+        acetic acid", where the reagent is at room temperature by assumption, and
+        wrong for a bottle that came off a hot plate. The mixing rule is the one
+        ``_pour_block`` uses, with the incoming heat capacity evaluated at the
+        STOCK's temperature rather than at this flask's.
+
+        ⚠ **BOTH OF THE STOCK'S LIQUID LAYERS LAND IN THE PRIMARY LAYER**, which
+        is the rule every transfer in this file follows: the receiving flask
+        decides for itself whether it holds one liquid or two, from the
+        thermodynamics, at the next integration. A bottle that had separated on
+        the shelf is therefore mixed by being poured, which is what pouring one
+        does.
+
+        ⚠ A species the stock holds and this network does not is a LOUD refusal,
+        and it is the shape of a real constraint rather than a bug: a stock
+        bottled in one world can only be charged into a world whose network knows
+        its species, so a picker offering the shelf must put the chosen stocks'
+        species into ``Scenario.feed_species``. That is the consequence of a
+        network being derived from its feed, and it is better said at the pour
+        than discovered as a missing product later.
+        """
+        if fraction < 0.0:
+            raise ValueError(f"fraction must be non-negative, got {fraction}")
+        if fraction > 1.0:
+            raise ValueError(
+                f"fraction must be at most 1.0, got {fraction} -- a bottle "
+                "cannot pour more than it holds. To run a prep at a larger "
+                "scale, bottle more of it or charge from several stocks"
+            )
+
+        liquid = self._vector(state.n_liquid) + self._vector(state.n_liquid2)
+        gas = self._vector(state.n_gas)
+        solid = self._vector(state.n_solid)
+        liquid *= fraction
+        gas *= fraction
+        solid *= fraction
+        total = float(liquid.sum() + gas.sum() + solid.sum())
+        if total <= 0.0:
+            return 0.0
+
+        from chemsim.numerics.vessel_integrator import _poly
+
+        T_src = float(state.T)
+        c_src = float(
+            (liquid + solid) @ _poly(self.phases.Cp_liq, T_src)
+            + gas @ _poly(self.phases.Cp_gas, T_src)
+        )
+        c_dst = self.thermal_mass
+        if c_src + c_dst > 0.0:
+            self.T = (T_src * c_src + self.T * c_dst) / (c_src + c_dst)
+
+        self._nL += liquid
+        self._nG += gas
+        self._nS += solid
+        return total
+
+    def _vector(self, amounts: dict[str, float]) -> np.ndarray:
+        """A species->moles dict as an array on this vessel's own indices."""
+        out = np.zeros(len(self.species))
+        for smi, mol in amounts.items():
+            out[self._index(smi)] += float(mol)
+        return out
 
     def filter_into(
         self,

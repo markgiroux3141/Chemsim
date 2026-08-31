@@ -262,6 +262,10 @@ def test_the_save_version_refuses_an_older_layout():
     run became a pure function of once a duration could be DISCOVERED rather than
     declared. v5 is ``Scenario.edges`` plus the SWAP_RECEIVER and SET_EDGE verbs:
     a rig used to exist only in Python, so a still could not be saved at all.
+    v6 is ``add_dropwise``. v7 is the SHELF -- ``World.shelf`` plus the BOTTLE
+    and CHARGE_STOCK verbs -- and ``Scenario.generations``, which until P2 could
+    not be requested through a scenario at all, so a world always built its
+    network to a fixpoint.
 
     ⚠ **A v4 save would LOAD CLEANLY and mean something different** -- it has no
     edges, so it would replay as an uncoupled bench, which is a different
@@ -273,11 +277,11 @@ def test_the_save_version_refuses_an_older_layout():
     w = World(Scenario(feed_species=[WATER], templates=[],
                        vessels={"flask": spec}))
     blob = w.save()
-    assert blob["version"] == SAVE_VERSION == 6
+    assert blob["version"] == SAVE_VERSION == 7
     assert "script" in blob
     # the apparatus travels with the scenario, empty or not
     assert blob["scenario"]["edges"] == []
-    for older in (3, 4, 5):
+    for older in (3, 4, 5, 6):
         stale = dict(blob, version=older)
         with pytest.raises(ValueError, match="save format version"):
             World.load(stale)

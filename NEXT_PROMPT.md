@@ -2,8 +2,8 @@ We're building chemsim, an emergent chemistry simulator (game inspired by Nile
 Red) in d:\Claude Code Projects\Chemistry Simulator.
 
 **The plan is `MILESTONES.md`. Read it first — it is the authority on what to
-build and in what order.** **M0–M6, M8, M12, S1–S13, G1–G6, C1–C7, P0 and P1
-are DONE. P2 IS NEXT.**
+build and in what order.** **M0–M6, M8, M12, S1–S13, G1–G6, C1–C7, P0, P1 and P2
+are DONE. P3 IS NEXT.**
 
 # ⚠⚠⚠ THE ARC CHANGED ON 2026-08-31. THE LIVE WORK IS THE **P-SERIES**.
 
@@ -37,71 +37,93 @@ slog is a property of the target list, not the architecture.*
 
 ---
 
-# ⚠⚠⚠ WHAT P2 SHOULD DO: `Stock` AND THE SHELF -- THE TWO VERBS THAT CLOSE THE LOOP
+# ⚠⚠⚠ WHAT P3 SHOULD DO: THE SHELF AS DATA, WITH THREE TIERS
 
-**`MILESTONES.md` §P2 is the brief.** Two verbs and nothing else:
+**`MILESTONES.md` §P3 and `GAME_DESIGN.md` §8.5 are the brief.** One file, in the
+same shape as the rest of the corpus so it diffs and tests like everything else:
 
-    BOTTLE   vessel -> shelf     name the current VesselState and store it
-    CHARGE   shelf  -> vessel    pour a stored stock into a flask
+    # data/catalog/shelf.psv -- id | tier | amount | phase | note
+    water            | natural      | 5.0  | liquid | -
+    sulfuric-acid    | natural      | 1.0  | liquid | oil of vitriol
+    benzaldehyde     | bottle       | 0.5  | liquid | nothing in the corpus makes it
+    nickel           | intermediate | 0.1  | solid  | chain: made by a stranded route
 
-⚠ **A STOCK IS A `VesselState`, NEVER `(name, purity)`** — `GAME_DESIGN.md` §1,
-and §8.6 says a shelf entry that is not a real `VesselState` deletes every gate
-in the design. `vessel.py:150` is already plain data (four per-phase mole dicts,
-a `T` and a `t`) and `SAVE_VERSION` already writes it, so this is mostly
-plumbing. Purity is DERIVED for display; impurities are carried individually and
-forever, which is the whole loop: a contaminant introduced in step 1 can ruin
-step 6 and the player can trace it back.
+    natural        on the shelf because it comes out of the ground or a plant   (45 rows)
+    intermediate   on the shelf because a STRANDED route would make it          (24 rows)
+    bottle         on the shelf because nothing in the corpus makes it at all   (4 rows)
 
-⚠ A stock carries its own script, so "how did I make this" is answerable and
-re-runnable — and because the script stores CONDITIONS rather than instants,
-re-running at 10x scale waits the right length of time. That fork was taken in
-the wait-until session for exactly this.
+⚠ **THE TIER COLUMN IS WHAT LETS THE SHELF SHRINK LATER.** When a session makes a
+stranded route reachable, its `intermediate` rows are DELETED and the player earns
+them instead. A flat list of names cannot express that and would make the
+deferral permanent.
 
-⚠ **`charge` IS ALREADY AN EVENT KIND** (`engine/events.py:59`, payload
-`{amounts, phase}`) and `Session.do("charge", ...)` already reaches it. CHARGE
-from a shelf is that event with its amounts read off a stored `VesselState`
-rather than typed. **BOTTLE is the new direction and has no event at all.**
+⚠ Plus an **all-priced cheat toggle** — every one of the 1167 priced species at
+once, for exploration and for testing a picker against 1167 rows. It is a
+separate axis, **not a fourth tier**.
 
-## ⚠⚠ WHAT P1 FOUND AND HANDED TO P2: `generations` IS NOT A `Scenario` FIELD
+⚠ **416 of 1583 species are REFUSED a price and may never be charged.** The
+picker shows them greyed WITH THE REASON. That refusal is the element floor
+working, not a gap — Joback prices Cl2 at −74.81 kJ/mol where the answer is 0 by
+definition.
 
-`World.__post_init__` calls `build_network` with no `generations` argument, so it
-always builds to a fixpoint and **nothing can request one-generation play through
-the UI at all.** `Snapshot.unexpanded` is therefore correct and currently always
-empty in a session — P1's second half is live in the engine and unreachable from
-the game. Closing it is a `Scenario` field, a `to_dict`/`from_dict` pair and a
-**`SAVE_VERSION` bump from 6 to 7** — and P2 is opening that file anyway for the
-shelf. **Do it in the same pass, or P4 cannot run its own mechanic.**
+## ⚠⚠ WHAT P2 FOUND AND HANDS TO P3: A STOCK'S SPECIES MUST BE IN THE NETWORK
 
-## What P2 owes
+`Vessel.charge_state` refuses a species the network does not carry, loudly, and
+that refusal is the shape of a real constraint rather than a bug: **a network is
+derived from its feed**, so a shelf row can only be charged into a world whose
+`Scenario.feed_species` already names it. So the picker is not just a list — it
+has to **build the scenario's feed species from the chosen rows** and rebuild the
+world when the selection changes. Better said at the pour than discovered as a
+missing product later, but P3 is where it gets designed.
 
-The full suite. ⚠ `tolerance_audit.py` is owed only if P2 touches an RHS, a data
-table or network CONSTRUCTION — serialisation and a shelf are none of those, so
-say so explicitly rather than skipping it silently.
+⚠ And a `Shelf` is already the right container for the persistent shelf: it has
+`put` (never merges), `take` (depletes, and drops an emptied bottle), and
+`to_dict`/`from_dict`. **`World.shelf` is a RUN'S OUTPUT and must stay that** —
+the persistent shelf is a separate object above the engine, because a run is a
+pure function of (scenario, script) and an inventory events could deplete would
+sit outside both.
 
-## Then P3, P4 — in `MILESTONES.md`, not repeated here
+## What P3 owes
 
-P3 is `data/catalog/shelf.psv` with three tiers. P4 is the picker, the step UI,
-the "react further" control — **P1 built the STATE that control offers and not
-the verb** — and then actually playing it.
+The full suite. ⚠ `tolerance_audit.py` is owed only by a change to an RHS, a data
+table or network CONSTRUCTION — **a PSV of shelf rows is a data file but not a
+data table in that sense**: nothing in it feeds a property estimator or a rate.
+Say so explicitly rather than skipping it silently. ⚠ If P3 adds species to
+`physical_data` or touches a price, that changes.
+
+## Then P4 — in `MILESTONES.md`, not repeated here
+
+P4 is the picker, the step UI at `generations=1`, and the **"react further"**
+control — and P1+P2 have built everything under it: the frontier is reported, it
+is carried as `ReactionNetwork.unexpanded`, `Snapshot.unexpanded` publishes it,
+the reports panel puts the count in its heading, and `Scenario.generations` is the
+bound to lift. **What is missing is only the control.** Then actually play it,
+because the interesting part is almost certainly impurities carrying forward and
+no amount of analysis will say how that feels.
 
 ---
 
 # ⚠⚠⚠ START HERE: THE STATE OF THE BOX
 
-    1202 passed / 0 failed in 30:52        <- run ALONE, nothing else on the box
+    1227 passed / 0 failed in 29:23        <- run ALONE, nothing else on the box
 
-⚠⚠⚠ **THE PER-TEST TOTAL IS NOT A STABLE STATISTIC, AND FOUR RUNS NOW SAY SO.**
+⚠⚠⚠ **THE PER-TEST TOTAL IS NOT A STABLE STATISTIC, AND FIVE RUNS NOW SAY SO.**
 
     run          tests    total / s    SECONDS PER TEST
     C6            1181       1741.4              1.4745
     C7 run 1      1182       1798.2              1.5214
     C7 run 2      1191       1681.0              1.4114
     P1            1202       1852.4              1.5410
+    P2            1227       1763.3              1.4371
 
 C7 ran the suite **twice on identical source** and the per-test total moved
-**6.6%**; across all four runs the spread is now **9.2%**. C6 offered that
-statistic as the stable one — *"quote the per-test total, never a row"* — on the
-strength of landing within **0.03%** of C5. ⚠ **That agreement was a
+**6.6%**; across all five runs the spread is now **9.2%** — ⚠ **P2's run lands
+INSIDE that spread and does not widen it**, which is the statistic behaving as
+C7 said it would rather than a new finding. Its 7% drop from P1 is noise and is
+not a speed-up.
+
+C6 offered that statistic as the stable one — *"quote the per-test total, never a
+row"* — on the strength of landing within **0.03%** of C5. ⚠ **That agreement was a
 coincidence.** *Two runs can say a statistic is noisy; only two runs of the SAME
 code can say how noisy — and once it is known to be noisy, a 4% move between
 sessions is not a finding.*
@@ -111,6 +133,12 @@ parameter name had been edited after the run started. The edits were
 non-semantic and the call site was positional, so the run would have passed.
 *A green suite on bytes that no longer exist is not evidence, and the cheap
 version of that mistake is the one that teaches nothing.*
+
+⚠ **P2's GREEN RUN IS ITS THIRD START**, stopped at 5 min and at 2 min because a
+`withdraw` wart and then its docstring were about to change. That is the cheap
+mistake made deliberately and early instead of expensively and late: **stop the
+run, change the bytes, start again** — the cost is the minutes already spent, and
+it is only ever a few if you notice while reading your own diff.
 
 ```bash
 python -m pytest -q --durations=25
@@ -140,8 +168,50 @@ python validation/tolerance_audit.py            # ~10 min. OWED by any change to
                                                 # network CONSTRUCTION
 ```
 
+⚠ **P2 DID NOT RUN IT, AND THAT IS A STATED DECISION RATHER THAN A SKIP.** P2
+touched no RHS, no data table and no network construction: `Scenario.generations`
+goes through an argument `build_network` already had, and it is `None` — the
+fixpoint — in every existing scenario, example and test. The two new vessel
+methods (`withdraw`, `charge_state`) are transfers between step boundaries and
+appear in no right-hand side. **So the audit's standing record above is still
+P1's, and the next session that touches an RHS owes it.**
+
 **Scoreboard, unchanged since C5:** 21 of 173 playable, tiers 10/10/1, 59/240
 classes, 46 template-ready, 85 species-ready, 38 BOTH, ceiling 45.
+
+---
+
+# ⚠ P2, IN ONE PARAGRAPH (the full record is MILESTONES §P2 / HANDOFF §114)
+
+**The shelf, and two pre-existing bugs that only a loop could find.** `BOTTLE`
+and `CHARGE_STOCK` are events, `engine/stock.py` holds `Stock` and `Shelf`,
+`SAVE_VERSION` is **7**, and `Scenario.generations` exists at last — so
+one-generation play is requestable and `Snapshot.unexpanded` is no longer
+permanently empty. ⚠ `GAME_DESIGN.md` §1's claim is a MEASUREMENT now: two
+bottles both honestly labelled *"90 mol% ethanol"*, one's 10% water and the
+other's 10% acetic acid, at 353 K for two hours make **9.83e-02** and **3.83e-11**
+mol of ethyl acetate — a purity scalar cannot tell them apart. ⚠⚠ And deriving
+purity is **not one number**, which is the one thing §1 did not say: 0.05 mol of
+benzoic acid wet with 0.05 mol of water is 50 mol% and 13 wt% water, and the
+biggest component of that bottle is **water by mole and benzoic acid by mass** —
+so a `major` fixed on moles beside a purity quoted by mass reads *"water at
+87 wt%"*, two true numbers making one false statement, which the first shelf row
+did. Bottling loses a film and a crust through `Vessel.withdraw`, because
+bottling wets the glass and otherwise bottle-and-recharge would have been the
+cheapest way around holdup in the game; cross-checked at 1e-12 against pouring
+one flask into another. ⚠⚠⚠ **A REPLAY DROPPED A TRAILING EVENT — pre-existing,
+and "bottle it and stop" is one.** `set_heat` 50 W applied by `flush` in the
+original came back as `Q_input = 0.0` on the replay with the event still pending;
+only a trailing event can be bitten, since anything with a `step` after it is
+applied by that step. P2 would have shipped a replay with an empty shelf.
+⚠⚠ And a stock's provenance **cannot be "the script as it stands"**, because the
+script runs AHEAD of the event queue: the same run saved and replayed made two
+stocks with identical compositions and different recipes, the replayed one
+carrying the pour that happened afterwards. ⚠⚠ Finally, **the UI's Filter button
+has discarded the whole flask, silently, since it existed** — it sent `to=` where
+the event reads `filtrate` and `cake`, and the engine's own `transfer_log` said so
+all along on a channel nothing in the view was reading. *The refluxing rig's
+0.34 mol of air again, one panel over.*
 
 ---
 
@@ -170,29 +240,6 @@ generation branch — a "react further" control would have declined to offer its
 on exactly the flask with the most left to give. The frontier is now taken on
 either exit, and against a species cap it is a **LOWER bound**, because the
 interrupted round left combinations of the previous frontier untried as well.
-
----
-
-# ⚠ C7, IN ONE PARAGRAPH (the full record is MILESTONES §C7 / HANDOFF §111)
-
-**The stereo-keying job, and both recorded counts were right about different
-questions.** C4 filed fragility 0c at 31 of 146; C6 re-measured 145 of 205 and
-warned that *"a 4.7x gap on a headline is not a methodological rounding"*. It is
-exactly that, and C7 reproduced **both** to the unit: C4 filtered on `"@"`, which
-is TETRAHEDRAL stereochemistry only, and C6 asked about table MEMBERSHIP where C4
-asked which SOURCE came back. 212 corpus compounds carry a spelling, 149 reach
-different tables, **49 resolve to a different source**. ⚠⚠⚠ The advertised
-opposite-keying is **two rows of the forty-nine**; the real rule is about how a
-table came to exist — **the only stereo-keyed table is the GENERATED one**,
-`MEASURED_PHYSICAL`, and every hand-typed table is flat. ⚠⚠ It was LIVE because
-**0 of 50 templates spell stereochemistry on their product side**, so
-`alkene_hydrogenation` emitted flat menthol inside `menthol-route` step 2 —
-Tb 530.3 Joback against the corpus row's measured 487.1. Fixed by
-`properties/stereo_keys.py`: a fallback, never an override, crossing an
-AMBIGUITY and never a DIFFERENCE, and only where exactly one record answers the
-skeleton. ⚠ **The biggest thing it found is not stereochemistry** — see
-fragility 0c-i, **214 measured melting points that never reach their record,
-worst 877 K**, still open.
 
 ---
 

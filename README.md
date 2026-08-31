@@ -290,6 +290,17 @@ one from its recipe alone. Saves are small, readable JSON, and no RDKit object i
 ever serialised. The format is version-stamped and refuses an incompatible reader
 rather than mis-mapping fields.
 
+A save also carries the **shelf**. The player's loop — pour two things into a
+flask, do something, read what came out, put the result back under a name — is
+two verbs, `BOTTLE` and `CHARGE_STOCK`, and the thing they move is a **stock: a
+full per-phase mole vector plus a temperature, never `(name, purity%)`**. Purity
+is derived for a label and never stored, which is what makes two bottles both
+honestly marked "90 mol% ethanol" behave differently — measured, at 353 K for two
+hours, one makes 9.83e-02 mol of ethyl acetate and the other 3.83e-11, because
+one's 10% is acetic acid and the other's is water. Impurities are therefore
+carried individually and forever: a contaminant introduced in step 1 is still
+there in step 6, and the bottle carries the script that made it.
+
 ## Three phases, ions, and gas-phase reaction
 
 The vessel state is now `[n_liquid | n_gas | n_solid | T]`.

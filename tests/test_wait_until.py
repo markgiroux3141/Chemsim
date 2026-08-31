@@ -414,8 +414,12 @@ def test_the_save_format_had_to_move_and_says_so():
     defaulted. And again to 6 for ``add_dropwise``, where the failure is worse:
     an unknown SCRIPT VERB is only discovered part-way through the walk, so a
     v5 reader would run every entry before it and stop half-way through the
-    recipe with a world that looks finished."""
-    assert SAVE_VERSION == 6
+    recipe with a world that looks finished.
+
+    ⚠ And again to 7 for the SHELF and ``Scenario.generations`` -- see P2. A
+    ``bottle`` is a trailing event, so a v6 reader would fail on it after
+    executing the whole recipe."""
+    assert SAVE_VERSION == 7
     w = _boil_world()
     w.step(1.0)
     saved = w.save()

@@ -570,14 +570,38 @@ immutable `Snapshot` the view polls, a command queue (`Do` / `Step` /
 does not have is any notion that the player owns anything. It loads one of four
 hardcoded scenarios and resets to the start.
 
-Two verbs close the loop:
+Two verbs close the loop, and **both are BUILT as of P2**:
 
-    BOTTLE   vessel -> shelf     name the current VesselState and store it
-    CHARGE   shelf  -> vessel    pour a stored stock into a flask
+    BOTTLE         vessel -> shelf     name the current VesselState and store it
+    CHARGE_STOCK   shelf  -> vessel    pour a stored stock into a flask
 
 That is the whole mechanic. Both are serialisation against a structure
 `SAVE_VERSION` already writes, because **a stock is a `VesselState`** (section
 1) -- a per-phase mole vector plus a temperature, not `(name, purity)`.
+`engine/stock.py` holds `Stock` and `Shelf`; `SAVE_VERSION` is 7; the shelf tab
+in `ui/app.py` is where a player reaches them.
+
+⚠ **AND SECTION 1's CLAIM IS A MEASUREMENT NOW.** Two bottles both honestly
+labelled "90 mol% ethanol" -- one's 10% water, the other's 10% acetic acid --
+charged into identical flasks at 353 K for two hours: the sour one makes
+**9.83e-02 mol** of ethyl acetate and the wet one **3.83e-11**, which is under
+the integrator's own atol. A purity scalar cannot tell them apart.
+
+⚠⚠ **DERIVING PURITY IS NOT ONE NUMBER, AND THAT IS THE ONE THING SECTION 1 DID
+NOT SAY.** 0.05 mol of benzoic acid wet with 0.05 mol of water is 50 mol% and
+13 wt% water -- and the BIGGEST COMPONENT of that bottle is water by mole and
+benzoic acid by mass. So the basis is an argument to `major()` as well as to
+`purity()`: a major fixed on moles printed beside a purity quoted by mass reads
+*"water at 87 wt%"*, two true numbers making one false statement.
+
+⚠ **BOTTLING LOSES A FILM AND A CRUST**, through the same two mechanics a pour
+suffers, because bottling wets the glass. Otherwise BOTTLE would have been a
+loss-free transfer beside a lossy one, and bottle-and-recharge would have been
+the cheapest way around holdup in the game. And `World.shelf` is a run's
+**output**: bottles land in it, no event ever consumes from it, and the player's
+persistent inventory (section 8.5) lives above the engine -- because a run is a
+pure function of (scenario, script) and an inventory events could deplete would
+sit outside both.
 
 ## 8.2 A step is ONE GENERATION, and that is not a compromise
 
@@ -621,10 +645,13 @@ approximated. It is admissible only under this project's other standing rule --
   generation limit turns a computational cap into a game verb. A flask that has
   more to give should say so and let the player ask for it. ⚠ P1 built the
   SAYING -- the count sits in the reports panel's heading, where it is legible
-  without scrolling past possibly hundreds of notices. **The ASKING is P4**, and
-  it needs `generations` to become a `Scenario` field, which it is not yet:
-  `World` builds its network to a fixpoint and nothing can currently request
-  one-generation play through the UI at all.
+  without scrolling past possibly hundreds of notices. **P2 made it REACHABLE**:
+  `generations` is a `Scenario` field now, so a session can be built at one
+  generation and the frontier arrives on the `Snapshot` non-empty (measured: an
+  acid/alcohol flask at `generations=1` leaves ethyl acetate unexpanded and says
+  so). Until then `World` always built to a fixpoint and nothing could request
+  one-generation play through the UI at all. **The ASKING -- a control that
+  raises the bound -- is still P4.**
 
 *A limit the player can see and lift is not an approximation; it is a choice.*
 
@@ -697,6 +724,11 @@ and any `if` that reads a purity. Three more that this loop makes tempting:
   destroy the only thing this engine has that nothing else does.
 * **No shelf entry that is not a real `VesselState`.** The moment a bottle is a
   noun with a number, section 1 is gone and every gate becomes decoration.
+  ⚠ Nor may two bottles arriving under one name be MERGED, which is the same
+  rule one step further on: adding their mole vectors invents a bottle nobody
+  made, at a mole-weighted temperature nothing was ever at, and erases exactly
+  the difference this section exists to model. `Shelf.put` suffixes the second
+  one and tells the caller what it got.
 * **No silent generation limit.** Section 8.2. If the frontier is non-empty the
   player is told.
 
