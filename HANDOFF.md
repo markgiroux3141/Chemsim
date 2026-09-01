@@ -8315,7 +8315,8 @@ RESOLVED since the last handoff:
     playable — P3 and P4 buy no chemistry by design, they buy the loop.
 
     Suite **1255 passed / 1 failed in 32:48** (1968.46 s, 1256 tests, **1.5673 s
-    per test**), run alone. ⚠⚠⚠ **THE ONE FAILURE WAS A STALE LITERAL AND ONLY
+    per test**), run alone — ⚠ **both figures superseded by §116: 1256/0 in
+    30:34 at 1.4608 s per test.** ⚠⚠⚠ **THE ONE FAILURE WAS A STALE LITERAL AND ONLY
     THE FULL RUN COULD FIND IT.** P4 bumped `SAVE_VERSION` to 8 and updated every
     `SAVE_VERSION == 7` in the suite; `tests/test_stock.py` also asserted
     `blob["version"] == 7`, comparing the blob to a **hand-typed integer** rather
@@ -8328,12 +8329,22 @@ RESOLVED since the last handoff:
     the failure diagnosed and re-run in isolation, not a green 1256** — no single
     run has produced that.
 
+    ⚠⚠ **SUPERSEDED BY §116 (2026-09-01): THE SUITE WAS RUN AND IT IS
+    1256 PASSED / 0 FAILED IN 30:34.** P4's fix is confirmed by a full run.
+    *Left standing above because it is what P4 measured and the reasoning for
+    not re-running was correct at the time; the number is the part that moved.*
+
     ⚠ The per-test total is the highest of six runs and **does widen the spread**:
     1.4114 → 1.5673 is **11.0%** against 9.2% over the previous five. Not read as
     a slowdown — P4 added 29 tests, restored `solid_catalyst` so gated networks
     carry their catalyst lattices as species, and `test_shelf.py` runs four
     flasks. C7's rule stands: quote the per-test total, never a row, and do not
     read one session's move as a trend.
+
+    ⚠⚠ **AND §116 SETTLED THAT ONE THE OTHER WAY.** The next run, on MORE
+    code, came in at **1.4608 s** — 6.8% BELOW this one and mid-range across
+    seven. *So 1.5673 was the machine, the spread did not widen, and C7's rule
+    was right to be cautious about exactly this.*
 
     ⚠⚠ **`tolerance_audit.py` IS OWED AND WAS NOT RUN.** `TemplateSpec` is
     network construction. ⚠ The prediction is that the standing record does not
@@ -8437,8 +8448,22 @@ RESOLVED since the last handoff:
     makes the network depend on the CHARGE, contradicting `scenario.py`'s own
     determinism docstring. Both are arguments to be made, not wrappers to write.
 
-    ⚠⚠ **`tolerance_audit.py` IS STILL OWED FROM P4 AND WAS NOT RUN HERE
-    EITHER**, and neither was the suite. This session added no engine code —
-    one validation panel and four documents — so it owes nothing of its own, but
-    it does not discharge P4's debt. The standing figures are unchanged: 1255
-    passed / 1 failed with the failure diagnosed, fixed and re-run in isolation.
+    ⚠⚠⚠ **THE SUITE WAS RUN AND IT IS GREEN FOR THE FIRST TIME: 1256 PASSED /
+    0 FAILED IN 30:34** (1834.83 s, **1.4608 s per test**, exit code 0). This
+    session added no engine code — one validation panel and four documents — so
+    it owed nothing of its own; the run was taken to close P4's open figure, and
+    it does. **§115's *"1255/1, and no single run has produced a green 1256"* is
+    superseded**, and P4's stale-literal fix is confirmed by a full run rather
+    than by one file in isolation.
+
+    ⚠⚠ **AND IT RE-PRICED P4's TIMING NOTE IN THE OPPOSITE DIRECTION.** P4
+    recorded 1.5673 s per test as the highest of six and as widening the spread
+    to 11.0%. This run, on MORE code, is **1.4608 s — 6.8% below it and
+    mid-range across seven** — so the spread is unchanged and P4's move was the
+    machine. *A per-test total is a distribution and not a reading; C7's rule
+    has now been confirmed by the case that looked most like an exception.*
+
+    ⚠⚠ **`tolerance_audit.py` IS STILL OWED FROM P4 AND WAS NOT RUN.** Nothing
+    here discharges it. ⚠ The prediction is unchanged and it is a prediction,
+    not a reason to skip it: the standing record should not move, because no
+    audited example builds a real template through a `TemplateSpec`.

@@ -114,32 +114,33 @@ frontend can set that the engine never reads. `T_build` IS wired; this is not.
 
 # ⚠⚠⚠ START HERE: THE STATE OF THE BOX
 
-    1255 passed / 1 failed in 32:48   <- 1256 tests, and the failure was a
-                                         STALE LITERAL in a test. Fixed; that
-                                         file re-run alone at 22/22.
+    1256 passed / 0 failed in 30:34   <- GREEN, and the FIRST run ever to
+                                         produce one. 2026-09-01, R-series,
+                                         thread-capped, exit code 0.
 
-⚠⚠⚠ **THE ONE FAILURE WAS A STALE LITERAL AND IT IS WORTH THE PARAGRAPH.** P4
-bumped `SAVE_VERSION` to 8 and updated every `SAVE_VERSION == 7` in the suite.
-`tests/test_stock.py` also asserted `blob["version"] == 7` — comparing the blob
-to a **hand-typed integer** instead of to the constant — so it survived a grep
-for the constant and **only the full 33-minute run found it**. Fixed by comparing
-to `SAVE_VERSION`, so the next session that moves the version edits one place
-rather than two. *That is the whole reason the suite is owed rather than
-optional: nothing cheaper would have caught it.*
+⚠⚠⚠ **THE GREEN 1256 IS NEW AND IT CLOSES A DEBT RATHER THAN JUST PASSING.**
+P4 bumped `SAVE_VERSION` to 8 and updated every `SAVE_VERSION == 7` in the
+suite. `tests/test_stock.py` also asserted `blob["version"] == 7` — comparing
+the blob to a **hand-typed integer** instead of to the constant — so it survived
+a grep for the constant and **only the full run found it**. P4 fixed it and
+re-ran that file alone at 22/22, deliberately not re-running the suite, and
+wrote the honest figure as *1255 passed / 1 failed with the failure diagnosed*.
+**That figure is now superseded: the R-series ran the full suite and it is
+1256/0.** *The fix is confirmed by a full run rather than by one file in
+isolation, which is the only thing that could have confirmed it.*
 
-The suite was NOT re-run after that fix, deliberately and stated: the edit is one
-assertion inside the test that failed, plus its docstring, and
-`tests/test_stock.py` passes 22/22 in 15 s. **So the honest figure is 1255 passed
-/ 1 failed, with the failure diagnosed, fixed and re-run in isolation** — not
-"1256 passed", which no single run has produced.
+Per-test total: **1834.83 s / 1256 tests = 1.4608 s per test.** ⚠ That sits
+MID-RANGE across seven runs and **does not widen the spread**, which stays at
+**11.0%** (1.4114 to 1.5673). ⚠⚠ **AND IT RE-PRICES P4's OWN NOTE:** P4
+recorded 1.5673 as the highest of six and worth watching, having added 29
+tests, restored `solid_catalyst` and given `test_shelf.py` four flasks. The
+next run on **more** code came in 6.8% BELOW it, so that move was the machine
+and not the change. C7's rule is what held: quote the per-test total, never a
+row, and do not read one session's move as a trend.
 
-Per-test total: **1968.46 s / 1256 tests = 1.5673 s per test.** ⚠ That is the
-HIGHEST of the six runs and it does widen the spread — 1.4114 to 1.5673 is
-**11.0%**, against 9.2% over the previous five. It is not a slowdown finding: P4
-added 29 tests, restored `solid_catalyst` (so gated networks now carry their
-catalyst lattices as species), and `test_shelf.py` runs four flasks. C7's rule
-still holds — quote the per-test total, never a row, and do not read a single
-session's move as a trend.
+⚠ The `--durations=25` shape is unremarkable against the record — `test_still`
+x6 still dominates and the one RIG test is the top row at 168.93 s. Nothing in
+the list is outside the ~20% between-run spread this box is known to have.
 
 ⚠⚠ **AND THIS SESSION DESTROYED THE LINE ENDINGS OF FIVE CRLF FILES BEFORE
 NOTICING.** Rewriting a document with `pathlib.write_text(..., newline="
