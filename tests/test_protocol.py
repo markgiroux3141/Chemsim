@@ -407,11 +407,21 @@ def test_the_save_version_refuses_an_older_layout():
     w = World(Scenario(feed_species=[WATER], templates=[],
                        vessels={"flask": spec}))
     blob = w.save()
-    assert blob["version"] == SAVE_VERSION == 8
+    assert blob["version"] == SAVE_VERSION == 9
     assert "script" in blob
     # the apparatus travels with the scenario, empty or not
     assert blob["scenario"]["edges"] == []
-    for older in (3, 4, 5, 6):
+    # ⚠ R3: the scenario's key SET is pinned, the same discipline P4 imposed on
+    # ``TemplateSpec``'s fields, from the opposite direction. ``prune_threshold``
+    # sat in this dict for three milestones reaching nothing -- a field a
+    # frontend can set that the engine never reads is a lie in the format, and
+    # the way it survived is that no test looked at the SET. Growing this set
+    # is fine; growing it means editing this line, which is the point.
+    assert set(blob["scenario"]) == {
+        "templates", "feed_species", "vessels", "edges", "max_species",
+        "generations", "T_build", "electrolyte",
+    }
+    for older in (3, 4, 5, 6, 8):
         stale = dict(blob, version=older)
         with pytest.raises(ValueError, match="save format version"):
             World.load(stale)

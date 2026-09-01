@@ -426,8 +426,9 @@ def test_the_save_format_had_to_move_and_says_so():
     saved network holding a template with a declared rate law used to replay at
     the SMARTS' own mass action. 0.07% of a sulfur charge burnt against 77.85%.
     A save that cannot be replayed to the trajectory it recorded is what a
-    version number is for."""
-    assert SAVE_VERSION == 8
+    version number is for. And to 9 for R3's REMOVAL of ``prune_threshold``,
+    the dead save-file field."""
+    assert SAVE_VERSION == 9
     w = _boil_world()
     w.step(1.0)
     saved = w.save()

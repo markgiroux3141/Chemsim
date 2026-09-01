@@ -338,13 +338,16 @@ def test_the_save_format_moved_because_an_unknown_verb_fails_too_late():
     declared rate law, a solid-catalyst gate, an electron count or a Hammett rho
     replayed WITHOUT them. This very test file is one of the callers: it builds
     ``aromatic_nitration()`` -- which ships with ``hammett_rho = -6.5`` -- through
-    a spec, so its own nitration was un-staged."""
-    assert SAVE_VERSION == 8
+    a spec, so its own nitration was un-staged.
+
+    At 9 since R3, the only bump that REMOVES a field: ``prune_threshold``
+    round-tripped into every save and reached nothing in the engine."""
+    assert SAVE_VERSION == 9
     w = _charged()
     w.add_dropwise(0, 0.02, "pot", reaches(340.0), 200.0)
     blob = w.save()
     assert blob["version"] == SAVE_VERSION
-    for older in (4, 5, 6, 7):
+    for older in (4, 5, 6, 7, 8):
         with pytest.raises(ValueError, match="version"):
             World.load(dict(blob, version=older))
         with pytest.raises(ValueError, match="version"):

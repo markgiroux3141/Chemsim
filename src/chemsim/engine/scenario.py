@@ -229,8 +229,23 @@ class Scenario:
     # the default -- is a fixpoint, so every number this project measured before
     # this field existed is unchanged.
     generations: int | None = None
-    T_build: float = 340.0        # temperature used for rate-aware pruning
-    prune_threshold: float = 0.0  # 0 disables pruning (structural discovery)
+    # Passed to ``build_network`` as ``T_ref``: the temperature the network's
+    # thermochemistry is priced at -- detailed balance, reverse rates,
+    # Evans-Polanyi barriers. (Its old comment said "rate-aware pruning", which
+    # was ``prune_threshold``'s job, and that field is GONE -- see below.)
+    T_build: float = 340.0
+    # ⚠ R3 DELETED ``prune_threshold`` (SAVE_VERSION 9). It was declared here,
+    # documented as "0 disables pruning", round-tripped into every save file,
+    # and reached NOTHING -- ``build_network`` has no pruning parameter. The
+    # same class as P4's ``TemplateSpec`` bug: a field a frontend can set that
+    # the engine never reads is a lie in the format. ⚠⚠ AND IT CANNOT BE WIRED
+    # FROM HERE EVEN IN PRINCIPLE: the machinery it gestured at
+    # (``discovery.refine_network``, dormant, zero callers) judges a species by
+    # k x the CONCENTRATIONS ACTUALLY CHARGED, and a Scenario does not contain
+    # the charge -- vessels are filled by script EVENTS after the world is
+    # built, so at network-build time there is nothing to evaluate a rate
+    # against. If R4 ships rate-aware pruning, its knob belongs wherever the
+    # charge lives, not on this class; do not re-add the field here.
     # Whether the network prices IONS. Without this a scenario cannot express
     # any acid/base chemistry at all -- no pH, no salting a product out, no
     # acidified workup -- because ion formation energies are an overlay the
@@ -247,7 +262,6 @@ class Scenario:
             "max_species": self.max_species,
             "generations": self.generations,
             "T_build": self.T_build,
-            "prune_threshold": self.prune_threshold,
             "electrolyte": self.electrolyte,
         }
 
@@ -279,6 +293,5 @@ class Scenario:
                 else int(d["generations"])
             ),
             T_build=float(d.get("T_build", 340.0)),
-            prune_threshold=float(d.get("prune_threshold", 0.0)),
             electrolyte=bool(d.get("electrolyte", False)),
         )

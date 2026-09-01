@@ -110,7 +110,16 @@ from chemsim.vessel import Condition, Rig, TransferLosses, Vessel, WaitOutcome
 #    force out of every electrode reaction. **A save written before the fix
 #    cannot be replayed to the trajectory it recorded**, which is exactly the
 #    condition version 4 was created for. P4 found it by playing the game.
-SAVE_VERSION = 8
+# 9: -``Scenario.prune_threshold`` (R3). The only version here that REMOVES a
+#    field, and the only one where every old save replays bit-identically --
+#    the field reached nothing, so no trajectory ever depended on it. The bump
+#    is for the CONTRACT rather than the bytes: a v8 producer could set the
+#    field believing it pruned, and a reader that silently ignored it would be
+#    preserving exactly the lie R3 existed to remove. Refusing the version is
+#    what tells that producer the field is gone. (Why deleted rather than
+#    wired: the pruning it promised needs the CHARGE, which a Scenario does
+#    not contain -- see the note where the field used to be, scenario.py.)
+SAVE_VERSION = 9
 
 # Liquid holdup below which a dropping funnel counts as EMPTY, mol. The solver
 # is asked for atol=1e-9 per component and a meter edge drains its donor to a

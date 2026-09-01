@@ -441,9 +441,12 @@ def test_the_save_format_moved_to_seven_for_the_shelf_and_the_bound():
     place is the one that gets forgotten. Version 8 carries the six
     ``ReactionTemplate`` fields ``TemplateSpec`` had been dropping — the same
     bytes mean something different, so a pre-8 save cannot be replayed to the
-    trajectory it recorded.
+    trajectory it recorded. Version 9 (R3) is the opposite case and the only
+    one: it REMOVES ``prune_threshold``, a field that reached nothing, so a v8
+    save would replay identically — the refusal is for the format's contract,
+    not the bytes.
     """
-    assert SAVE_VERSION == 8
+    assert SAVE_VERSION == 9
     w = World(_bench())
     w.now("charge", "flask", amounts={ETOH: 1.0}, phase="liquid")
     w.flush()
@@ -452,7 +455,7 @@ def test_the_save_format_moved_to_seven_for_the_shelf_and_the_bound():
     assert blob["version"] == SAVE_VERSION
     assert "shelf" in blob
     assert blob["scenario"]["generations"] is None
-    for older in (3, 4, 5, 6, 7):
+    for older in (3, 4, 5, 6, 7, 8):
         with pytest.raises(ValueError, match="version"):
             World.load(dict(blob, version=older))
         with pytest.raises(ValueError, match="version"):

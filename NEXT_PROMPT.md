@@ -3,26 +3,66 @@ Red) in d:\Claude Code Projects\Chemistry Simulator.
 
 **The plan is `MILESTONES.md`. Read it first — it is the authority on what to
 build and in what order.** **M0–M6, M8, M12, S1–S13, G1–G6, C1–C7, P0–P4, R1,
-R2 and R5 are DONE. THE LIVE ARC IS THE R-SERIES — *react until done*. R3, R4
-AND R6 ARE STILL THE WORK ORDER.**
+R2, R3 and R5 are DONE. THE LIVE ARC IS THE R-SERIES — *react until done*. R4
+AND R6 ARE THE WORK ORDER, AND R4 OPENS WITH A DESIGN ARGUMENT, NOT CODE.**
 
-# ⚠⚠⚠ DO THIS NEXT: **R3 (~30 min), AND READ R4's TRAP FIRST**
+# ⚠⚠⚠ DO THIS NEXT: **R4, ITS OWN SESSION — AND THE MACHINERY ALREADY EXISTS, DORMANT**
 
-R3 is *wire or DELETE `Scenario.prune_threshold`*: declared, documented as
-*"0 disables pruning (structural discovery)"*, round-trips through
-`to_dict`/`from_dict` into every save file, and **reaches nothing** —
-`build_network` has no pruning parameter at all. The same class as P4's
-`TemplateSpec` bug: a save-file field a frontend can set that the engine never
-reads. **Do not leave it as it is** — that is the only option wrong on its own
-terms. ⚠ Deleting it is a `SAVE_VERSION` bump (9); wiring it IS R4 — which is
-why R4's design trap has to be read before choosing: pruning on the rate
-constant alone is wrong (a slow reaction at high concentration still matters),
-the defensible form is k × the concentrations actually charged, and that makes
-the network depend on the CHARGE, which contradicts `scenario.py`'s own
-determinism docstring. **If R4's answer is coming, `prune_threshold` may be the
-field it wires; if the determinism argument kills R4's obvious form, the field
-is a lie today and should die today.** Then R4 as its own session — it opens
-with that design argument, not code.
+R4 is rate-aware pruning, the real answer to the arc's objection: the
+generation bound is an INTEGRATION bound (the solver evaluates 644 reactions,
+nearly all kinetically dead at 298 K, on every RHS call — ~145x on a sugar
+system). Three things R3 established that change how R4 starts:
+
+* ⚠⚠⚠ **`discovery.refine_network` (Layer 4.5) ALREADY IMPLEMENTS R4's
+  defensible form and is DORMANT — zero callers, zero tests, ever.** It grows
+  a network outward promoting an edge species only when its formation rate at
+  the CHARGED concentrations clears a threshold, integrating the core-only
+  network to get those concentrations (`t_char` is the "how long do you wait"
+  knob), and it reports everything dropped. **Read it before designing
+  anything** (`src/chemsim/discovery/refine.py`); MILESTONES §R4 says "start
+  from `properties/` and `_expand_once`", and that is now the second thing to
+  read, not the first. Being dormant since Layer 6, it predates declared
+  orders/Hammett/electrode terms — audit `_rates_of` against today's kinetics
+  before trusting it.
+* ⚠⚠ **The knob does NOT belong on `Scenario`, and that is measured, not
+  taste** — it is why R3 deleted `prune_threshold` rather than wiring it. The
+  defensible form depends on the CHARGE, and a Scenario does not contain the
+  charge: vessels are filled by script EVENTS after the world is built, so at
+  `World.__post_init__` there is nothing to evaluate a rate against. R4's knob
+  belongs wherever the charge lives — the bench pick (which DOES know the
+  amounts), or a rebuild-after-charging. Either way `scenario.py`'s
+  determinism docstring ("the network is a deterministic function of the
+  templates and the feed species") has to be re-argued, and §"What the
+  R-series must NOT do" applies: a pruned reaction was discovered and then
+  discarded, which is a stronger claim than never having looked, and it has
+  to say so.
+* ⚠ **Finding 3 is the standing warning**: a bound that looks like it shrinks
+  the problem can enlarge it (the molar-mass cap made MORE reactions at
+  250 g/mol). Measure the reaction count AND the integration cost, not the
+  build clock.
+
+**R6 (the lattice/ion gap) is the other open row** and is independent — a term
+consuming the lattice and producing its ions in the solid block, priced from
+the same Ksp `PrecipitationArrays` uses. Read MILESTONES §R6 before costing.
+
+## R3, done this session (2026-09-01), in one paragraph
+
+**`Scenario.prune_threshold` is DELETED and `SAVE_VERSION` is 9.** The field
+was declared, documented, round-tripped into every save, and reached nothing —
+P4's `TemplateSpec` class of bug from the opposite direction. The deciding
+argument was structural (above): it sat on a class that cannot know the
+charge. v9 is the only version that REMOVES a field and the only one where
+every old save would replay bit-identically — the bump is for the format's
+CONTRACT (a v8 producer could set the field believing it pruned; silently
+ignoring it would preserve exactly the lie R3 removed). `T_build` stays (it IS
+wired, as `T_ref`) and its comment now says so instead of naming the deleted
+field's job. `tests/test_protocol.py` pins the scenario dict's **key SET**
+now, so the next dead field has to edit a test to get in; five version pins
+moved 8 → 9, all already comparing against the constant (P4's `test_stock`
+lesson holding), and the stale-version loops learned `8`. Targeted runs:
+42/42 across the six save-format files, ruff clean. Neither the suite nor the
+tolerance audit is owed: nothing ever read the field, so no trajectory can
+move, and no argument `build_network` receives changed.
 
 ## R2 + R5, done this session (2026-09-01), in one paragraph each
 
@@ -154,7 +194,9 @@ a long run is a different measurement and has NOT been made.
     R1  unpriceable species -> a REPORTED coverage limit    ✔ DONE 2026-09-01
     R2  cap BLAS threads (7.21 cores -> 0.99, AND faster)   ✔ DONE 2026-09-01
         chemsim/threads.py, four entry points, NEVER chemsim/__init__
-    R3  wire or DELETE Scenario.prune_threshold             ~30 min
+    R3  wire or DELETE Scenario.prune_threshold             ✔ DONE 2026-09-01
+        DELETED, SAVE_VERSION 9 -- the field sat on a class that cannot know
+        the charge; refine_network (dormant, zero callers) is R4's real start
     R4  rate-aware pruning -- the real answer               one session
     R5  the Bench `generations` box resets a raised bound   ✔ DONE 2026-09-01
         _react_further writes gens/cap back into the boxes _pour_bench reads
@@ -209,18 +251,22 @@ frontend can set that the engine never reads. `T_build` IS wired; this is not.
     1256 passed / 0 failed in 30:34   <- the run before it, same day, which was
                                          the first green 1256 this repo ever had.
 
-⚠ **R2+R5 (2026-09-01, after that run) did NOT re-run the suite, and here is
-the argument rather than the hope.** Every touched line is entry-point or
-widget plumbing: a new leaf module (`chemsim/threads.py`), four call sites that
-run before numpy loads, and eight lines in `_react_further` that write two Tk
-boxes. No RHS, no network construction, no data table — so the tolerance audit
-is not owed either, and the cap itself is the thing R1 already measured to be
-numerically neutral. What WAS run: `tests/test_threads.py` **4/4** (new — the
-suite count is 1264 next time), `tests/test_ui.py` **31/31** at 45.5 s, ruff
-clean over src/tests/examples/validation/tools, and the R5 live probe. ⚠ And
-note for the NEXT full run: `conftest.py` now caps threads itself, so the suite
-is thread-capped by construction — the same condition the 1260 record was taken
-under, no ambient env needed.
+⚠ **R2+R5 and then R3 (2026-09-01, after that run) did NOT re-run the suite,
+and here is the argument rather than the hope.** R2+R5 touched entry-point and
+widget plumbing only: a new leaf module (`chemsim/threads.py`), four call
+sites that run before numpy loads, and eight lines in `_react_further` that
+write two Tk boxes. R3 deleted a field NOTHING read and bumped `SAVE_VERSION`
+— no trajectory can move, and the blast radius is exactly the save-format
+tests, which were run: **42/42** across `test_protocol` (13, whole file),
+`test_stock` (22, whole file) and the save/version tests of `test_still`,
+`test_dropping_funnel`, `test_wait_until`, `test_engine` and `test_ui`. No
+RHS, no network construction, no data table anywhere in the three items — so
+the tolerance audit is not owed either. Also run: `tests/test_threads.py`
+**4/4** (new — the suite count is 1264 next time), `tests/test_ui.py`
+**31/31** at 45.5 s, ruff clean over src/tests/examples/validation/tools, and
+the R5 live probe. ⚠ And note for the NEXT full run: `conftest.py` now caps
+threads itself, so the suite is thread-capped by construction — the same
+condition the 1260 record was taken under, no ambient env needed.
 
 ⚠⚠ **THE 1260 IS R1's OWN RUN AND IT IS THE EVIDENCE THAT MATTERS FOR IT.**
 R1 changes what a network CONTAINS -- a discovered species that cannot be priced
@@ -415,7 +461,8 @@ against **15.23%** with the declared first-order law, and 0.50 mol burnt 77.85%
 against 100%. **A threshold where the declared law is a straight line.** The same
 drop un-gated every heterogeneous catalyst, took the driving force out of every
 electrode reaction, and lost G2's ring deactivation (`aromatic_nitration()` ships
-with rho = **-6.5**, so it was the DEFAULT being lost). `SAVE_VERSION` is **8**:
+with rho = **-6.5**, so it was the DEFAULT being lost). `SAVE_VERSION` went to
+**8** (9 since R3):
 the same bytes mean something different. ⚠ **Three of the six were found by the
 play and three by a test that asserted the SET of fields** rather than the three
 the play had reached — `alpha`'s own comment already said a template field is not
