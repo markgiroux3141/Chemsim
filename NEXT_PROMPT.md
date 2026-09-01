@@ -301,8 +301,8 @@ row, and do not read one session's move as a trend.
 x6 still dominates and the one RIG test is the top row at 163.27 s. Nothing in
 the list is outside the ~20% between-run spread this box is known to have.
 
-**Committed and pushed: `c833354` on `main` (R2+R5).** The working tree is
-clean.
+**Committed and pushed: `6f072d7` on `main` (R3; R2+R5 are `c833354`).** The
+working tree is clean.
 
 ⚠⚠ **AND THE R-SERIES' OPENING SESSION DESTROYED THE LINE ENDINGS OF FIVE CRLF
 FILES BEFORE NOTICING.** (R1 did not: all ten of its files round-tripped, checked
