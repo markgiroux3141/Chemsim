@@ -6766,10 +6766,13 @@ python validation/tolerance_audit.py            # ~10 min, and OWED by any chang
   mineral name rather than by species, and `dielectric_data` was measured at 0
   stereo keys, but nothing checked the SOLID tables.
 
-# THE P-SERIES -- MAKE IT PLAYABLE. **THE LIVE ARC AS OF 2026-08-31.**
+# THE P-SERIES -- MAKE IT PLAYABLE. ✔✔ **COMPLETE 2026-08-31 (P0-P4). THE LIVE ARC IS THE R-SERIES BELOW.**
 
-⚠⚠⚠ **THIS IS THE WORK ORDER NOW. THE C-SERIES IS PAUSED, DELIBERATELY, AND
-THE REASON IS MEASURED RATHER THAN FELT.**
+⚠⚠⚠ **THIS WAS THE WORK ORDER, AND THE C-SERIES IS STILL PAUSED BEHIND IT.
+THE REASON IS MEASURED RATHER THAN FELT.** ⚠ The loop is built and it was
+played, and the playing produced an OBJECTION rather than a next feature --
+*it wouldn't stop artificially at sulfur dioxide and need a deliberate
+trigger* -- which is what the R-series is. Read it after this section.
 
 The C-series work order is `PLAYABLE.md` §8b: 22 rows, each buying one route.
 C6 and C7 both spent a session on engine honesty and bought nothing on the
@@ -7204,6 +7207,254 @@ Where "grind out the remaining classes, including the boring ones" lives. The
 greedy curve in PART 2 is its work order, subject to the RUNNABLE-column warning
 printed beneath it. ⚠ Nothing in the G-series blocks it and every G-series
 template counts toward it.
+
+# THE R-SERIES -- REACT UNTIL DONE. **THE LIVE ARC AS OF 2026-08-31, AND IT STARTS FROM AN OBJECTION RATHER THAN FROM A PLAN.**
+
+⚠⚠⚠ **THE OBJECTION, IN THE USER'S OWN WORDS:** *"In the real world these
+materials would continue to react until everything was done -- it wouldn't stop
+artificially at sulfur dioxide and need a deliberate trigger."*
+
+**That is correct, and this project already conceded it in writing.**
+`GAME_DESIGN.md` §8.2 says one generation is an approximation that **TOUCHES
+MATTER**, which §3 forbids, and that it is admissible **only** because it is
+never silent. P1 built the saying and P4 built the asking, and neither of them
+made the approximation go away. So the R-series is the arc that asks whether the
+bound can simply be **dropped**, and every row below is a measurement rather
+than an opinion.
+
+`validation/shelf.py` panel 5 is the standing audit for all of it: sub-panels A
+to F, ~2.8 minutes, thread-capped, every figure re-measured live except F, which
+is recorded and re-runnable with `--mass-cap`.
+
+## ⚠⚠⚠ THE HEADLINE: THE BOUND IS NOT THERE FOR THE REASON EVERYONE ASSUMED
+
+**It is not a discovery-cost bound. It is an INTEGRATION-cost bound**, and
+nothing in this repo said so before now.
+
+    glucose + water + air        species   rxn    build      step   sim s   wall s / sim s
+    generations=1                     33    20    1.29s     9.97s    3600           0.0028
+    fixpoint (hit the 400 cap)       400   644   20.25s   120.25s     300           0.4008
+
+**A fixpoint is ~145x more expensive to INTEGRATE, and the extra 20 seconds of
+BUILD is a rounding error next to it.** The same simulated hour is **10 seconds
+against 24 minutes**. The solver evaluates all 644 reactions on every
+right-hand-side call, and nearly every one of them is kinetically dead at 298 K.
+
+*Everybody had been looking at the wrong half of the cost.* **That is the case
+for rate-aware pruning (R4), and it is the only thing on this list that is
+really about performance.*
+
+## 1. A FIXPOINT IS FREE FOR NON-POLYMERISING CHEMISTRY -- IT IS AVAILABLE TODAY
+
+    picked off the shelf, generations=None    species   rxn   frontier   build
+    sulfur, air, water, NO2                        14     5          0   1.51s
+    limestone + water                               8     0          0   0.58s
+    brine                                           9     0          0   0.84s
+
+**Frontier ZERO in every row.** The pick in the objection -- P4's own chain 2 --
+**closes on its own in a second and a half**, and the SO2 stop that prompted the
+complaint is not a bound biting at all: it is the engine reporting that it knows
+no SO2 + O2 chemistry without a carrier. Set `generations=None` and that flask
+runs to completion with no trigger and no button. **For the whole inorganic half
+of the shelf, "react until done" is not a feature to build; it is a default to
+choose.**
+
+## 2. SUGARS AND ORGANICS EXPLODE, AND IT IS A PROPERTY OF THE TEMPLATE SET
+
+glucose + water + air at a fixpoint: **400 species, 644 reactions, frontier
+367** -- it hit the species cap, so it is not a fixpoint at all.
+
+**The cause is that two templates BUILD.** `esterification` and
+`ether_condensation` take an acid or an alcohol and hand back a bigger molecule
+that is a **valid reactant for the same rule**, and a sugar is a polyol, so the
+product set feeds itself. There is no fixpoint for this chemistry -- only a size
+bound or a count bound. **No parameter anybody can raise fixes it**, which is
+why the answer has to be a different axis (R4) rather than a bigger number.
+
+## 3. ⚠⚠⚠ A MOLAR-MASS CAP IS DEAD AS AN IDEA, AND THE REASON OUTLIVES THE MEASUREMENT
+
+Measured on the same pick, and **refuted**:
+
+    max_molar_mass    rxn   build    outcome
+    none              644  ~20.2s    hit the 400-species cap
+    250 g/mol         842    388s    hit it too -- 19x slower, and BIGGER
+
+**It never closes the fixpoint, it is ~19x slower, and it turns two picks into
+crashes.** The durable part is the reason: **bounding SIZE does not shrink the
+search, it REDIRECTS it into a denser region.** Refusing the heavy products
+leaves the light ones to recombine with each other instead, so **the tighter
+bound produced the bigger network** -- 842 reactions against 644.
+
+⚠ **AND THE FIRST WRITE-UP OF THIS OVERSTATED IT BY A FACTOR OF TWO, WHICH IS
+WORTH RECORDING AS A CORRECTION RATHER THAN QUIETLY FIXING.** It recorded the
+uncapped build at **10.9 s**, making 388 s a **35x** slowdown. Panel 5 sub-panel
+B builds the identical network live and has now measured it three times at
+**19.8 / 20.1 / 20.2 s**. So the figure is **19x, not 35x**, and the 10.9 s does
+not reproduce and should not be quoted again. *The only reason it was caught is
+that the cheap half of the measurement sits in the same panel as the expensive
+half and disagreed with it out loud.*
+
+## 4. AND AT THE SAME CLOCK THE FLASK IS BARELY DIFFERENT -- THE OPEN QUESTION, SETTLED
+
+This was handed forward as **unmeasured** and costed at ~20 minutes of stepping.
+It is ~2 minutes: step both worlds **to the same clock** rather than to the same
+wall time, which is what the earlier attempt failed to do. glucose + water +
+air, 300 s from an identical charge:
+
+    species present                27  (gens=1)   vs   42  (fixpoint)
+    new species in the fixpoint    15
+    largest move on ANYTHING       5.56e-07 mol, against a 0.5 mol charge
+    temperature                    296.9214 K    vs   296.9213 K
+
+**The two runs DO give different flasks** -- the extra species are real and the
+bound touches matter exactly as §8.2 says. **But the 624 extra reactions move
+nothing by as much as a micromole**, and the 15 species that appear top out at
+2.0e-07 mol.
+
+⚠ **SCOPE IT HONESTLY, BECAUSE THIS IS ONE SYSTEM AT ONE TEMPERATURE FOR ONE
+CLOCK.** The species that appear are lactate **esters**, and esters BUILD, so a
+hot flask or a long run is a different measurement and **it has not been made**.
+This is evidence that the bound is cheap *here*; it is not a proof that the
+bound is cheap. **It does mean the correctness argument for one-generation play
+is now stronger than it was, and the performance argument is the one that is
+actually load-bearing.**
+
+## 5. ⚠⚠⚠ AN UNPRICEABLE SPECIES CRASHES THE BUILD, AND IT IS REACHABLE IN TWO CLICKS
+
+    picker rows '5-HMF' + 'oxygen', generations=1  ->  ValueError
+    no thermochemistry available for 'O=Cc1ccc(C=O)o1': its formation half
+    resolved (Benson group additivity) but there is NO physical half
+
+**Both rows are offered ungreyed by the picker, and this is ONE generation.**
+The handoff recorded this as *"deeper exploration crashes rather than
+degrades"*; that understates it. 5-HMF is priced and chargeable, and the species
+it makes -- 2,5-diformylfuran -- has a formation half from Benson and no
+physical half, because no measured Tb exists anywhere, so no vapour-pressure
+curve can be built and thermochemistry refuses rather than pretending the thing
+is non-volatile.
+
+**That refusal is right in isolation and wrong here.** `max_species`,
+`max_molar_mass` and `generations` all DROP, NOTICE and carry on. This one
+propagates out of `build_network` as a bare `ValueError` and the player gets a
+traceback. **It is the reason R1 is a prerequisite and not a nice-to-have.**
+
+---
+
+# THE R-SERIES WORK ORDER, RANKED
+
+## R1 -- AN UNPRICEABLE SPECIES BECOMES A REPORTED COVERAGE LIMIT  *(~1 h, PREREQUISITE)*
+
+Drop it, do not expand it, notice it -- exactly as `max_species`,
+`max_molar_mass` and `generations` already behave, on the same
+`_ExpansionState.reports` channel, carried on `ReactionNetwork.notices` and
+published through `Snapshot`. **Nothing deeper than one generation is safe until
+this exists** (finding 5).
+
+⚠⚠ **THERE IS A REAL DESIGN QUESTION INSIDE IT AND IT MUST BE ARGUED, NOT
+WRAPPED IN A `try`/`except`.** A species that cannot be priced **is not in the
+model**, so dropping it changes what is in the flask -- and `GAME_DESIGN.md` §3
+forbids that being silent. The argument that makes it admissible is the same one
+§8.2 makes for the generation bound: *the limit is a choice the moment the
+player can see it.* Which means the notice has to name the species, name which
+half of its record resolved, and say what would fix it (a measured boiling point
+in `properties/physical_data.py`) -- the refusal already says all three, so the
+work is routing it rather than writing it.
+
+⚠ And it must drop **the reaction, not just the species**, the way the
+`max_molar_mass` branch in `_expand_once` already does with `too_big` -- a
+half-registered reaction whose product has no thermochemistry is worse than
+either alternative.
+
+## R2 -- CAP BLAS THREADS  *(~15 min + a measurement)*
+
+Measured on identical work: uncapped scipy/BLAS used **7.21 cores**; with
+`OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1
+NUMEXPR_NUM_THREADS=1` it used **0.99 cores and was FASTER (5.9 s vs 10.1 s)**.
+**There is no trade-off**: this engine's arrays are small enough that threading
+is pure overhead, and *"single process" is not "one core"* -- sample it rather
+than assume.
+
+⚠ **DECIDE WHERE IT BELONGS, BECAUSE THE OBVIOUS PLACE IS THE RUDE ONE.**
+`chemsim/__init__` is tempting and would silently reconfigure BLAS for anyone
+who imports this as a library. The UI's worker thread is the case that actually
+matters -- it would otherwise spread a player's whole machine over one flask --
+so `chemsim/ui/__main__.py` and the validation harness are the defensible
+places. Nothing in the repo caps threads anywhere today (`grep`ped: zero hits).
+
+## R3 -- WIRE OR DELETE `Scenario.prune_threshold`  *(~30 min)*
+
+It is declared, documented as *"0 disables pruning (structural discovery)"*,
+round-trips through `to_dict`/`from_dict` into every save file, and **reaches
+nothing** -- `build_network` has no pruning parameter at all. Its partner
+`T_build` **is** wired, to `T_ref`. **A save-file field that does nothing is a
+lie in the format**, and it is the same class as P4's `TemplateSpec` bug: a
+field a frontend can set, that the engine never sees.
+
+⚠ Deleting it is a `SAVE_VERSION` bump. Wiring it is R4. **Do not leave it as it
+is**, which is the only option that is wrong on its own terms.
+
+## R4 -- RATE-AWARE PRUNING  *(one session)*
+
+The real answer to the objection, and the headline above is the case for it: the
+cost is the solver evaluating 644 reactions, nearly all dead at 298 K, on every
+RHS call. Start from `properties/` and `network/builder.py`'s `_expand_once`.
+
+⚠⚠ **THE DESIGN TRAP: PRUNING ON THE RATE CONSTANT ALONE IS WRONG**, because a
+slow reaction at high concentration still matters. The defensible form is
+**k x the concentrations actually charged**, which makes the network depend on
+the charge -- **that is a design decision and not a coding job**, and it has a
+consequence worth staring at before starting: two flasks holding the same
+species in different amounts would get **different networks**, so a scenario's
+network stops being a pure function of (templates, feed species). Everything
+`scenario.py`'s own docstring says about determinism has to be re-argued
+against that.
+
+⚠ And finding 3 is the warning: a bound that looks like it shrinks the problem
+can enlarge it. **Measure the reaction count, not just the clock.**
+
+## R5 -- THE BENCH `generations` BOX SILENTLY RESETS A RAISED BOUND  *(~20 min, UI)*
+
+Observed live by the user, who went from 3 generations back to 1 without being
+told. `_react_further` (`ui/app.py:645`) raises `scenario.generations` and
+`scenario.max_species` and **never writes either back to `self.bench_gens` /
+`self.bench_cap`**; `_pour_bench` (`ui/app.py:609`) reads those boxes. So the
+next pour silently discards the bound the player raised. **The fix is to write
+the raised bounds back into the boxes**, which also makes the current bound
+visible in the one place a player would look for it.
+
+## R6 -- THE LATTICE/ION GAP  *(P3 named it, did not close it -- unchanged)*
+
+A solid is held two incompatible ways and nothing converts between them:
+
+    the LATTICE as one species    calcination, roasting, gas-solid reduction
+    its IONS in the solid block   dissolution and precipitation via a Ksp
+
+Measured, 0.5 mol into 30 mol of water at 298 K for 600 s: **rock salt as ions
+dissolves completely; rock salt as its lattice sits there for ever.** So
+`shelf.psv` chooses per row, and on **six rows** the choice costs the row its
+other mechanic -- calcite, covellite, galena, sphalerite, cinnabar and green
+vitriol can be roasted and cannot be dissolved by anything. **Limestone in acid
+does nothing.** `validation/shelf.py` panel 2 and `tools/build_shelf.py`'s
+docstring carry the measurement and the rule.
+
+⚠ It is not obviously small: a lattice and its ions are different species with
+different standard states, and the conversion is the dissolution law
+`mineral_data` refuses for a lattice **with reason** (the fusion law is 407x
+wrong for NaCl and 11x wrong for CaCO3, in opposite directions). What is
+probably right is a term consuming the lattice and producing its ions in the
+solid block, priced from the same Ksp `PrecipitationArrays` already uses -- read
+`properties/solubility_product.py` and `vessel/vessel.py`'s
+`build_precipitation_arrays` before costing it.
+
+## What the R-series must NOT do
+
+The bound may become a **default the player chooses** and it may become
+**cheaper**; it may not become **invisible**. Every rule in §8.2 still applies:
+a limit the player can see and lift is a choice, and a limit nobody is told
+about is the thing §3 forbids. ⚠ And R4 in particular must not turn a coverage
+limit into a **silent** one: a pruned reaction is a reaction that was discovered
+and then discarded, which is a stronger claim than never having looked, and it
+has to say so.
 
 # ⚠ STATED NON-GOALS — the things that are NOT coming, and what they cost
 

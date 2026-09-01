@@ -666,6 +666,84 @@ approximated. It is admissible only under this project's other standing rule --
 
 *A limit the player can see and lift is not an approximation; it is a choice.*
 
+### ⚠⚠⚠ AND THEN THE OBJECTION WAS MADE ANYWAY, AND IT IS THE RIGHT ONE
+
+*"In the real world these materials would continue to react until everything was
+done -- it wouldn't stop artificially at sulfur dioxide and need a deliberate
+trigger."*
+
+Everything above concedes that in advance and it is still the correct
+complaint, so the bound was measured against the alternative rather than
+defended. `validation/shelf.py` **panel 5**, six sub-panels, ~2.8 min. **Four
+things came back and three of them were not what anyone expected.**
+
+**1. A FIXPOINT IS FREE FOR NON-POLYMERISING CHEMISTRY, AND THAT INCLUDES THE
+FLASK IN THE OBJECTION.**
+
+    picked off the shelf, generations=None   species  reactions  frontier  build
+    sulfur, air, water, NO2                       14          5         0  1.51s
+    limestone + water                              8          0         0  0.58s
+    brine                                          9          0         0  0.84s
+
+**Frontier zero in every row.** Chain 2 closes on its own in a second and a
+half. *The SO2 stop was never the generation bound biting* -- §8.5 records why:
+there is no template for SO2 + O2 without a carrier, so the flask stops with an
+**empty frontier**, which is the engine saying it knows no further chemistry
+rather than declining to look. **For the inorganic half of the shelf, "react
+until done" is a default to choose and not a feature to build.**
+
+**2. SUGARS AND ORGANICS HAVE NO FIXPOINT AT ALL.** glucose + water + air:
+**400 species, 644 reactions, frontier 367** -- the species cap, not a fixpoint.
+`esterification` and `ether_condensation` hand back a molecule that is a valid
+reactant for the same rule, and a sugar is a polyol, so the product set feeds
+itself. **That is a property of the template set, and no parameter fixes it.**
+
+**3. ⚠⚠⚠ THE BOUND IS AN INTEGRATION BOUND, NOT A DISCOVERY BOUND, AND NOTHING
+IN THIS DOCUMENT SAID SO BEFORE.** §8.2's own table above is a table of BUILD
+times, and build was the cheap half all along:
+
+    glucose + water + air     species  rxn    build     step   sim s   wall s / sim s
+    generations=1                  33   20    1.29s    9.97s    3600           0.0028
+    fixpoint (capped at 400)      400  644   20.25s  120.25s     300           0.4008
+
+**~145x, and the same simulated hour is 10 seconds against 24 minutes.** The
+solver evaluates all 644 reactions on every right-hand-side call and nearly
+every one of them is kinetically dead at 298 K. **The twenty seconds of extra
+build is a rounding error.** *So the thing that makes one generation necessary
+is the integrator, and the fix for it is rate-aware pruning rather than a
+bound* -- `MILESTONES.md` R4.
+
+⚠ **A MOLAR-MASS CAP WAS THE OBVIOUS ALTERNATIVE AND IT IS REFUTED.** It never
+closes the fixpoint, it is ~19x slower, and it turns two picks into crashes --
+**and it produced 842 reactions where uncapped produced 644.** Bounding SIZE
+does not shrink the search, it redirects it into a denser region: refuse the
+heavy products and the light ones recombine with each other instead. *A tighter
+bound made a bigger network.*
+
+**4. AT THE SAME CLOCK THE TWO FLASKS ARE BARELY DIFFERENT, AND THIS IS THE ONE
+THAT MATTERS TO §3.** glucose + water + air, both stepped **300 s** from an
+identical charge: 27 species present against 42, **15 new**, and the largest
+move on anything at all is **5.56e-07 mol against a 0.5 mol charge**. The
+temperatures differ in the fourth decimal.
+
+**The two flasks ARE different -- the bound touches matter, exactly as this
+section has always said.** But at 297 K over five minutes the 624 extra
+reactions are worth less than a micromole. ⚠ **SCOPE IT: one system, one
+temperature, one clock.** The species that appear are lactate esters, and esters
+BUILD, so a hot flask or a long run is a different measurement and it has not
+been made. *This is evidence that the approximation is cheap here. It is not a
+proof that it is cheap, and §3 is not satisfied by a single system.*
+
+⚠⚠ **AND ONE THING THAT IS NOT A TRADE-OFF AT ALL: AN UNPRICEABLE SPECIES
+CRASHES THE BUILD.** The picker offers `5-HMF` and `oxygen`, both ungreyed, and
+at **one generation** `build_network` raises a bare `ValueError` -- the product
+2,5-diformylfuran has a Benson formation half and no physical half, so no
+vapour-pressure curve can be built. `max_species`, `max_molar_mass` and
+`generations` all DROP, NOTICE and carry on; this one hands the player a
+traceback. **A fourth reported coverage limit has to exist before any of the
+above is acted on**, and §8.3's rule is the one it has to satisfy: *a refused
+species must be visible, with its reason.* That is `MILESTONES.md` R1.
+
 ## 8.3 What a shelf may hold, and why it is not everything
 
 **416 of the 1583 corpus compounds are REFUSED a price**, so an "all chemicals"
@@ -846,6 +924,11 @@ and any `if` that reads a purity. Three more that this loop makes tempting:
 # section 8, the shelf and the step: every number is printed by
 #   validation/playable_levers.py (~2 min). Panels 3, 5 and 6 are the
 #   ones section 8 quotes.
+# section 8.2's FIXPOINT measurements -- the build/step split, the
+#   same-clock flask comparison, the molar-mass refutation and the
+#   unpriceable-species crash -- are validation/shelf.py panel 5,
+#   sub-panels A to F (~2.8 min; F is recorded, and --mass-cap re-runs
+#   it live at ~6.5 min).
 # section 2, the dilution gate: 20.9 / 48.8 / 74.1% conversion
 #   0.83 mol acetic acid + 2.05 mol ethanol at 353 K, sealed under N2, 2 h,
 #   varying only the water charged (50 / 12 / 3 mol). ~0.2 s each.

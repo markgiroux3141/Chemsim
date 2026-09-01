@@ -8341,3 +8341,104 @@ RESOLVED since the last handoff:
     only `examples/dropping_funnel.py` and `validation/dropwise.py` do and neither
     is in the case list; `examples/workshop.py` uses a hand-built spec with none of
     the six fields set. *A prediction, not a reason to skip it.*
+
+116. ✔ **R-SERIES OPENED — "REACT UNTIL DONE" WAS MEASURED RATHER THAN
+    DEFENDED, AND THE GENERATION BOUND TURNS OUT TO BE AN *INTEGRATION* BOUND.**
+    Documentation and one audit panel only; no engine code. `MILESTONES.md`
+    gains the R-series section and work order, `GAME_DESIGN.md` §8.2 gains the
+    measurements, `NEXT_PROMPT.md` is re-pointed, and `validation/shelf.py`
+    gains **panel 5** (sub-panels A–F, ~2.8 min).
+
+    **IT STARTED FROM AN OBJECTION AND THE OBJECTION WAS RIGHT.** *"In the real
+    world these materials would continue to react until everything was done — it
+    wouldn't stop artificially at sulfur dioxide and need a deliberate
+    trigger."* §8.2 had already conceded exactly that in writing: one generation
+    is an approximation that TOUCHES MATTER, which §3 forbids, admissible only
+    because it is not silent. So the bound was measured against its alternative.
+
+    ⚠⚠⚠ **THE HEADLINE IS THAT EVERYONE HAD BEEN LOOKING AT THE WRONG HALF OF
+    THE COST.** §8.2's own table was a table of BUILD times, and build is the
+    cheap half:
+
+        glucose + water + air     species  rxn    build     step   sim s  wall/sim
+        generations=1                  33   20    1.29s    9.97s    3600    0.0028
+        fixpoint (hit the 400 cap)    400  644   20.25s  120.25s     300    0.4008
+
+    **~145x to INTEGRATE; the same simulated hour is 10 s against 24 minutes.**
+    The solver evaluates all 644 reactions on every RHS call and nearly all of
+    them are kinetically dead at 298 K. *The 20 s of extra discovery is a
+    rounding error, and the answer is rate-aware pruning (R4) rather than a
+    bound.*
+
+    ⚠⚠ **AND "REACT UNTIL DONE" IS ALREADY AVAILABLE FOR HALF THE SHELF.**
+    sulfur/air/water/NO2 closes at **14 species, frontier 0, in 1.51 s**;
+    limestone+water and brine likewise. **The SO2 stop in the objection was
+    never the generation bound biting** — it is an EMPTY frontier, the engine
+    reporting it knows no SO2 + O2 chemistry without a carrier. Set
+    `generations=None` and that flask runs to completion with no trigger.
+    Sugars are the other case: 400 species / 644 reactions / frontier 367,
+    because `esterification` and `ether_condensation` are **BUILDING** templates
+    whose products are valid reactants for the same rule. *No parameter fixes
+    that; it is a property of the template set.*
+
+    ⚠⚠⚠ **THE QUESTION HANDED FORWARD AS UNMEASURED IS SETTLED, AND IT COST TWO
+    MINUTES RATHER THAN THE TWENTY IT WAS PRICED AT.** *Does a truncated
+    fixpoint give a different flask?* The earlier attempt compared runs that
+    never reached the same clock, which is what made it look expensive. Both
+    stepped **300 s** from an identical charge: **27 species present against 42,
+    15 new, and the largest move on anything is 5.56e-07 mol against a 0.5 mol
+    charge**; the temperatures differ in the fourth decimal. **Different flasks
+    — the bound touches matter, exactly as §8.2 says — but nothing moves by as
+    much as a micromole.** ⚠ Scoped in the write-up rather than generalised: one
+    system, one temperature, one clock, and the new species are lactate ESTERS,
+    which BUILD, so a hot flask or a long run is a different measurement and has
+    not been made.
+
+    ⚠⚠ **A MOLAR-MASS CAP IS DEAD AS AN IDEA, AND THE WRITE-UP OF IT WAS
+    CORRECTED IN PLACE.** It never closes the fixpoint, turns two picks into
+    crashes, and **produced 842 reactions where uncapped produced 644** —
+    *bounding SIZE does not shrink the search, it REDIRECTS it into a denser
+    region.* ⚠ The slowdown was first recorded as **35x** against a 10.9 s
+    uncapped build; panel 5B builds that identical network live and has now
+    measured **19.8 / 20.1 / 20.2 s** in three runs, so it is **19x** and the
+    10.9 s does not reproduce. *The only reason it was caught is that the cheap
+    half of the measurement sits in the same panel as the expensive half and
+    disagreed with it out loud* — which is why 5F is recorded beside 5B rather
+    than filed on its own.
+
+    ⚠⚠⚠ **AND ONE FINDING GOT WORSE ON RE-MEASUREMENT: AN UNPRICEABLE SPECIES
+    CRASHES THE BUILD IN TWO CLICKS.** It was handed over as *"deeper
+    exploration crashes rather than degrades"*. Measured: picker rows **`5-HMF`
+    + `oxygen`, both offered UNGREYED, at `generations=1`** → a bare
+    `ValueError` out of `build_network`. 2,5-diformylfuran has a Benson
+    formation half and no physical half — no measured Tb anywhere, so no
+    vapour-pressure curve — and thermochemistry refuses rather than pretend it
+    is non-volatile. **That refusal is right in isolation and wrong here**:
+    `max_species`, `max_molar_mass` and `generations` all DROP, NOTICE and carry
+    on; this one hands the player a traceback. It is **R1**, and it is a
+    prerequisite rather than a nice-to-have.
+
+    **THE WORK ORDER** (full text and traps in `MILESTONES.md` §R-SERIES):
+    R1 unpriceable species → a reported coverage limit (~1 h, PREREQUISITE);
+    R2 cap BLAS threads (7.21 cores → 0.99, **and faster**, 5.9 s vs 10.1 s —
+    nothing in the repo caps them today); R3 wire or DELETE
+    `Scenario.prune_threshold`, which round-trips into every save file and
+    reaches nothing while its partner `T_build` is wired — the same class as
+    P4's `TemplateSpec` bug; R4 rate-aware pruning; R5 the Bench `generations`
+    box silently resetting a bound REACT FURTHER raised (`_react_further` never
+    writes the raised values back to the widgets `_pour_bench` reads); R6 the
+    lattice/ion gap P3 named.
+
+    ⚠ **R1 IS NOT A `try`/`except` AND R4 IS NOT A CODING JOB.** A species that
+    cannot be priced is not in the model, so dropping it changes what is in the
+    flask, which §3 forbids being silent about; and pruning on the rate CONSTANT
+    alone is wrong, because a slow reaction at high concentration still matters
+    — `k` × the concentrations actually charged is the defensible form, and it
+    makes the network depend on the CHARGE, contradicting `scenario.py`'s own
+    determinism docstring. Both are arguments to be made, not wrappers to write.
+
+    ⚠⚠ **`tolerance_audit.py` IS STILL OWED FROM P4 AND WAS NOT RUN HERE
+    EITHER**, and neither was the suite. This session added no engine code —
+    one validation panel and four documents — so it owes nothing of its own, but
+    it does not discharge P4's debt. The standing figures are unchanged: 1255
+    passed / 1 failed with the failure diagnosed, fixed and re-run in isolation.

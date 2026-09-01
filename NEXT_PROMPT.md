@@ -3,58 +3,112 @@ Red) in d:\Claude Code Projects\Chemistry Simulator.
 
 **The plan is `MILESTONES.md`. Read it first — it is the authority on what to
 build and in what order.** **M0–M6, M8, M12, S1–S13, G1–G6, C1–C7 and P0–P4 are
-DONE. THE P-SERIES IS FINISHED AND THE LOOP IS PLAYABLE.**
+DONE. THE P-SERIES IS FINISHED AND THE LOOP IS PLAYABLE. THE LIVE ARC IS THE
+R-SERIES — *react until done* — AND IT IS MEASURED, NOT YET BUILT.**
 
-# ⚠⚠⚠ THE LIVE QUESTION IS "WHAT NOW", AND THERE ARE THREE HONEST ANSWERS
+# ⚠⚠⚠ THE LIVE ARC IS THE R-SERIES: **REACT UNTIL DONE**, AND IT STARTS FROM AN OBJECTION
 
-`GAME_DESIGN.md` §8's sentence is satisfied: *a player opens a shelf, pours two
+`GAME_DESIGN.md` §8's sentence is satisfied — *a player opens a shelf, pours two
 things into a flask, does something to it, reads what came out, and puts the
-result back on the shelf under a name.* All of it is built and it was played.
-**So the next session picks a direction rather than continuing one**, and the
-three candidates are below in the order this session would rank them.
+result back on the shelf under a name* — and playing it produced a complaint
+rather than a next feature:
 
-## ⚠ A. THE LATTICE/ION CONVERSION — the engine gap P3 NAMED and did not close
+> *"In the real world these materials would continue to react until everything
+> was done — it wouldn't stop artificially at sulfur dioxide and need a
+> deliberate trigger."*
 
-**A solid is held two incompatible ways and nothing converts between them.**
+**That is correct, and §8.2 already conceded it**: one generation is an
+approximation that TOUCHES MATTER, which §3 forbids, admissible only because it
+is not silent. So the bound was MEASURED against the alternative instead of
+defended. The full write-up is `MILESTONES.md` §"THE R-SERIES"; the standing
+audit is **`validation/shelf.py` panel 5** (sub-panels A–F, ~2.8 min).
 
-    the LATTICE as one species     calcination, roasting, gas-solid reduction
-                                   (`solid_state`, `surface`)
-    its IONS in the solid block    dissolution and precipitation via a Ksp
-                                   (`PrecipitationArrays`)
+## ⚠⚠⚠ THE HEADLINE: IT IS AN **INTEGRATION** BOUND, NOT A DISCOVERY BOUND
 
-Measured, 0.5 mol into 30 mol of water at 298 K for 600 s: **rock salt as ions
-dissolves completely; rock salt as its lattice sits there for ever.** So
-`data/catalog/shelf.psv` has to CHOOSE per row, and on six rows the choice costs
-the row its other mechanic — calcite, covellite, galena, sphalerite, cinnabar and
-green vitriol can be roasted and **cannot be dissolved by anything. Limestone in
-acid does nothing.** That is the single most game-visible gap left.
+    glucose + water + air        species  rxn    build      step   sim s   wall/sim
+    generations=1                     33   20    1.29s     9.97s    3600     0.0028
+    fixpoint (hit the 400 cap)       400  644   20.25s   120.25s     300     0.4008
 
-⚠ It is not obviously small. A lattice and its ions are different SPECIES with
-different standard states, and the conversion is the dissolution law
-`mineral_data` refuses for a lattice with reason (the fusion law is 407x wrong for
-NaCl and 11x wrong for CaCO3, in opposite directions). What is probably right is
-a term that consumes the lattice and produces its ions in the solid block, priced
-from the same Ksp `PrecipitationArrays` already uses — read
-`properties/solubility_product.py` and `vessel/vessel.py`'s
-`build_precipitation_arrays` before costing it.
+**~145x to INTEGRATE, and the same simulated hour is 10 s against 24 minutes.**
+The extra 20 s of BUILD is a rounding error. The solver evaluates all 644
+reactions on every RHS call and nearly all of them are kinetically dead at
+298 K. **Everything in this repo had been looking at the wrong half of the
+cost** — §8.2's own table was a table of build times. *That is the case for
+rate-aware pruning (R4).*
 
-## ⚠ B. RESUME THE C-SERIES — content, and the work order is `PLAYABLE.md` §8b
+## The other four, in one line each
 
-Unchanged and still paused: 21 of 173 playable, five rows tied at +1 with nothing
-above them, three of the five carrying warnings. It was paused on a measurement
-(`validation/playable_levers.py`), and that measurement has not moved. ⚠ But
-**P3 changed one of its inputs**: granting the 28 stranded species is no longer
-hypothetical, it is `shelf.psv`, and the tiers are asserted against panel 3. So
-re-run the levers audit before quoting any of §8b's numbers.
+1. **A fixpoint is FREE for non-polymerising chemistry.** sulfur/air/water/NO2
+   closes at **14 species, frontier 0, 1.51 s**; limestone+water and brine the
+   same. ⚠ **The SO2 stop in the objection was never the bound biting** — it is
+   an EMPTY frontier, the engine reporting it knows no SO2 + O2 chemistry
+   without a carrier. **"React until done" is available today for the whole
+   inorganic half of the shelf: set `generations=None`.**
+2. **Sugars have no fixpoint at all.** 400 species / 644 reactions / frontier
+   367. `esterification` and `ether_condensation` are **BUILDING** templates —
+   the product is a valid reactant for the same rule — so no parameter fixes it.
+3. **A molar-mass cap is DEAD AS AN IDEA.** Never closes the fixpoint, ~19x
+   slower, turns two picks into crashes — and **842 reactions at 250 g/mol
+   against 644 uncapped.** *Bounding size does not shrink the search, it
+   REDIRECTS it into a denser region.* ⚠ The 35x first written down was against
+   a 10.9 s uncapped build that **does not reproduce** (19.8 / 20.1 / 20.2 s in
+   three runs); it is 19x, and the 10.9 s should not be quoted again.
+4. **⚠⚠ AN UNPRICEABLE SPECIES CRASHES THE BUILD IN TWO CLICKS.** Picker rows
+   `5-HMF` + `oxygen`, **both ungreyed**, at **generations=1** → bare
+   `ValueError` out of `build_network` (2,5-diformylfuran: Benson formation
+   half, no measured Tb, so no vapour-pressure curve). `max_species`,
+   `max_molar_mass` and `generations` all DROP, NOTICE and carry on; this one
+   hands the player a traceback. ⚠ The earlier write-up said *"deeper
+   exploration crashes"* — **it is one generation, off the picker's own
+   roster.** This is why R1 is a prerequisite.
 
-## ⚠ C. PLAY IT MORE, WHICH IS WHAT FOUND EVERYTHING IN P4
+## ⚠ AND THE QUESTION HANDED FORWARD AS UNMEASURED IS SETTLED
 
-P4's own play found a library that was false by more than half and six template
-fields that never reached the engine. **The suite was green through both.** There
-is no reason to think one afternoon of play exhausted that seam — and
-`GAME_DESIGN.md` §8's own prediction, that *the interesting part is impurities
-carrying forward*, has still not actually been tested: the played session was
-chain 2, not a multi-step prep with a contaminant traced through it.
+*Does a truncated fixpoint give a DIFFERENT FLASK than one generation?* It was
+costed at ~20 min; it is ~2, because the earlier attempt compared runs that
+never reached the same clock. Both stepped **300 s** from an identical charge:
+
+    species present   27 (gens=1) vs 42 (fixpoint)     15 new
+    largest move on ANYTHING   5.56e-07 mol, against a 0.5 mol charge
+    T   296.9214 K vs 296.9213 K
+
+**Different flasks — the bound touches matter, as §8.2 says — but nothing moves
+by as much as a micromole.** ⚠ **Scope it: one system, one temperature, one
+clock**, and the new species are lactate ESTERS, which BUILD, so a hot flask or
+a long run is a different measurement and has NOT been made.
+
+## THE WORK ORDER (full text and the design traps: `MILESTONES.md` §R-SERIES)
+
+    R1  unpriceable species -> a REPORTED coverage limit    ~1 h   PREREQUISITE
+    R2  cap BLAS threads (7.21 cores -> 0.99, AND faster)   ~15 min + a measurement
+    R3  wire or DELETE Scenario.prune_threshold             ~30 min
+    R4  rate-aware pruning -- the real answer               one session
+    R5  the Bench `generations` box resets a raised bound   ~20 min  UI
+    R6  the lattice/ion gap (P3 named it, did not close it)
+
+⚠ **R1 is not a `try`/`except`.** A species that cannot be priced is not in the
+model, so dropping it changes what is in the flask — §3 forbids that being
+silent. Argue it the way §8.2 argues the generation bound.
+⚠ **R4's trap:** pruning on the rate CONSTANT alone is wrong, because a slow
+reaction at high concentration still matters. `k` × the concentrations actually
+charged is the defensible form — and it makes the network depend on the CHARGE,
+which contradicts `scenario.py`'s own determinism docstring. A design decision,
+not a coding job.
+⚠ **R3 is the same class as P4's `TemplateSpec` bug:** a save-file field a
+frontend can set that the engine never reads. `T_build` IS wired; this is not.
+
+## ⚠ THE OTHER TWO DIRECTIONS, STILL OPEN AND STILL RANKED BELOW THE R-SERIES
+
+* **RESUME THE C-SERIES** — content; the work order is `PLAYABLE.md` §8b, 21 of
+  173 playable, five rows tied at +1 with nothing above them and three of the
+  five carrying warnings. Paused on `validation/playable_levers.py`, which has
+  not moved. ⚠ P3 changed one of its inputs (the 28 stranded species are
+  `shelf.psv` now), so re-run the levers audit before quoting any §8b number.
+* **PLAY IT MORE** — P4's own play found a library false by more than half and
+  six template fields that never reached the engine, **with the suite green
+  through both**. §8's prediction that *the interesting part is impurities
+  carrying forward* has still not been tested: the played session was chain 2,
+  not a multi-step prep with a contaminant traced through it.
 
 ---
 
@@ -137,7 +191,13 @@ What else was run in P3/P4, all green:
 ```bash
 python -m pytest -q --durations=25          # ~30 min, run ALONE
 python validation/tolerance_audit.py        # ~10 min. OWED (see above)
-python validation/shelf.py                  # ~6 min. P3/P4's standing audit
+python validation/shelf.py                  # ~9 min. P3/P4's standing audit,
+                                            #   PLUS PANEL 5 (the R-series). Panel 5
+                                            #   is ~2.8 min of that and every figure
+                                            #   above comes out of it.
+python validation/shelf.py --mass-cap       # +6.5 min: re-measures panel 5F live
+                                            #   (the molar-mass refutation), which is
+                                            #   RECORDED rather than re-run by default
 python tools/build_shelf.py --dry-run       # ~10 s. Regenerates shelf_data
 ```
 
