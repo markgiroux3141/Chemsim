@@ -6,6 +6,39 @@ build and in what order.** **M0–M6, M8, M12, S1–S13, G1–G6, C1–C7, P0–
 are DONE. THE LIVE ARC IS THE R-SERIES — *react until done*. R1 IS BUILT; R2–R6
 ARE STILL THE WORK ORDER.**
 
+# ⚠⚠⚠ DO THIS NEXT: **R2 + R5, ONE SHORT SESSION (~35 min)**
+
+R1 was the PREREQUISITE — *"nothing deeper than one generation is safe until
+this exists"* — and it is done, so the rest of the series is unblocked. The two
+cheapest rows are also the two a player feels immediately:
+
+* **R5 (~20 min, UI).** A bug the USER hit while playing. `_react_further`
+  (`ui/app.py:645`) raises `scenario.generations` and `scenario.max_species` and
+  **never writes either back to `self.bench_gens` / `self.bench_cap`**, which is
+  what `_pour_bench` (`ui/app.py:609`) reads. So the next pour silently discards
+  the bound the player raised. Writing them back also puts the current bound in
+  the one place a player would look for it.
+* **R2 (~15 min).** 7.21 cores → 0.99 **and faster** (5.9 s vs 10.1 s). ⚠ **Half
+  its owed measurement is already done**: chasing the `workshop` audit number
+  established that thread capping is **numerically neutral** — capped twice and
+  uncapped once give bit-identical audit output. What is left is deciding WHERE,
+  and the obvious place is the rude one: `chemsim/__init__` would silently
+  reconfigure BLAS for anyone importing this as a library, so
+  `chemsim/ui/__main__.py` and the validation harness are the defensible spots.
+  Nothing in the repo caps threads anywhere today.
+
+**Then R3 (~30 min), then R4 as its own session.** R4 opens with a design
+argument rather than code — see its trap below — and R3's decision is downstream
+of it.
+
+⚠ **AND ONE THING THAT IS NOT ON THE WORK ORDER AND PROBABLY SHOULD BE.**
+Finding 1 below says a fixpoint is **free** for the whole inorganic half of the
+shelf — sulfur/air/water/NO2 closes at 14 species, frontier 0, in 1.51 s. R1 was
+what made `generations=None` safe to offer, so *"react until done" for
+everything that is not a sugar is now a DEFAULT to choose rather than a feature
+to build.* That is a UI decision, it is the most direct partial answer to the
+objection this whole arc came from, and nobody has taken it.
+
 # ⚠⚠⚠ THE LIVE ARC IS THE R-SERIES: **REACT UNTIL DONE**, AND IT STARTS FROM AN OBJECTION
 
 `GAME_DESIGN.md` §8's sentence is satisfied — *a player opens a shelf, pours two
@@ -105,7 +138,8 @@ a long run is a different measurement and has NOT been made.
 ## THE WORK ORDER (full text and the design traps: `MILESTONES.md` §R-SERIES)
 
     R1  unpriceable species -> a REPORTED coverage limit    ✔ DONE 2026-09-01
-    R2  cap BLAS threads (7.21 cores -> 0.99, AND faster)   ~15 min + a measurement
+    R2  cap BLAS threads (7.21 cores -> 0.99, AND faster)   ~15 min; the
+        measurement is DONE -- capping is numerically neutral (R1)
     R3  wire or DELETE Scenario.prune_threshold             ~30 min
     R4  rate-aware pruning -- the real answer               one session
     R5  the Bench `generations` box resets a raised bound   ~20 min  UI
@@ -190,11 +224,14 @@ and not the change. C7's rule is what held: quote the per-test total, never a
 row, and do not read one session's move as a trend.
 
 ⚠ The `--durations=25` shape is unremarkable against the record — `test_still`
-x6 still dominates and the one RIG test is the top row at 168.93 s. Nothing in
+x6 still dominates and the one RIG test is the top row at 163.27 s. Nothing in
 the list is outside the ~20% between-run spread this box is known to have.
 
-⚠⚠ **AND THIS SESSION DESTROYED THE LINE ENDINGS OF FIVE CRLF FILES BEFORE
-NOTICING.** Rewriting a document with `pathlib.write_text(..., newline="
+**Committed and pushed: `26790ba` on `main`.** The working tree is clean.
+
+⚠⚠ **AND THE R-SERIES' OPENING SESSION DESTROYED THE LINE ENDINGS OF FIVE CRLF
+FILES BEFORE NOTICING.** (R1 did not: all ten of its files round-tripped, checked
+against `git show HEAD:<file>` before the commit. Do the same.) Rewriting a document with `pathlib.write_text(..., newline="
 ")`
 converts a CRLF file wholesale: `git diff --stat` read **21158 insertions /
 19750 deletions** across 19 files, hiding a real 1741-line change inside it.
@@ -214,6 +251,16 @@ was_crlf = head.count(b"
 ") > head.count(b"
 ") // 2
 ```
+
+⚠⚠ **AND A QUOTED BASH HEREDOC IN THIS HARNESS EATS BACKSLASHES, WHICH BROKE
+TWO OF R1's EDITS BEFORE THE CAUSE WAS OBVIOUS.** `cat > edit.py <<'PYEOF'`
+is supposed to pass its body through literally, and it does not: a `\n` inside
+the Python source it writes arrives as a REAL NEWLINE, so a generated f-string
+became an unterminated literal and the file would not parse. It fails loudly
+(`SyntaxError`), which is the only good thing about it. **Write the character
+some other way** — `chr(10)`, or `"".join`, or the `Edit` tool, which passes
+strings through verbatim and is the right fallback for anything with an escape
+in it.
 
 ⚠ And appending with a bash heredoc (`cat >> tests/test_ui.py <<'EOF'`) puts LF
 lines into a CRLF file, which leaves it MIXED rather than converted — a state
