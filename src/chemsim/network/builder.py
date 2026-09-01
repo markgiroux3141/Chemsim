@@ -26,7 +26,11 @@ from dataclasses import dataclass, field
 import numpy as np
 
 from chemsim.matter import Molecule
-from chemsim.properties import ThermochemistryProvider, VolatilityProvider
+from chemsim.properties import (
+    OutsideEstimatorDomain,
+    ThermochemistryProvider,
+    VolatilityProvider,
+)
 from chemsim.properties import standard_state
 from chemsim.reactions import hammett
 from chemsim.reactions import (
@@ -99,6 +103,20 @@ PHASE_INDEX = {"liquid": 0, "gas": 1}
 # it elided; the full list is ``ReactionNetwork.unexpanded``, which is where
 # anything that means to ACT on it should look anyway.
 _NOTICE_SPECIES = 12
+
+# And how many of those get their REFUSAL quoted in full (R1). An unpriced
+# species' reason is the useful half -- it says which half of the record
+# resolved and what would fix it -- but it runs ~400 characters, so twelve of
+# them is a notice that has hidden itself in its own length. The full mapping is
+# ``ReactionNetwork.unpriced``.
+_NOTICE_REASONS = 3
+
+# The unpriced notice is ONE string spanning several lines, which every other
+# notice in this file is not -- one refusal per line under a header, because
+# three ~400-character reasons run together are unreadable on a console and in a
+# report panel alike. Named rather than written inline so the f-strings that
+# build it stay free of escapes.
+_NL = chr(10)
 
 
 @dataclass
@@ -179,6 +197,7 @@ class ReactionNetwork:
         volatility: VolatilityProvider | None = None,
         notices: tuple[str, ...] = (),
         unexpanded: tuple[str, ...] = (),
+        unpriced: dict[str, str] | None = None,
     ):
         self.molecules = molecules
         self.species = list(molecules.keys())  # insertion order -> stable indices
@@ -210,6 +229,19 @@ class ReactionNetwork:
         # species are not in this list. Against a generation limit -- the case
         # the game runs on every step -- it is exact.
         self.unexpanded = tuple(unexpanded)
+        # R1. Species this build DISCOVERED and then DISCARDED because no
+        # provider can price them, mapped to the refusal verbatim. The structured
+        # companion to the notice that names them, on the same footing as
+        # ``unexpanded``: the notice quotes three reasons and this carries all of
+        # them, so a frontend that means to ACT -- to offer "this route needs a
+        # measured boiling point for X" -- reads here.
+        #
+        # ⚠ THESE ARE NOT SPECIES IN THE NETWORK, and that is the whole point.
+        # ``unexpanded`` names species that ARE in the flask and were not
+        # explored; this names species that a template made and the flask does
+        # not contain, together with the reactions that would have made them.
+        # Empty is the ordinary case and is a positive statement.
+        self.unpriced = dict(unpriced or {})
 
     def to_arrays(
         self, thermo: ThermochemistryProvider | None = None
@@ -318,6 +350,18 @@ def build_network(
     carried on the returned network as ``notices``, because stdout is not a place
     a player looks.
 
+    ⚠ THERE IS A FOURTH COVERAGE LIMIT AND IT IS NOT A BOUND ANYONE SET. A
+    product this discovers may have no thermochemistry -- no curated record, no
+    estimator that can price it, or a formation half with no physical half to go
+    with it -- and until R1 that came out of here as a bare ``ValueError``,
+    reachable off the picker's own roster in two clicks at ONE generation
+    (5-HMF + oxygen makes 2,5-diformylfuran, which no source gives a boiling
+    point). It now DROPS the rewrite, records the species against the refusal in
+    ``ReactionNetwork.unpriced``, and reports it in ``notices``, which is what
+    the three declared bounds already did. See ``_unpriceable`` for why dropping
+    is admissible at all -- it touches matter, so it is only allowed to happen
+    out loud.
+
     Args:
         generations: stop after this many rounds of template application instead
             of running to a fixpoint. One generation is the "edge" of the current
@@ -331,9 +375,14 @@ def build_network(
             honest bound for an oligomerising system, which would otherwise grow
             without limit. Everything dropped is reported.
         thermo: required if any template is reversible -- reverse kinetics are
-            derived from it rather than declared. A species with no available
-            thermochemistry is a hard error, not a silent drop: an unbalanced
-            reversible pair would drive to completion and quietly falsify yields.
+            derived from it rather than declared. ⚠ A DISCOVERED species with no
+            available thermochemistry takes the whole rewrite with it (R1): the
+            fear this docstring used to record -- that dropping the species alone
+            would leave an unbalanced reversible pair to drive to completion and
+            quietly falsify yields -- is why ``_unpriceable`` runs before any
+            reaction is constructed rather than after. A species the CALLER
+            passed in is still a hard error; only what the templates make is
+            droppable, and only with a notice.
         T_ref: temperature at which the activity->concentration standard-state
             conversion is folded into the reverse pre-exponential. Only matters
             for reactions that change mole count; see ``detailed_balance``.
@@ -473,6 +522,7 @@ def build_network(
     return ReactionNetwork(
         molecules, list(reactions.values()), thermo, volatility,
         notices=tuple(messages), unexpanded=unexpanded,
+        unpriced=dict(state.unpriced),
     )
 
 
@@ -484,6 +534,15 @@ class _ExpansionState:
     max_molar_mass: float | None = None
     capped: bool = False
     oversize: dict[str, float] = field(default_factory=dict)
+    # R1. Species a template MADE that no provider can price, keyed to the
+    # refusal verbatim, plus how many rewrites were thrown away because of them.
+    # ⚠ THE COUNT IS OF REWRITES AND NOT OF REACTIONS, and the difference is
+    # not pedantry: the screen runs BEFORE ``_concrete_reactions``, so what was
+    # discarded is a balanced template application that would have become one or
+    # two concrete reactions per phase. Reporting it as a reaction count would
+    # claim a number this branch never computed.
+    unpriced: dict[str, str] = field(default_factory=dict)
+    unpriced_rewrites: int = 0
     tried: set = field(default_factory=set)
 
     def reports(self, max_species: int, n_unexpanded: int = 0) -> list[str]:
@@ -505,6 +564,34 @@ class _ExpansionState:
                 "Heaviest dropped: "
                 + ", ".join(f"{s} ({m:.0f})" for s, m in heaviest)
             )
+        if self.unpriced:
+            named = list(self.unpriced)[:_NOTICE_SPECIES]
+            more = len(self.unpriced) - len(named)
+            head = (
+                f"[build_network] NOTICE: {len(self.unpriced)} species were "
+                f"DISCOVERED and could not be PRICED, so the "
+                f"{self.unpriced_rewrites} template application(s) that make "
+                f"them were discarded -- the reaction and the species both. That "
+                f"is a stronger claim than never having looked: the chemistry is "
+                f"reachable and the thermochemistry is not, so what is missing "
+                f"from this flask is a DATA limit rather than a chemical one. "
+                f"Dropped: " + ", ".join(named)
+                + (f", ... (+{more} more)" if more > 0 else "")
+            )
+            # The refusal already names the species, says which half of its
+            # record resolved, and says what would fix it -- so the work here is
+            # ROUTING it, not writing it. Verbatim for the first few, because
+            # they run ~400 characters each and twelve of them is a notice that
+            # has hidden itself in its own length.
+            lines = [head]
+            lines += [f"    {smi}: {self.unpriced[smi]}"
+                      for smi in named[:_NOTICE_REASONS]]
+            if len(self.unpriced) > _NOTICE_REASONS:
+                lines.append(
+                    f"    (reasons shown for the first {_NOTICE_REASONS}; "
+                    f"the full set is ReactionNetwork.unpriced)"
+                )
+            out.append(_NL.join(lines))
         if self.capped:
             out.append(
                 f"[build_network] NOTICE: hit max_species={max_species}; network "
@@ -559,6 +646,25 @@ def _expand_once(
                 if not _element_charge_balance(combo, products):
                     continue                  # reject malformed / unbalanced rewrites
 
+                # R1. THE FOURTH COVERAGE LIMIT, AND THE ONLY ONE THAT USED TO
+                # HAND THE PLAYER A TRACEBACK. It has to run HERE, ahead of
+                # ``_concrete_reactions``, because pricing is what that call
+                # does: a product with no thermochemistry reaches the
+                # standard-state check, the Evans-Polanyi barrier or detailed
+                # balance and raises out of ``build_network`` -- reachable off
+                # the picker's own roster in two clicks, at ONE generation.
+                #
+                # ⚠ AND IT DROPS THE REWRITE, NOT ONLY THE SPECIES, exactly as
+                # the ``too_big`` branch below does. A reaction whose product has
+                # no thermochemistry is worse than either alternative: it would
+                # consume its reactants into an index the energy balance and the
+                # vapour-liquid split cannot price.
+                unpriced = _unpriceable(products, molecules, thermo, state)
+                if unpriced:
+                    state.unpriced.update(unpriced)
+                    state.unpriced_rewrites += 1
+                    continue
+
                 new_rxns = _concrete_reactions(
                     tmpl, combo, products, thermo, volatility, T_ref, notices,
                     cell_potential,
@@ -590,6 +696,93 @@ def _expand_once(
                         reactions[rxn.key()] = rxn
 
     return added
+
+
+def _unpriceable(
+    products: tuple[Molecule, ...],
+    molecules: dict[str, Molecule],
+    thermo: ThermochemistryProvider | None,
+    state: _ExpansionState,
+) -> dict[str, str]:
+    """Which of these NEW products no provider can price, and the refusal why.
+
+    ⚠⚠ THE DESIGN QUESTION IS NOT WHETHER TO CATCH THE EXCEPTION, IT IS WHAT
+    DROPPING THE SPECIES CLAIMS. A species that cannot be priced is not in the
+    model, so refusing to register it CHANGES WHAT IS IN THE FLASK -- and
+    ``GAME_DESIGN.md`` 3 forbids an approximation that touches matter being
+    silent. The argument that makes it admissible is the one 8.2 makes for the
+    generation bound: *the limit is a choice the moment the player can see it.*
+    So the refusal is carried out whole -- it already names the species, says
+    which half of its record resolved, and says what would fix it (a measured
+    boiling point in ``properties/physical_data.py``) -- and the alternative,
+    raising, is what this replaces: ``max_species``, ``max_molar_mass`` and
+    ``generations`` all DROP, NOTICE and carry on, and this one propagated a
+    bare ``ValueError`` while the other three did not.
+
+    ⚠⚠ TWO REFUSALS COME OUT OF ONE PROVIDER AND ONLY ONE OF THEM IS A
+    COVERAGE LIMIT. ``OutsideEstimatorDomain`` -- an element, an ion, a mixture
+    -- says THIS provider is the wrong one and names the right one; the species
+    is priceable and the network was built without the setup that prices it.
+    Reporting that as a dropped species would claim a hole in the data where the
+    truth is a hole in the SETUP, so it is passed through untouched, which is
+    also the behaviour every network in this repo already has. The other refusal
+    -- *no thermochemistry available* -- says no source anywhere in this project
+    prices it, and that is the one that drops. See ``OutsideEstimatorDomain``.
+
+    ⚠ A SPECIES ALREADY IN ``molecules`` IS NOT SCREENED, AND THAT IS THE
+    SECOND BOUNDARY. It is either a product priced when an earlier rewrite registered
+    it, or a species the CALLER CHARGED. A feed species that cannot be priced
+    stays a hard error, because dropping it would delete matter the player put
+    in the flask -- there is no coverage limit to report there, only a flask
+    that is not the one that was asked for. Which one it is, is the picker's
+    job: ``engine/shelf_data.py`` carries the 416 rows this refusal greys out.
+
+    ⚠ IT COSTS ESSENTIALLY NOTHING. ``ThermochemistryProvider.get`` caches on
+    success, so every species that survives the screen is priced once and read
+    from the cache by the reaction construction two lines later. Only FAILURES
+    would be recomputed -- the refusal raises before the cache is written -- so
+    ``state.unpriced`` is consulted first and serves as the failure cache.
+    """
+    if thermo is None:
+        # Nothing is priced at build time in this configuration (no reversible
+        # template, no Evans-Polanyi, no standard-state shift), so there is
+        # nothing here to refuse. A missing record would surface later, at the
+        # Vessel, against a species the caller can see in the network.
+        return {}
+    out: dict[str, str] = {}
+    for pm in products:
+        if pm.smiles in molecules:
+            continue
+        if pm.smiles in state.unpriced:
+            out[pm.smiles] = state.unpriced[pm.smiles]
+            continue
+        try:
+            thermo.get(pm)
+        except OutsideEstimatorDomain:
+            # NOT a coverage limit, and the distinction is the sharpest thing R1
+            # found. This refusal says the PROVIDER is wrong, not that the
+            # species is unknown -- an ion is priced from a measured pKa by
+            # ``electrolyte_provider()``, and the message says so. Dropping it
+            # would report a hole in the data that does not exist AND delete
+            # chemistry this engine can do: measured on ``saponification``,
+            # which under a neutral provider makes a stearate ion that
+            # ``electrolyte_provider()`` prices perfectly well, and on
+            # ``kolbe_schmitt``, whose dianion is the reason
+            # ``tests/test_furans.py`` pins a raise.
+            #
+            # ⚠ IT IS ALSO NOT A CRASH THIS BRANCH IS LEAVING OPEN BY ACCIDENT.
+            # ``VolatilityProvider`` short-circuits a charged species to
+            # non-volatile without consulting thermochemistry, so the ordinary
+            # build path never prices one; a REVERSIBLE template does, and
+            # ``_concrete_in_phase`` already catches that and re-raises naming
+            # the reaction, the phase and the provider to use. A loud refusal
+            # that names its own fix is the right answer to a misconfigured
+            # network. A missing MEASUREMENT is the one nobody can act on, and
+            # that is the one this drops.
+            continue
+        except ValueError as exc:
+            out[pm.smiles] = str(exc)
+    return out
 
 
 def _concrete_reactions(

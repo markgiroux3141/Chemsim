@@ -714,11 +714,32 @@ is the integrator, and the fix for it is rate-aware pruning rather than a
 bound* -- `MILESTONES.md` R4.
 
 ⚠ **A MOLAR-MASS CAP WAS THE OBVIOUS ALTERNATIVE AND IT IS REFUTED.** It never
-closes the fixpoint, it is ~19x slower, and it turns two picks into crashes --
-**and it produced 842 reactions where uncapped produced 644.** Bounding SIZE
-does not shrink the search, it redirects it into a denser region: refuse the
-heavy products and the light ones recombine with each other instead. *A tighter
-bound made a bigger network.*
+closes the fixpoint at any cap, and every cap is 10x to 36x slower:
+
+    max_molar_mass   rxn   frontier    build
+    none             644        367    10.6s
+    500 g/mol        519        367   100.6s
+    400 g/mol        458         83   126.1s
+    250 g/mol        842        199   380.7s
+
+**The cost is in the SEARCH and not in the RESULT** -- 500 g/mol takes 100 s to
+produce FEWER reactions than 10.6 s of uncapped work, because a cap makes the
+expansion try combinations it then refuses. And where the bound bites hardest it
+also **redirects** the search into a denser region: refuse the heavy products
+and the light ones recombine with each other instead, so 250 g/mol gives 842
+reactions against 644 uncapped.
+
+⚠⚠ **THE MIDDLE TWO ROWS ARE NEW AND THEY COST THIS FINDING ITS LAW.** Both
+crashed on an unpriceable species until R1 closed that -- *"it turns two picks
+into crashes"* was this, and the picks were these. With them measurable, the
+reaction count is **not monotonic in the cap**: 519 and 458 are BELOW the
+uncapped 644. *A tighter bound makes a bigger network* is true at 250 g/mol and
+is **not a law**, and it was stated as one only because the two rows that
+contradict it were the two that crashed. ⚠ The slowdown is **36x**, not the 19x
+recorded between them: that figure divided this table's numerator by a
+*different measurement path's* denominator (a `World` build, which is ~2x a
+`build_network` call for the same network). `MILESTONES.md` §R-SERIES finding 3
+carries the full correction.
 
 **4. AT THE SAME CLOCK THE TWO FLASKS ARE BARELY DIFFERENT, AND THIS IS THE ONE
 THAT MATTERS TO §3.** glucose + water + air, both stepped **300 s** from an
@@ -734,15 +755,39 @@ BUILD, so a hot flask or a long run is a different measurement and it has not
 been made. *This is evidence that the approximation is cheap here. It is not a
 proof that it is cheap, and §3 is not satisfied by a single system.*
 
-⚠⚠ **AND ONE THING THAT IS NOT A TRADE-OFF AT ALL: AN UNPRICEABLE SPECIES
-CRASHES THE BUILD.** The picker offers `5-HMF` and `oxygen`, both ungreyed, and
-at **one generation** `build_network` raises a bare `ValueError` -- the product
+⚠⚠ **AND ONE THING THAT WAS NOT A TRADE-OFF AT ALL: AN UNPRICEABLE SPECIES
+CRASHED THE BUILD. R1 CLOSED IT, AND CLOSING IT CHANGED THE ANSWER.** The picker
+offers `5-HMF` and `oxygen`, both ungreyed, and at **one generation**
+`build_network` used to raise a bare `ValueError` -- the product
 2,5-diformylfuran has a Benson formation half and no physical half, so no
 vapour-pressure curve can be built. `max_species`, `max_molar_mass` and
-`generations` all DROP, NOTICE and carry on; this one hands the player a
-traceback. **A fourth reported coverage limit has to exist before any of the
-above is acted on**, and §8.3's rule is the one it has to satisfy: *a refused
-species must be visible, with its reason.* That is `MILESTONES.md` R1.
+`generations` all DROP, NOTICE and carry on; this one handed the player a
+traceback. It is now the **fourth reported coverage limit**: the rewrite is
+dropped, the species is named against its own refusal in
+`ReactionNetwork.unpriced`, and a notice carries it to `Snapshot.notices` like
+the other three. §8.3's rule is the one it satisfies -- *a refused species must
+be visible, with its reason.*
+
+⚠⚠⚠ **AND THE CRASH WAS HIDING THE REAL ANSWER, WHICH IS THE PART TO KEEP.**
+A traceback reports the FIRST refusal and stops. With all of them reported it is
+not one species but **five** -- the dialdehyde, its ether dimer and three
+bis-furylmethanes, from three different templates -- and with all five refused
+**this pick has NO reactions at all**. The engine cannot price ANY chemistry it
+can find between 5-HMF and oxygen. *A crash says something went wrong; a notice
+says what is missing and what would fix it, and only one of those is a limit a
+player can act on.*
+
+⚠⚠ **THE BOUNDARY IS THAT TWO REFUSALS COME OUT OF ONE PROVIDER AND ONLY ONE
+OF THEM IS A COVERAGE LIMIT.** `OutsideEstimatorDomain` -- an element, an ion, a
+mixture -- does not say the species is unknown; it says **this provider is the
+wrong one**, and it names the right one (§8.3's element floor is exactly this
+refusal). Dropping one of those would report a hole in the DATA where the truth
+is a hole in the SETUP, and it would delete chemistry the engine can do:
+`saponification` under a neutral provider makes a stearate ion that
+`electrolyte_provider()` prices perfectly well. Measured -- treating the two
+alike broke two green tests, which is how the distinction was found. A missing
+MEASUREMENT is the one nobody can act on, and that is the only one that
+drops.
 
 ## 8.3 What a shelf may hold, and why it is not everything
 

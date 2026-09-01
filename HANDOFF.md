@@ -8418,9 +8418,11 @@ RESOLVED since the last handoff:
     than filed on its own.
 
     ⚠⚠⚠ **AND ONE FINDING GOT WORSE ON RE-MEASUREMENT: AN UNPRICEABLE SPECIES
-    CRASHES THE BUILD IN TWO CLICKS.** It was handed over as *"deeper
-    exploration crashes rather than degrades"*. Measured: picker rows **`5-HMF`
-    + `oxygen`, both offered UNGREYED, at `generations=1`** → a bare
+    CRASHES THE BUILD IN TWO CLICKS.** (✔ Closed by R1, item 117 — and it got
+    worse a THIRD time on being fixed: it is five species, not one.) It was
+    handed over as *"deeper exploration crashes rather than degrades"*.
+    Measured: picker rows **`5-HMF` + `oxygen`, both offered UNGREYED, at
+    `generations=1`** → a bare
     `ValueError` out of `build_network`. 2,5-diformylfuran has a Benson
     formation half and no physical half — no measured Tb anywhere, so no
     vapour-pressure curve — and thermochemistry refuses rather than pretend it
@@ -8467,3 +8469,169 @@ RESOLVED since the last handoff:
     here discharges it. ⚠ The prediction is unchanged and it is a prediction,
     not a reason to skip it: the standing record should not move, because no
     audited example builds a real template through a `TemplateSpec`.
+
+117. ✔ **R1 — AN UNPRICEABLE SPECIES IS THE FOURTH REPORTED COVERAGE LIMIT,
+    AND CLOSING THE CRASH CHANGED THE ANSWER RATHER THAN THE FAILURE MODE.**
+    2026-09-01. `network/builder.py` `_unpriceable` screens every NEW product
+    BEFORE `_concrete_reactions` runs — pricing is what that call does — records
+    it against its own refusal in `_ExpansionState.unpriced`, drops **the whole
+    rewrite** the way the `too_big` branch does, and reports it on the same
+    `reports()` channel that carries `max_species` and `max_molar_mass`. The
+    structured companion is **`ReactionNetwork.unpriced`**, `{smiles: refusal}`,
+    on the same footing as `unexpanded`; the notice quotes the refusal
+    **verbatim** for the first three, because the refusal already names the
+    species, says which half of its record resolved and says what would fix it.
+    *The work was routing it, exactly as `MILESTONES.md` predicted.*
+
+    ⚠⚠⚠ **THE CRASH WAS HIDING THE REAL ANSWER, AND THAT IS THE FINDING.** A
+    traceback reports the FIRST refusal and stops. With all of them reported,
+    the picker's own two-row pick is **five species from three templates** —
+    `aerobic_oxidation` → 2,5-diformylfuran, `ether_condensation` → its ether
+    dimer, `friedel_crafts_hydroxyalkylation` → three bis-furylmethanes — and
+    with all five refused **the flask has 8 species and ZERO reactions**. The
+    engine cannot price *any* chemistry it can find between 5-HMF and oxygen.
+    That is a statement about the pick that no exception could make. ⚠ It also
+    re-prices this same finding for the third time: *"deeper exploration
+    crashes"* → *"one generation off the picker's own roster"* → *five species,
+    zero reactions.*
+
+    ⚠⚠ **THE DESIGN QUESTION WAS NOT THE ONE THE WORK ORDER PREDICTED.** The
+    predicted one — dropping a species touches matter, so argue it the way §8.2
+    argues the generation bound — went in as written. The one that bit is that
+    **ONE PROVIDER RAISES TWO REFUSALS AND ONLY ONE IS A COVERAGE LIMIT**:
+    *no thermochemistry available* means NO SOURCE ANYWHERE prices it (a DATA
+    gap, and it drops), while the element floor's refusal means **THIS provider
+    is the wrong one** and names the right one (a SETUP gap, and it must not).
+    Treating them alike **broke two green tests** — `saponification`'s stearate
+    ion under a neutral provider, and the kolbe dianion `test_furans.py` pins as
+    a raise — which is how the distinction was found rather than argued. The fix
+    is a **type**, `properties/thermochemistry.OutsideEstimatorDomain`, a
+    `ValueError` subclass so every existing `except ValueError` is unchanged;
+    both tests went green again **with no test edits**, which is the evidence
+    that the distinction belongs to the code and not to the tests.
+
+    ⚠ **AND THE SETUP GAP IS SAFE TO PASS THROUGH FOR A MEASURED REASON.**
+    `VolatilityProvider` short-circuits a charged species to non-volatile
+    *before* consulting thermochemistry, which is why an ionic product under a
+    neutral provider has always BUILT rather than raised. The one path that does
+    price it is a reversible template, and `_concrete_in_phase` already catches
+    that and re-raises naming the reaction, the phase and the provider to use.
+    **A loud refusal that names its own fix is the right answer to a
+    misconfigured network; a missing MEASUREMENT is the one nobody can act on,
+    and that is the only one that drops.**
+
+    It costs nothing: `ThermochemistryProvider.get` caches on success, so a
+    surviving species is priced once and read from the cache two lines later,
+    and `state.unpriced` is the failure cache the provider does not keep.
+    `validation/shelf.py` panel 5E is rewritten from *"if this line prints, R1
+    is done"* into asserting the notice; four tests are pinned in
+    `tests/test_robustness.py`.
+
+    ⚠⚠ **THE SUITE WAS RUN ON R1's OWN CODE AND IT IS GREEN: 1260 PASSED /
+    0 FAILED IN 30:01** (1801.36 s, **1.4297 s per test**, second-lowest of
+    eight, spread unchanged at 11.0%). That run is the evidence R1 needed
+    specifically: R1 changes what a network CONTAINS, so no targeted run could
+    have settled the blast radius. It is zero — nothing moved but R1's own four
+    tests. ⚠ And the two regressions R1 *did* cause were caught by a four-file
+    targeted run **before** the suite, which is the argument for running the
+    cheap set first rather than only at the end.
+
+    ⚠⚠⚠ **`tolerance_audit.py` WAS RUN, THE PREDICTION FAILED ON ONE ROW, AND
+    THE ROW WAS THE INSTRUMENT.** Owed from P4 and from R1 — both are network
+    CONSTRUCTION. Eleven of twelve rows held byte-for-byte. `workshop` came back
+    **1.95e-04** against a record of **1.98e-04** that had been stable across P1
+    and C7. Chased rather than waved off, and all three obvious causes were
+    refuted before the real one was found:
+
+    * **not R1** — `workshop`'s four networks all report `unpriced` empty, and
+      HEAD (pre-R1, in a throwaway worktree) already reads 1.95e-04;
+    * **not BLAS threading** — capped twice and uncapped once, all 1.95e-04, so
+      R2's thread capping is numerically neutral here;
+    * **not run-to-run noise** — the value is deterministic in every repeat.
+
+    **Bisected to `05609c4` (P3+P4).** `bc6999f` and `d352c44` both read
+    1.98e-04.
+
+    ⚠⚠ **AND THE MOVED LINE IS A JSON SAVE-FILE SIZE IN BYTES:**
+
+        save = 10113 bytes of JSON      P2 and before
+        save = 10237 bytes of JSON      P4 and after
+
+    **The loose/tight gap is 2 bytes in both and never changed** — the saved
+    JSON holds a float whose decimal form is two characters longer at rtol 1e-8.
+    What moved is the DENOMINATOR: P4's six new `TemplateSpec` fields grew every
+    save file by 124 bytes, so 2/10113 became 2/10237. `workshop`'s
+    default-tolerance stdout is **byte-identical** across those two commits,
+    which is the proof that nothing physical moved. *That row was never evidence
+    about convergence, and every session that quoted 1.98e-04 was quoting the
+    size of a JSON blob.*
+
+    **FIXED IN THE INSTRUMENT, on this file's own precedent.** It already
+    excises a wall clock as a TOKEN rather than a line, because the first version
+    of the audit manufactured a `wait_until` finding out of *"0.07 s of wall"*.
+    A serialized SIZE is the same class of number: something a run prints that
+    says nothing about whether it converged. `scrub` now takes both, and the
+    module **asserts its own behaviour on import** (`_MUST_SCRUB` /
+    `_MUST_NOT_SCRUB`) — because both findings this file has ever manufactured
+    came out of `scrub` and not out of a solver. ⚠ `1.25 bar` survives the size
+    pattern only because of its trailing ``; that is load-bearing and is now
+    asserted rather than assumed.
+
+    **THE NEW STANDING RECORD** (R1, thread-capped, still exits 1 on the same
+    two `serious` rows):
+
+        activity            1 line    1.28e-03   <-- quotable digits move
+        multistep_prep      8 lines   1.07e-03   <-- quotable digits move
+        workshop            1 line    1.33e-04   (was 2 lines / 1.98e-04)
+        wait_until          4 lines   1.03e-04
+        vessel              2 lines   2.40e-05
+        competing_pathways  1 line    1.77e-05
+        named_routes        RAISES — the diagnosed entry, unchanged
+        esterification, lime_cycle, roasting_and_the_catalyst_gate,
+        mercury_retort      0 lines — and `mercury_retort` at 1.00x is the
+                            harness's own self-check, so the rebinding works
+
+    ⚠ **THE LESSON IS THE ONE THE AUDIT ALREADY TAUGHT ONCE.** *An instrument
+    that cannot tell a wall clock from a result will manufacture findings* — and
+    it took three sessions of a stable wrong number, plus a full bisect, to
+    notice it had been doing it again with a byte count. The reason it was
+    caught at all is that the number was RECORDED, so a 1.5% move in it was
+    visible. **Recording a number you do not yet understand is what makes it
+    checkable later.**
+
+    ⚠⚠⚠ **AND R1 UNLOCKED PANEL 5F, WHICH REFUTED A CORRECTION THE R-SERIES
+    HAD MADE THE SAME DAY.** Two of the sweep's four rows had always crashed on
+    an unpriceable species — *"it turns two picks into crashes"* was exactly
+    that — so `--mass-cap` was re-run:
+
+        max_molar_mass   rxn   frontier    build
+        none             644        367    10.6s
+        500 g/mol        519        367   100.6s
+        400 g/mol        458         83   126.1s
+        250 g/mol        842        199   380.7s
+
+    **The two new rows cost the finding its law.** The reaction count is NOT
+    monotonic in the cap: 519 and 458 are BELOW the uncapped 644, so *a tighter
+    bound makes a bigger network* is true at 250 g/mol and is not a rule — and
+    it was stated as one only because the rows that contradict it were the rows
+    that crashed. What survives is stronger and needs no arithmetic: **the cost
+    is in the SEARCH and not in the RESULT**, since 500 g/mol spends 100 s to
+    make FEWER reactions than 10.6 s of uncapped work.
+
+    ⚠⚠ **AND THE 19x WAS WRONG AND THE ORIGINAL 35x WAS RIGHT.** The R-series
+    overturned 35x to 19x on the grounds that the recorded 10.9 s uncapped build
+    "does not reproduce", citing sub-panel B's live 19.8 / 20.1 / 20.2 s. **It
+    reproduces — 10.5 and 10.6 s on re-running F itself.** B and F were never
+    measuring the same thing: **B builds a `World`, F calls `build_network`.**
+    Interleaved in one process on identical networks (400 species / 644
+    reactions): `build_network` **11.14 / 10.67 / 10.85 s** against
+    `World(bench)` **20.46 / 20.35 s** — not a warm cache, and it does not drift
+    with order; the ~9.6 s gap is World and Vessel construction. So the R-series
+    divided F's numerator by B's denominator, **the exact mistake it was
+    accusing the first write-up of**, and like for like it is **36x**. ⚠ The
+    consequence to carry: *"build" in panels 5B and 5C is a WORLD build and
+    roughly half of it is not discovery* — which leaves panel C's conclusion
+    untouched, because 10.8 s of discovery against 107 s of stepping is the same
+    argument as 19.8 against 107. **A number quoted across two measurement paths
+    is wrong however carefully it is divided**, and that is now the second time
+    this one panel has taught it.

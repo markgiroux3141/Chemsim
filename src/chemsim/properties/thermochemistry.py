@@ -37,6 +37,35 @@ from chemsim.properties.physical_data import MEASURED_PHYSICAL
 from chemsim.properties.stereo_keys import StereoFallback, fallback_note
 
 
+class OutsideEstimatorDomain(ValueError):
+    """An ELEMENT, an ION or a MIXTURE, refused because the estimators are
+    fitted to neutral single molecules -- see
+    ``ThermochemistryProvider._refuse_outside_estimator_domain``.
+
+    ⚠⚠ IT IS A ``ValueError`` SUBCLASS, so every existing ``except ValueError``
+    still catches it and nothing changes by adding it. What it buys is a caller
+    that needs to tell this refusal apart from the two below it, and R1 is that
+    caller: **the two are not the same kind of claim.**
+
+        no thermochemistry available    NO SOURCE IN THIS PROJECT prices this
+                                        species, with any provider. A data gap.
+        OutsideEstimatorDomain          THIS provider is the wrong one. The
+                                        species is priceable -- the message says
+                                        by what -- and the network was built
+                                        without it.
+
+    ``network.builder`` drops a discovered species on the first and reports it
+    as a coverage limit; it must NOT drop one on the second, because that would
+    report a gap in the data where the truth is a gap in the SETUP, and it would
+    delete chemistry this engine can do. Measured: ``saponification`` under a
+    neutral provider makes a stearate ion that ``electrolyte_provider()`` prices
+    perfectly well, and every network in this repo that carries one has always
+    carried it -- ``VolatilityProvider`` short-circuits a charged species to
+    non-volatile before ever consulting thermochemistry, which is why an ionic
+    product under a neutral provider builds today rather than raising.
+    """
+
+
 @dataclass(frozen=True)
 class ThermoData:
     Hf: float                       # kJ/mol, standard enthalpy of formation (ideal gas, 298.15 K)
@@ -709,7 +738,7 @@ class ThermochemistryProvider:
                 for rec in MINERALS.values():
                     if tuple(sorted(rec.ions)) != key:
                         continue
-                    raise ValueError(
+                    raise OutsideEstimatorDomain(
                         f"refusing to price {mol.smiles!r} as one species: it is "
                         f"{rec.name}, an ionic LATTICE. The only route this "
                         f"engine has from a solid into solution is the "
@@ -724,7 +753,7 @@ class ThermochemistryProvider:
                         f"solubility product or a solid-phase decomposition to "
                         f"use it."
                     )
-                raise ValueError(
+                raise OutsideEstimatorDomain(
                     f"refusing to price {mol.smiles!r} as one species: it is a "
                     f"dot-separated SMILES carrying charged fragments "
                     f"({charged}), i.e. a mixture of ions rather than a "
@@ -732,7 +761,7 @@ class ThermochemistryProvider:
                     f"Charge each ion separately, with a network built by "
                     f"electrolyte_provider() (or Scenario(electrolyte=True))."
                 )
-            raise ValueError(
+            raise OutsideEstimatorDomain(
                 f"refusing to price {mol.smiles!r} as one species: it is a "
                 f"dot-separated SMILES with {len(fragments)} NEUTRAL fragments "
                 f"({fragments}), i.e. a mixture of molecules rather than a "
@@ -760,7 +789,7 @@ class ThermochemistryProvider:
                           f"engine holds as {ref.smiles!r} -- charge that "
                           "instead." if ref is not None and ref.smiles else "")
                 )
-                raise ValueError(
+                raise OutsideEstimatorDomain(
                     f"refusing to price {mol.smiles!r}: a bare element symbol "
                     f"is the most ambiguous way to name an allotrope, and the "
                     f"ideal-gas value for it is the ATOM -- a real number that "
@@ -772,7 +801,7 @@ class ThermochemistryProvider:
             allotropes = sorted(
                 s for s, r in ELEMENTAL.items() if r.element == element
             )
-            raise ValueError(
+            raise OutsideEstimatorDomain(
                 f"refusing to price {mol.smiles!r}: it is an ELEMENTAL species "
                 f"({element}) with no curated entry, and a group-contribution "
                 f"estimator applied to an element returns a well-formed number "
@@ -784,7 +813,7 @@ class ThermochemistryProvider:
                   "tools/build_element_data.py."
             )
         if mol.charge != 0:
-            raise ValueError(
+            raise OutsideEstimatorDomain(
                 f"refusing to price {mol.smiles!r}: it carries a net charge of "
                 f"{mol.charge:+d}, and Joback and Benson are fitted to NEUTRAL "
                 "molecules -- Joback prices chloride at Gf -10.43 kJ/mol "

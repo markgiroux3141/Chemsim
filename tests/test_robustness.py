@@ -29,12 +29,19 @@ from chemsim.numerics.vessel_integrator import (
     _layer_gates,
 )
 from chemsim.properties import dissociation_templates, electrolyte_provider
+from chemsim.reactions import aerobic_oxidation, saponification
 from chemsim.vessel import TransferLosses, Vessel
 
 WATER, ETOH, N2, O2 = "O", "CCO", "N#N", "O=O"
 TOLUENE = Molecule.from_smiles("Cc1ccccc1").smiles
 BENZOIC = Molecule.from_smiles("OC(=O)c1ccccc1").smiles
 NA = "[Na+]"
+HMF = Molecule.from_smiles("OCc1ccc(C=O)o1").smiles
+DIFORMYLFURAN = Molecule.from_smiles("O=Cc1ccc(C=O)o1").smiles
+TRISTEARIN = Molecule.from_smiles(
+    "CCCCCCCCCCCCCCCCCC(=O)OCC(OC(=O)CCCCCCCCCCCCCCCCC)COC(=O)"
+    "CCCCCCCCCCCCCCCCC").smiles
+STEARATE = Molecule.from_smiles("CCCCCCCCCCCCCCCCCC(=O)[O-]").smiles
 
 
 @pytest.fixture(scope="module")
@@ -360,3 +367,98 @@ def test_reset_clears_the_loss_records_a_previous_attempt_left(ionic_net):
     assert v.conservation_report() == ""
     assert v.integrator.last_stability is None
     assert v.integrator.refused_reason == ""
+
+
+# ---------------------------------------------------------------------------
+# R1 -- a species nothing can price is a COVERAGE LIMIT, not a traceback
+# ---------------------------------------------------------------------------
+
+
+def test_an_unpriceable_product_is_reported_rather_than_raised(thermo, capsys):
+    """⚠⚠ THE ONE COVERAGE LIMIT THAT USED TO HAND THE PLAYER A TRACEBACK.
+
+    5-HMF and oxygen are both offered UNGREYED by the picker, and this is ONE
+    generation off its own roster -- not a deep exploration. ``aerobic_oxidation``
+    makes 2,5-diformylfuran, whose formation half resolves through Benson and
+    whose physical half does not exist, because no source anywhere tabulates a
+    boiling point for it. ``thermochemistry`` is right to refuse: the record
+    would otherwise be silently treated as non-volatile. What was wrong was
+    letting that refusal out of ``build_network``, where ``max_species``,
+    ``max_molar_mass`` and ``generations`` all DROP, NOTICE and carry on.
+    """
+    net = build_network([HMF, O2], [aerobic_oxidation()], thermo=thermo,
+                        generations=1, max_species=40)
+
+    assert DIFORMYLFURAN not in net.species, "the species must not be registered"
+    assert DIFORMYLFURAN in net.unpriced, "...and it must be NAMED, not just gone"
+
+    why = net.unpriced[DIFORMYLFURAN]
+    assert "no thermochemistry available" in why
+    assert "Benson" in why, "the notice must say which half of the record resolved"
+    assert "physical_data" in why, "...and what would fix it"
+
+    notice = [n for n in net.notices if "could not be PRICED" in n]
+    assert len(notice) == 1
+    assert DIFORMYLFURAN in notice[0]
+    assert why in notice[0], "the refusal is ROUTED, not paraphrased"
+    assert notice[0] in capsys.readouterr().out, "carried AND printed, as P1 requires"
+
+
+def test_the_unpriced_drop_takes_the_REACTION_with_it(thermo):
+    """⚠ DROP THE REWRITE, NOT ONLY THE SPECIES.
+
+    A half-registered reaction whose product has no thermochemistry is worse
+    than either alternative: it would consume its reactants into an index the
+    energy balance and the vapour-liquid split cannot price. So no surviving
+    reaction may mention the dropped species on either side.
+    """
+    net = build_network([HMF, O2], [aerobic_oxidation()], thermo=thermo,
+                        generations=1, max_species=40)
+    for r in net.reactions:
+        assert DIFORMYLFURAN not in r.reactants + r.products, r.name
+
+
+def test_the_5_HMF_PICK_HAS_NO_CHEMISTRY_AT_ALL_AND_SAYS_SO(thermo):
+    """⚠⚠ WHAT THE CRASH WAS HIDING, WHICH IS THE POINT OF CLOSING IT.
+
+    The traceback reported the FIRST refusal and stopped. With all of them
+    reported, this pick's real answer appears: three templates make five
+    unpriceable species between them -- the dialdehyde, its ether dimer and
+    three bis-furylmethanes -- and with all five refused the flask has NO
+    reactions.
+
+    ⚠ THE PICK IS EXACTLY THE TWO ROWS AND NOTHING ELSE, WHICH MATTERS.
+    Add water and ``hydroxymethylfurfural_rehydration`` fires and the flask
+    is no longer inert -- so the claim is about what the PICKER offered, not
+    about 5-HMF. A crash says something went wrong; the notice says what is
+    missing and what would fix it, and only one of those is a limit a player can
+    act on.
+    """
+    from chemsim.ui.examples import full_library
+
+    net = build_network([HMF, O2], list(full_library()),
+                        thermo=thermo, generations=1, max_species=60)
+    assert len(net.unpriced) == 5, sorted(net.unpriced)
+    assert net.reactions == []
+
+
+def test_a_species_the_WRONG_PROVIDER_refuses_is_not_dropped(thermo):
+    """⚠⚠ THE DISTINCTION R1 TURNS ON, AND IT IS NOT A DETAIL.
+
+    ``OutsideEstimatorDomain`` -- an element, an ion, a mixture -- does not say
+    the species is unknown. It says THIS provider is the wrong one, and it names
+    the right one. Dropping it would report a hole in the data where the truth
+    is a hole in the setup, and it would delete chemistry this engine can do:
+    the stearate ion below is priced perfectly well by
+    ``electrolyte_provider()``. Every network in this repo that carries an ionic
+    product under a neutral provider has always carried it, because
+    ``VolatilityProvider`` short-circuits a charged species to non-volatile
+    without ever consulting thermochemistry.
+    """
+    net = build_network([TRISTEARIN, "[OH-]", NA, WATER], [saponification()],
+                        thermo=thermo, max_species=60)
+    assert STEARATE in net.species, "an ion is not a coverage limit"
+    assert net.unpriced == {}
+    assert not [n for n in net.notices if "could not be PRICED" in n]
+    with pytest.raises(ValueError, match="carries a net charge"):
+        thermo.get(STEARATE)          # and the refusal is still there, unchanged

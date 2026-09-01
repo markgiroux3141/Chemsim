@@ -115,6 +115,28 @@ CONVERGING_ABS = 5.0e-4
 # So: excise the TIME EXPRESSION itself from both lines, symmetrically, and
 # compare what is left. Every pattern requires a unit of SECONDS adjacent to the
 # number, which is what keeps watts out of it.
+#
+# ⚠⚠ A SERIALIZED SIZE IN BYTES IS THE SAME CLASS OF THING, AND IT WAS FOUND THE
+# SAME WAY -- BY A RECORDED NUMBER MOVING FOR A REASON THAT WAS NOT PHYSICS.
+# ``workshop``'s worst move stood at 1.98e-04 across P1 and C7 and came back
+# 1.95e-04 when R1 finally ran the audit P4 owed. Bisected to the commit
+# (05609c4, P3+P4), and the moved line is:
+#
+#     save = 10113 bytes of JSON      P2 and before
+#     save = 10237 bytes of JSON      P4 and after
+#
+# **The loose/tight gap is 2 bytes in both and is unchanged** -- the saved JSON
+# holds a float whose decimal form is two characters longer at rtol 1e-8. What
+# moved is the DENOMINATOR: P4 added six fields to ``TemplateSpec``, so every
+# save file grew by 124 bytes and 2/10113 became 2/10237. Nothing physical
+# changed, and the proof is that ``workshop``'s default-tolerance stdout is
+# BYTE-IDENTICAL across those two commits.
+#
+# So this row was never evidence about convergence, and anyone quoting
+# *"workshop's worst move is 1.98e-04"* was quoting the size of a JSON blob.
+# Scrubbed, its real worst move is **1.33e-04 on a molarity** and it moves 1 line
+# rather than 2. ⚠ The unit is required adjacent to the number for exactly the
+# reason SECONDS is: it is what stops the pattern eating a mole or a watt.
 SCRUB = [
     re.compile(p, re.IGNORECASE) for p in (
         r"\(?\s*\d+(?:\.\d+)?\s*s(?:ec(?:onds)?)?\s+of\s+wall\s*\)?",
@@ -122,15 +144,53 @@ SCRUB = [
         r"\bwall[:=]?\s*\d+(?:\.\d+)?\s*s\b",
         r"\bin\s+\d+(?:\.\d+)?\s*s\b",
         r"\b\d+m\d+(?:\.\d+)?s\b",
+        r"\b\d+(?:\.\d+)?\s*[KMG]?B(?:ytes?)?\b",
     )
 ]
 
 
 def scrub(line: str) -> str:
-    """Blank out wall-clock time expressions, leaving every other number."""
+    """Blank out wall clocks and serialized SIZES, leaving every other number.
+
+    Both are numbers a run prints that say nothing about whether it CONVERGED,
+    and each has manufactured a finding in this file once -- the wall clock in
+    the first version, the byte count three milestones later. The test a pattern
+    has to pass is the same for both: a unit adjacent to the number, so that a
+    mole, a watt and a molarity are never touched.
+
+    ⚠ THE SIZE PATTERN IS COMPILED ``IGNORECASE`` LIKE THE REST, SO WHAT KEEPS
+    ``1.25 bar`` OUT OF IT IS THE TRAILING ``\b`` AND NOTHING ELSE. ``b``
+    matches, ``ytes?`` does not match ``ar``, and the word boundary then fails
+    against the ``a``. That is load-bearing rather than incidental: drop the
+    ``\b`` and this audit starts scrubbing every pressure it prints. Asserted in
+    the self-check below.
+    """
     for pat in SCRUB:
-        line = pat.sub("<wall>", line)
+        line = pat.sub("<scrubbed>", line)
     return line
+
+
+# THE INSTRUMENT CHECKS ITSELF BEFORE IT CHECKS ANYTHING ELSE, because both
+# findings this file has ever manufactured came from ``scrub`` and not from a
+# solver. The left column MUST be scrubbed and the right column MUST NOT, and
+# ``1.25 bar`` is in the second for the reason ``scrub``'s docstring gives.
+_MUST_SCRUB = (
+    "save = 10237 bytes of JSON",
+    "written in 3.5 kB",
+    "t = 1353.13 s   T = 352.999 K   (0.89 s of wall)",
+    "elapsed 1m04.2s",
+)
+_MUST_NOT_SCRUB = (
+    "-14.374 W solid-state against +14.374 W wall",
+    "O   liq 0.8876 mol (7.490 M)   vap 0.00972 mol",
+    "gas 0.0160000000 mol SO2, 1.25 bar",
+    "p = 3.0863 bar at 1100 K",
+    "yield 84.0 % and 0.5 mol",
+)
+for _line in _MUST_SCRUB:
+    assert scrub(_line) != _line, f"scrub() missed a non-physical token: {_line!r}"
+for _line in _MUST_NOT_SCRUB:
+    assert scrub(_line) == _line, f"scrub() ate a RESULT: {_line!r}"
 
 NUMBER = re.compile(r"[-+]?(?:\d+\.\d*|\.\d+|\d+)(?:[eE][-+]?\d+)?")
 

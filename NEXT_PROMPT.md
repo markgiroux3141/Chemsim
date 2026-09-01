@@ -2,9 +2,9 @@ We're building chemsim, an emergent chemistry simulator (game inspired by Nile
 Red) in d:\Claude Code Projects\Chemistry Simulator.
 
 **The plan is `MILESTONES.md`. Read it first — it is the authority on what to
-build and in what order.** **M0–M6, M8, M12, S1–S13, G1–G6, C1–C7 and P0–P4 are
-DONE. THE P-SERIES IS FINISHED AND THE LOOP IS PLAYABLE. THE LIVE ARC IS THE
-R-SERIES — *react until done* — AND IT IS MEASURED, NOT YET BUILT.**
+build and in what order.** **M0–M6, M8, M12, S1–S13, G1–G6, C1–C7, P0–P4 and R1
+are DONE. THE LIVE ARC IS THE R-SERIES — *react until done*. R1 IS BUILT; R2–R6
+ARE STILL THE WORK ORDER.**
 
 # ⚠⚠⚠ THE LIVE ARC IS THE R-SERIES: **REACT UNTIL DONE**, AND IT STARTS FROM AN OBJECTION
 
@@ -30,7 +30,11 @@ audit is **`validation/shelf.py` panel 5** (sub-panels A–F, ~2.8 min).
     fixpoint (hit the 400 cap)       400  644   20.25s   120.25s     300     0.4008
 
 **~145x to INTEGRATE, and the same simulated hour is 10 s against 24 minutes.**
-The extra 20 s of BUILD is a rounding error. The solver evaluates all 644
+The extra 20 s of BUILD is a rounding error. ⚠ And that 20 s is a **World**
+build: the `build_network` call inside it is ~10.8 s, measured under finding 3
+below. The conclusion is unchanged — 10.8 s of discovery against 107 s of
+stepping is the same argument — but the column is mislabelled in every panel
+that prints it. The solver evaluates all 644
 reactions on every RHS call and nearly all of them are kinetically dead at
 298 K. **Everything in this repo had been looking at the wrong half of the
 cost** — §8.2's own table was a table of build times. *That is the case for
@@ -47,20 +51,41 @@ rate-aware pruning (R4).*
 2. **Sugars have no fixpoint at all.** 400 species / 644 reactions / frontier
    367. `esterification` and `ether_condensation` are **BUILDING** templates —
    the product is a valid reactant for the same rule — so no parameter fixes it.
-3. **A molar-mass cap is DEAD AS AN IDEA.** Never closes the fixpoint, ~19x
-   slower, turns two picks into crashes — and **842 reactions at 250 g/mol
-   against 644 uncapped.** *Bounding size does not shrink the search, it
-   REDIRECTS it into a denser region.* ⚠ The 35x first written down was against
-   a 10.9 s uncapped build that **does not reproduce** (19.8 / 20.1 / 20.2 s in
-   three runs); it is 19x, and the 10.9 s should not be quoted again.
-4. **⚠⚠ AN UNPRICEABLE SPECIES CRASHES THE BUILD IN TWO CLICKS.** Picker rows
-   `5-HMF` + `oxygen`, **both ungreyed**, at **generations=1** → bare
-   `ValueError` out of `build_network` (2,5-diformylfuran: Benson formation
-   half, no measured Tb, so no vapour-pressure curve). `max_species`,
-   `max_molar_mass` and `generations` all DROP, NOTICE and carry on; this one
-   hands the player a traceback. ⚠ The earlier write-up said *"deeper
-   exploration crashes"* — **it is one generation, off the picker's own
-   roster.** This is why R1 is a prerequisite.
+3. **A molar-mass cap is DEAD AS AN IDEA**, and R1 re-measured it because R1
+   closed the two crashes that were hiding half the table:
+
+       max_molar_mass   rxn   frontier    build
+       none             644        367    10.6s
+       500 g/mol        519        367   100.6s
+       400 g/mol        458         83   126.1s
+       250 g/mol        842        199   380.7s
+
+   **The cost is in the SEARCH, not the RESULT** — 500 g/mol spends 100 s to
+   make FEWER reactions than 10.6 s of uncapped work. ⚠⚠ **And the two rows R1
+   unlocked cost this finding its law:** the reaction count is NOT monotonic in
+   the cap, so *a tighter bound makes a bigger network* is true at 250 g/mol and
+   is not a rule — it was stated as one only because the contradicting rows
+   crashed. ⚠⚠⚠ **And the correction the R-series made here was itself wrong.**
+   It overturned 35x to 19x on the grounds that 10.9 s uncapped "does not
+   reproduce" (against 5B's 19.8 / 20.1 / 20.2). **It reproduces at 10.5/10.6 s**
+   — 5B builds a `World` and 5F calls `build_network`, and one process
+   interleaving them gives `build_network` 11.14/10.67/10.85 s against
+   `World(bench)` 20.46/20.35 s on identical networks. The R-series divided 5F's
+   numerator by 5B's denominator, *the exact mistake it accused the first
+   write-up of.* **It is 36x; the original 35x was right.** ⚠ Carry this forward:
+   **"build" in panels 5B and 5C is a WORLD build and about half of it is not
+   discovery** (panel C's conclusion is untouched — 10.8 s against 107 s of
+   stepping is the same argument as 19.8 against 107).
+4. **✔ AN UNPRICEABLE SPECIES CRASHED THE BUILD IN TWO CLICKS — R1 CLOSED IT,
+   AND THE CRASH WAS HIDING THE ANSWER.** Picker rows `5-HMF` + `oxygen`, both
+   ungreyed, at `generations=1` used to raise a bare `ValueError`. It is the
+   fourth REPORTED coverage limit now — dropped, named against its own refusal
+   in `ReactionNetwork.unpriced`, carried to `Snapshot.notices`. ⚠⚠ **And it is
+   not one species, it is FIVE, from three templates** (2,5-diformylfuran, its
+   ether dimer, three bis-furylmethanes) — **with all five refused the pick has
+   ZERO reactions.** A traceback reports the first refusal and stops; the engine
+   cannot price *any* chemistry it can find between 5-HMF and oxygen, and only
+   the notice can say so.
 
 ## ⚠ AND THE QUESTION HANDED FORWARD AS UNMEASURED IS SETTLED
 
@@ -79,16 +104,31 @@ a long run is a different measurement and has NOT been made.
 
 ## THE WORK ORDER (full text and the design traps: `MILESTONES.md` §R-SERIES)
 
-    R1  unpriceable species -> a REPORTED coverage limit    ~1 h   PREREQUISITE
+    R1  unpriceable species -> a REPORTED coverage limit    ✔ DONE 2026-09-01
     R2  cap BLAS threads (7.21 cores -> 0.99, AND faster)   ~15 min + a measurement
     R3  wire or DELETE Scenario.prune_threshold             ~30 min
     R4  rate-aware pruning -- the real answer               one session
     R5  the Bench `generations` box resets a raised bound   ~20 min  UI
     R6  the lattice/ion gap (P3 named it, did not close it)
 
-⚠ **R1 is not a `try`/`except`.** A species that cannot be priced is not in the
-model, so dropping it changes what is in the flask — §3 forbids that being
-silent. Argue it the way §8.2 argues the generation bound.
+⚠⚠⚠ **R1's REAL DESIGN QUESTION WAS NOT THE ONE THE WORK ORDER PREDICTED, AND
+THE NEXT SESSION SHOULD READ IT BEFORE TOUCHING `properties/`.** The predicted
+one — *dropping a species touches matter, so argue it the way §8.2 argues the
+generation bound* — went in as written. The one that bit is that **ONE PROVIDER
+RAISES TWO REFUSALS AND ONLY ONE IS A COVERAGE LIMIT**:
+
+    no thermochemistry available   NO SOURCE ANYWHERE prices it.   A DATA gap.
+    OutsideEstimatorDomain         THIS provider is wrong, and the message
+                                   names the right one.            A SETUP gap.
+
+Treating them alike **broke two green tests** — `saponification`'s stearate ion
+and the kolbe dianion — which is how the distinction was found rather than
+argued. It is now a `ValueError` **subclass** in `properties/thermochemistry.py`,
+so every existing `except ValueError` is unchanged, and both tests went green
+again **with no test edits**. ⚠ The setup gap is safe to pass through because
+`VolatilityProvider` short-circuits a charged species before consulting
+thermochemistry; the one path that does price it (a reversible template) already
+raises naming the reaction and the provider to use.
 ⚠ **R4's trap:** pruning on the rate CONSTANT alone is wrong, because a slow
 reaction at high concentration still matters. `k` × the concentrations actually
 charged is the defensible form — and it makes the network depend on the CHARGE,
@@ -114,11 +154,21 @@ frontend can set that the engine never reads. `T_build` IS wired; this is not.
 
 # ⚠⚠⚠ START HERE: THE STATE OF THE BOX
 
-    1256 passed / 0 failed in 30:34   <- GREEN, and the FIRST run ever to
-                                         produce one. 2026-09-01, R-series,
+    1260 passed / 0 failed in 30:01   <- GREEN, on R1's own code, with R1's
+                                         four new tests in it. 2026-09-01,
                                          thread-capped, exit code 0.
+    1256 passed / 0 failed in 30:34   <- the run before it, same day, which was
+                                         the first green 1256 this repo ever had.
 
-⚠⚠⚠ **THE GREEN 1256 IS NEW AND IT CLOSES A DEBT RATHER THAN JUST PASSING.**
+⚠⚠ **THE 1260 IS R1's OWN RUN AND IT IS THE EVIDENCE THAT MATTERS FOR IT.**
+R1 changes what a network CONTAINS -- a discovered species that cannot be priced
+is now dropped rather than raised -- so a targeted run could not have settled the
+blast radius. It is zero: **1260/0, nothing moved but the four tests R1 added.**
+⚠ And the two regressions R1 *did* cause were found by a four-file targeted run
+before this, not by the suite -- see the `OutsideEstimatorDomain` note under the
+work order. Both went green again with **no test edits**.
+
+⚠⚠⚠ **THE GREEN 1256 BEFORE IT CLOSED A DEBT RATHER THAN JUST PASSING.**
 P4 bumped `SAVE_VERSION` to 8 and updated every `SAVE_VERSION == 7` in the
 suite. `tests/test_stock.py` also asserted `blob["version"] == 7` — comparing
 the blob to a **hand-typed integer** instead of to the constant — so it survived
@@ -129,9 +179,10 @@ wrote the honest figure as *1255 passed / 1 failed with the failure diagnosed*.
 1256/0.** *The fix is confirmed by a full run rather than by one file in
 isolation, which is the only thing that could have confirmed it.*
 
-Per-test total: **1834.83 s / 1256 tests = 1.4608 s per test.** ⚠ That sits
-MID-RANGE across seven runs and **does not widen the spread**, which stays at
-**11.0%** (1.4114 to 1.5673). ⚠⚠ **AND IT RE-PRICES P4's OWN NOTE:** P4
+Per-test total: **1801.36 s / 1260 tests = 1.4297 s per test**, on the R1 run.
+⚠ That is the SECOND-lowest of eight and does not widen the spread, which stays
+at **11.0%** (1.4114 to 1.5673). The run before it was 1834.83 s / 1256 =
+**1.4608 s**. ⚠⚠ **AND IT RE-PRICES P4's OWN NOTE:** P4
 recorded 1.5673 as the highest of six and worth watching, having added 29
 tests, restored `solid_catalyst` and given `test_shelf.py` four flasks. The
 next run on **more** code came in 6.8% BELOW it, so that move was the machine
@@ -170,15 +221,52 @@ neither check catches unless you count both. `tools/build_shelf.py` writes CRLF
 for the same reason: a generator that flips its output's endings makes its own
 output undiffable.
 
-⚠⚠ **`validation/tolerance_audit.py` IS STILL OWED AND WAS NOT RUN**, and that
-is a stated decision rather than a skip. P3/P4 touched `TemplateSpec`, which is
-network CONSTRUCTION — it changes what a scenario-built network CONTAINS — so the
-audit is owed. ⚠ **The prediction is that its standing record does not move**,
-because **no audited example builds a real template through a `TemplateSpec`**:
-only `examples/dropping_funnel.py` and `validation/dropwise.py` do, and neither is
-in the audit's case list (`CHEAP` + `EXPENSIVE` in that file). `examples/workshop.py`
-does use a `TemplateSpec`, but a hand-built one with none of the six fields set.
-*That is a prediction, not a reason to skip it — run it first.*
+⚠⚠⚠ **`validation/tolerance_audit.py` WAS RUN (R1) AND THE PREDICTION FAILED ON
+ONE ROW — AND THE ROW WAS THE INSTRUMENT, NOT THE PHYSICS.** The prediction was
+that the standing record would not move. Eleven of twelve rows held. `workshop`
+came back **1.95e-04** against a record of **1.98e-04** that had been byte-stable
+across P1 and C7. Chased to the end rather than waved off:
+
+* not R1 — `workshop`'s four networks all have `unpriced` empty, and HEAD
+  (pre-R1) already reads 1.95e-04;
+* not threading and not noise — capped twice and uncapped once, all 1.95e-04;
+* **bisected to `05609c4` (P3+P4)**; `bc6999f` and `d352c44` both read 1.98e-04.
+
+⚠⚠ **AND THE MOVED LINE IS A JSON SAVE-FILE SIZE IN BYTES.**
+
+    save = 10113 bytes of JSON      P2 and before
+    save = 10237 bytes of JSON      P4 and after
+
+**The loose/tight gap is 2 bytes in both and never changed.** What moved is the
+DENOMINATOR: P4's six new `TemplateSpec` fields grew every save file by 124
+bytes, so 2/10113 became 2/10237. `workshop`'s default-tolerance stdout is
+**byte-identical** across those two commits — nothing physical moved at all.
+*So that row was never evidence about convergence, and quoting 1.98e-04 was
+quoting the size of a JSON blob.*
+
+**FIXED IN THE INSTRUMENT, on the file's own precedent** — it already excises a
+wall clock as a TOKEN because the first version manufactured a `wait_until`
+finding out of "0.07 s of wall". A serialized size is the same class of number.
+`scrub` now takes both, and the module asserts its own behaviour on import
+(`_MUST_SCRUB` / `_MUST_NOT_SCRUB`) because both findings this file has ever
+manufactured came from `scrub` and not from a solver. ⚠ `1.25 bar` survives only
+because of the trailing `` in the size pattern, which is load-bearing and now
+asserted.
+
+**THE NEW STANDING RECORD (R1, thread-capped, exits 1):**
+
+    activity          1 line   1.28e-03   <-- quotable digits move
+    multistep_prep    8 lines  1.07e-03   <-- quotable digits move
+    workshop          1 line   1.33e-04   (was 2 lines / 1.98e-04)
+    wait_until        4 lines  1.03e-04
+    vessel            2 lines  2.40e-05
+    competing_pathways 1 line  1.77e-05
+    named_routes      RAISES (the diagnosed entry)
+    esterification / lime_cycle / roasting_and_the_catalyst_gate /
+    mercury_retort    0 lines — mercury_retort at 1.00x is the harness's
+                      own self-check and it holds
+
+⚠ `serious` is unchanged at two, and both are the standing pair.
 
 What else was run in P3/P4, all green:
 

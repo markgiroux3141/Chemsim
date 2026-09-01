@@ -50,13 +50,27 @@ big as a micromole*; sub-panel E is the crash that has to be closed before
 anything explores deeper; sub-panel F is the refutation of a molar-mass
 cap, which made the network BIGGER.
 
-⚠ **AND F's OWN BASELINE IS A CORRECTION.** The first write-up of that
-sweep recorded the uncapped build at 10.9 s, which made the 250 g/mol run a
-35x slowdown. Sub-panel B builds the identical network live and has now
-measured it three times at 19.8 / 20.1 / 20.2 s, so the figure is **19x**
-and the 10.9 s should not be quoted again. *Two numbers for the same build
-sitting in one panel is exactly why the expensive half is recorded WITH the
-cheap half that contradicts it, rather than on its own.*
+⚠⚠ **AND F's OWN BASELINE IS A CORRECTION OF A CORRECTION.** The first
+write-up recorded the uncapped build at 10.9 s, making the 250 g/mol run a
+**35x** slowdown. The R-series overturned that to **19x**, on the grounds
+that sub-panel B builds the same network live at 19.8 / 20.1 / 20.2 s and so
+10.9 does not reproduce. **It reproduces -- 10.5 and 10.6 s on re-running F
+itself -- and the overturning was wrong**, because B and F were never
+measuring the same thing: B builds a WORLD, F calls ``build_network``.
+Interleaved in one process on identical networks: ``build_network`` 11.14 /
+10.67 / 10.85 s, ``World(bench)`` 20.46 / 20.35 s. So the R-series divided
+F's numerator by B's denominator, which is the exact mistake it was accusing
+the first write-up of, and like for like it is **36x**. ⚠ A consequence
+worth carrying: *"build" in sub-panels B and C is a WORLD build and roughly
+half of it is not discovery at all.*
+
+⚠⚠ **AND TWO OF F's FOUR ROWS ONLY EXIST BECAUSE OF R1.** 500 and 400
+g/mol both CRASHED on an unpriceable species before it -- that is what
+*"it turns two picks into crashes"* meant -- and they change the finding's
+shape: at 519 and 458 reactions they are BELOW the uncapped 644, so
+*a tighter bound makes a bigger network* is true at 250 g/mol and is not a
+law. It was only ever stated as one because the rows that contradict it
+were the rows that crashed.
 
 EVERY PRINTED LINE HERE IS ASCII. The console is cp1252 and a warning glyph in a
 ``print`` kills the script mid-panel. Glyphs belong in docstrings and comments.
@@ -527,30 +541,45 @@ def panel5(mass_cap: bool = False):
 
     # -- E ------------------------------------------------------------------
     print()
-    print("  E. AND DEEPER EXPLORATION CRASHES RATHER THAN DEGRADING.")
+    print("  E. AN UNPRICEABLE SPECIES IS THE FOURTH REPORTED COVERAGE LIMIT.")
     pick = [inv.find("5-hydroxymethylfurfural"), inv.find("oxygen")]
     try:
         with contextlib.redirect_stdout(QUIET):
-            World(bench(pick, generations=1, max_species=400).scenario)
-        print("     it no longer raises. If this line prints, R1 is done and")
-        print("     this sub-panel must be rewritten to assert the NOTICE.")
+            w5 = World(bench(pick, generations=1, max_species=400).scenario)
     except ValueError as exc:
+        print(f"     REGRESSION -- R1 is undone: {type(exc).__name__}: {exc}")
+        w5 = None
+    if w5 is not None:
+        note = [n for n in w5.network.notices if "could not be PRICED" in n]
         print(f"     picker rows '5-HMF' + 'oxygen' at generations=1 -> "
-              f"{type(exc).__name__}")
-        print(f"     {str(exc).split(' -- ')[0]}")
+              f"{len(w5.network.species)} species, {len(w5.network.reactions)} "
+              f"reactions,")
+        print(f"     {len(w5.network.unpriced)} DROPPED and named, "
+              f"{len(note)} notice carrying them.")
+        for smi in list(w5.network.unpriced)[:5]:
+            print(f"       {smi}")
     print()
-    print("     BOTH ROWS ARE OFFERED UNGREYED BY THE PICKER, AND THIS IS ONE")
-    print("     GENERATION, not a deep exploration. 5-HMF is priced; the species")
-    print("     it makes, 2,5-diformylfuran, has a formation half from Benson and")
-    print("     NO physical half -- no measured Tb anywhere, so no")
-    print("     vapour-pressure curve can be built -- and thermochemistry refuses")
-    print("     rather than pretend it is non-volatile. That refusal is RIGHT in")
-    print("     isolation and wrong here: max_species, max_molar_mass and")
-    print("     generations all DROP, NOTICE and carry on, while this one")
-    print("     propagates out of build_network as a bare ValueError and the")
-    print("     player gets a traceback. It has to become the fourth REPORTED")
-    print("     coverage limit before anything is allowed to explore deeper.")
-
+    print("     THIS USED TO BE A BARE ValueError OUT OF build_network, AND THE")
+    print("     PLAYER GOT A TRACEBACK -- off the picker's OWN roster, both rows")
+    print("     ungreyed, at ONE generation. R1 made it drop, name and carry on,")
+    print("     which is what max_species, max_molar_mass and generations always")
+    print("     did. The species it stopped on, 2,5-diformylfuran, has a")
+    print("     formation half from Benson and NO physical half -- no measured Tb")
+    print("     anywhere, so no vapour-pressure curve can be built -- and")
+    print("     thermochemistry refuses rather than pretend it is non-volatile.")
+    print("     That refusal is RIGHT; propagating it was not.")
+    print()
+    print("     AND CLOSING IT SHOWED WHAT THE CRASH WAS HIDING, WHICH IS THE")
+    print("     PART WORTH KEEPING. It is not one species, it is FIVE -- the")
+    print("     dialdehyde, its ether dimer and three bis-furylmethanes -- and")
+    print("     with all five refused THIS PICK HAS NO REACTIONS AT ALL. The")
+    print("     traceback was reporting the first refusal of five and hiding the")
+    print("     real answer, which is that the engine cannot price ANY chemistry")
+    print("     it can find between 5-HMF and oxygen. A crash says 'something")
+    print("     went wrong'; the notice says WHAT IS MISSING AND WHAT WOULD FIX")
+    print("     IT, and only one of those is a coverage limit a player can act")
+    print("     on.")
+    print()
     # -- F ------------------------------------------------------------------
     print()
     print("  F. A MOLAR-MASS CAP IS DEAD AS AN IDEA -- MEASURED AND REFUTED.")
@@ -580,24 +609,63 @@ def panel5(mass_cap: bool = False):
         print("     RECORDED, NOT RE-RUN -- this sweep is ~6.5 minutes on its own.")
         print("     `python validation/shelf.py --mass-cap` measures it live.")
         print()
-        print(f"     {'max_molar_mass':>16s} {'rxn':>6} {'build':>9}   outcome")
-        print(f"     {'none':>16s} {644:6d} {'~20.2s':>9}   hit the 400-species cap")
-        print(f"     {'250 g/mol':>16s} {842:6d} {'388s':>9}   hit it too -- and is BIGGER")
+        print(f"     {'max_molar_mass':>16s} {'rxn':>6} {'frontier':>9} "
+              f"{'build':>9}   outcome")
+        print(f"     {'none':>16s} {644:6d} {367:9d} {'10.6s':>9}   "
+              f"hit the 400-species cap")
+        print(f"     {'500 g/mol':>16s} {519:6d} {367:9d} {'100.6s':>9}   "
+              f"hit it too -- and is SMALLER")
+        print(f"     {'400 g/mol':>16s} {458:6d} {83:9d} {'126.1s':>9}   "
+              f"smaller still")
+        print(f"     {'250 g/mol':>16s} {842:6d} {199:9d} {'380.7s':>9}   "
+              f"hit it -- and is BIGGER")
         print()
-        print("     THE UNCAPPED BASELINE IS CORRECTED HERE AND THE CORRECTION")
-        print("     COSTS THE HEADLINE HALF ITS SIZE. The measurement was first")
-        print("     written up as 10.9 s uncapped, which made 388 s a 35x")
-        print("     slowdown; sub-panel B builds that same network live and has")
-        print("     measured 19.8, 20.1 and 20.2 s. So it is 19x, not 35x. The")
-        print("     10.9 s does not reproduce and nothing should be quoted from")
-        print("     it. What survives the correction is the part that was never")
-        print("     about the clock:")
+        print("     TWO OF THOSE FOUR ROWS COULD NOT BE MEASURED BEFORE R1 --")
+        print("     500 and 400 g/mol both CRASHED on an unpriceable species, and")
+        print("     that is what 'it turns two picks into crashes' used to mean.")
+        print("     They run now, and THEY CHANGE THE SHAPE OF THE FINDING: the")
+        print("     reaction count is NOT monotonic in the cap. 519 and 458 are")
+        print("     both BELOW the uncapped 644, and only 250 g/mol goes above")
+        print("     it. So 'a tighter bound makes a bigger network' is TRUE AT")
+        print("     250 AND IS NOT A LAW, and it was only ever stated as one")
+        print("     because the two rows that would have contradicted it were")
+        print("     the two that crashed.")
+        print()
+        print("     AND THE CORRECTION THIS PANEL MADE TO ITSELF WAS WRONG.")
+        print("     The first write-up recorded 10.9 s uncapped, making 388 s a")
+        print("     35x slowdown. The R-series overturned that to 19x on the")
+        print("     grounds that sub-panel B measures the same network at 19.8 /")
+        print("     20.1 / 20.2 s and so 10.9 does not reproduce. IT REPRODUCES:")
+        print("     re-running THIS sweep gives 10.5 and 10.6 s. The two panels")
+        print("     were never measuring the same thing -- B builds a WORLD and F")
+        print("     calls build_network -- and the R-series divided F's numerator")
+        print("     by B's denominator, which is the exact mistake it was")
+        print("     accusing the first write-up of.")
+        print()
+        print("     MEASURED, interleaved in ONE process, identical networks")
+        print("     (400 species / 644 reactions) both ways:")
+        print("       build_network   11.14s  10.67s  10.85s")
+        print("       World(bench)    20.46s  20.35s")
+        print("     It is not a warm cache and it does not drift with order. The")
+        print("     ~9.6 s gap is World and Vessel construction on top of the")
+        print("     network build. SO 'build' IN SUB-PANELS B AND C IS A WORLD")
+        print("     BUILD AND ROUGHLY HALF OF IT IS NOT DISCOVERY AT ALL -- which")
+        print("     does not touch panel C's conclusion, because 10.8 s of")
+        print("     discovery against 107 s of stepping is the same argument as")
+        print("     19.8 against 107.")
+        print()
+        print("     LIKE FOR LIKE, 380.7 / 10.6 = 36x. The original 35x was")
+        print("     right, the 19x that replaced it was not, and the reason to")
+        print("     write all three down is that a number quoted across two")
+        print("     measurement paths is wrong however carefully it is divided.")
     print()
-    print("     IT NEVER CLOSES THE FIXPOINT, IT IS ~19x SLOWER, AND IT TURNS")
-    print("     TWO PICKS INTO CRASHES. The reason is the part worth")
-    print("     keeping: BOUNDING SIZE DOES NOT SHRINK THE SEARCH, IT REDIRECTS")
-    print("     IT INTO A DENSER REGION. 842 reactions at 250 g/mol against 644")
-    print("     uncapped -- THE TIGHTER BOUND PRODUCED THE BIGGER NETWORK,")
+    print("     IT NEVER CLOSES THE FIXPOINT AND IT IS ~36x SLOWER AT 250 g/mol")
+    print("     -- and ~10x slower at 500 and 400 while making FEWER reactions,")
+    print("     which is the part that does not depend on any of the arithmetic")
+    print("     above: THE COST IS IN THE SEARCH AND NOT IN THE RESULT. A cap")
+    print("     makes the expansion try combinations it then refuses. Where the")
+    print("     bound bites hardest, at 250 g/mol, it also REDIRECTS the search")
+    print("     into a denser region -- 842 reactions against 644 uncapped,")
     print("     because refusing the heavy products leaves the light ones to")
     print("     recombine with each other instead. Rate is the axis to prune on.")
     print("     Mass is not, and this is what refuted it.")
