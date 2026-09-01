@@ -672,6 +672,14 @@ class App:
         capped = len(snap.species) >= scenario.max_species
         cap = scenario.max_species + (SPECIES_STEP if capped else 0)
         self.example = rebuilt(self.example, generations=gens, max_species=cap)
+        # ⚠ R5: the boxes are what _pour_bench reads, so a raised bound that is
+        # not written back is DISCARDED by the very next pour -- observed live,
+        # a player went 3 generations back to 1 without being told. Writing the
+        # scenario's bounds back also puts the current bound in the one place a
+        # player would look for it.
+        for box, bound in ((self.bench_gens, gens), (self.bench_cap, cap)):
+            box.delete(0, tk.END)
+            box.insert(0, str(bound))
         # ⚠ The CURRENT script, not the opening: the player has done things and a
         # replay of the opening alone would throw the experiment away.
         self.session.submit(Load(self.example.scenario, snap.script,

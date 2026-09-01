@@ -9,7 +9,10 @@ named in each section.
 The P-SERIES IS COMPLETE (P0-P4) and the C-series is PAUSED. R1 is DONE
 2026-09-01 -- an unpriceable species is the fourth REPORTED coverage limit now,
 and closing the crash showed the picker's own two-row pick has FIVE unpriceable
-species and zero reactions. R2-R6 are open.** Jump to `# THE R-SERIES`
+species and zero reactions. R2 and R5 are DONE 2026-09-01 -- the BLAS cap
+lives at the entry points (`chemsim.threads`, never `chemsim/__init__`) and
+REACT FURTHER writes the raised bounds back into the bench boxes the next pour
+reads. R3, R4 and R6 are open.** Jump to `# THE R-SERIES`
 near the end of this file;
 it opens with the measurement that changed the order. Everything above it is
 the record of how the engine got here and remains the authority on what was
@@ -7543,7 +7546,7 @@ sessions of a stable wrong number and a full bisect to notice it was doing it
 again with a byte count -- and the only reason it was catchable is that the
 number had been WRITTEN DOWN.
 
-## R2 -- CAP BLAS THREADS  *(~15 min + a measurement)*
+## R2 -- CAP BLAS THREADS  *(~15 min + a measurement)*  ✔ **DONE 2026-09-01**
 
 Measured on identical work: uncapped scipy/BLAS used **7.21 cores**; with
 `OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1
@@ -7558,6 +7561,24 @@ who imports this as a library. The UI's worker thread is the case that actually
 matters -- it would otherwise spread a player's whole machine over one flask --
 so `chemsim/ui/__main__.py` and the validation harness are the defensible
 places. Nothing in the repo caps threads anywhere today (`grep`ped: zero hits).
+
+### WHAT WAS BUILT (2026-09-01)
+
+`chemsim/threads.py` -- `cap_blas_threads()`, `setdefault` on the four
+variables so a count somebody set by hand wins. Called from **four entry
+points and no library code**: `chemsim/ui/__main__.py` (before the app import,
+which is what loads numpy), `validation/shelf.py` and
+`validation/tolerance_audit.py` (both before rdkit/numpy), and
+`tests/conftest.py` -- the suite's standing 1260-green record was taken
+thread-capped, and capping in `conftest` is what makes that condition
+reproducible rather than ambient. `chemsim/__init__` stays import-light and
+`tests/test_threads.py` **asserts it does not cap** (plus the other three
+contract points: all four variables, hand-set wins, and being called after
+numpy loads is loud in the return value -- the pools are sized when numpy
+first loads, so a late cap is a no-op and must say so). ⚠ The owed measurement
+was already discharged by R1: capped twice and uncapped once, the tolerance
+audit's output is identical -- the cap is numerically neutral, so being late
+costs speed and nothing else, which is why late is a `bool` and not a raise.
 
 ## R3 -- WIRE OR DELETE `Scenario.prune_threshold`  *(~30 min)*
 
@@ -7590,7 +7611,7 @@ against that.
 ⚠ And finding 3 is the warning: a bound that looks like it shrinks the problem
 can enlarge it. **Measure the reaction count, not just the clock.**
 
-## R5 -- THE BENCH `generations` BOX SILENTLY RESETS A RAISED BOUND  *(~20 min, UI)*
+## R5 -- THE BENCH `generations` BOX SILENTLY RESETS A RAISED BOUND  *(~20 min, UI)*  ✔ **DONE 2026-09-01**
 
 Observed live by the user, who went from 3 generations back to 1 without being
 told. `_react_further` (`ui/app.py:645`) raises `scenario.generations` and
@@ -7599,6 +7620,19 @@ told. `_react_further` (`ui/app.py:645`) raises `scenario.generations` and
 next pour silently discards the bound the player raised. **The fix is to write
 the raised bounds back into the boxes**, which also makes the current bound
 visible in the one place a player would look for it.
+
+### WHAT WAS BUILT (2026-09-01)
+
+Exactly that: `_react_further` writes `gens` and `cap` into the two boxes after
+`rebuilt(...)`, both of them, every press -- the boxes show the LIVE scenario's
+bounds, so a value typed but never poured is overwritten, which is the honest
+reading (after REACT FURTHER the world's bounds ARE these). ⚠ Verified by a
+LIVE PROBE rather than a widget test, because the repo has no Tk in tests
+anywhere and this is pure widget plumbing over the already-tested `rebuilt`:
+a real `App` on a withdrawn root, water+glucose at gens=1, one programmatic
+press -- boxes read `2 / 400`, equal to the scenario, and `_pour_bench`'s own
+`_float` read of them returns the raised bounds. The P2 Filter-button
+precedent, done deliberately the same way.
 
 ## R6 -- THE LATTICE/ION GAP  *(P3 named it, did not close it -- unchanged)*
 

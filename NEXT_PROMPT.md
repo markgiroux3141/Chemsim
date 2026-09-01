@@ -2,34 +2,48 @@ We're building chemsim, an emergent chemistry simulator (game inspired by Nile
 Red) in d:\Claude Code Projects\Chemistry Simulator.
 
 **The plan is `MILESTONES.md`. Read it first — it is the authority on what to
-build and in what order.** **M0–M6, M8, M12, S1–S13, G1–G6, C1–C7, P0–P4 and R1
-are DONE. THE LIVE ARC IS THE R-SERIES — *react until done*. R1 IS BUILT; R2–R6
-ARE STILL THE WORK ORDER.**
+build and in what order.** **M0–M6, M8, M12, S1–S13, G1–G6, C1–C7, P0–P4, R1,
+R2 and R5 are DONE. THE LIVE ARC IS THE R-SERIES — *react until done*. R3, R4
+AND R6 ARE STILL THE WORK ORDER.**
 
-# ⚠⚠⚠ DO THIS NEXT: **R2 + R5, ONE SHORT SESSION (~35 min)**
+# ⚠⚠⚠ DO THIS NEXT: **R3 (~30 min), AND READ R4's TRAP FIRST**
 
-R1 was the PREREQUISITE — *"nothing deeper than one generation is safe until
-this exists"* — and it is done, so the rest of the series is unblocked. The two
-cheapest rows are also the two a player feels immediately:
+R3 is *wire or DELETE `Scenario.prune_threshold`*: declared, documented as
+*"0 disables pruning (structural discovery)"*, round-trips through
+`to_dict`/`from_dict` into every save file, and **reaches nothing** —
+`build_network` has no pruning parameter at all. The same class as P4's
+`TemplateSpec` bug: a save-file field a frontend can set that the engine never
+reads. **Do not leave it as it is** — that is the only option wrong on its own
+terms. ⚠ Deleting it is a `SAVE_VERSION` bump (9); wiring it IS R4 — which is
+why R4's design trap has to be read before choosing: pruning on the rate
+constant alone is wrong (a slow reaction at high concentration still matters),
+the defensible form is k × the concentrations actually charged, and that makes
+the network depend on the CHARGE, which contradicts `scenario.py`'s own
+determinism docstring. **If R4's answer is coming, `prune_threshold` may be the
+field it wires; if the determinism argument kills R4's obvious form, the field
+is a lie today and should die today.** Then R4 as its own session — it opens
+with that design argument, not code.
 
-* **R5 (~20 min, UI).** A bug the USER hit while playing. `_react_further`
-  (`ui/app.py:645`) raises `scenario.generations` and `scenario.max_species` and
-  **never writes either back to `self.bench_gens` / `self.bench_cap`**, which is
-  what `_pour_bench` (`ui/app.py:609`) reads. So the next pour silently discards
-  the bound the player raised. Writing them back also puts the current bound in
-  the one place a player would look for it.
-* **R2 (~15 min).** 7.21 cores → 0.99 **and faster** (5.9 s vs 10.1 s). ⚠ **Half
-  its owed measurement is already done**: chasing the `workshop` audit number
-  established that thread capping is **numerically neutral** — capped twice and
-  uncapped once give bit-identical audit output. What is left is deciding WHERE,
-  and the obvious place is the rude one: `chemsim/__init__` would silently
-  reconfigure BLAS for anyone importing this as a library, so
-  `chemsim/ui/__main__.py` and the validation harness are the defensible spots.
-  Nothing in the repo caps threads anywhere today.
+## R2 + R5, done this session (2026-09-01), in one paragraph each
 
-**Then R3 (~30 min), then R4 as its own session.** R4 opens with a design
-argument rather than code — see its trap below — and R3's decision is downstream
-of it.
+* **R2 ✔** — `chemsim/threads.py` / `cap_blas_threads()`, `setdefault` on the
+  four variables so a hand-set count wins, called from FOUR entry points and no
+  library code: `ui/__main__.py` (before the app import — that is what loads
+  numpy), `validation/shelf.py`, `validation/tolerance_audit.py`, and
+  `tests/conftest.py` (the standing 1260-green record was taken thread-capped;
+  conftest is what makes that reproducible rather than ambient). ⚠ The pools
+  are sized when numpy FIRST loads, so a late call is a no-op — that is loud in
+  the return value, not an exception, because R1 measured the cap numerically
+  neutral: being late costs speed and nothing else. `tests/test_threads.py`
+  holds the contract in subprocesses, including that `import chemsim` caps
+  NOTHING — the rude place was rejected, and now a test says so.
+* **R5 ✔** — `_react_further` writes the raised `gens`/`cap` back into
+  `bench_gens`/`bench_cap`, which is what `_pour_bench` reads, so the next pour
+  keeps the bound the player raised and the boxes show the live world's bounds.
+  Verified by a LIVE PROBE (real `App`, withdrawn root, programmatic press:
+  boxes read 2/400 equal to the scenario) rather than a widget test — the repo
+  has no Tk in tests anywhere and the plumbing sits over the already-tested
+  `rebuilt`. Same shape as P2's Filter-button fix, this time on purpose.
 
 ⚠ **AND ONE THING THAT IS NOT ON THE WORK ORDER AND PROBABLY SHOULD BE.**
 Finding 1 below says a fixpoint is **free** for the whole inorganic half of the
@@ -138,11 +152,12 @@ a long run is a different measurement and has NOT been made.
 ## THE WORK ORDER (full text and the design traps: `MILESTONES.md` §R-SERIES)
 
     R1  unpriceable species -> a REPORTED coverage limit    ✔ DONE 2026-09-01
-    R2  cap BLAS threads (7.21 cores -> 0.99, AND faster)   ~15 min; the
-        measurement is DONE -- capping is numerically neutral (R1)
+    R2  cap BLAS threads (7.21 cores -> 0.99, AND faster)   ✔ DONE 2026-09-01
+        chemsim/threads.py, four entry points, NEVER chemsim/__init__
     R3  wire or DELETE Scenario.prune_threshold             ~30 min
     R4  rate-aware pruning -- the real answer               one session
-    R5  the Bench `generations` box resets a raised bound   ~20 min  UI
+    R5  the Bench `generations` box resets a raised bound   ✔ DONE 2026-09-01
+        _react_further writes gens/cap back into the boxes _pour_bench reads
     R6  the lattice/ion gap (P3 named it, did not close it)
 
 ⚠⚠⚠ **R1's REAL DESIGN QUESTION WAS NOT THE ONE THE WORK ORDER PREDICTED, AND
@@ -193,6 +208,19 @@ frontend can set that the engine never reads. `T_build` IS wired; this is not.
                                          thread-capped, exit code 0.
     1256 passed / 0 failed in 30:34   <- the run before it, same day, which was
                                          the first green 1256 this repo ever had.
+
+⚠ **R2+R5 (2026-09-01, after that run) did NOT re-run the suite, and here is
+the argument rather than the hope.** Every touched line is entry-point or
+widget plumbing: a new leaf module (`chemsim/threads.py`), four call sites that
+run before numpy loads, and eight lines in `_react_further` that write two Tk
+boxes. No RHS, no network construction, no data table — so the tolerance audit
+is not owed either, and the cap itself is the thing R1 already measured to be
+numerically neutral. What WAS run: `tests/test_threads.py` **4/4** (new — the
+suite count is 1264 next time), `tests/test_ui.py` **31/31** at 45.5 s, ruff
+clean over src/tests/examples/validation/tools, and the R5 live probe. ⚠ And
+note for the NEXT full run: `conftest.py` now caps threads itself, so the suite
+is thread-capped by construction — the same condition the 1260 record was taken
+under, no ambient env needed.
 
 ⚠⚠ **THE 1260 IS R1's OWN RUN AND IT IS THE EVIDENCE THAT MATTERS FOR IT.**
 R1 changes what a network CONTAINS -- a discovered species that cannot be priced
@@ -326,7 +354,9 @@ What else was run in P3/P4, all green:
 
 ```bash
 python -m pytest -q --durations=25          # ~30 min, run ALONE
-python validation/tolerance_audit.py        # ~10 min. OWED (see above)
+python validation/tolerance_audit.py        # ~10 min. NOT owed (run by R1;
+                                            #   R2+R5 touched no RHS and no
+                                            #   network construction)
 python validation/shelf.py                  # ~9 min. P3/P4's standing audit,
                                             #   PLUS PANEL 5 (the R-series). Panel 5
                                             #   is ~2.8 min of that and every figure

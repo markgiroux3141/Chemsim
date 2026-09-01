@@ -88,6 +88,13 @@ import time
 _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(_ROOT, "src"))
 
+from chemsim.threads import cap_blas_threads  # noqa: E402
+
+# R2: before rdkit, which imports numpy and sizes the pools. Numerically
+# neutral (measured, R1) and faster; timings printed below stay comparable
+# with the standing record, which was taken thread-capped.
+cap_blas_threads()
+
 from rdkit import RDLogger  # noqa: E402
 
 RDLogger.DisableLog("rdApp.*")

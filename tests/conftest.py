@@ -1,7 +1,15 @@
 import pytest
 
-from chemsim.properties import ThermochemistryProvider
-from chemsim.reactions import ReactionTemplate
+from chemsim.threads import cap_blas_threads
+
+# R2: before the chemsim imports below pull numpy in and the pools get sized.
+# The standing suite record (1260 green, 2026-09-01) was taken thread-capped;
+# capping here is what makes that condition reproducible instead of ambient.
+# Numerically neutral, measured (R1); setdefault, so an explicit env wins.
+cap_blas_threads()
+
+from chemsim.properties import ThermochemistryProvider  # noqa: E402
+from chemsim.reactions import ReactionTemplate  # noqa: E402
 
 
 @pytest.fixture

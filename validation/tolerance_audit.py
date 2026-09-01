@@ -59,6 +59,13 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO / "src"))
 
+from chemsim.threads import cap_blas_threads  # noqa: E402
+
+# R2: numpy is not loaded yet -- the examples this audit runs load it -- so the
+# cap binds. This audit is its own evidence that capping is safe here: R1 ran
+# it capped twice and uncapped once and all three outputs were identical.
+cap_blas_threads()
+
 TIGHT = (1.0e-8, 1.0e-11)
 
 # Relative move that counts as a difference. 1e-6 is well above the round-off two
