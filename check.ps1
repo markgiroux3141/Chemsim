@@ -46,9 +46,11 @@ Step 'smoke tests' { python -m pytest -q @SmokeTests }
 
 if ($Full) {
     # These regenerate committed reports; --check makes a stale one fail rather
-    # than rewriting it. Both flags are T0.5 in BACKLOG.md and may not exist yet.
-    Step 'coverage report' { python validation/catalog_coverage.py --check }
+    # than rewriting it. The playable report is regenerated FIRST when both are
+    # stale: the coverage report quotes its footer, so a fresh PLAYABLE.md is an
+    # input to a fresh COVERAGE_REPORT.md.
     Step 'playable report' { python tools/build_playable.py --check }
+    Step 'coverage report' { python validation/catalog_coverage.py --check }
 }
 
 Write-Host ''

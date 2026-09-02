@@ -4,6 +4,21 @@ Newest first. One entry per session, twelve lines at most, enforced by
 `tools/check_docs.py`. When this file passes 400 lines the older half rolls into
 `docs/history/changelog-YYYY-MM.md`.
 
+## 2026-09-02 — T0.5: the report counts its own templates (47 -> 57) and both generators ratchet
+
+`validation/catalog_coverage.py` had five hand-maintained `N_*_TEMPLATES`
+constants summing to 47 against 57 in the tree; `template_counts()` now walks
+`reactions/*.py` and `properties/electrolyte.py` with `ast` and counts
+`ReactionTemplate(` construction sites, so the report reads 57 (38 synthesis,
+9 library, 6 electrolyte, 4 electrochemistry) and moves on its own. Its
+`PLAYABLE.md` cross-quote said 36 runnable / 12 playable / 21 fed-but-unrunnable
+against 44 / 21 / 22; it is now parsed from that file's footer, which gained the
+fed-but-unrunnable count and is a declared contract. New `catalog.emit()` gives
+both generators `--check`; `check.ps1 -Full` runs playable first, coverage
+second, and both are green. `COVERAGE_REPORT.md` was stale on 207 unrelated
+lines (`OutsideEstimatorDomain`) and is regenerated. No engine change, no other
+number moved. Next: T1 (templates become data).
+
 ## 2026-09-02 — T1.0: 174 of 377 rows are extractable and uncovered; T1 and T2 survive
 
 Added `validation/extraction_yield.py` (~40 s), which cross-tabulates every

@@ -326,6 +326,63 @@ def validate(catalog_dir: str = CATALOG_DIR) -> list[str]:
     return problems
 
 
+def emit(path: str, text: str, *, check: bool = False) -> bool:
+    """Write a generated artefact, or in check mode report that it is stale.
+
+    Rule 5 says a generated file is regenerated and never edited, and the only
+    way to hold that is to make a stale one FAIL rather than be silently
+    rewritten by the next person who runs the generator. ``check=True`` writes
+    nothing and returns False with the first differing line named.
+
+    The comparison is on decoded text, not bytes: the reports under
+    ``data/catalog`` are CRLF and the generators join with ``
+``, so both
+    sides go through universal newlines and the terminator never enters it.
+    """
+    if not check:
+        with open(path, "w", encoding="utf-8") as fh:
+            fh.write(text)
+        print(f"wrote {path}")
+        return True
+
+    try:
+        with open(path, encoding="utf-8") as fh:
+            have = fh.read()
+    except FileNotFoundError:
+        print(f"STALE {path}: does not exist; run the generator")
+        return False
+    if have == text:
+        print(f"ok {path}")
+        return True
+
+    # A report line is a whole Markdown paragraph and runs to several hundred
+    # characters, so the excerpt is centred on the first differing column
+    # rather than taken from the start, where every candidate line looks the
+    # same. It is also escaped: the reports carry warning glyphs and em dashes,
+    # a Windows console is cp1252, and a diagnostic that raises
+    # UnicodeEncodeError buries the staleness it was written to report.
+    def _excerpt(line: str, at: int) -> str:
+        start = max(0, at - 40)
+        cut = line[start:start + 120]
+        return cut.encode("ascii", "backslashreplace").decode("ascii")
+
+    old, new = have.splitlines(), text.splitlines()
+    for i, (a, b) in enumerate(zip(old, new), 1):
+        if a != b:
+            at = next(
+                (j for j, (x, y) in enumerate(zip(a, b)) if x != y),
+                min(len(a), len(b)),
+            )
+            print(f"STALE {path}: line {i} differs at column {at + 1}")
+            print(f"  committed: {_excerpt(a, at)}")
+            print(f"  fresh:     {_excerpt(b, at)}")
+            break
+    else:
+        print(f"STALE {path}: {len(old)} committed lines vs {len(new)} fresh")
+    print(f"  run the generator and commit the result ({len(old)} -> {len(new)} lines)")
+    return False
+
+
 if __name__ == "__main__":
     issues = validate()
     comp = load_compounds()

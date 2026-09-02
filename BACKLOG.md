@@ -28,16 +28,6 @@ There are no pytest markers at all, so the only way to run less than the
 `pyproject.toml`, and put `pytest -m "not slow"` into `check.ps1`.
 **Done when:** `pytest -m "not slow"` is green in under three minutes.
 
-### T0.5 — the two generators disagree (S)
-`data/catalog/COVERAGE_REPORT.md:630` says 47 templates; there are 57 (38
-`synthesis.py` + 9 `library.py` + 6 `electrolyte.py` + 4 `electrochemistry.py`).
-Line 820 cross-quotes `PLAYABLE.md` as "36 runnable, 12 playable"; `PLAYABLE.md`
-says 21 playable. Make `validation/catalog_coverage.py` read those numbers from
-`build_playable`'s output or drop the cross-quote, and count templates rather
-than hard-coding them. Give both generators a `--check` flag that exits non-zero
-when the committed file differs from a fresh run.
-**Done when:** the two files agree and `check.ps1` runs both with `--check`.
-
 ---
 
 ## Tier 1 — change the slope of coverage
@@ -68,8 +58,14 @@ equality against the constructors they replace. One table-driven test replaces
 the per-template test files: every row fires on every catalog step of its class
 and reproduces the step's products. `TEMPLATE_CLASSES` in
 `validation/catalog_coverage.py:433` goes away — the `class` column is the map.
+T0.5 left two guards on this work: the report's template count is an `ast` walk
+over `ReactionTemplate(` construction sites, so the PSV switch-over has to keep
+it counting 57 or change `template_counts()` deliberately; and `./check.ps1
+-Full` runs both generators with `--check`, so an output that moves must be
+regenerated in the same commit (playable first, coverage second).
 **Done when:** `examples/named_routes.py`, the bench and the coverage report run
-from the PSV with identical output, and adding a template is one row.
+from the PSV with identical output, `./check.ps1 -Full` is green, and adding a
+template is one row.
 
 ### T2 — extract literal templates from the catalog (L, blocked on T1.0 and T1)
 `tools/extract_templates.py`: resolve each step's reactants and products to

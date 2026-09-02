@@ -58,7 +58,10 @@ Run: ``python validation/catalog_coverage.py`` (writes the Markdown report too).
 
 from __future__ import annotations
 
+import argparse
+import ast
 import os
+import re
 import sys
 from collections import Counter, defaultdict
 
@@ -1138,21 +1141,83 @@ TEMPLATE_CLASSES = {
     ),
 }
 
-# How many templates that is, counted rather than asserted -- the old text said
-# "10 templates" and ``library.py`` has 8. C1 makes it 9.
-N_LIBRARY_TEMPLATES = 9
-N_SYNTHESIS_TEMPLATES = 28
-N_ELECTROLYTE_TEMPLATES = 6
-# ⚠ M8 INCREMENTS THIS WHERE M3 AND M6 DELIBERATELY DID NOT, and the difference
-# is what shape the mechanism has. Precipitation, calcination and roasting are
-# TERMS in the integrator -- there is no template to count. These four are
-# ordinary ``ReactionTemplate``s that happen to carry an electron count, so they
-# are templates by the same rule as the other 34.
-N_ELECTROCHEMISTRY_TEMPLATES = 4
-N_TEMPLATES = (
-    N_LIBRARY_TEMPLATES + N_SYNTHESIS_TEMPLATES + N_ELECTROLYTE_TEMPLATES
-    + N_ELECTROCHEMISTRY_TEMPLATES
+# How many templates that is -- COUNTED, not asserted. Five hand-maintained
+# constants used to live here, each needing an increment from every session that
+# added a template, and enough sessions forgot that the report said 47 against
+# 57 in the tree. ``template_counts`` walks the source with ``ast``, so adding a
+# template moves this report without anyone editing this file.
+#
+# It counts CONSTRUCTION SITES, which is why the integrator TERMS still do not
+# appear: precipitation, calcination and roasting are terms in the RHS and
+# nothing constructs a ``ReactionTemplate`` for them. That is the distinction M3
+# and M6 were making when they declined to increment the old constants, and it
+# now holds itself instead of depending on a reader obeying a comment.
+_TEMPLATE_SOURCES = (
+    os.path.join(_ROOT, "src", "chemsim", "reactions"),
+    os.path.join(_ROOT, "src", "chemsim", "properties", "electrolyte.py"),
 )
+
+
+def template_counts() -> dict[str, int]:
+    """``ReactionTemplate`` construction sites per module, biggest first."""
+    paths: list[str] = []
+    for source in _TEMPLATE_SOURCES:
+        if os.path.isdir(source):
+            paths += sorted(
+                os.path.join(source, f)
+                for f in os.listdir(source)
+                if f.endswith(".py")
+            )
+        else:
+            paths.append(source)
+
+    found: dict[str, int] = {}
+    for path in paths:
+        with open(path, encoding="utf-8") as fh:
+            tree = ast.parse(fh.read(), path)
+        n = sum(
+            1
+            for node in ast.walk(tree)
+            if isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Name)
+            and node.func.id == "ReactionTemplate"
+        )
+        if n:
+            rel = os.path.relpath(path, os.path.join(_ROOT, "src", "chemsim"))
+            found[rel.replace(os.sep, "/")] = n
+    return dict(sorted(found.items(), key=lambda kv: (-kv[1], kv[0])))
+
+
+# ---------------------------------------------------------------------------
+# the one number this report quotes from the other generator
+# ---------------------------------------------------------------------------
+# This file used to cross-quote ``PLAYABLE.md`` from memory and drifted to
+# "36 runnable, 12 playable" against 44 and 21. Two generated files may
+# disagree only by one of them being stale, so the numbers are read out of
+# ``PLAYABLE.md``'s own generated footer and a shape change refuses loudly
+# rather than falling back to something hand-typed.
+_PLAYABLE_FOOTER = re.compile(
+    r"^\*(?P<routes>\d+) routes, (?P<compounds>\d+) compounds, "
+    r"(?P<natural>\d+) declared natural, (?P<runnable>\d+) runnable, "
+    r"(?P<playable>\d+) playable, (?P<tiers>\d+) tiers deep, "
+    r"(?P<unrunnable>\d+) fed but unrunnable\.\*$",
+    re.M,
+)
+
+
+def playable_headline(path: str | None = None) -> dict[str, int]:
+    """The headline counts from ``PLAYABLE.md``'s generated footer line."""
+    path = path or os.path.join(cat.CATALOG_DIR, "PLAYABLE.md")
+    with open(path, encoding="utf-8") as fh:
+        m = _PLAYABLE_FOOTER.search(fh.read())
+    if m is None:
+        raise RuntimeError(
+            f"{path} has no recognisable generated footer. It is written by "
+            "tools/build_playable.py; regenerate it, and if its footer line "
+            "changed shape update _PLAYABLE_FOOTER here rather than typing the "
+            "numbers into this report by hand."
+        )
+    return {k: int(v) for k, v in m.groupdict().items()}
 
 
 def marginal_unlock(steps, routes):
@@ -1201,7 +1266,16 @@ def marginal_unlock(steps, routes):
     return one_away, chosen, curve, need
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
+    ap = argparse.ArgumentParser(description="Coverage audit of data/catalog.")
+    ap.add_argument(
+        "--check",
+        action="store_true",
+        help="write nothing; exit non-zero if a committed report differs from "
+             "a fresh run",
+    )
+    check = ap.parse_args(argv).check
+
     compounds = cat.load_compounds()
     routes = cat.load_routes()
     steps = cat.load_steps()
@@ -1425,15 +1499,22 @@ def main() -> int:
     covered = {c for c in step_classes if c in TEMPLATE_CLASSES}
     w("## Reaction coverage -- the half that does not flatter")
     w("")
+    tmpl_counts = template_counts()
+    where = ", ".join(f"{v} in `{k}`" for k, v in tmpl_counts.items())
     w(
         f"The catalog's {len(steps)} steps use **{len(step_classes)} distinct "
-        f"reaction classes**. This project implements **{N_TEMPLATES} templates** "
-        f"({N_LIBRARY_TEMPLATES} in `reactions/library.py`, "
-        f"{N_SYNTHESIS_TEMPLATES} in `reactions/synthesis.py` and "
-        f"{N_ELECTROLYTE_TEMPLATES} dissociation templates in "
-        f"`properties/electrolyte.py`), which between them cover "
-        f"**{len(covered)}** of those classes, i.e. "
+        f"reaction classes**. This project implements "
+        f"**{sum(tmpl_counts.values())} templates** ({where}), which between them "
+        f"cover **{len(covered)}** of those classes, i.e. "
         f"**{sum(step_classes[c] for c in covered)}** of the {len(steps)} steps."
+    )
+    w("")
+    w(
+        "> The count is the number of `ReactionTemplate` construction sites in "
+        "those modules, read off the source. Precipitation, calcination, "
+        "roasting and the surface reactions are TERMS in the integrator and "
+        "construct no template, so they appear in the table below as covered "
+        "classes with no template count behind them."
     )
     w("")
     w("| covered class | template | steps using it |")
@@ -1669,15 +1750,17 @@ def main() -> int:
     # game: 36 are runnable and 12 are playable from natural materials. That is
     # a different artefact because its answer is not a property of the corpus --
     # ``data/catalog/PLAYABLE.md``, which RUNS its deepest chain.
+    pl = playable_headline()
     w(
         "> ⚠⚠ **And a route in the BOTH column may still be unreachable.** This "
         "audit never asks whether a feedstock can be *obtained*. "
         "`PLAYABLE.md` does, and it scores the same corpus against the G-series "
-        "GOAL: **36 runnable, 12 playable from natural materials, 3 tiers "
-        "deep** — with the whole of tiers 2 and 3 hanging off a *byproduct* of "
-        "one zinc retort. Its work order (21 routes that are already fed and "
-        "only need a template) is ranked by playability rather than by class "
-        "coverage, and **the two rankings are not the same list.**"
+        f"GOAL: **{pl['runnable']} runnable, {pl['playable']} playable from "
+        f"natural materials, {pl['tiers']} tiers deep** — with the whole of "
+        "tiers 2 and 3 hanging off a *byproduct* of one zinc retort. Its work "
+        f"order ({pl['unrunnable']} routes that are already fed and only need a "
+        "template) is ranked by playability rather than by class coverage, and "
+        "**the two rankings are not the same list.**"
     )
     w("")
 
@@ -1830,31 +1913,36 @@ def main() -> int:
     w("")
 
     out = os.path.join(cat.CATALOG_DIR, "COVERAGE_REPORT.md")
-    with open(out, "w", encoding="utf-8") as fh:
-        fh.write("\n".join(lines) + "\n")
+    ok = cat.emit(out, "\n".join(lines) + "\n", check=check)
 
     # ---- derived role tables -------------------------------------------
     derived = os.path.join(cat.CATALOG_DIR, "derived")
     os.makedirs(derived, exist_ok=True)
-    with open(os.path.join(derived, "route_roles.psv"), "w", encoding="utf-8") as fh:
-        fh.write("# DERIVED by validation/catalog_coverage.py -- do not hand-edit.\n")
-        fh.write("# route_id | role | species (semicolon separated)\n")
-        fh.write("# role: feedstock (consumed, never made) | intermediate (both) |\n")
-        fh.write("#       product (made, never consumed) | catalyst (both sides of\n")
-        fh.write("#       one step). See tools/catalog.py for why this is derived.\n")
-        for rid in routes:
-            roles = cat.route_roles(steps, rid)
-            for label, members in (
-                ("feedstock", roles.feedstocks),
-                ("intermediate", roles.intermediates),
-                ("product", roles.products),
-                ("catalyst", roles.catalysts),
-            ):
-                if members:
-                    fh.write(f"{rid} | {label} | {';'.join(members)}\n")
+    role_lines = [
+        "# DERIVED by validation/catalog_coverage.py -- do not hand-edit.",
+        "# route_id | role | species (semicolon separated)",
+        "# role: feedstock (consumed, never made) | intermediate (both) |",
+        "#       product (made, never consumed) | catalyst (both sides of",
+        "#       one step). See tools/catalog.py for why this is derived.",
+    ]
+    for rid in routes:
+        roles = cat.route_roles(steps, rid)
+        for label, members in (
+            ("feedstock", roles.feedstocks),
+            ("intermediate", roles.intermediates),
+            ("product", roles.products),
+            ("catalyst", roles.catalysts),
+        ):
+            if members:
+                role_lines.append(f"{rid} | {label} | {';'.join(members)}")
+    ok &= cat.emit(
+        os.path.join(derived, "route_roles.psv"),
+        "\n".join(role_lines) + "\n",
+        check=check,
+    )
 
     # A species-level rollup: how often is each compound an intermediate anywhere?
-    counts: dict[str, Counter] = defaultdict(Counter)
+    role_counts: dict[str, Counter] = defaultdict(Counter)
     for rid in routes:
         roles = cat.route_roles(steps, rid)
         for label, members in (
@@ -1864,18 +1952,24 @@ def main() -> int:
             ("catalyst", roles.catalysts),
         ):
             for m in members:
-                counts[m][label] += 1
-    with open(os.path.join(derived, "species_roles.psv"), "w", encoding="utf-8") as fh:
-        fh.write("# DERIVED by validation/catalog_coverage.py -- do not hand-edit.\n")
-        fh.write("# species | routes | as_feedstock | as_intermediate | as_product |")
-        fh.write(" as_catalyst | tier\n")
-        for sp, c in sorted(counts.items(), key=lambda kv: -sum(kv[1].values())):
-            tier = by_id[sp]["tier"] if sp in by_id else "marker"
-            total = sum(c.values())
-            fh.write(
-                f"{sp} | {total} | {c['feedstock']} | {c['intermediate']} | "
-                f"{c['product']} | {c['catalyst']} | {tier}\n"
-            )
+                role_counts[m][label] += 1
+    species_lines = [
+        "# DERIVED by validation/catalog_coverage.py -- do not hand-edit.",
+        "# species | routes | as_feedstock | as_intermediate | as_product |"
+        " as_catalyst | tier",
+    ]
+    for sp, c in sorted(role_counts.items(), key=lambda kv: -sum(kv[1].values())):
+        tier = by_id[sp]["tier"] if sp in by_id else "marker"
+        total = sum(c.values())
+        species_lines.append(
+            f"{sp} | {total} | {c['feedstock']} | {c['intermediate']} | "
+            f"{c['product']} | {c['catalyst']} | {tier}"
+        )
+    ok &= cat.emit(
+        os.path.join(derived, "species_roles.psv"),
+        "\n".join(species_lines) + "\n",
+        check=check,
+    )
 
     print(f"{n} compounds, {len(routes)} routes, {len(steps)} steps")
     print(f"  resolve            {resolved}/{n}  ({100*resolved/n:.1f}%)")
@@ -1891,9 +1985,7 @@ def main() -> int:
     print(f"  routes BOTH (the one to quote) {both_ready}/{total_r} "
           f"-- {template_ready - both_ready} template-ready routes have a "
           f"refused species")
-    print(f"\nwrote {out}")
-    print(f"wrote {derived}/route_roles.psv and species_roles.psv")
-    return 0
+    return 0 if ok else 1
 
 
 if __name__ == "__main__":

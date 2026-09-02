@@ -378,4 +378,4 @@ Grant **all 22** of them and the fixed point reaches **45 playable routes** at d
 - **The tiers rest on §2's hand judgement.** Argue with that list and every number here moves. That is why it is printed.
 - **`COVERAGE_REPORT.md`'s BOTH column is not re-scored here**, and this file's 44 runnable routes include G4's five. See MILESTONES §G4 §6 for why a hand judgement does not go into a mechanical column.
 
-*173 routes, 1583 compounds, 45 declared natural, 44 runnable, 21 playable, 3 tiers deep.*
+*173 routes, 1583 compounds, 45 declared natural, 44 runnable, 21 playable, 3 tiers deep, 22 fed but unrunnable.*

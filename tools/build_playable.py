@@ -37,6 +37,7 @@ a property of the corpus.
 
 from __future__ import annotations
 
+import argparse
 import contextlib
 import io
 import os
@@ -421,7 +422,18 @@ def name(x: str) -> str:
     return c.name if c else f"{x} (no molecular graph)"
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
+    ap = argparse.ArgumentParser(
+        description="Score data/catalog against the G-series playability goal."
+    )
+    ap.add_argument(
+        "--check",
+        action="store_true",
+        help="write nothing; exit non-zero if the committed PLAYABLE.md differs "
+             "from a fresh run",
+    )
+    check = ap.parse_args(argv).check
+
     o: list[str] = []
     w = o.append
     n_goal = 40
@@ -1022,18 +1034,23 @@ def main() -> int:
       "MILESTONES §G4 §6 for why a hand judgement does not go into a mechanical "
       "column.")
     w("")
+    # NOTE: this line is a contract, not a summary. ``catalog_coverage.py``
+    # parses it with ``_PLAYABLE_FOOTER`` instead of re-typing these numbers
+    # into COVERAGE_REPORT.md, which is how the two generated files drifted
+    # to 36/12 against 44/21. Change its shape and update that regex in the
+    # same commit; it refuses loudly rather than falling back to a
+    # hand-typed number.
     w(f"*{len(routes)} routes, {len(compounds)} compounds, "
       f"{len(NATURAL_IDS)} declared natural, {len(RUNNABLE)} runnable, "
-      f"{len(PLAYABLE)} playable, {max(PLAYABLE.values())} tiers deep.*")
+      f"{len(PLAYABLE)} playable, {max(PLAYABLE.values())} tiers deep, "
+      f"{len(FED_BUT_UNRUNNABLE)} fed but unrunnable.*")
 
     path = os.path.join(cat.CATALOG_DIR, "PLAYABLE.md")
-    with open(path, "w", encoding="utf-8") as fh:
-        fh.write("\n".join(o) + "\n")
-    print(f"wrote {path}")
+    ok = cat.emit(path, "\n".join(o) + "\n", check=check)
     print(f"  {len(PLAYABLE)} playable of {len(routes)}, "
           f"{max(PLAYABLE.values())} tiers, {len(FED_BUT_UNRUNNABLE)} fed but "
           f"unrunnable   ({time.time() - T0:.0f} s)")
-    return 0
+    return 0 if ok else 1
 
 
 if __name__ == "__main__":
