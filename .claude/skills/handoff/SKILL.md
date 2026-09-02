@@ -1,6 +1,6 @@
 ---
 name: handoff
-description: Close out a chemsim session — verify the numbers, prune BACKLOG.md, write the CHANGELOG entry, rewrite NEXT.md whole, save any transferable lesson to memory, hold the doc caps, and commit. Use when the user says they are wrapping up, invokes /handoff, or when context is running short mid-task. Not for starting a session; that is CLAUDE.md plus NEXT.md.
+description: Close out a chemsim session — verify the numbers, prune BACKLOG.md, write the CHANGELOG entry, rewrite NEXT.md whole, save any transferable lesson to memory, hold the doc caps, commit and push main. Use when the user says they are wrapping up, invokes /handoff, or when context is running short mid-task. Not for starting or running a session; that is the session skill.
 user-invocable: true
 ---
 
@@ -125,16 +125,21 @@ per tree — failing when a count moves in *either* direction.
 
 Never append to anything in `docs/history/`. It is frozen.
 
-## Step 8 — Commit, never push
+## Step 8 — Commit and push
 
-Invoking this skill authorises the commit. Stage everything the session touched,
-including generated outputs and the doc updates. One commit unless the session
-did genuinely separate things.
+Invoking this skill authorises the commit and the push. Stage everything the
+session touched, including generated outputs and the doc updates. One commit
+unless the session did genuinely separate things.
 
 Message: a subject line that states what changed and the number that moved, then
 a short body with the same facts as the CHANGELOG entry. End with the
-`Co-Authored-By:` trailer. Do not push, do not amend an earlier commit, and if
-you are on `main` for something risky, branch first.
+`Co-Authored-By:` trailer. Do not amend an earlier commit.
+
+Then `git push origin main`. Fast-forward only: if the remote has moved,
+`git pull --rebase origin main`, rerun `./check.ps1`, and push again. Never
+`--force`. If the session did something risky enough that you would not want
+it on `main` unreviewed, push a branch instead and say so in the report; that
+is the one case where `main` is not the destination.
 
 ## Step 9 — Report
 

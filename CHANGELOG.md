@@ -4,6 +4,17 @@ Newest first. One entry per session, twelve lines at most, enforced by
 `tools/check_docs.py`. When this file passes 400 lines the older half rolls into
 `docs/history/changelog-YYYY-MM.md`.
 
+## 2026-09-02 — /session runs one task end to end and pushes main
+
+Added `.claude/skills/session/`: take task 1 from `NEXT.md` (or the user's
+steering), do it to its done-when, close out through `handoff`, push, confirm.
+One task per invocation; the full suite and the tolerance audit stay ask-first,
+so a task that needs them is skipped for the next one and the skip reported.
+`handoff` Step 8 is now commit and push (fast-forward, never force); its
+description no longer says "never push". `CLAUDE.md` session shape points at
+the skill. No code, no numbers moved; `./check.ps1` and `check_docs` green.
+Next: `/session` in a fresh context, which should take T1.0.
+
 ## 2026-09-02 — the handoff is frozen, capped and made repeatable
 
 Moved the seven root monoliths (1.5 MB, 84% narrative) into `docs/history/`,

@@ -102,8 +102,12 @@ directly, so the README's "nothing above Layer 0 imports rdkit" is false today.
 4. Regenerate any generated file touched; run its --check.
 5. Close with the `handoff` skill (.claude/skills/handoff/), which prunes
    BACKLOG.md, writes the CHANGELOG entry, rewrites NEXT.md whole, saves any
-   transferable lesson to memory, holds the caps and commits.
+   transferable lesson to memory, holds the caps, commits and pushes main.
 ```
+
+The `session` skill (.claude/skills/session/) runs all five steps as one unit:
+one task, done to its done-when, closed out and pushed. `/session` is how the
+user advances the box; `/handoff` alone is for closing out work already done.
 
 The user is not a chemist and does not drive the work. Decide, act, and write
 the decision down with its reasoning so it is not relitigated; take their
