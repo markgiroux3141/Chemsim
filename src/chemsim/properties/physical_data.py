@@ -80,7 +80,7 @@ cross-check is kept anyway: a graph query can still come back with a hydrate.
 ⚠ ``CORPUS_SWEEP`` below names every entry that came from the second input. It
 exists so ``tests/test_critical.py`` can tell a batch-costed entry from a
 hand-costed one -- see ``DELIBERATE_OVERRIDES`` there, and the batch cost
-recorded in MILESTONES.md §S13.
+recorded in docs/history/MILESTONES.md §S13.
 
 MEASURED AT GENERATION: 37 hand-typed candidates and 1502 corpus species with a
 molecular graph. Of the corpus pass:

@@ -1,6 +1,6 @@
 """R2 -- the BLAS thread cap.
 
-The measurement lives in MILESTONES.md (7.21 cores -> 0.99 and faster; and R1's
+The measurement lives in docs/history/MILESTONES.md (7.21 cores -> 0.99 and faster; and R1's
 finding that capping is numerically neutral). What a test can hold is the
 CONTRACT: the four variables, the deference to a value somebody already set,
 and the ordering rule being loud in the return value rather than silent.

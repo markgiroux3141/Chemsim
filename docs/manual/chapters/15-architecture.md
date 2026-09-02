@@ -148,7 +148,7 @@ defers the work until real numbers justify it.
 | what a flask does | `vessel/vessel.py` |
 | how a run is made reproducible | `engine/world.py`, `engine/scenario.py` |
 | how much chemistry is covered | `data/catalog/`, `validation/catalog_coverage.py` |
-| why any decision was made | `MILESTONES.md`, and the module docstrings |
+| why any decision was made | `docs/history/MILESTONES.md`, and the module docstrings |
 
 Appendix C is a fuller version of that table.
 

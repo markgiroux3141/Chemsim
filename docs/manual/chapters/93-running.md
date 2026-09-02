@@ -144,6 +144,6 @@ page setup.
    clearest single statement of what the project is.
 4. `python -m chemsim.ui`, load the benzoic-acid preparation, and watch the
    recipe panel fill in as you work.
-5. Read `MILESTONES.md` §M6 (a reaction inside a crystal) --- it is the best
+5. Read `docs/history/MILESTONES.md` §M6 (a reaction inside a crystal) --- it is the best
    single example of the project's habit of deciding a modelling question *by
    arithmetic* rather than by argument.

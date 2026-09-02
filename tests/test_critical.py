@@ -463,7 +463,7 @@ DELIBERATE_OVERRIDES = {
 #
 # ⚠ SO THE COST WAS MEASURED ONCE, FOR THE WHOLE BATCH, AND WRITTEN DOWN.
 # ``CORPUS_SWEEP`` is emitted by the generator and names every entry that came
-# in that way. What it cost across the example set is in MILESTONES.md §S13 --
+# in that way. What it cost across the example set is in docs/history/MILESTONES.md §S13 --
 # measured by running all fifteen examples before and after, not argued.
 #
 # ⚠ THE TWO SETS MUST STAY DISJOINT, which is what keeps the teeth. A hand

@@ -471,7 +471,7 @@ def test_the_dryout_band_is_CLOSED_and_what_is_left_is_the_DEPLETED_REACTANT(
     O2 limiting ends at exactly 0.000e+00 and reads 2.9e-05; O2 in excess ends
     holding 8.4e-02 and reads 1.9e-11 at the same temperature. That is the
     ordinary stiff-reactant-at-zero residual this project reports everywhere and
-    which ``MILESTONES.md`` M7 owns -- the same one the 600 K case below has read
+    which ``docs/history/MILESTONES.md`` M7 owns -- the same one the 600 K case below has read
     at the 1e-4 level all along, nowhere near any band.
 
     ## 3. ⚠ AND ITS VALUE AT DEFAULT TOLERANCE IS LUCK, SO NOTHING ASSERTS ONE

@@ -104,6 +104,6 @@ in it looks surprising, the primary source is almost always one of:
 
 - the module docstrings in `src/chemsim` — they carry the arguments, not just
   the descriptions;
-- `MILESTONES.md`, which records every measurement and every refusal;
+- `docs/history/MILESTONES.md`, which records every measurement and every refusal;
 - the generated reports under `data/catalog/`;
 - the scripts in `validation/`, each of which answers one question.

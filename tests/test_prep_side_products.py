@@ -72,7 +72,7 @@ def saponify(net, air: bool, hours: float = 2.0):
     and until an ion transfer model existed the split was refused outright, which
     is what held this file's numbers steady while the pot was quietly single-phase.
     At the default transfer rate the two-phase system does not integrate; see
-    ``examples/multistep_prep.py`` and NEXT_SESSION.md item 1.
+    ``examples/multistep_prep.py`` and docs/history/NEXT_SESSION.md item 1.
 
     The answer does not depend on the number, which is what makes it reportable
     rather than a fudge: 0.5 and 0.05 mol/s give the same benzoate to five decimal

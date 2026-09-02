@@ -1754,7 +1754,7 @@ def main() -> int:
         "species-ready moved 63 -> 77 and the column a route is judged on did "
         "not move at all. What it bought is a MULTIPLIER on template work -- "
         "nine new entries in the RUNNABLE table above, seven of which survive "
-        "the balance audit. The ordering lesson is recorded in MILESTONES.md "
+        "the balance audit. The ordering lesson is recorded in docs/history/MILESTONES.md "
         "§S8: **a species job should FOLLOW the template it enables.**"
     )
     w("")
@@ -1770,7 +1770,7 @@ def main() -> int:
         "now and condenses it in a cool receiver, which is a real Belgian "
         "retort's actual mechanic -- for **+0 on all four columns here**, "
         "predicted before it was measured. Eight of the nine remain. See "
-        "MILESTONES.md §S10."
+        "docs/history/MILESTONES.md §S10."
     )
     w("")
     w(

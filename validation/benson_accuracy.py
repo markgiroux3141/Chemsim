@@ -2,7 +2,7 @@
 
 Run this before and after any change to ``properties/benson.py``,
 ``benson_data.py`` or ``tools/build_benson_data.py``. It is the measurement the
-Benson work is judged on, and the numbers it prints are quoted in HANDOFF.md --
+Benson work is judged on, and the numbers it prints are quoted in docs/history/HANDOFF.md --
 so the metric must not drift. Specifically:
 
     median |dGf error| over the species BOTH estimators can price.

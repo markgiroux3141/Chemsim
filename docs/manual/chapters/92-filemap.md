@@ -142,9 +142,9 @@ generated file cannot carry the collision report its build prints.
 | file | lines | what |
 |---|---:|---|
 | `README.md` | 625 | the thesis and the current state |
-| `MILESTONES.md` | 6,545 | **the primary record.** Every milestone, with its measurements and its refusals |
-| `HANDOFF.md` | 7,751 | session-to-session context |
-| `NEXT_SESSION.md`, `NEXT_PROMPT.md` | 2,900 | the work queue |
+| `docs/history/MILESTONES.md` | 6,545 | **the primary record.** Every milestone, with its measurements and its refusals |
+| `docs/history/HANDOFF.md` | 7,751 | session-to-session context |
+| `docs/history/NEXT_SESSION.md`, `docs/history/NEXT_PROMPT.md` | 2,900 | the work queue |
 | `GAME_DESIGN.md` | 581 | what this is ultimately for |
-| `ASSESSMENT.md` | 327 | an outside-view review |
-| `EQUIPMENT_PLAN.md`, `EQUIPMENT_CATALOG.md` | 788 | glassware, planned and built |
+| `docs/history/ASSESSMENT.md` | 327 | an outside-view review |
+| `docs/history/EQUIPMENT_PLAN.md`, `docs/history/EQUIPMENT_CATALOG.md` | 788 | glassware, planned and built |

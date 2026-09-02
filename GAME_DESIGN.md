@@ -5,8 +5,8 @@ Everything here is either a decision to be implemented or a MEASUREMENT taken to
 test whether a decision was safe. Every number in it was measured in this repo; the
 commands are at the bottom. Nothing is quoted from memory.
 
-Companion documents: `HANDOFF.md` (what exists), `NEXT_SESSION.md` (the work
-order), `EQUIPMENT_PLAN.md` (glassware), `recipes.py` (the one worked prep).
+Companion documents: `docs/history/HANDOFF.md` (what exists), `docs/history/NEXT_SESSION.md` (the work
+order), `docs/history/EQUIPMENT_PLAN.md` (glassware), `recipes.py` (the one worked prep).
 
 ---
 
@@ -711,7 +711,7 @@ solver evaluates all 644 reactions on every right-hand-side call and nearly
 every one of them is kinetically dead at 298 K. **The twenty seconds of extra
 build is a rounding error.** *So the thing that makes one generation necessary
 is the integrator, and the fix for it is rate-aware pruning rather than a
-bound* -- `MILESTONES.md` R4.
+bound* -- `docs/history/MILESTONES.md` R4.
 
 ⚠ **A MOLAR-MASS CAP WAS THE OBVIOUS ALTERNATIVE AND IT IS REFUTED.** It never
 closes the fixpoint at any cap, and every cap is 10x to 36x slower:
@@ -738,7 +738,7 @@ is **not a law**, and it was stated as one only because the two rows that
 contradict it were the two that crashed. ⚠ The slowdown is **36x**, not the 19x
 recorded between them: that figure divided this table's numerator by a
 *different measurement path's* denominator (a `World` build, which is ~2x a
-`build_network` call for the same network). `MILESTONES.md` §R-SERIES finding 3
+`build_network` call for the same network). `docs/history/MILESTONES.md` §R-SERIES finding 3
 carries the full correction.
 
 **4. AT THE SAME CLOCK THE TWO FLASKS ARE BARELY DIFFERENT, AND THIS IS THE ONE

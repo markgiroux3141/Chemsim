@@ -304,7 +304,7 @@ class Rig:
         not a dipole. The physics results survive because the projection conserves
         what it can and the air is not what those tests measure, but the trajectory
         is visiting states that cannot exist. ``validation/vent_leak.py`` is the
-        attribution and it is the top item of NEXT_SESSION.md.
+        attribution and it is the top item of docs/history/NEXT_SESSION.md.
 
         Aggregated across vessels because the rig conserves each species as ONE
         system -- that is the whole reason it is one state vector -- and because

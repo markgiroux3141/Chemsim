@@ -153,7 +153,7 @@ CANDIDATES: list[tuple[str, str]] = [
     # ⚠ AND THE GENERAL CASE IS MUCH LARGER AND IS **NOT** FIXED HERE: 310
     # catalog species have an experimental Tb in ``chemicals`` and are absent
     # from this list, 229 of them price one today, and the mean |error| against
-    # the measurement is 5.81% with a worst of 84.89%. See S11 in MILESTONES.md;
+    # the measurement is 5.81% with a worst of 84.89%. See S11 in docs/history/MILESTONES.md;
     # adding them all moves every example's volatility and owes a tolerance
     # audit, which this addition does not (nothing but the oxo route holds any
     # of these three).
@@ -176,7 +176,7 @@ CANDIDATES: list[tuple[str, str]] = [
     # ⚠ The 83% is real and is a SEPARATE fault: a curated Antoine evaluated at
     # 400 K, which is 118 K above ethylene's critical temperature, gives
     # Psat = 219.9 bar and a Raoult-law dissolution where a Henry's-law solute is
-    # meant. See S11 in MILESTONES.md; nothing here fixes it.
+    # meant. See S11 in docs/history/MILESTONES.md; nothing here fixes it.
     #
     # ⚠ Unlike the three above this one is NOT free: `competing_pathways` and
     # `named_routes` both hold ethylene. Measured cost, S11: the worst moved
@@ -753,7 +753,7 @@ cross-check is kept anyway: a graph query can still come back with a hydrate.
 ⚠ ``CORPUS_SWEEP`` below names every entry that came from the second input. It
 exists so ``tests/test_critical.py`` can tell a batch-costed entry from a
 hand-costed one -- see ``DELIBERATE_OVERRIDES`` there, and the batch cost
-recorded in MILESTONES.md §S13.
+recorded in docs/history/MILESTONES.md §S13.
 
 {summary}
 

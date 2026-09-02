@@ -122,7 +122,7 @@ def test_no_cobalt_is_EXACTLY_no_reaction(net):
     # "liquid propene" into a flask 55 K above propene's real critical
     # temperature, and the extra stiff phase left 2.8e-24 mol of butanal in a
     # species with no source at all -- dust from the linear solves, not a leak.
-    # ``nS ** 1`` was exactly 0.0 the whole time. See S11 in MILESTONES.md.
+    # ``nS ** 1`` was exactly 0.0 the whole time. See S11 in docs/history/MILESTONES.md.
 
 
 # ---------------------------------------------------------------------------

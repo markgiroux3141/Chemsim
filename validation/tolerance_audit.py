@@ -85,7 +85,7 @@ REPORT_ABS = 1.0e-9
 # ONE DIRECTION only.
 #
 # THE NUMBER IS NOT INVENTED HERE -- it is the project's own measurement of the
-# very column that forced this. ``NEXT_SESSION.md`` carries the burner's
+# very column that forced this. ``docs/history/NEXT_SESSION.md`` carries the burner's
 # O2-limiting residual as **NOT AN INVARIANT**, with the reason stated as a
 # measurement: an INERT N2 nudge of 0.5%, which changes no chemistry at all,
 # swings that column from **2.5e-09 to 4.5e-04**. A quantity that moves five
@@ -331,7 +331,7 @@ KNOWN_REFUSAL: dict[str, str] = {
 #     690 K   2.935e-05 -> 2.728e-07        730 K   5.233e-06 -> 7.357e-07
 #
 # i.e. a residual converging toward zero, which is a residual behaving -- and
-# they are exactly the rows NEXT_SESSION.md already carries as "NOT AN
+# they are exactly the rows docs/history/NEXT_SESSION.md already carries as "NOT AN
 # INVARIANT". The single physical number among the five (liquid held at 450 K)
 # moves 1.5154e-03 -> 1.5155e-03, **rel 6.6e-05, three decades under this file's
 # own 1e-3 reportable band**.
@@ -350,7 +350,7 @@ KNOWN_REFUSAL: dict[str, str] = {
 #
 # ⚠ AND THE NUMBER CAME OUT OF A MEASUREMENT THIS PROJECT ALREADY HAD rather
 # than out of this file: the same column swings 2.5e-09 to 4.5e-04 under an
-# INERT 0.5% N2 nudge (``NEXT_SESSION.md``). See ``CONVERGING_ABS``.
+# INERT 0.5% N2 nudge (``docs/history/NEXT_SESSION.md``). See ``CONVERGING_ABS``.
 #
 # ⚠ PREDICTED BEFORE IT WAS RUN: 5 moved lines -> 1, worst 0.9985 -> 6.6e-05,
 # the headline flips from QUOTABLE DIGITS MOVE to "(below 0.1%)", and no other

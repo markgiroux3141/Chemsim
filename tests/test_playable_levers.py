@@ -55,7 +55,7 @@ def test_the_two_work_streams_are_super_additive(bp):
     the ceiling implies, and the joint is worth more than the sum of the parts.
 
     If this ever stops holding, §8b becomes a defensible work order again and
-    `MILESTONES.md` §THE P-SERIES has to be re-argued.
+    `docs/history/MILESTONES.md` §THE P-SERIES has to be re-argued.
     """
     base = len(bp.PLAYABLE)
     allc = sorted(bp.CLASS_GAPS)

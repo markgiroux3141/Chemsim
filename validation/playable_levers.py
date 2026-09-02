@@ -2,7 +2,7 @@
 
 This file exists because a direction was chosen from these numbers, and a
 direction chosen from numbers that live in a chat log is a direction nobody can
-re-derive. Every figure in `MILESTONES.md` section P and in `GAME_DESIGN.md`
+re-derive. Every figure in `docs/history/MILESTONES.md` section P and in `GAME_DESIGN.md`
 section 8 is printed by a panel below.
 
 ## The four findings, in the order they change a decision

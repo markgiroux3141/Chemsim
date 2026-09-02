@@ -30,16 +30,20 @@ Layer 7  ui/           A window over the engine: worker thread, chunked ops, sna
 Layer 6  engine/       Headless deterministic stepper: world state, step(dt), save/load, events   [done]
 Layer 5  vessel/       3 phases, VLE + Henry + solubility, energy balance, pressure, pH            [done]
 Layer 4  numerics/     RHS builders, ODE integrators, activity coefficients ◄── the Rust/PyO3 seam  [done]
-Layer 4.5 discovery/   Rate-based network refinement (needs a simulator, so it sits above one)     [done]
+Layer 4.5 discovery/   Rate-based network refinement (needs a simulator, so it sits above one)  [dormant]
 Layer 3  network/      Discover concrete reactions; derive reverse kinetics -> numeric arrays       [done]
 Layer 2  reactions/    ReactionTemplate (SMARTS graph rewrite) + kinetics + reaction thermo        [done]
 Layer 1  properties/   Thermochemistry, volatility, condensed-phase — estimated + curated          [done]
 Layer 0  matter/       Molecular graphs, canonical identity   ◄── RDKit hidden here                [done]
 ```
 
-**Boundary 1 — `matter` hides RDKit.** Nothing above Layer 0 imports rdkit. The
-cheminformatics backend (parsing, canonicalization, substructure matching,
-template application) is swappable.
+**Boundary 1 — `matter` hides RDKit.** The cheminformatics backend (parsing,
+canonicalization, substructure matching, template application) is meant to be
+swappable behind `matter.Molecule`. Three modules breach that today and the
+claim is written here as an intent, not a fact: `reactions/template.py`,
+`reactions/hammett.py` and `properties/fragmentation.py` import rdkit directly.
+`BACKLOG.md` carries the choice between enforcing the boundary with a test and
+dropping the claim.
 
 **Boundary 2 — `numerics` sees only arrays.** The hot integration loop consumes
 `KineticArrays` and `PhaseArrays` (numpy + species names) and knows nothing about
@@ -118,19 +122,37 @@ live only at domain boundaries; the numeric core uses bare floats.
 
 ## Status
 
-Layers 0–6 complete; 275 tests. A Fischer-esterification *template* (not a
-hand-written
-reaction) is applied to SMILES starting materials; the network builder discovers
-the concrete reaction and canonicalizes products; the integrator runs it to
-equilibrium — with element and charge conservation enforced by tests. The same
-template generalizes to any acid+alcohol with zero extra code.
+Every number here is regenerated, never typed. The command that produces each is
+named; if a number here cannot be reproduced by running it, the number is wrong.
 
-Layer 1 adds Joback group-contribution thermochemistry: properties (ΔHf, ΔGf,
-Cp(T), Tb, Tc, Pc, Vc) are estimated from molecular structure, with a curated
-experimental table overriding species Joback can't handle (water, O2, …) and
-provenance tracked on every value. The group table and fragmentation are
-cross-checked against the `thermo` library across many molecules in the test
-suite.
+| | | from |
+|---|---|---|
+| layers complete | 0-7 | this file's Architecture table |
+| tests | 1,264, no skips, no xfails | `python -m pytest --co -q` |
+| full suite | ~30 min; `./check.ps1` is the fast one | — |
+| reaction templates | 57 | `grep -c 'ReactionTemplate(' src/chemsim/reactions/*.py src/chemsim/properties/electrolyte.py` |
+| catalog | 1,583 compounds, 173 routes, 377 steps, 240 classes | `python tools/catalog.py` |
+| classes with a template | 59 / 240 | `data/catalog/COVERAGE_REPORT.md` |
+| routes template-ready | 46 / 173 | `data/catalog/COVERAGE_REPORT.md` |
+| routes species-ready | 85 / 173 | `data/catalog/COVERAGE_REPORT.md` |
+| **routes that are both, the one to quote** | **38 / 173** | `data/catalog/COVERAGE_REPORT.md` |
+| routes reachable from natural materials | 21 / 173, three tiers deep | `data/catalog/PLAYABLE.md` |
+| save format | `SAVE_VERSION = 9` | `src/chemsim/engine/world.py` |
+
+Layer 4.5 (`discovery/`) is the exception to "complete": `refine_network` exists,
+has no callers and no tests, and is a sketch rather than a feature. `BACKLOG.md`
+carries the decision to wire it or delete it.
+
+The worked example the engine was built around still holds: a Fischer
+esterification *template*, not a hand-written reaction, is applied to SMILES
+starting materials; the builder discovers the concrete reaction and canonicalises
+the products; the integrator runs it to equilibrium, with element and charge
+conservation enforced by tests. The same template generalises to any acid and
+alcohol with no extra code.
+
+Thermochemistry resolves curated first, then Benson, then Joback, with provenance
+on every value and an explicit refusal where no estimator has a domain — see
+`properties/thermochemistry.py`.
 
 **Reverse rates are now derived, not declared.** A template specifies *forward*
 kinetics only; at network-build time the reverse Arrhenius pair falls out of
@@ -312,7 +334,7 @@ network is derived from its feed. A step is one generation — *what can the thi
 in this flask do, once* — and the species it discovered and never expanded are
 reported, so **REACT FURTHER raises the bound rather than hiding it**.
 
-⚠ A mineral is where that gets interesting: this engine holds a solid two
+A mineral is where that gets interesting: this engine holds a solid two
 incompatible ways — as a **lattice**, which calcines, roasts and reduces, or as
 its **ions in the solid block**, which dissolve and precipitate through a
 solubility product — and nothing converts one into the other. Measured, 0.5 mol
@@ -461,7 +483,7 @@ would collapse for the whole RHS, not just this part.
 
 ## Coverage, measured against a 1,583-compound catalog
 
-`data/catalog/` holds a hand-authored corpus — 1,583 compounds and 173 named
+`data/catalog/` holds a hand-authored corpus - 1,583 compounds and 173 named
 synthetic routes (377 steps), from the lime cycle and Tyrian purple through the
 lead chamber and Leblanc to the Hock process, SOHIO ammoxidation and PLA. It is
 data only; nothing in `src/chemsim` imports it. It exists so that *how much
@@ -470,162 +492,31 @@ chemistry does this cover* can be run rather than guessed:
 ```
 python tools/catalog.py                # structural validation
 python tools/build_route_index.py      # feedstocks -> intermediates -> products
-python validation/catalog_coverage.py  # the audit
+python validation/catalog_coverage.py  # the audit -> data/catalog/COVERAGE_REPORT.md
+python tools/build_playable.py         # the tech tree -> data/catalog/PLAYABLE.md
 ```
 
-⚠ Regenerated 2026-08-30 (C7). **Every row below is copied from
-`data/catalog/COVERAGE_REPORT.md`, which is generated**; this table had drifted
-several regenerations behind it and was quoting a formation coverage 155
-compounds too high and a class count off by two denominators.
+The audit's own output is the authority and this file does not restate it. Read
+`data/catalog/COVERAGE_REPORT.md` for the readiness columns and what each one
+does and does not bound, and `data/catalog/PLAYABLE.md` for what is reachable
+from natural materials. The headline figures are in the Status table above.
 
-| | |
-|---|---|
-| formation half measured or Benson | **766 / 1583 (48%)** |
-| ... of which priced as a LATTICE, on the solid basis | 25 |
-| formation half falls back to Joback | 401 (25%) |
-| refused | 416 (26%), of which ~166 are charged organics the Born model correctly declines |
-| ⚠⚠ **PHYSICAL half measured (S13)** | **652 / 1583 (41%)**, against **40 (2.5%)** before |
-| ... plus compilation-tier (published, not auditable to a measurement) | 47 |
-| physical half falls back to Joback | 333 (21%), against 964 (61%) before |
-| UNIFAC-decomposable (can enter an LLE) | 857 (54%) |
-| routes species-ready | **85 / 173** (was 49) |
-| reaction classes with a template | **59 / 240** (was 12 / 229) |
-| routes template-ready | 46 / 173 (was 7) |
-| ⚠⚠ **routes template-ready AND species-ready — the one to quote** | **38 / 173** |
-| ⚠⚠ **routes a player can actually REACH from natural materials** | **21 / 173**, in 3 tiers |
+Three things that table cannot say on its own, and that the report explains at
+length:
 
-⚠⚠ **S13 CLOSED THE HAND-TYPED LIST.** `properties/physical_data.py` is generated,
-and until S13 it was generated from **37 hand-typed names** — everything else in a
-1583-compound corpus fell to Joback, silently, because a Joback record *resolves*.
-It is now generated from `data/catalog` itself: **1239 species, 896 with a measured
-boiling point**, and the 881 estimates it replaced were off by a mean of 6.1% and a
-worst of 111%. See `validation/boiling_points.py` (2 s) and MILESTONES §S13.
+- **The three readiness columns are independent, and the smallest does not bound
+  the others.** A route needs a template for every step *and* a price for every
+  species; the intersection is what can run.
+- **A class is a mechanism claim, so the denominator moves.** Splitting a class
+  that named an outcome rather than a mechanism raises the class count and lowers
+  the percentage, and that is the honest direction.
+- **Template-ready is an upper bound on what runs.** A class is credited when a
+  template exists for it, not when that template has been shown to fire on that
+  particular row.
 
-⚠⚠ **41 IS NOT WHAT COULD RUN; 31 IS.** The three readiness columns answer
-INDEPENDENT questions and the smallest does not bound the others: a route needs a
-template for every step **and** a price for every species. **10 of the 41
-template-ready routes have a refused species** — `pyrite-roasting`, `tnt-route`,
-`superphosphate` and seven more. Nothing computed the intersection until S6.
-⚠ And 31 is an **upper bound on what runs**, not a measured count: a class is
-credited when a template would fire on the right substrate at all, and
-`pyrite-roasting` is the standing proof that this is not the same as running.
-
-⚠⚠ **S9 MOVED THE INTERSECTION BY +4 — ALL THREE SMELTING ROUTES AND THERMITE —
-FOR ~15 LINES OF ENGINE.** S8 had named "a REVERSIBLE solid-gas term" as the most
-valuable unscoped item in the plan, blocking the work queue's only +2. It turned
-out to be one algebraic rearrangement of a term that already existed: writing the
-affinity's gas quotient as its two ONE-SIDED products, `k_f P_react - k_r P_prod`
-instead of `k_f - k_r Q`, so nothing is ever divided by a pressure that can reach
-zero. Same root, so the same equilibrium; the five pre-S9 rows are BIT-IDENTICAL.
-⚠ And **half the reason recorded beside that refusal was about mass action, a
-form this term never used.** The class count's denominator moved too, because
-`carbothermic-reduction` was one label over four mechanisms.
-
-⚠ **THE REFUSED COLUMN WENT UP IN S7 AND THAT WAS THE POINT.** Nine catalog
-compounds are dot-separated NEUTRAL mixtures — a rubber marker, a nylon salt,
-"water gas" — and the guard only refused a multi-fragment SMILES when a fragment
-was CHARGED. Joback prices `CC(C)=CC.S1SSSSSSS1` **222.11 kJ/mol above the sum
-of its own two parts**; in an ideal gas that sum is an identity, not an estimate.
-It cost two species-ready routes and no route in the BOTH column.
-
-⚠⚠ **AND `species-ready` MOVED 63 → 77 IN S8 FOR ZERO MOVEMENT ON THE
-INTERSECTION, WHICH WAS PREDICTED BEFORE IT WAS DONE.** 15 routes were blocked
-only by a bare element symbol — the refusal being right, since the ideal-gas
-record for `[C]` is the carbon ATOM at Gf +671 kJ/mol while the charcoal in the
-flask is 0. Nine element solids were curated into `mineral_data` on the SOLID
-basis, exactly as S1 did for iron, nickel and copper, and **not one of the 15 is
-template-ready**, so the number a route is judged on did not move at all. ⚠ What
-it did move is the SHAPE of the queue: six classes went from 0 runnable routes to
-1 and one went from 1 to 2, so the element work is a **multiplier on template
-work** rather than a headline of its own. That is the whole finding, and
-NEXT_PROMPT had called it "the cheapest item here" for two sessions.
-
-⚠⚠ **AND S10 TOOK ONE OF THE NINE BACK OUT, FOR +0 ON ALL FOUR COLUMNS — ALSO
-PREDICTED.** `zinc` is no longer a `mineral_data` lattice. It has a monatomic
-vapour, ONE condensed form and a measured sublimation curve, so it passes every
-test S4 admitted mercury on and belongs in `element_data` — where, unlike a
-lattice, **it can boil**. S8's curation was right for what it was for; what
-changed is that *a lattice may react and may never boil* turned out to be a
-statement about the ENTRY and not about the metal. `zinc-smelting`'s retort
-evolves zinc VAPOUR now and condenses it in a cool receiver at 1180.15 K, which
-is a real Belgian retort's actual mechanic — and **no engine code changed at
-all.** Eight of the nine remain. See MILESTONES.md §S10.
-
-⚠ **`species-ready` moved 49 → 65 in S6 without one new datum being curated**:
-the audit was asking only the three ideal-gas providers, which refuse an ionic
-lattice by name — correctly, since the fusion law is the engine's only route
-from a solid into solution and it is measured wrong for a lattice by up to 407x
-in *both* directions. But refusing to **dissolve** a species is not refusing to
-**price** it, and `mineral_data` has priced these on the solid basis since M3.
-19 compounds moved refused → `mineral` and 16 routes with them, including
-`lime-cycle`, which M6 declared complete end to end and whose example runs.
-`template-ready` is untouched — but it moved the INTERSECTION from 12 to 17, which
-is where curating a species pays and where the template count cannot reach.
-
-⚠⚠ **M8 ADDED ELECTRICITY AS A REAGENT, AND ITS OWN HEADLINE CLASS DID NOT
-SURVIVE THE ROW CHECK.** A template declares how many electrons cross the
-external circuit; `build_network(cell_potential=...)` says what the supply is
-set to; `n F E` joules come off the reaction's Gibbs energy, and a reaction whose
-chemistry costs less than the cell supplies runs. The threshold is the
-**decomposition potential** and nothing declares it — 1.441 V for water against
-a book 1.229, 2.362 V for brine against 2.186, out of formation data alone.
-⚠ But `electrolysis` is the greedy curve's top row at +3 routes, and its four
-rows are THREE mechanisms: aqueous (built), molten-salt (a melt is not a phase
-here) and amalgam (a marker with no graph). Split on M1's standard, the top row
-is worth **+1**. The other +2 came from `electro-organic-coupling`, whose two
-rows are both built. **+3 template-ready and +3 runnable, from a curve that
-promised +3 from one class.**
-
-⚠⚠ **S7 TOOK FOUR INORGANIC GAS PROCESSES — AND MEASURED THE QUEUE'S TOP TWO
-ROWS AT ZERO FIRST.** `water-gas-shift`, `steam-reforming`, the Deacon process
-and the Claus process: five templates, `+4` on the intersection, every one of
-them charged into a real vessel by `validation/gas_processes.py`. What they buy
-is behaviour nobody declared — the shift peaking at 620 K and falling away above
-it, the reformer inert until 900 K, Deacon's ceiling and rate crossing near
-650 K, and a Claus flask recovering 100.0% of its sulfur at exactly the
-stoichiometric air rate because burning a third of the feed is what leaves the
-2:1 ratio the second template wants.
-⚠ They were chosen because the two classes at the top of the RUNNABLE queue
-measured **zero honest routes**: `isomerisation`'s three rows are three
-mechanisms and each fails its own way (a cis/trans pair the estimators price at
-dH = dG = **0.000 exactly**; a glucose/fructose row priced at K = 4.8e-08 because
-the corpus spells one as a pyranose and the other as a furanose; an ionic pair
-that is not species-ready), and both `crosslinking` rows produce something with
-no chemistry behind it. **So RUNNABLE has the fault ALONE had:** it asks whether
-a species resolves, not whether the number is right, nor whether the row's
-product is a graph. The second of those is now mechanised.
-⚠ And S7 split `combustion` — six rows, **five mechanisms**, credited since M1 to
-a template that fires on two of them. It is the first split here whose measured
-effect on the headline is NEGATIVE (`match-chemistry` loses template-ready), and
-that is a split doing its job.
-
-⚠ The class denominator MOVES, because a class is a mechanism claim and reading
-a class's rows sometimes splits it: 212 -> 224 over M6, S1, S3, M8 and S7. Six of
-the classes gained since M5 are covered by TERMS rather than by templates —
-a reaction inside a crystal, a gas arriving at one, an ionic lattice leaving
-solution — and one of those, `roasting-to-metal`, is covered by **two terms
-that emerge into a route neither of them declares**. The template count is 43.
-
-**The species side is in reasonable shape and the reaction side is still the
-binding one**, but M5 changed the shape of that gap rather than just its size.
-Twenty new templates in `reactions/synthesis.py` took the route count from 7 to
-25 — and the reason it took twenty rather than five is the finding: the gap is a
-long tail with no bottleneck in it. **Before M5, 63 routes sat one class away
-from 50 distinct classes; after, 56 sit one class away from 43.** Eighteen routes
-cost twenty templates, and the next eighteen will cost about the same.
-
-⚠ **Six candidate classes were REFUSED rather than credited**, on the standard
-that a reaction class is a *mechanism* claim and not an outcome:
-`catalytic-air-oxidation` is three mechanisms, `fermentation` is a metabolic
-network, `pyrolysis` mostly acts on things with no molecular graph. A seventh,
-`catalytic-hydrogenation`, was **split** into five mechanism labels instead —
-because unlike the others, every one of its rows *is* a clean mechanism. See
-`data/catalog/README.md`.
-
-Note also that the roles in the route index are **derived from the steps, not
-declared**: a species consumed but never produced is a primary feedstock, one
-both produced and consumed is an intermediate. A declared split would drift
-silently the first time a step was edited. See `data/catalog/README.md`.
+Roles in the route index are derived from the steps rather than declared: a
+species consumed but never produced is a primary feedstock, one both produced and
+consumed is an intermediate. See `data/catalog/README.md`.
 
 ## Known limitations
 
@@ -656,6 +547,14 @@ Deliberate, and each has a clear route:
 - **Joback gaps**: no anhydride, sulfoxide/sulfonyl, formamide or aryl-aldehyde
   groups, and no metals, Si, B or P. Curated data covers the common reagents;
   a second estimator (Benson) is the general fix.
+- **Kinetics are qualitative and the thermochemistry is not.** Every
+  pre-exponential is an order-of-magnitude choice for the molecularity and
+  every barrier a literature-band midpoint; `validation/rate_ceiling.py` only
+  catches an `A` above the collision limit, and nothing checks a barrier
+  against a measured rate. Most steps run to an attractor, so a rate wrong by
+  ten moves the clock rather than the answer — but selectivity between
+  competing templates is a *ratio* of two such numbers, and it should be read
+  as qualitative.
 - **Polymers and extended solids** need a different representation entirely —
   chain-length distributions, not graphs.
 - **Rate laws are power-law mass action**, so Langmuir–Hinshelwood and

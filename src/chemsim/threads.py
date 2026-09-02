@@ -1,6 +1,6 @@
 """Cap the BLAS/OpenMP thread pools at one thread -- R2.
 
-Measured on identical work (MILESTONES.md section R2): uncapped scipy/BLAS
+Measured on identical work (docs/history/MILESTONES.md section R2): uncapped scipy/BLAS
 spread over **7.21 cores**; capped it used **0.99 cores and was FASTER** --
 5.9 s against 10.1 s. There is no trade-off: this engine's arrays are small
 enough that threading is pure overhead, and *"single process" is not "one
@@ -8,7 +8,7 @@ core"* -- sample it rather than assume.
 
 And the cap is NUMERICALLY NEUTRAL, measured rather than assumed: R1 ran the
 tolerance audit capped twice and uncapped once and all three outputs were
-identical to the digit (NEXT_PROMPT.md, the ``workshop`` chase).
+identical to the digit (docs/history/NEXT_PROMPT.md, the ``workshop`` chase).
 
 ⚠ WHO CALLS THIS, AND WHO MUST NOT. Entry points call it -- the UI's
 ``__main__`` (a worker thread would otherwise spread a player's whole machine

@@ -571,7 +571,7 @@ BORN_TRACE = 1.0e-6
 # and after 3000 s the rig's TOTAL nitrogen is -0.34 mol against the 0.06 mol of air
 # it started with. That is not a dipole; it is matter destroyed.
 # ``project_non_negative`` reports it faithfully on ``created``, and nothing was
-# reading that channel. It is written up as the top item of NEXT_SESSION.md.
+# reading that channel. It is written up as the top item of docs/history/NEXT_SESSION.md.
 #
 # So this guard REFUSES the third row and REPORTS the second, and the ratio is set
 # where a state stops being a perturbation of a physical one rather than where the

@@ -79,7 +79,7 @@ def flask(volume):
 # steady for three sessions. The refusal is gone now. What replaced it is a
 # genuinely stiff two-phase system: 55 mol of strongly basic water beside 30 mL of
 # nearly pure ester, and at the default transfer rate it does not integrate (see
-# the note printed below, and NEXT_SESSION.md).
+# the note printed below, and docs/history/NEXT_SESSION.md).
 #
 # ⚠ WHAT MAKES THAT REPORTABLE RATHER THAN A FUDGE: the answer does not depend on
 # the number. 0.5 and 0.05 mol/s give the same benzoate to five decimal places, so
