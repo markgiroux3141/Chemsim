@@ -101,13 +101,34 @@ def _matrix(counts, n_react, keys):
     )
 
 
+def _solve(A):
+    """The smallest x with A x = 0 and every x_i >= 1, or None.
+
+    Minimising the sum picks the row's own stoichiometry out of the feasible
+    cone (the ray through it is the only place ``x >= 1`` is tight), which is
+    what an extractor needs: ``linprog``'s ``x`` is returned, not re-derived.
+    """
+    n = A.shape[1]
+    res = linprog(
+        c=np.ones(n), A_eq=A, b_eq=np.zeros(A.shape[0]),
+        bounds=[(1.0, None)] * n, method="highs",
+    )
+    return res.x if res.success else None
+
+
 def _feasible(A) -> bool:
     """Is there an x with A x = 0 and every x_i >= 1?"""
-    n = A.shape[1]
-    return bool(linprog(
-        c=np.zeros(n), A_eq=A, b_eq=np.zeros(A.shape[0]),
-        bounds=[(1.0, None)] * n, method="highs",
-    ).success)
+    return _solve(A) is not None
+
+
+def coefficients(counts, n_react):
+    """The balancing coefficient vector for one row, or None if none exists.
+
+    Same LP as ``balanceable`` and the same answer to "can it balance at all";
+    this one hands back ``x`` so a caller can read the stoichiometry off it.
+    """
+    elements = sorted({k for c in counts for k in c if c[k] and k != "<charge>"})
+    return _solve(_matrix(counts, n_react, elements + ["<charge>"]))
 
 
 def balanceable(counts, n_react, names):

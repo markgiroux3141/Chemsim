@@ -49,12 +49,12 @@ classes per session, so the remaining 181 classes are ~40 sessions and the curve
 is flat. The bottleneck is that a template is a hand-written Python function.
 Full argument: `fable analysis/05-COVERAGE-STRATEGY.md`.
 
-### T1.0 — measure the extractable yield before building anything (S)
-Before T2 is worth two sessions, count what it could produce: of the 377 steps,
-how many have every species resolving to a SMILES (no `*-marker`), balance under
-`validation/corpus_balance.py`'s LP, and carry a class that has no template
-today. That upper bound decides whether T2 happens.
-**Done when:** the three-way count is in `CHANGELOG.md` with the command.
+T1.0 measured the gate on 2026-09-02 (`python validation/extraction_yield.py`,
+argued in `docs/design/extraction-yield.md`): 174 of 377 rows resolve, balance
+and sit in an uncovered class, spread over 132 classes of which 102 hold one row.
+Upper bound if all became templates: intersection 38 -> 66, template-ready 46 ->
+110; 36 of the 64 gained routes are then held by an unpriceable species. T1 and
+T2 survive. The LP passes rows atom-mapping will refuse, so 174 is a ceiling.
 
 ### T1 — templates become data (L)
 `data/templates/templates.psv` with
@@ -78,9 +78,10 @@ context, verify it regenerates the products, assign kinetics from a class policy
 table, write the row with `tier=literal`.
 Note two things the analysis missed: the corpus carries **no stoichiometric
 coefficients at all**, so balancing is an inference and not a check — and the LP
-that does it already exists at `validation/corpus_balance.py:104`, which throws
-away the coefficient vector `linprog` has already computed. Returning `x` instead
-of a bool is step two of the extractor.
+that does it now returns its vector: `corpus_balance.coefficients()`. The vector
+is not unique when the element matrix has a two-dimensional nullspace
+(`phthalic-anhydride-route` step 2 comes back fractional), so the extractor needs
+a smallest-integer-vector step after the LP before it can write coefficients.
 Rows that fail go to `needs_stoichiometry.psv` or `needs_review.psv`, never
 silently.
 **Done when:** the extracted rows pass the table-driven test and the report
@@ -95,11 +96,13 @@ must say which tier it loaded.
 **Done when:** `load_templates(tier="family")` is what the bench uses by default
 and a test asserts a literal row cannot enter it implicitly.
 
-### T3 — generalise the literal rows that cluster (M, repeating)
+### T3 — generalise the literal rows that cluster (M, bounded)
 Cluster literal rows by reacting centre; where three or more share one, write a
-family row, confirm it covers every member, retire the members.
-**Done when:** each session retires at least ten literal rows or clears twenty
-review rows, counted in `CHANGELOG.md`.
+family row, confirm it covers every member, retire the members. T1.0 found only
+6 uncovered classes with three or more extractable rows (24 rows in all), so this
+is one or two sessions, not a repeating one.
+**Done when:** the 6 families are written or refused with a reason, and the
+retired row count is in `CHANGELOG.md`.
 
 ### T4 — one new headline metric: reactions reachable from the shelf (M)
 Run `build_network` to a fixpoint (`generations=None`, 400-species cap, 60 s
