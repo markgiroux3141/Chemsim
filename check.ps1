@@ -3,8 +3,9 @@
     The check to run after every change. Fast by default.
 
 .DESCRIPTION
-    Four steps: lint, the documentation caps, the catalog's structural
-    validation, and a smoke subset of the test suite.
+    Five steps: lint, the documentation caps, the catalog's structural
+    validation, the template table against the constructors it copies, and a
+    smoke subset of the test suite.
 
     The smoke subset is a hand-named list because the suite has no markers yet.
     T0.4 in BACKLOG.md replaces it with `pytest -m "not slow"`; when that lands,
@@ -42,6 +43,9 @@ function Step {
 Step 'ruff' { ruff check src tests tools validation examples }
 Step 'docs' { python tools/check_docs.py }
 Step 'catalog' { python tools/catalog.py }
+# Fast (~5 s) and it guards a transcription: --check refuses a stale
+# template_data.py AND any row that has drifted from the constructor it copies.
+Step 'templates' { python tools/build_templates.py --check }
 Step 'smoke tests' { python -m pytest -q @SmokeTests }
 
 if ($Full) {

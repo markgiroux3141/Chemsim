@@ -46,23 +46,30 @@ Upper bound if all became templates: intersection 38 -> 66, template-ready 46 ->
 110; 36 of the 64 gained routes are then held by an unpriceable species. T1 and
 T2 survive. The LP passes rows atom-mapping will refuse, so 174 is a ceiling.
 
-### T1 — templates become data (L)
-`data/templates/templates.psv` with
-`name | tier | smarts | A | Ea_J | reversible | phase | class | source | notes`
-plus optional `alpha`, `orders`, `solid_catalyst`, `electrons`, `hammett_rho`,
-`hammett_slot`. `tools/build_templates.py` emits
-`src/chemsim/reactions/template_data.py` and a
-`load_templates(tier=..., classes=...)`, exactly as the eight other `*_data.py`
-modules are generated. Write rows for all 57 existing templates and assert field
-equality against the constructors they replace. One table-driven test replaces
-the per-template test files: every row fires on every catalog step of its class
-and reproduces the step's products. `TEMPLATE_CLASSES` in
-`validation/catalog_coverage.py:433` goes away — the `class` column is the map.
-T0.5 left two guards on this work: the report's template count is an `ast` walk
-over `ReactionTemplate(` construction sites, so the PSV switch-over has to keep
-it counting 57 or change `template_counts()` deliberately; and `./check.ps1
--Full` runs both generators with `--check`, so an output that moves must be
-regenerated in the same commit (playable first, coverage second).
+### T1 — templates become data: the switch-over (M, half of it is in)
+The table exists and is checked. `data/templates/templates.psv` holds all 57
+templates in 17 columns — every `ReactionTemplate` field plus `tier`, `class`,
+`source`, `notes` — `tools/build_templates.py` emits
+`src/chemsim/reactions/template_data.py` with `load_templates(tier=, classes=)`,
+`template_classes()` and `tier_counts()`, and `--check` refuses both a stale
+module and any row that has drifted from the constructor it copies.
+`check.ps1` runs it. **Nothing imports the module yet**: the engine still builds
+templates from the 57 constructors, which is what makes the equality check
+meaningful.
+
+What is left is the switch-over, and it is one session:
+- the constructors in `reactions/synthesis.py`, `library.py`,
+  `electrochemistry.py` and `properties/electrolyte.py` become thin wrappers
+  over `load_templates()`, keeping their keyword arguments — several take a
+  `catalyst`, and `library._maybe_catalyse` / `_kinetics` / `_surface_kinetics`
+  are the transform the row does not carry;
+- `TEMPLATE_CLASSES` in `validation/catalog_coverage.py` keeps only its 13
+  integrator-TERM entries; the other 46 come from `template_classes()`;
+- `template_counts()` drops `_NOT_A_TEMPLATE_SOURCE` and counts
+  `len(TEMPLATES)` for the data module, because after the switch-over the walk
+  finds one construction site in the tree instead of 57;
+- the table-driven test replaces the per-template test files: every row fires on
+  every catalog step of its class and reproduces the step's products.
 **Done when:** `examples/named_routes.py`, the bench and the coverage report run
 from the PSV with identical output, `./check.ps1 -Full` is green, and adding a
 template is one row.
@@ -89,8 +96,13 @@ same flask. A hundred literal rows carrying policy-table `A` and `Ea` would make
 every multi-template flask's selectivity noise. Literal rows must be loadable
 per-route or per-tier, not swept into the default library, and `full_library()`
 must say which tier it loaded.
+The gate arrived with the table, before the rows it guards: `load_templates()`
+defaults to `tier="family"`, `tier="any"` is a deliberate act, and
+`tests/test_template_table.py::test_a_literal_row_cannot_enter_the_default_library`
+injects a literal row and asserts the default refuses it. What is left is
+`full_library()` saying which tier it loaded, which lands with the switch-over.
 **Done when:** `load_templates(tier="family")` is what the bench uses by default
-and a test asserts a literal row cannot enter it implicitly.
+and `full_library()` reports its tier.
 
 ### T3 — generalise the literal rows that cluster (M, bounded)
 Cluster literal rows by reacting centre; where three or more share one, write a

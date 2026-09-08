@@ -1157,6 +1157,20 @@ _TEMPLATE_SOURCES = (
     os.path.join(_ROOT, "src", "chemsim", "properties", "electrolyte.py"),
 )
 
+# T1, first half. ``reactions/template_data.py`` is generated from
+# ``data/templates/templates.psv`` and carries one ``ReactionTemplate(...)``
+# call -- the loop in ``TemplateRecord.build`` -- so the walk above would count
+# it as a fifty-eighth template. It is not one: it is a LOADER, and the 57 rows
+# behind it are the same 57 the constructors make, checked field for field by
+# ``tools/build_templates.py``. Counting both would count every template twice.
+#
+# SO THIS EXCLUSION IS TEMPORARY AND HAS TO GO WHEN THE CONSTRUCTORS DO. The
+# switch-over is the second half of T1: when ``synthesis.py`` and the rest stop
+# constructing templates, this walk finds one site in the whole tree and the
+# right count becomes ``len(template_data.TEMPLATES)``. Change it then; until
+# then the count is of the code that actually builds the library.
+_NOT_A_TEMPLATE_SOURCE = ("template_data.py",)
+
 
 def template_counts() -> dict[str, int]:
     """``ReactionTemplate`` construction sites per module, biggest first."""
@@ -1166,7 +1180,7 @@ def template_counts() -> dict[str, int]:
             paths += sorted(
                 os.path.join(source, f)
                 for f in os.listdir(source)
-                if f.endswith(".py")
+                if f.endswith(".py") and f not in _NOT_A_TEMPLATE_SOURCE
             )
         else:
             paths.append(source)

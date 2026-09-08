@@ -1,0 +1,141 @@
+# REACTION TEMPLATES -- pipe-separated, one row per template. Columns:
+#
+#   name | tier | class | phase | reversible | A | Ea_J | alpha | orders |
+#   solid_catalyst | electrons | hammett_rho | hammett_slot |
+#   hammett_saturation | smarts | source | notes
+#
+# ``tools/build_templates.py`` reads this file and emits
+# ``src/chemsim/reactions/template_data.py``. Nothing under ``src/chemsim``
+# reads this file at run time -- the package is installed from ``src`` alone, so
+# ``data/`` is not there to read. Regenerate after every edit.
+#
+# ADDING A TEMPLATE IS ADDING A ROW. That is the whole point of this file: a
+# template used to be a hand-written Python function, 240 catalog classes need
+# ~40 sessions of them at the historical rate, and the curve was flat.
+#
+# ## THE COLUMNS
+#
+# name        the template's own name, unique in this file. It is what
+#             ``Snapshot`` and every report call the reaction.
+# tier        ``family`` -- a mechanism, hand-written, applying to any substrate
+#             bearing the groups. ``literal`` (T2) -- extracted from one catalog
+#             step, kinetics from a class policy table. A literal row is NOT
+#             swept into the default library; see ``load_templates``.
+# class       the ``route_steps.psv`` reaction classes this template covers,
+#             joined with " + ", or empty. Several templates may carry one
+#             class: that is a class covered by a FAMILY, and every member
+#             carries the credit.
+# phase       liquid | gas | any. ``any`` becomes two concrete reactions.
+#             NOT a place to record a solid catalyst: a phase label carries a
+#             STANDARD STATE, and mislabelling ammonia synthesis "solid" because
+#             iron is involved is worth 2.6e10 in K at 500 K.
+# reversible  yes | no. Never a free parameter -- the reverse Arrhenius pair is
+#             DERIVED by detailed balance from the thermochemistry. ``yes`` is a
+#             claim that the reverse is a reaction somebody runs.
+# A, Ea_J     forward Arrhenius pair, SI. Every A is an order-of-magnitude
+#             choice for the molecularity unless the source cell says otherwise;
+#             every Ea is a literature band midpoint, and the ORDERING between
+#             two templates is the load-bearing part. Do not read a simulated
+#             reaction TIME as a prediction.
+# alpha       Evans-Polanyi transfer coefficient in [0, 1]. With it non-zero,
+#             Ea_J is the INTRINSIC barrier and each member of the family gets
+#             Ea + alpha*dH. Mutually exclusive with hammett_rho.
+# orders      one rate-law exponent per reactant SLOT of the SMARTS, joined with
+#             ",", or empty for ordinary mass action. A declared order says the
+#             written reaction is NOT elementary, so it may not be reversible.
+# solid_catalyst  a ``mineral_data`` name whose crystal must be present, or
+#             empty. A gate, not a phase, and A is already rescaled by
+#             SOLID_CATALYST_REFERENCE where one is declared.
+# electrons   electrons across the EXTERNAL CIRCUIT per reaction as written.
+#             Non-zero makes this an electrode reaction driven by n F E.
+# hammett_rho, hammett_slot, hammett_saturation
+#             the substituent-aware barrier (G2, G6), on the sigma-PLUS scale.
+#             rho 0 is exactly the pre-G2 engine.
+# smarts      atom-mapped reaction SMARTS, "reactants>>products". The
+#             transformation is chemistry and its SPECIFICITY is the selectivity
+#             mechanism. A homogeneous catalyst is written into BOTH sides with
+#             map number 99, which raises its mass-action exponent to 1 and
+#             cancels it out of the stoichiometry -- so it gates both directions
+#             and cannot move the equilibrium.
+# source      where the barrier came from. One line, not a paragraph.
+# notes       the wrinkle a reader needs, or empty.
+#
+# ## AN EMPTY OPTIONAL CELL MEANS THE ``ReactionTemplate`` DEFAULT
+#
+# and the generator reads those defaults off the dataclass rather than repeating
+# them here, so there is one place a default lives. That is why alpha, orders,
+# solid_catalyst, electrons and the hammett triple are blank on most rows.
+#
+# ## WHAT IS NOT HERE, AND WILL NOT BE
+#
+# No reverse rate, no equilibrium constant, no pKa, no boiling point. Detailed
+# balance derives all of them from the thermochemistry; a declared one would be
+# a free parameter that silently contradicts it. If a reaction runs to the wrong
+# equilibrium the formation data is wrong -- fix that.
+#
+# The 13 classes ``catalog_coverage`` credits to integrator TERMS -- calcination,
+# roasting, precipitation and the rest -- have no row here and cannot have one.
+# A lattice is not a graph, so there is no SMARTS to write.
+#
+# ## THE SMARTS COLUMN IS LAST BUT ONE FOR A REASON
+#
+# It runs to 200 characters on the fermentations, and putting it third (where
+# the spec had it) buries every numeric column past the fold.
+
+fischer_esterification | family | esterification | liquid | yes | 5e+07 | 55000 |  |  |  |  |  |  |  | [CX3:1](=[O:2])[OX2H1:3].[OX2H1:4][CX4:5]>>[CX3:1](=[O:2])[O:4][CX4:5].[OH2:3] | Ea band 50-60 kJ/mol, acid-catalysed/autocatalysed Fischer esterification | the hydrolysis is the derived reverse; the catalysed form is library.esterification(catalyst=...)
+ether_condensation | family | ether-condensation | liquid | no | 1e+11 | 125000 |  |  |  |  |  |  |  | [CX4:1][OX2H1:2].[CX4:3][OX2H1:4]>>[C:1][O:2][C:3].[OH2:4] | Ea band 100-130 kJ/mol, bimolecular ether route | must stay BELOW alkene_dehydration: ethanol gives ether at 140 C and ethylene at 180 C
+alkene_dehydration | family | dehydration | liquid | no | 1e+13 | 160000 |  |  |  |  |  |  |  | [CX4;!H0:1][CX4:2][OX2H1:3]>>[C:1]=[C:2].[OH2:3] | Ea band 145-170 kJ/mol, unimolecular E1 | irreversible: it eliminates into a large excess of water
+aerobic_oxidation | family | alcohol-oxidation | liquid | no | 1e+09 | 65000 |  |  |  |  |  |  |  | [CX4;!H0:1][OX2H1:2].[OX1:3]=[OX1:4]>>[C:1]=[O:2].[OX2H1:3][OX2H1:4] | Ea ~65 kJ/mol, uncatalysed autoxidation | written to H2O2 rather than half an O2; the peroxide then over-oxidises
+peroxide_over_oxidation | family | aldehyde-oxidation | liquid | no | 1e+08 | 50000 |  |  |  |  |  |  |  | [CX3H1:1]=[OX1:2].[OX2H1:3][OX2H1:4]>>[CX3:1](=[O:2])[OX2H1:3].[OH2:4] | Ea ~50 kJ/mol, peroxide oxidation of an aldehyde | aldehyde only: a ketone has no carbonyl H, so isopropanol stops at acetone
+sulfur_dioxide_oxidation_by_nitrogen_dioxide | family | redox-oxygen-transfer | gas | yes | 1e+09 | 40000 |  |  |  |  |  |  |  | [O:1]=[S:2]=[O:3].[N+:4](=[O:5])[O-:6].[OX2H2:7]>>[O:1]=[S:2](=[O:3])([O+0;H1:6])[O:7].[N+0;H0:4]=[O:5] | Ea band 30-50 kJ/mol, SO2 oxidation by NO2 | an apparent barrier standing in for a reaction that really runs in a droplet
+nitric_oxide_reoxidation | family | gas-phase-oxidation | gas | yes | 4.35e+10 | -4400 |  |  |  |  |  |  |  | [N;H0:1]=[O:2].[N;H0:3]=[O:4].[OX1:5]=[OX1:6]>>[N+1;H0:1](=[O:2])[O-:5].[N+1;H0:3](=[O:4])[O-:6] | Ea = -R*530 = -4.4 kJ/mol, measured; the rate RISES as it cools | elementary and genuinely termolecular; the negative barrier is the datum
+sulfur_combustion | family | sulfur-combustion | gas | no | 1e+10 | 100000 |  | 1,1,0,0,0,0,0,0,0 |  |  |  |  |  | [S:1]1[S:2][S:3][S:4][S:5][S:6][S:7][S:8]1.[OX1:9]=[OX1:10].[OX1:11]=[OX1:12].[OX1:13]=[OX1:14].[OX1:15]=[OX1:16].[OX1:17]=[OX1:18].[OX1:19]=[OX1:20].[OX1:21]=[OX1:22].[OX1:23]=[OX1:24]>>[O:9]=[S:1]=[O:10].[O:11]=[S:2]=[O:12].[O:13]=[S:3]=[O:14].[O:15]=[S:4]=[O:16].[O:17]=[S:5]=[O:18].[O:19]=[S:6]=[O:20].[O:21]=[S:7]=[O:22].[O:23]=[S:8]=[O:24] | A pinned at the order of the gas-kinetic collision limit (~1e11); Ea 100 kJ/mol is then the only freedom, set so the burn is complete above ignition and negligible cold | declared orders: first in S8, first in O2, because S8 + 8 O2 is not elementary. The 500 K threshold is SOFT and is stated, not tuned
+sulfur_trioxide_hydration | family | sulfur-trioxide-hydration | gas | yes | 1e+10 | 23600 |  |  |  |  |  |  |  | [OX1:1]=[SX3:2](=[OX1:3])=[OX1:4].[OX2H2:5]>>[O:1]=[S:2](=[O:3])([O;H1:4])[O;H1:5] | A at the order of the collision limit; Ea 23.6 kJ/mol puts k(298) at 7.3e5 L/(mol s), the ORDER of the reported effective constant (recalled, not sourced in this repo) | measured in the receiver: the answer does not depend on either number
+glycoside_hydrolysis | family | glycoside-hydrolysis | liquid | no | 1e+11 | 107000 |  |  |  |  |  |  |  | [CX4;R:1]([OX2;R:2])[OX2;!R:3][#6:4].[OX2H2:5]>>[C:1]([O:2])[OX2H1:5].[OX2H1:3][#6:4] | Ea band 100-115 kJ/mol, acid-catalysed inversion of sucrose | A is 1e11 rather than the ~1e15 the measured rate implies, because the acid pre-equilibrium is folded into the barrier
+aromatic_nitration | family | electrophilic-aromatic-nitration | liquid | no | 1e+10 | 60000 |  |  |  |  | -6.5 |  |  | [cH:1].[OX2H1:2][N+:3](=[O:4])[O-:5]>>[c:1][N+:3](=[O:4])[O-:5].[OX2H2:2] | Ea band 50-70 kJ/mol, nitration in mixed acid; rho -6.5 on the sigma-PLUS scale, Brown-Okamoto band -6.0 to -7.0 | hammett_rho is what makes nitration a PROCESS: a nitrated ring is deactivated, so the stages separate
+williamson_ether_synthesis | family | williamson-ether-synthesis | liquid | no | 1e+09 | 85000 |  |  |  |  |  |  |  | [#6:4][O-;X1:1].[CX4:2][F,Cl,Br,I:3]>>[#6:4][O+0:1][C:2].[F,Cl,Br,I;-:3] | Ea band 80-95 kJ/mol, SN2 of an alkoxide or phenoxide on an alkyl halide | irreversible: the halide leaves as an anion nothing here attacks
+friedel_crafts_hydroxyalkylation | family | friedel-crafts-hydroxyalkylation | liquid | no | 1e+08 | 65000 |  |  |  |  |  |  |  | [cH:1].[cH:2].[CX3:3]=[OX1:4]>>[c:1][C:3][c:2].[OX2H2:4] | Ea band 60-75 kJ/mol, bisphenol-A literature (phenol + acetone) | 
+kolbe_schmitt_carboxylation | family | kolbe-schmitt-carboxylation | liquid | yes | 1e+08 | 90000 |  |  |  |  |  |  |  | [O-:1][c:2][cH:3].[CX2:4](=[OX1:5])=[OX1:6]>>[OX2H1;+0:1][c:2][c:3][C:4](=[O:5])[O-:6] | Ea band 85-95 kJ/mol, Kolbe-Schmitt carboxylation of sodium phenoxide | 
+saponification | family | ester-hydrolysis + saponification | liquid | no | 1e+08 | 46000 |  |  |  |  |  |  |  | [CX3:1](=[O:2])[OX2:3][#6:4].[OH-:5]>>[CX3:1](=[O:2])[O-:5].[OX2H1:3][#6:4] | Ea band 45-48 kJ/mol, ethyl acetate + hydroxide, one of the best-measured rate constants in chemistry | irreversible: it ends on a carboxylate, and an alcohol does not attack one
+ester_hydrolysis | family | ester-hydrolysis | liquid | yes | 1e+08 | 70000 |  |  |  |  |  |  |  | [CX3:1](=[O:2])[OX2:3][#6;!$([CX3]=[OX1]):4].[OX2H2:5]>>[CX3:1](=[O:2])[OX2H1:5].[OX2H1:3][#6:4] | Ea band 65-80 kJ/mol, aspirin hydrolysis | declared in the hydrolysis direction because discovery runs templates FORWARD only
+transesterification | family | transesterification | liquid | yes | 1e+07 | 55000 |  |  |  |  |  |  |  | [CX3:1](=[O:2])[OX2:3][CX4:4].[OX2H1:5][CX4:6]>>[CX3:1](=[O:2])[O:5][C:6].[OX2H1:3][C:4] | Ea band 50-70 kJ/mol, base-catalysed methanolysis of a triglyceride | 
+n_acylation | family | n-acylation | liquid | no | 1e+08 | 45000 |  |  |  |  |  |  |  | [NX3;H1,H2;!$(N[#6]=[O,S,N]):6].[CX3:1](=[O:2])[OX2:3][CX3:4]=[O:5]>>[N:6][C:1]=[O:2].[OX2H1:3][C:4]=[O:5] | Ea band 40-55 kJ/mol, aminolysis of acetic anhydride | 
+cannizzaro_disproportionation | family | cannizzaro-disproportionation | liquid | no | 1e+07 | 55000 |  |  |  |  |  |  |  | [c:3][CX3H1:1]=[OX1:2].[c:6][CX3H1:4]=[OX1:5].[OH-:7]>>[c:3][CH2:1][OX2H1:2].[c:6][C:4](=[O:5])[O-:7] | Ea band 50-60 kJ/mol, benzaldehyde in concentrated hydroxide | 
+perkin_condensation | family | perkin-condensation | liquid | no | 1e+09 | 95000 |  |  |  |  |  |  |  | [c:1][CX3H1:2]=[OX1:3].[CH3:4][CX3:5](=[O:6])[OX2:7][CX3:8]=[O:9]>>[c:1][CH:2]=[CH:4][C:5](=[O:6])[OX2H1:7].[OX2H1:3][C:8]=[O:9] | Ea band 90-105 kJ/mol; the Perkin reaction needs 450 K for 8 hours, which is what a barrier near 100 kJ/mol looks like | 
+knoevenagel_doebner_condensation | family | knoevenagel-doebner-condensation | liquid | no | 1e+08 | 70000 |  |  |  |  |  |  |  | [c:1][CX3H1:2]=[OX1:3].[CX4H2:4]([CX3:5](=[O:6])[OX2H1:7])[CX3:8](=[O:9])[OX2H1:10]>>[c:1][CH:2]=[CH:4][C:5](=[O:6])[O:7].[C:8](=[O:9])=[O:10].[OX2H2:3] | Ea band 60-80 kJ/mol, amine-catalysed Doebner condensation | 
+alkene_hydration | family | alkene-hydration | liquid | yes | 1e+10 | 80000 |  |  |  |  |  |  |  | [CX3:1]=[CX3:2].[OX2H2:3]>>[C:1][C:2][OX2H1:3] | Ea band 75-90 kJ/mol, direct hydration of ethylene over phosphoric acid | 
+alkyne_hydration | family | alkyne-hydration | liquid | no | 1e+09 | 70000 |  |  |  |  |  |  |  | [CX2:1]#[CX2:2].[OX2H2:3]>>[C:1](=[O:3])[C:2] | Ea band 65-80 kJ/mol, mercury(II)-catalysed | 
+alkene_hydrogenation | family | alkene-hydrogenation | liquid | no | 1e+08 | 50000 |  |  | nickel |  |  |  |  | [CX3:1]=[CX3:2].[H:3][H:4]>>[C:1]([H:3])[C:2][H:4] | Ea band 40-60 kJ/mol, heterogeneous alkene hydrogenation over nickel or palladium | A is the declared 1e7 divided by SOLID_CATALYST_REFERENCE = 0.1, so the catalysed and uncatalysed forms agree at that charge
+nitro_hydrogenation | family | nitro-hydrogenation | liquid | no | 1e+06 | 50000 |  |  | nickel |  |  |  |  | [c:1][N+:2](=[O:3])[O-:4].[H:5][H:6].[H:7][H:8].[H:9][H:10]>>[c:1][N+0:2]([H:5])[H:6].[O+0:3]([H:7])[H:8].[O+0:4]([H:9])[H:10] | Ea band 40-60 kJ/mol, nitrobenzene hydrogenation over nickel or copper | A rescaled by SOLID_CATALYST_REFERENCE as above
+halogen_disproportionation | family | disproportionation | liquid | yes | 1e+09 | 35000 |  |  |  |  |  |  |  | [Cl,Br,I;X1:1][Cl,Br,I;X1:2].[O;H1;X1;-:3].[O;H1;X1;-:4]>>[Cl,Br,I;-:1].[Cl,Br,I;+0:2][O-;H0:3].[O;H2;+0:4] | Ea ~35 kJ/mol; chlorine disproportionation in alkali is fast at room temperature | 
+ammonia_synthesis | family | catalytic-gas-synthesis | gas | yes | 1e+07 | 100000 |  |  | iron |  |  |  |  | [N:1]#[N:2].[H:3][H:4].[H:5][H:6].[H:7][H:8]>>[N:1]([H:3])([H:5])[H:7].[N:2]([H:4])([H:6])[H:8] | Ea band 100-170 kJ/mol, apparent barrier over promoted iron | a GAS-phase reaction with a solid catalyst, not a solid-phase one: the phase label carries a standard state worth 2.6e10 in K
+methanol_from_carbon_monoxide | family | catalytic-gas-synthesis | gas | yes | 1e+07 | 70000 |  |  | copper |  |  |  |  | [C-:1]#[O+:2].[H:3][H:4].[H:5][H:6]>>[C+0:1]([H:3])([H:4])([H:5])[O+0:2][H:6] | Ea band 60-85 kJ/mol, Cu/ZnO methanol synthesis | 
+methanol_from_carbon_dioxide | family | catalytic-gas-synthesis | gas | yes | 1e+06 | 80000 |  |  | copper |  |  |  |  | [O:1]=[C:2]=[O:3].[H:4][H:5].[H:6][H:7].[H:8][H:9]>>[C:2]([H:4])([H:5])([H:6])[O:1][H:7].[O:3]([H:8])[H:9] | Ea 80 kJ/mol, the same catalyst on CO2, consistently the slower route | the ordering against the CO route is the load-bearing part
+water_gas_shift | family | water-gas-shift | gas | yes | 1e+09 | 110000 |  |  | hematite |  |  |  |  | [C-:1]#[O+:2].[OX2H2:3]>>[O+0:2]=[C+0:1]=[O:3].[H][H] | Ea band 95-130 kJ/mol, Fe/Cr high-temperature shift | 
+steam_reforming | family | steam-reforming | gas | yes | 1e+12 | 240000 |  |  | nickel |  |  |  |  | [C;H4:1].[O;H2:2]>>[C-:1]#[O+:2].[H][H].[H][H].[H][H] | Ea 240 kJ/mol, Xu and Froment E1 over Ni | 
+deacon_oxidation | family | catalytic-hydrogen-chloride-oxidation | gas | yes | 1e+14 | 100000 |  |  | tenorite |  |  |  |  | [Cl;H1:1].[Cl;H1:2].[Cl;H1:3].[Cl;H1:4].[OX1:5]=[OX1:6]>>[Cl;H0:1][Cl;H0:2].[Cl;H0:3][Cl;H0:4].[O;H2:5].[O;H2:6] | Ea band 85-120 kJ/mol, Cu-catalysed HCl oxidation | 
+hydrogen_sulfide_combustion | family | hydrogen-sulfide-combustion | gas | no | 1e+10 | 100000 |  | 1,0,1,0,0 |  |  |  |  |  | [S;H2:1].[S;H2:2].[OX1:3]=[OX1:4].[OX1:5]=[OX1:6].[OX1:7]=[OX1:8]>>[O:3]=[S;H0:1]=[O:4].[O:5]=[S;H0:2]=[O:6].[O;H2:7].[O;H2:8] | Ea 100 kJ/mol, on the same footing as the sulfur burner | declared orders: first in H2S, first in O2
+claus_comproportionation | family | comproportionation | gas | no | 1e+09 | 50000 |  | 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0 |  |  |  |  |  | [S;H2:1].[S;H2:2].[S;H2:3].[S;H2:4].[S;H2:5].[S;H2:6].[S;H2:7].[S;H2:8].[S;H2:9].[S;H2:10].[S;H2:11].[S;H2:12].[S;H2:13].[S;H2:14].[S;H2:15].[S;H2:16].[O:100]=[S;H0:17]=[O:101].[O:102]=[S;H0:18]=[O:103].[O:104]=[S;H0:19]=[O:105].[O:106]=[S;H0:20]=[O:107].[O:108]=[S;H0:21]=[O:109].[O:110]=[S;H0:22]=[O:111].[O:112]=[S;H0:23]=[O:113].[O:114]=[S;H0:24]=[O:115]>>[S;H0:1]1[S;H0:2][S;H0:3][S;H0:4][S;H0:5][S;H0:6][S;H0:7][S;H0:8]1.[S;H0:9]1[S;H0:10][S;H0:11][S;H0:12][S;H0:13][S;H0:14][S;H0:15][S;H0:16]1.[S;H0:17]1[S;H0:18][S;H0:19][S;H0:20][S;H0:21][S;H0:22][S;H0:23][S;H0:24]1.[O;H2:100].[O;H2:101].[O;H2:102].[O;H2:103].[O;H2:104].[O;H2:105].[O;H2:106].[O;H2:107].[O;H2:108].[O;H2:109].[O;H2:110].[O;H2:111].[O;H2:112].[O;H2:113].[O;H2:114].[O;H2:115] | Ea band 40-70 kJ/mol, the catalytic Claus stage over alumina | declared orders: first in H2S, first in SO2; the written stoichiometry is global
+hydroformylation_linear | family | hydroformylation | gas | yes | 1e+11 | 96000 |  |  | cobalt |  |  |  |  | [CX3H2:1]=[CX3:2].[C-:3]#[O+:4].[H:5][H:6]>>[C:1]([C+0:3](=[O+0:4])[H:6])[C:2][H:5] | Ea band 85-125 kJ/mol, Natta apparent barrier for cobalt hydroformylation (~23 kcal/mol) | races the branched template; the pair is what makes n:iso a rate ratio
+hydroformylation_branched | family | hydroformylation | gas | yes | 1e+11 | 100800 |  |  | cobalt |  |  |  |  | [CX3H2:1]=[CX3:2].[C-:3]#[O+:4].[H:5][H:6]>>[C:1]([H:5])[C:2][C+0:3](=[O+0:4])[H:6] | Ea 4.8 kJ/mol above the linear route, THE ONLY FITTED NUMBER in this pair, set to the reported n:iso | the fit is declared rather than hidden in an alpha
+wacker_oxidation | family | wacker-oxidation | liquid | no | 1e+10 | 65000 |  | 1,0,1,1 |  |  |  |  |  | [CH2:1]=[CH2:2].[CH2:3]=[CH2:4].[OX1:5]=[OX1:6].[Cu+2:99]>>[CH3:1][CH1:2]=[O:5].[CH3:3][CH1:4]=[O:6].[Cu+2:99] | Ea band 55-80 kJ/mol, aqueous PdCl2/CuCl2 oxidation of ethylene | declared orders; the copper(II) catalyst is an ION, so the network needs electrolyte_provider()
+skraup_cyclisation | family | skraup-cyclisation | liquid | no | 3e+07 | 80000 |  | 1,1,0,0,0,0,1,1 |  |  |  |  |  | [N;H2;+0:1][c:2]1[c;H1:3][c:4][c:5][c:6][c:7]1.[C;H2:8]=[C;H1:9][C;H1:10]=[O;+0:11].[N;H2;+0:13][c:14]1[c;H1:15][c:16][c:17][c:18][c:19]1.[C;H2:20]=[C;H1:21][C;H1:22]=[O;+0:23].[N;H2;+0:25][c:26]1[c;H1:27][c:28][c:29][c:30][c:31]1.[C;H2:32]=[C;H1:33][C;H1:34]=[O;+0:35].[O;+0:41]=[N;+1:40]([O;-1:42])[c:43]1[c:44][c:45][c:46][c:47][c:48]1.[OH3+:99]>>[n;+0:1]1[c;H1:8][c;H1:9][c;H1:10][c;H0:3]2[c:4][c:5][c:6][c:7][c;H0:2]12.[O;H2;+0:11].[n;+0:13]1[c;H1:20][c;H1:21][c;H1:22][c;H0:15]2[c:16][c:17][c:18][c:19][c;H0:14]12.[O;H2;+0:23].[n;+0:25]1[c;H1:32][c;H1:33][c;H1:34][c;H0:27]2[c:28][c:29][c:30][c:31][c;H0:26]12.[O;H2;+0:35].[N;H2;+0:40][c:43]1[c:44][c:45][c:46][c:47][c:48]1.[O;H2;+0:41].[O;H2;+0:42].[OH3+:99] | Ea band 60-90 kJ/mol, acid-catalysed Michael addition then cyclisation | declared orders; A is the declared 3e6 divided by CATALYST_REFERENCE = 0.1 for the explicit hydronium
+alkene_isomerisation | family | alkene-isomerisation | liquid | yes | 1e+10 | 115000 |  |  |  |  |  |  |  | [c:1][CH2:2][CH1:3]=[CH2:4].[OH-:99]>>[c:1][CH1:2]=[CH1:3][CH3:4].[OH-:99] | Ea band 90-120 kJ/mol, base-catalysed allyl to propenyl migration on an arene | the hydroxide catalyst is written into both sides of the SMARTS, so it cancels out of K
+oxidative_cleavage | family | oxidative-cleavage | liquid | no | 1e+09 | 85000 |  |  |  |  |  |  |  | [c:1][CH1:2]=[CH1:3][#6:4].[OX1:5]=[OX1:6]>>[c:1][CH1:2]=[O:5].[#6:4][CH1:3]=[O:6] | Ea band 60-90 kJ/mol, alkaline aerobic side-chain cleavage of a propenyl arene; 85 kJ/mol is a CALIBRATION, set so the intermediate never accumulates | irreversible: ln K is +94.4 at 470 K
+ethanolic_fermentation | family |  | liquid | no | 1200 | 55000 |  |  |  |  |  |  |  | [OX2H:1][CH2:2][CH:3]1[OX2:4][CH:5]([OX2H:6])[CH:7]([OX2H:8])[CH:9]([OX2H:10])[CH:11]1[OX2H:12]>>[CH3:5][CH2:7][OH:8].[CH3:2][CH2:3][OH:4].[O:6]=[C:9]=[O:10].[O:1]=[C:11]=[O:12] | Ea 55 kJ/mol, the apparent barrier of a batch fermentation (a Q10 of ~2 near 310 K); A FITTED per branch to the batch time and the solvent slate | selectivity between metabolic branches is fitted, not derived; selectivity between chemical templates is derived
+butanolic_fermentation | family |  | liquid | no | 9000 | 55000 |  |  |  |  |  |  |  | [OX2H:1][CH2:2][CH:3]1[OX2:4][CH:5]([OX2H:6])[CH:7]([OX2H:8])[CH:9]([OX2H:10])[CH:11]1[OX2H:12]>>[CH3:2][CH2:3][CH2:5][CH2:7][OH:8].[O:6]=[C:9]=[O:10].[O:1]=[C:11]=[O:12].[OH2:4] | Ea 55 kJ/mol as ethanolic_fermentation; A FITTED to the ABE solvent slate | 
+acetonic_fermentation | family | solventogenic-fermentation | liquid | no | 140 | 55000 |  |  |  |  |  |  |  | [OX2H:1][CH2:2][CH:3]1[OX2:4][CH:5]([OX2H:6])[CH:7]([OX2H:8])[CH:9]([OX2H:10])[CH:11]1[OX2H:12].[OX2H2:13]>>[CH3:2][CH0:3](=[O:4])[CH3:5].[O:8]=[C:7]=[O:6].[O:10]=[C:9]=[O:1].[O:12]=[C:11]=[O:13].[H][H].[H][H].[H][H].[H][H] | Ea 55 kJ/mol as ethanolic_fermentation; A FITTED to the ABE solvent slate | the fermentation gas CO2:H2 falls out at 62:38 and was NOT fitted
+homolactic_fermentation | family | homolactic-fermentation | liquid | no | 1000 | 55000 |  |  |  |  |  |  |  | [OX2H:1][CH2:2][C;H1;@,@@:3]1[OX2:4][C;H1;@,@@:5]([OX2H:6])[C;H1;@,@@:7]([OX2H:8])[C;H1;@,@@:9]([OX2H:10])[C;H1;@,@@:11]1[OX2H:12]>>[CH3:5][CH1:7]([OH:8])[CH0:9](=[O:10])[OH:6].[CH3:2][CH1:3]([OH:4])[CH0:11](=[O:12])[OH:1] | Ea 55 kJ/mol as ethanolic_fermentation; A FITTED to the batch time | 
+ketofuranose_dehydration | family | dehydration-cyclisation | liquid | no | 1e+13 | 140000 |  |  |  |  |  |  |  | [OX2H:1][CH2:2][C;H1;@,@@:3]1[OX2:4][C;@,@@:5]([OX2H:6])([CH2:7][OX2H:8])[C;H1;@,@@:9]([OX2H:10])[C;H1;@,@@:11]1[OX2H:12]>>[OH1:8][CH2:7][CH0:5]1=[CH1:9][CH1:11]=[CH0:3]([CH1:2]=[OH0:1])[OH0:4]1.[OH2:6].[OH2:10].[OH2:12] | Ea band 125-160 kJ/mol, fructose dehydration in dilute aqueous mineral acid | must stay ABOVE the aldose route: the ordering is the selectivity
+aldofuranose_dehydration | family | dehydration-cyclisation | liquid | no | 1e+13 | 130000 |  |  |  |  |  |  |  | [OX2H:1][CH2:2][C;H1;@,@@:3]1[OX2:4][C;H1;@,@@:5]([OX2H:6])[C;H1;@,@@:7]([OX2H:8])[C;H1;@,@@:9]1[OX2H:10]>>[OH0:6]=[CH1:5][CH0:7]1=[CH1:9][CH1:3]=[CH1:2][OH0:1]1.[OH2:4].[OH2:8].[OH2:10] | Ea band 120-145 kJ/mol, xylose dehydration in dilute mineral acid | 
+hydroxymethylfurfural_rehydration | family | hydration-ring-opening | liquid | no | 500000 | 110000 |  |  |  |  |  |  |  | [OX2H:1][CH2:2][c:3]1[cH:4][cH:5][c:6]([CH:7]=[O:8])[o:9]1.[OX2H2:10].[OX2H2:11]>>[CH3:2][CH0:3](=[OH0:1])[CH2:4][CH2:5][CH0:6](=[OH0:9])[OH1:10].[CH1:7](=[OH0:8])[OH1:11] | Ea 110 kJ/mol; Girisuta et al. report 110.5 kJ/mol for HMF decomposition | the loss pathway that makes the furan yield a yield
+water_electrolysis | family | electro-organic-coupling | liquid | yes | 5e-08 | 308753.062784 | 0.5 |  |  | 4 |  |  |  | [OX2H2:1].[OX2H2:2]>>[H][H].[H][H].[O:1]=[O:2] | A = 5e-8 mol/(L s) is a CURRENT DENSITY, j0*a/(nF) = 1e-3*10/(2*96485) for a bench cell; Ea = n F eta_a with eta_a = 0.80 V | alpha 0.5 is the Butler-Volmer transfer coefficient, which Evans-Polanyi IS on an electrode
+halide_electrolysis | family | aqueous-electrolysis | liquid | yes | 5e-08 | 77188.265696 | 0.5 |  |  | 2 |  |  |  | [Cl,Br,I;-1:1].[Cl,Br,I;-1:2].[OX2H2:3].[OX2H2:4]>>[*;+0:1][*;+0:2].[OH-:3].[OH-:4].[H][H] | A as water_electrolysis; Ea = n F eta_a with eta_a = 0.40 V | the LOWER overpotential is why brine evolves chlorine rather than the oxygen its thermodynamics prefers
+kolbe_electrolysis | family | electro-organic-coupling | liquid | yes | 5e-08 | 231564.79708800002 | 0.5 |  |  | 2 |  |  |  | [#6:1][CX3:2](=[O:3])[O-:4].[#6:5][CX3:6](=[O:7])[O-:8].[OX2H2:9].[OX2H2:10]>>[#6:1][#6:5].[O:3]=[C;+0:2]=[O;+0:4].[O:7]=[C;+0:6]=[O;+0:8].[OH-:9].[OH-:10].[H][H] | A as water_electrolysis; Ea = n F eta_a with eta_a = 1.20 V | one A for all four electrode templates, deliberately: the selectivity must come from the barrier
+alkene_hydrodimerisation | family | electro-organic-coupling | liquid | yes | 1e+08 | 55000 |  |  |  |  |  |  |  | [CH2:1]=[CH1:2][C:3]#[N:4].[CH2:5]=[CH1:6][C:7]#[N:8].[H][H]>>[N:4]#[C:3][CH2:2][CH2:1][CH2:5][CH2:6][C:7]#[N:8] | Ea 55 kJ/mol; A 1e8 as an ordinary bimolecular liquid-phase step | electrons=0: the coupling itself is chemistry, driven by an electrode reaction elsewhere in the cell
+water_autoionization | family | proton-transfer + acid-displacement + acid-displacement-precipitating | liquid | yes | 1e+12 | 60000 |  |  |  |  |  |  |  | [OX2H2:1].[OX2H2:2]>>[OH3+:1].[OH-:2] | A 1e12 and Ea 60 kJ/mol for all six: proton transfer is diffusion limited. Ea sits just above the largest dissociation enthalpy in the table (water, 55.8 kJ/mol) so the elementary-barrier clamp does not fire | no pKa is declared here; it enters through the ion thermochemistry and detailed balance
+carboxylic_acid_dissociation | family | proton-transfer + acid-displacement + acid-displacement-precipitating | liquid | yes | 1e+12 | 60000 |  |  |  |  |  |  |  | [CX3:1](=[O:2])[OX2H1:3].[OX2H2:4]>>[CX3:1](=[O:2])[O-:3].[OH3+:4] | A and Ea as water_autoionization | 
+phenol_dissociation | family | proton-transfer + acid-displacement + acid-displacement-precipitating | liquid | yes | 1e+12 | 60000 |  |  |  |  |  |  |  | [c:1][OX2H1:2].[OX2H2:3]>>[c:1][O-:2].[OH3+:3] | A and Ea as water_autoionization | covers williamson-ether step 1, whose row reads phenol + NaOH -> sodium-phenoxide despite its name
+hydrogen_halide_dissociation | family | proton-transfer + acid-displacement + acid-displacement-precipitating | liquid | yes | 1e+12 | 60000 |  |  |  |  |  |  |  | [F,Cl,Br,I;H1:1].[OX2H2:2]>>[F,Cl,Br,I;-:1].[OH3+:2] | A and Ea as water_autoionization | 
+mineral_oxyacid_dissociation | family | proton-transfer + acid-displacement + acid-displacement-precipitating | liquid | yes | 1e+12 | 60000 |  |  |  |  |  |  |  | [S,N,P;+0,+1:1](=[O:2])[OX2H1:3].[OX2H2:4]>>[S,N,P:1](=[O:2])[O-:3].[OH3+:4] | A and Ea as water_autoionization | 
+amine_protonation | family | proton-transfer + acid-displacement + acid-displacement-precipitating | liquid | yes | 1e+12 | 60000 |  |  |  |  |  |  |  | [NX3;!$([N+]);!$([NX3][CX3]=O);!$([NX3]=*);!$([NX3]#*):1].[OH3+:2]>>[NX4+:1].[OX2H2;+0:2] | A and Ea as water_autoionization | written in the PROTONATION direction: discovery runs templates forward only, so a deprotonation-forward template never finds an anilinium

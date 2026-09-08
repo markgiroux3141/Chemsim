@@ -4,6 +4,21 @@ Newest first. One entry per session, twelve lines at most, enforced by
 `tools/check_docs.py`. When this file passes 400 lines the older half rolls into
 `docs/history/changelog-YYYY-MM.md`.
 
+## 2026-09-08 — T1 first half: 57 templates are 57 rows, checked against the code
+
+`data/templates/templates.psv` holds every template in 17 columns — the thirteen
+`ReactionTemplate` fields plus `tier`, `class`, `source`, `notes` — and
+`tools/build_templates.py` emits `src/chemsim/reactions/template_data.py`
+(`load_templates`, `template_classes`, `tier_counts`). Two checks, both run by
+`check.ps1`: the column set is read off the dataclass, so a field with no column
+fails the build (P4's lesson, which cost three milestones); and every row is
+compared field for field against the constructor it copies, found by an `ast`
+walk — dropping `hammett_rho` from one row fails it, measured. The `class` column
+carries 46 of `TEMPLATE_CLASSES`' 59 keys, the other 13 being integrator TERMS
+with no SMARTS. `template_counts()` gained `_NOT_A_TEMPLATE_SOURCE` so the loader
+is not a 58th template; it goes when the constructors do, which is the
+switch-over and the second half. Tests 1264 -> 1275, `./check.ps1 -Full` green.
+
 ## 2026-09-07 — an unattended loop runs /session on repeat in fresh contexts
 
 `tools/loop/run-loop.ps1` starts a new `claude -p "/session"` process per
