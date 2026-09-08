@@ -21,3 +21,7 @@ env/
 *.swp
 Thumbs.db
 desktop.ini
+
+# The unattended loop keeps its transcripts and its brake out of the repo
+tools/loop/state/
+tools/loop/STOP

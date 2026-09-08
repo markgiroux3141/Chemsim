@@ -4,6 +4,21 @@ Newest first. One entry per session, twelve lines at most, enforced by
 `tools/check_docs.py`. When this file passes 400 lines the older half rolls into
 `docs/history/changelog-YYYY-MM.md`.
 
+## 2026-09-07 — an unattended loop runs /session on repeat in fresh contexts
+
+`tools/loop/run-loop.ps1` starts a new `claude -p "/session"` process per
+iteration, so each begins with an empty context and reads its state back out of
+the repo; `/session` and `/handoff` were already that handshake, so the runner
+adds no coordination of its own. It stops on `tools/loop/STOP` (written by a
+session that met the goal, or by the operator as a brake), a session cap, a
+wall-clock deadline, a non-zero exit, two iterations in a row that leave HEAD
+unmoved, or a tree left dirty or HEAD not level with `origin/main`.
+`tools/loop/PROTOCOL.md` is what those sessions read: context does not survive,
+nobody is there to ask, the ask-first commands do not run, still one task.
+`GOAL.md`'s `## Goal` section is passed in and outranks NEXT.md's ordering.
+Transcripts and STOP are gitignored. `./check.ps1` green, 39 passed. No
+chemistry moved; task 1 is still T1.
+
 ## 2026-09-02 — T0.5: the report counts its own templates (47 -> 57) and both generators ratchet
 
 `validation/catalog_coverage.py` had five hand-maintained `N_*_TEMPLATES`

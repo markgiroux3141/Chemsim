@@ -1,4 +1,4 @@
-# NEXT — overwritten 2026-09-02
+# NEXT — overwritten 2026-09-07
 
 Rewritten from scratch at the end of every session, never appended to. Anything
 still true next time gets re-typed; anything not re-typed is gone.
@@ -24,13 +24,12 @@ Every number came from a command run on 2026-09-02. The command is named.
 
 ## Last session, in five lines
 
-T0.5 stopped the coverage report asserting numbers it could count. Five
-hand-maintained `N_*_TEMPLATES` constants summed to 47 against 57 in the tree;
-`template_counts()` walks the source with `ast` instead. The `PLAYABLE.md`
-cross-quote (36 runnable / 12 playable) is now parsed from that file's footer,
-which gained the fed-but-unrunnable count and is a declared contract. New
-`catalog.emit()` gives both generators `--check`, so a stale committed report
-fails `./check.ps1 -Full` instead of being silently rewritten.
+No chemistry moved. `tools/loop/run-loop.ps1` runs `/session` on repeat, each
+iteration a fresh `claude -p` process with an empty context, until the goal in
+`tools/loop/GOAL.md` is met or a stop condition fires: a `STOP` file, a session
+cap, a deadline, two iterations that leave HEAD unmoved, or a tree left dirty or
+HEAD not level with `origin/main`. `tools/loop/PROTOCOL.md` is what those
+sessions read. The task list below is unchanged; task 1 is still T1.
 
 ## Do this now
 

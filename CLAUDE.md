@@ -32,6 +32,7 @@ python validation/catalog_coverage.py           # regenerates data/catalog/COVER
 python tools/build_playable.py                  # regenerates data/catalog/PLAYABLE.md (~50 s)
 python tools/build_route_index.py               # regenerates data/catalog/ROUTE_INDEX.md
 python examples/named_routes.py                 # 17 routes end to end (~30 s)
+pwsh tools/loop/run-loop.ps1 -MaxSessions 3     # /session on repeat, unattended
 ```
 
 ## Layers (strict downward imports)
@@ -108,6 +109,10 @@ directly, so the README's "nothing above Layer 0 imports rdkit" is false today.
 The `session` skill (.claude/skills/session/) runs all five steps as one unit:
 one task, done to its done-when, closed out and pushed. `/session` is how the
 user advances the box; `/handoff` alone is for closing out work already done.
+
+`tools/loop/run-loop.ps1` runs `/session` on repeat, each iteration a fresh
+`claude -p` process with an empty context, until the goal in `tools/loop/GOAL.md`
+is met or a stop condition fires. Those sessions read `tools/loop/PROTOCOL.md`.
 
 The user is not a chemist and does not drive the work. Decide, act, and write
 the decision down with its reasoning so it is not relitigated; take their
