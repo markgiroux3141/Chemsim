@@ -46,35 +46,65 @@ Upper bound if all became templates: intersection 38 -> 66, template-ready 46 ->
 110; 36 of the 64 gained routes are then held by an unpriceable species. T1 and
 T2 survive. The LP passes rows atom-mapping will refuse, so 174 is a ceiling.
 
-### T1 — templates become data: the switch-over (M, half of it is in)
-The table exists and is checked. `data/templates/templates.psv` holds all 57
-templates in 17 columns — every `ReactionTemplate` field plus `tier`, `class`,
-`source`, `notes` — `tools/build_templates.py` emits
-`src/chemsim/reactions/template_data.py` with `load_templates(tier=, classes=)`,
-`template_classes()` and `tier_counts()`, and `--check` refuses both a stale
-module and any row that has drifted from the constructor it copies.
-`check.ps1` runs it. **Nothing imports the module yet**: the engine still builds
-templates from the 57 constructors, which is what makes the equality check
-meaningful.
+### T1b — the row-level product check (M, was T1's fourth bullet)
+The switch-over landed without it. `tools/build_templates.py` now checks the
+column SET against `ReactionTemplate`'s fields and the SET of construction sites
+under `src/chemsim`; what neither can ask is whether a row's SMARTS still makes
+the products the catalog step says it makes. That is what the per-template test
+files do, one file per template, and it is why they cannot be retired yet.
+Build the instrument the M1 row check already implies: for each row, for each
+`route_steps.psv` step of its `class`, resolve the step's reactants, fire the
+template, and compare the product set. A row whose class has no runnable step is
+reported, not skipped silently.
+Then, and only then, retire the per-template test files — which needs a
+full-suite run, so it is the same session or the one after.
+**Done when:** one command reports pass/refused/no-runnable-step per row, its
+count is in `NEXT.md`'s state table, and the file count under `tests/` has
+dropped by the number of per-template files it replaced.
 
-What is left is the switch-over, and it is one session:
-- the constructors in `reactions/synthesis.py`, `library.py`,
-  `electrochemistry.py` and `properties/electrolyte.py` become thin wrappers
-  over `load_templates()`, keeping their keyword arguments — several take a
-  `catalyst`, and `library._maybe_catalyse` / `_kinetics` / `_surface_kinetics`
-  are the transform the row does not carry;
-- `TEMPLATE_CLASSES` in `validation/catalog_coverage.py` keeps only its 13
-  integrator-TERM entries; the other 46 come from `template_classes()`;
-- `template_counts()` drops `_NOT_A_TEMPLATE_SOURCE` and counts
-  `len(TEMPLATES)` for the data module, because after the switch-over the walk
-  finds one construction site in the tree instead of 57;
-- the table-driven test replaces the per-template test files: every row fires on
-  every catalog step of its class and reproduces the step's products.
-**Done when:** `examples/named_routes.py`, the bench and the coverage report run
-from the PSV with identical output, `./check.ps1 -Full` is green, and adding a
-template is one row.
+### T1c — the bench's library is 50 of 57 templates (S, measured)
+`ui.examples.full_library()` claims "every reaction template in the project" and
+its docstring says a stale list is the one rot the bench cannot afford. Measured
+2026-09-08: it gathers **50**, and the 50 are not a subset of the 57.
 
-### T2 — extract literal templates from the catalog (L, blocked on T1.0 and T1)
+- The four electrode templates are missing because
+  `from chemsim.reactions import electrochemistry as _electro` binds the BUNDLE
+  FUNCTION of that name re-exported by `reactions/__init__.py`, not the module.
+  A one-line fix (`importlib.import_module`), and
+  `tests/test_template_table.py::test_every_public_constructor_returns_its_row`
+  carries the note.
+- The six dissociation templates are missing because the sweep never looks in
+  `properties/electrolyte.py`.
+- Three ACID-CATALYSED DUPLICATES are present — `fischer_esterification_acid`,
+  `ether_condensation_acid`, `alkene_dehydration_acid` — swept out of the
+  `acid_catalysed_chemistry()` bundle, so the default bench runs esterification
+  twice, once gated on hydronium and once not.
+
+The fix is `load_templates(tier="family")`, which is also T2a's done-when, and it
+is NOT a one-liner: measured, it refuses at build time —
+`cannot derive reverse kinetics for reversible template 'water_autoionization'`
+— because `inventory.scenario_for` turns `electrolyte` on when an ION IS BEING
+CHARGED and the bench's default items are water, glucose, oxygen and nitrogen.
+The guarantee has to extend from the charge to the LIBRARY: a library carrying a
+template that makes an ion needs the electrolyte provider whether or not anyone
+charged one.
+**Done when:** `full_library()` is `load_templates(tier="family")`, reports its
+tier, returns 57, the bench builds, and `./check.ps1` is green.
+
+### T1d — `examples/named_routes.py` dies on route 2 (S, pre-existing)
+Measured 2026-09-08 at `cf636da` and after the T1 switch-over: identical
+traceback both sides, so this is not the switch-over. It prints `invert-sugar`
+and then raises on the next route —
+`cannot derive reverse kinetics for reversible template 'phenol_dissociation' on
+'OCc1ccccc1O + O -> [O-]c1ccccc1CO + [OH3+]'`, i.e. salicyl alcohol's phenol
+dissociating with no electrolyte provider and no `_PAIRS` entry for the anion.
+The file has not been touched since S1, so something downstream of it moved.
+`CLAUDE.md`'s run list still advertises it as "17 routes end to end (~30 s)" and
+`tests/test_named_routes.py` passes, which is how it stayed hidden.
+**Done when:** the example runs to the end, its route count is quoted from its
+own output, and `CLAUDE.md`'s run list matches.
+
+### T2 — extract literal templates from the catalog (L, unblocked: T1.0 and T1 are in)
 `tools/extract_templates.py`: resolve each step's reactants and products to
 SMILES, infer stoichiometry, atom-map, extract a reaction SMARTS with one bond of
 context, verify it regenerates the products, assign kinetics from a class policy
@@ -87,8 +117,8 @@ is not unique when the element matrix has a two-dimensional nullspace
 a smallest-integer-vector step after the LP before it can write coefficients.
 Rows that fail go to `needs_stoichiometry.psv` or `needs_review.psv`, never
 silently.
-**Done when:** the extracted rows pass the table-driven test and the report
-distinguishes template-ready-via-family from via-literal.
+**Done when:** the extracted rows pass T1b's row-level product check and the
+report distinguishes template-ready-via-family from via-literal.
 
 ### T2a — do not let literal rows poison selectivity (S, part of T2)
 S11 established that selectivity is a rate ratio between templates racing in the
@@ -100,9 +130,11 @@ The gate arrived with the table, before the rows it guards: `load_templates()`
 defaults to `tier="family"`, `tier="any"` is a deliberate act, and
 `tests/test_template_table.py::test_a_literal_row_cannot_enter_the_default_library`
 injects a literal row and asserts the default refuses it. What is left is
-`full_library()` saying which tier it loaded, which lands with the switch-over.
-**Done when:** `load_templates(tier="family")` is what the bench uses by default
-and `full_library()` reports its tier.
+`full_library()` saying which tier it loaded, and that did NOT land with the
+switch-over: T1c measured why, and it is an `electrolyte` gate rather than a
+tier argument.
+**Done when:** T1c is done — `load_templates(tier="family")` is what the bench
+uses by default — and `full_library()` reports its tier.
 
 ### T3 — generalise the literal rows that cluster (M, bounded)
 Cluster literal rows by reacting centre; where three or more share one, write a
@@ -198,7 +230,12 @@ that greps `src/chemsim` outside `matter/` for `rdkit`; or delete the claim.
 ## Tier 3 — cleanup, only once Tier 1 has landed
 
 ### C1 — move the essays out of the source (M, repeating)
-The warning glyph appears ~1,050 times in non-generated source and milestone tags ~300 times.
+The warning glyph appears ~1,040 times in non-generated source and milestone tags ~300 times.
+First target is now `validation/catalog_coverage.py`: T1 deleted the 46
+template-backed entries of `TEMPLATE_CLASSES` and derives them from the table,
+which left **656 lines of taxonomy prose around a 14-entry dict**. The prose is
+the record of why `combustion`, `deprotonation`, `acid-base` and `redox` were
+split, and it is worth keeping — in `docs/design/`, with a pointer.
 `ReactionTemplate`'s class docstring is 200 lines; `_dryout_gates` is 158 lines
 around 3 lines of code; the `rhs` closure is 56% comments, many of them
 changelog entries. The physics in them is good and the file is wrong. Move it to

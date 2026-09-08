@@ -4,6 +4,21 @@ Newest first. One entry per session, twelve lines at most, enforced by
 `tools/check_docs.py`. When this file passes 400 lines the older half rolls into
 `docs/history/changelog-YYYY-MM.md`.
 
+## 2026-09-08 — T1 switch-over: the engine builds its templates from the table
+
+The 57 constructors in `reactions/` and `properties/electrolyte.py` are wrappers
+over `load_templates()`: they keep their keyword arguments and hold no data, and
+`library._catalysed_row`/`_surface_row` undo whichever catalyst a row carries and
+apply the caller's, in one place. Every template-producing callable was snapshotted
+over a keyword grid before and after: **577 variants across 69 callables,
+byte-identical**. `TEMPLATE_CLASSES` is 14 integrator-TERM entries, the other 46
+derived from the `class` column, correcting 12 report cells that named constructors
+rather than templates. The row-vs-constructor check became a tautology and is now
+`CONSTRUCTION_SITES`: the `ReactionTemplate(` sites under `src/chemsim` are exactly
+the 5 loaders. One row is enough — +1 row gave 58 templates and 47 classes with no
+Python edited. Tests 1276, `check.ps1 -Full` green plus 356 more (one unreproduced
+`test_ui` flake). Filed not fixed: T1d, `named_routes.py` dies on route 2 at `cf636da` too; T1c, `full_library()` gathers 50 of 57.
+
 ## 2026-09-08 — T1 first half: 57 templates are 57 rows, checked against the code
 
 `data/templates/templates.psv` holds every template in 17 columns — the thirteen

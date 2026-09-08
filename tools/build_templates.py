@@ -29,24 +29,25 @@ which cost three milestones: ``TemplateSpec`` silently dropped ``orders``,
 assertion that found the last three was about the SET of fields rather than
 about whichever field somebody remembered.
 
-**Every row reproduces its constructor, field for field.** The 57 constructors
-still exist; this script walks them with ``ast``, calls each with its default
-arguments, and refuses if any field differs from the row of the same name. So
-the table is not a transcription anyone has to trust -- it is checked against
-the code it will replace, and it stays checked until the switch-over deletes
-the constructors.
+**Nothing outside the loader constructs a template.** The first half of T1
+checked every row against the constructor it copied, field for field, and that
+check retired with the constructors: they now READ their row, so comparing the
+two would compare the table with itself. What holds the property that made the
+old check worth having -- that adding a template is adding a row -- is the
+inverse assertion, and it is again about a SET rather than about a file somebody
+remembered: ``check_construction_sites`` walks all of ``src/chemsim`` and
+refuses any ``ReactionTemplate(...)`` outside the three loaders that build a row
+and the one that rebuilds a saved ``TemplateSpec``.
 
-**THE GENERATED MODULE IS NOT WIRED IN YET.** Nothing imports it; the engine
-still builds templates from the constructors. The switch-over -- the
-table-driven test, ``TEMPLATE_CLASSES`` going away, and the constructors
-becoming thin wrappers -- is the second half of T1.
+The constructors are still there and are still the public API -- ``catalyst=``,
+``eta_a=``, ``A=`` and the rest are keyword arguments a caller can move, which a
+row cannot be. What they no longer hold is data.
 """
 
 from __future__ import annotations
 
 import argparse
 import ast
-import importlib
 import os
 import sys
 from dataclasses import MISSING, fields
@@ -61,19 +62,81 @@ OUT = os.path.join(_ROOT, "src", "chemsim", "reactions", "template_data.py")
 
 TIERS = ("family", "literal")
 
-# The modules whose ``ReactionTemplate`` construction sites this table replaces.
-# The same four ``catalog_coverage.template_counts`` walks, and the count it
-# reports has to keep agreeing with the number of rows here.
-CONSTRUCTOR_MODULES = {
-    "chemsim.reactions.library": os.path.join(
-        _ROOT, "src", "chemsim", "reactions", "library.py"),
-    "chemsim.reactions.synthesis": os.path.join(
-        _ROOT, "src", "chemsim", "reactions", "synthesis.py"),
-    "chemsim.reactions.electrochemistry": os.path.join(
-        _ROOT, "src", "chemsim", "reactions", "electrochemistry.py"),
-    "chemsim.properties.electrolyte": os.path.join(
-        _ROOT, "src", "chemsim", "properties", "electrolyte.py"),
+# ---------------------------------------------------------------------------
+# WHERE A ``ReactionTemplate`` MAY BE CONSTRUCTED, AND NOWHERE ELSE
+# ---------------------------------------------------------------------------
+# ``qualified name -> why it is allowed``. Three of the four build a row of this
+# table; the fourth rebuilds a template that arrived inside a save file. Anything
+# else is a template that is not a row, which is the thing T1 exists to stop, so
+# this is asserted as a SET and a new entry has to be argued for here.
+CONSTRUCTION_SITES = {
+    "reactions/template_data.py:TemplateRecord.build":
+        "the loader: one row -> the template it describes",
+    "reactions/library.py:_row":
+        "a row with the caller's overrides",
+    "reactions/library.py:_catalysed_row":
+        "a row whose homogeneous catalyst the caller chooses",
+    "reactions/library.py:_surface_row":
+        "a row whose solid catalyst the caller chooses",
+    "engine/scenario.py:TemplateSpec.build":
+        "a template that arrived inside a save file, not from this table",
 }
+
+PACKAGE = os.path.join(_ROOT, "src", "chemsim")
+
+
+def construction_sites() -> dict[str, int]:
+    """Every ``ReactionTemplate(...)`` under ``src/chemsim`` -> how many.
+
+    Keyed ``path:qualname``, so two sites in one function count together and a
+    site moved between functions reads as one gone and one arrived.
+    """
+    found: dict[str, int] = {}
+    for dirpath, _dirs, files in os.walk(PACKAGE):
+        for fname in sorted(files):
+            if not fname.endswith(".py"):
+                continue
+            path = os.path.join(dirpath, fname)
+            rel = os.path.relpath(path, PACKAGE).replace(os.sep, "/")
+            with open(path, encoding="utf-8") as fh:
+                tree = ast.parse(fh.read(), path)
+            stack: list[str] = []
+
+            def walk(node: ast.AST) -> None:
+                named = isinstance(
+                    node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef))
+                if named:
+                    stack.append(node.name)
+                for child in ast.iter_child_nodes(node):
+                    if (isinstance(child, ast.Call)
+                            and isinstance(child.func, ast.Name)
+                            and child.func.id == "ReactionTemplate"):
+                        key = f"{rel}:{'.'.join(stack)}" if stack else rel
+                        found[key] = found.get(key, 0) + 1
+                    walk(child)
+                if named:
+                    stack.pop()
+
+            walk(tree)
+    return found
+
+
+def check_construction_sites() -> None:
+    """The set of construction sites is exactly ``CONSTRUCTION_SITES``."""
+    found = construction_sites()
+    extra = sorted(set(found) - set(CONSTRUCTION_SITES))
+    gone = sorted(set(CONSTRUCTION_SITES) - set(found))
+    if extra or gone:
+        lines = [f"{PACKAGE}: the ReactionTemplate construction sites moved."]
+        for k in extra:
+            lines.append(f"  NEW  {k} ({found[k]} site(s))")
+        lines.append(
+            "       A template constructed outside the loader is a template "
+            "that is not a row, which is what T1 removed. Add the row instead, "
+            "or argue the new site into CONSTRUCTION_SITES.")
+        for k in gone:
+            lines.append(f"  GONE {k} -- {CONSTRUCTION_SITES[k]}")
+        raise SystemExit("\n".join(lines))
 
 
 # ---------------------------------------------------------------------------
@@ -225,74 +288,6 @@ def read_table(path: str = PSV) -> list[dict]:
 def build(row: dict) -> ReactionTemplate:
     """One row -> the template it describes. Validation is the constructor's."""
     return ReactionTemplate(**{f: row[f] for f in FIELD_DEFAULTS})
-
-
-# ---------------------------------------------------------------------------
-# the check that matters: every row reproduces its constructor
-# ---------------------------------------------------------------------------
-
-
-def constructor_templates() -> dict[str, ReactionTemplate]:
-    """Every template the 57 construction sites make with their DEFAULT arguments.
-
-    Found by walking the source rather than by a list here, so a constructor
-    added or renamed shows up as a disagreement instead of being missed.
-    """
-    found: dict[str, ReactionTemplate] = {}
-    for modname, path in CONSTRUCTOR_MODULES.items():
-        with open(path, encoding="utf-8") as fh:
-            tree = ast.parse(fh.read(), path)
-        mod = importlib.import_module(modname)
-        for node in tree.body:
-            if not isinstance(node, ast.FunctionDef):
-                continue
-            sites = sum(
-                1 for x in ast.walk(node)
-                if isinstance(x, ast.Call) and isinstance(x.func, ast.Name)
-                and x.func.id == "ReactionTemplate"
-            )
-            if not sites:
-                continue
-            made = getattr(mod, node.name)()
-            made = made if isinstance(made, list) else [made]
-            if len(made) != sites:
-                raise SystemExit(
-                    f"{path}: {node.name}() has {sites} construction sites but "
-                    f"returned {len(made)} templates with its default arguments. "
-                    f"This walk cannot check a constructor whose defaults do not "
-                    f"reach every site."
-                )
-            for tmpl in made:
-                if tmpl.name in found:
-                    raise SystemExit(
-                        f"two constructors both make a template named "
-                        f"{tmpl.name!r}; the table is keyed by name"
-                    )
-                found[tmpl.name] = tmpl
-    return found
-
-
-def verify(rows: list[dict]) -> list[str]:
-    """Field-for-field disagreements between the table and the constructors."""
-    made = constructor_templates()
-    by_name = {r["name"]: r for r in rows}
-    problems: list[str] = []
-    for name in sorted(set(made) - set(by_name)):
-        problems.append(f"{name}: a constructor makes it, the table has no row")
-    for name in sorted(set(by_name) - set(made)):
-        row = by_name[name]
-        if row["tier"] == "family":
-            problems.append(
-                f"{name}: a family row with no constructor. Extracted rows are "
-                f"tier=literal; a family row is checked against the code.")
-    for name in sorted(set(made) & set(by_name)):
-        want, row = made[name], by_name[name]
-        for f in FIELD_DEFAULTS:
-            a, b = getattr(want, f), row[f]
-            if a != b:
-                problems.append(
-                    f"{name}.{f}: constructor {a!r}, table {b!r}")
-    return problems
 
 
 # ---------------------------------------------------------------------------
@@ -448,22 +443,18 @@ def main() -> int:
     args = ap.parse_args()
 
     check_columns()
+    check_construction_sites()
     rows = read_table()
     for row in rows:
         build(row)                       # the constructor's own validation
 
-    problems = verify(rows)
     print(f"{PSV}")
     print(f"  {len(rows)} rows, tiers "
           f"{ {t: sum(1 for r in rows if r['tier'] == t) for t in TIERS} }")
     print(f"  {len({c for r in rows for c in r['catalog_classes']})} catalog "
           f"classes covered")
-    if problems:
-        print(f"\n{len(problems)} disagreement(s) with the constructors:")
-        for p in problems:
-            print(f"    {p}")
-        return 1
-    print("  every row reproduces its constructor, field for field")
+    print(f"  every row builds; {len(CONSTRUCTION_SITES)} construction sites in "
+          f"src/chemsim, all of them loaders")
 
     text = render(rows)
     if args.dry_run:

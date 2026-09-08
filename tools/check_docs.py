@@ -67,7 +67,7 @@ GLYPH_BUDGETS = {
     # tree: glyphs today. C1 drives src/chemsim to under 50.
     "README.md": 0,
     "GAME_DESIGN.md": 74,
-    "src/chemsim": 1050,
+    "src/chemsim": 1043,
     "tests": 829,
     "validation": 336,
     "tools": 145,

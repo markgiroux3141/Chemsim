@@ -59,7 +59,6 @@ Run: ``python validation/catalog_coverage.py`` (writes the Markdown report too).
 from __future__ import annotations
 
 import argparse
-import ast
 import os
 import re
 import sys
@@ -82,6 +81,10 @@ from chemsim.properties import (  # noqa: E402
 )
 from chemsim.properties import mineral_data  # noqa: E402
 from chemsim.properties.electrolyte import electrolyte_provider  # noqa: E402
+from chemsim.reactions.template_data import (  # noqa: E402
+    template_classes,
+    tier_counts,
+)
 
 # ---------------------------------------------------------------------------
 # tiering -- read off the provenance string the provider already carries
@@ -433,14 +436,19 @@ def audit_compound(comp, thermo, vol, ionic, unifac) -> dict:
 # sodium-phenoxide``, so ``phenol_dissociation`` does cover it. Read the row, not
 # the name.
 
-TEMPLATE_CLASSES = {
-    "esterification": "fischer_esterification",
-    "ether-condensation": "ether_condensation",
-    "dehydration": "alkene_dehydration",
-    "alcohol-oxidation": "aerobic_oxidation",
-    "aldehyde-oxidation": "peroxide_over_oxidation",
-    "redox-oxygen-transfer": "sulfur_dioxide_oxidation",
-    "gas-phase-oxidation": "nitric_oxide_reoxidation",
+# ---------------------------------------------------------------------------
+# T1 -- WHAT IS LEFT HERE IS THE THIRTEEN CLASSES NO ROW CAN CARRY
+# ---------------------------------------------------------------------------
+# The 46 classes a template covers come from ``data/templates/templates.psv``,
+# through ``template_data.template_classes()``, so a new row credits its own
+# class and this file cannot drift from the library it is auditing. What stays
+# is the classes credited to a TERM in the integrator -- precipitation,
+# calcination, roasting, the solid-state and surface reactions -- and they stay
+# because a lattice is not a graph: there is no SMARTS to write, so there can
+# be no row. ``acid-displacement-precipitating`` is the one class carried by a
+# family AND a term, and the merge below says so.
+INTEGRATOR_TERM_CLASSES = {
+    "acid-displacement-precipitating": "PrecipitationArrays (a TERM)",
     # ---------------------------------------------------------------------
     # S7 -- ``combustion`` WAS AN OUTCOME LABEL, AND IT HAD BEEN CREDITED SINCE M1
     # ---------------------------------------------------------------------
@@ -465,8 +473,6 @@ TEMPLATE_CLASSES = {
     # NEGATIVE: ``match-chemistry`` was template-ready only because of this
     # credit, and it now is not. It was never species-ready, so the intersection
     # -- the number to quote -- does not move for it.
-    "sulfur-combustion": "sulfur_combustion",
-    "hydrogen-sulfide-combustion": "hydrogen_sulfide_combustion",
     # ---------------------------------------------------------------------
     # S7 -- the four inorganic gas processes. See reactions/synthesis.py, and
     # validation/gas_processes.py, which RUNS every one of them in a Vessel
@@ -495,8 +501,6 @@ TEMPLATE_CLASSES = {
     # back is RIGHT, nor whether the row's product is a graph at all. Both of the
     # top two rows fail on exactly those two questions, and neither failure is
     # visible in this file's tables. **Read the rows, not the ranking.**
-    "water-gas-shift": "water_gas_shift",
-    "steam-reforming": "steam_reforming",
     # ---------------------------------------------------------------------
     # S11 -- hydroformylation, and the FIRST class here covered by a PAIR whose
     # members compete rather than chain.
@@ -513,14 +517,12 @@ TEMPLATE_CLASSES = {
     # a real Vessel and reads both aldehydes out of it. That is the S1 standard,
     # and this class is exactly the shape S1's false credit had -- a mechanism
     # that makes one of a row's two products would look identical here.
-    "hydroformylation": "hydroformylation_linear + hydroformylation_branched",
     # ⚠⚠ S11 -- AND THE FIRST CLASS WHOSE CATALYST IS AN ION. `wacker-process`
     # writes `copper-ii-ion` on BOTH sides, which is `library._maybe_catalyse`'s
     # own case -- but `[Cu+2]` is priced from `ion_data` and `thermochemistry`
     # refuses it outright unless the network carries `electrolyte_provider()`.
     # So this credit is only real in an AQUEOUS flask, and `validation/wacker.py`
     # builds one rather than asserting it.
-    "wacker-oxidation": "wacker_oxidation",
     # ---------------------------------------------------------------------
     # S12 -- the Skraup, and the first class whose OXIDANT becomes one of its
     # own reagents.
@@ -539,7 +541,6 @@ TEMPLATE_CLASSES = {
     # charges a real Vessel and reads the quinoline out of it, with the
     # stoichiometry checked against the oxidant rather than assumed. That is the
     # S1 standard.
-    "skraup-cyclisation": "skraup_cyclisation",
     # ---------------------------------------------------------------------
     # C3 -- THE CLASS S11 REFUSED, AND THE REFUSAL WAS ABOUT ONE OF ITS TWO ROWS
     # ---------------------------------------------------------------------
@@ -567,8 +568,6 @@ TEMPLATE_CLASSES = {
     # isomerisation, the allyl migrating into conjugation with the ring, and the
     # estimators do price it: dH -56.56 kJ/mol on the liquid basis, ln K +7.89
     # at 470 K. **The distinction is measured, not asserted.**
-    "alkene-isomerisation": "alkene_isomerisation",
-    "oxidative-cleavage": "oxidative_cleavage",
     # ---------------------------------------------------------------------
     # C4 -- THE CLASS M5 REFUSED, AND IT WAS AN OUTCOME LABEL OVER FIVE
     # MECHANISMS
@@ -612,8 +611,6 @@ TEMPLATE_CLASSES = {
     # and reads acetone out of it, with the solvent slate checked against the
     # reported 3:6:1 and the CO2:H2 ratio checked against a number nothing was
     # fitted to.
-    "solventogenic-fermentation": "acetonic_fermentation",
-    "homolactic-fermentation": "homolactic_fermentation",
     # ---------------------------------------------------------------------
     # C5 -- A CLASS WHOSE TWO ROWS ARE ONE MECHANISM, SO IT IS NOT SPLIT
     # ---------------------------------------------------------------------
@@ -646,15 +643,12 @@ TEMPLATE_CLASSES = {
     # charges a real Vessel with sucrose and water, inverts it, dehydrates the
     # fructose and reads 5-HMF out -- and then over-cooks it, because
     # `hydration-ring-opening` below is the row that gives the route a yield.
-    "dehydration-cyclisation":
-        "ketofuranose_dehydration + aldofuranose_dehydration",
     # `hmf-route` row 2, the corpus's own *"side reaction that limits yield"*.
     # ⚠ It is worth +0 in `PLAYABLE.md` because the route's target is already
     # reached at row 1 -- and building it anyway is what stops this route
     # reporting 100% of a compound that has never been isolated in that yield.
     # **A row worth nothing on the scoreboard can be the row that makes the
     # scoreboard's number mean something.**
-    "hydration-ring-opening": "hydroxymethylfurfural_rehydration",
     # ⚠⚠ S9 SPLIT `catalytic-gas-oxidation`, AND IT WAS A FALSE CREDIT ON TWO OF
     # ITS THREE ROWS -- found while RANKING the queue rather than while building
     # anything, which is the second time a class has come apart under that check.
@@ -674,8 +668,6 @@ TEMPLATE_CLASSES = {
     # and neither of the other two was template-ready anyway -- but
     # `ostwald-process` was being counted as ONE class away when it is two, which
     # is exactly the ranking error this split exists to remove.
-    "catalytic-hydrogen-chloride-oxidation": "deacon_oxidation",
-    "comproportionation": "claus_comproportionation",
     # ---------------------------------------------------------------------
     # C1 -- `hydrolysis` WAS THE CATALOG'S SECOND-BIGGEST CLASS AND ITS LEFTOVER
     # BIN, and the taxonomy had already named every mechanism it should have held
@@ -719,10 +711,7 @@ TEMPLATE_CLASSES = {
     # and it does not match -- measured. `contact-process` step 4 stays a gap, and
     # its `disulfuric-acid` is REFUSED a price anyway, so the route is blocked
     # twice over.
-    "sulfur-trioxide-hydration": "sulfur_trioxide_hydration",
     # the six in properties/electrolyte.py, which this map used not to know about
-    "proton-transfer": "electrolyte.dissociation_templates",
-    "acid-displacement": "electrolyte.dissociation_templates",
     # ⚠ M3, AND THESE TWO ARE COVERED BY A TERM RATHER THAN BY A TEMPLATE. The
     # kinetics kernel cannot express precipitation at all -- a template's phase
     # is liquid or gas and no reaction writes the solid block -- so the covering
@@ -749,9 +738,6 @@ TEMPLATE_CLASSES = {
     # database shared with its Hfs. So the mechanism is there and three of the
     # five still need a lattice.
     "precipitation-metathesis": "vessel_integrator.PrecipitationArrays (a TERM)",
-    "acid-displacement-precipitating": (
-        "electrolyte.dissociation_templates + PrecipitationArrays (a TERM)"
-    ),
     # ---------------------------------------------------------------------
     # M5 -- reactions/synthesis.py. Twenty templates, seventeen classes.
     # ---------------------------------------------------------------------
@@ -763,22 +749,8 @@ TEMPLATE_CLASSES = {
     # is credited only when every ROW of it is the mechanism the template
     # implements, which is the standard M1 established and this is the first
     # milestone to spend it.
-    "glycoside-hydrolysis": "glycoside_hydrolysis",
-    "electrophilic-aromatic-nitration": "aromatic_nitration",
-    "williamson-ether-synthesis": "williamson_ether_synthesis",
-    "friedel-crafts-hydroxyalkylation": "friedel_crafts_hydroxyalkylation",
-    "kolbe-schmitt-carboxylation": "kolbe_schmitt",
-    "transesterification": "transesterification",
-    "n-acylation": "n_acylation",
-    "cannizzaro-disproportionation": "cannizzaro",
-    "perkin-condensation": "perkin_condensation",
-    "knoevenagel-doebner-condensation": "knoevenagel_doebner",
-    "alkene-hydration": "alkene_hydration",
-    "alkyne-hydration": "alkyne_hydration",
-    "disproportionation": "halogen_disproportionation",
     # TWO templates each, because the class has two mechanisms in it and crediting
     # it on one of them would be the ``deprotonation`` mistake again.
-    "ester-hydrolysis": "ester_hydrolysis + saponification",
     # ⚠⚠ G4 -- AND THE CATALOG HAS ITS OWN ``saponification`` CLASS, WHICH THIS
     # MAP NEVER KEYED. The template has existed since M5; the row above credits
     # it under the OTHER class's name, so ``soap-saponification`` step 1 read as
@@ -792,10 +764,6 @@ TEMPLATE_CLASSES = {
     # reaction -- see ``validation/granularity.py`` panel 2a) and its target
     # ``sodium-stearate`` is REFUSED, the stearate anion having no pKa in the ion
     # table. +1 class, +1 covered step, +0 template-ready routes, +0 BOTH.
-    "saponification": "saponification",
-    "catalytic-gas-synthesis": (
-        "ammonia_synthesis + methanol_from_carbon_monoxide/dioxide"
-    ),
     # ⚠ THESE TWO LABELS DID NOT EXIST BEFORE M5. ``catalytic-hydrogenation`` was
     # the most-used class with no template in the corpus (10 steps) and its ten
     # rows are FIVE mechanisms -- nitro to amine, nitro to hydroxylamine, C=C, C=O,
@@ -804,8 +772,6 @@ TEMPLATE_CLASSES = {
     # rows were re-labelled on M1's precedent and two of the five are built. The
     # other three (``nitro-partial-hydrogenation``, ``carbonyl-hydrogenation``,
     # ``arene-hydrogenation``) are honest, named gaps.
-    "alkene-hydrogenation": "alkene_hydrogenation",
-    "nitro-hydrogenation": "nitro_hydrogenation",
     # ---------------------------------------------------------------------
     # M6 -- properties/solid_state.py. The SECOND class covered by a TERM.
     # ---------------------------------------------------------------------
@@ -951,7 +917,6 @@ TEMPLATE_CLASSES = {
     # ⚠ SO THE GREEDY CURVE'S TOP ROW IS WORTH +1 ROUTE, NOT +3. It ranked an
     # unsplit label, exactly as it ranked ``catalytic-air-oxidation`` third for
     # zero runnable routes. A class is a MECHANISM claim; read the rows.
-    "aqueous-electrolysis": "halide_electrolysis",
     # ⚠ TWO ROWS, THREE TEMPLATES, AND BOTH ROWS VERIFIED BY RUNNING THEM. On
     # the ``ester-hydrolysis`` precedent: the class holds two mechanisms and
     # crediting it on one would be the ``deprotonation`` mistake.
@@ -969,9 +934,6 @@ TEMPLATE_CLASSES = {
     #                        stoichiometry, oxygen included, EMERGES from the
     #                        pair -- measured in ``examples/electrolysis_cell.py``
     #                        panel 5 at 65.6% conversion at 3 V and nothing at 2.
-    "electro-organic-coupling": (
-        "kolbe_electrolysis + water_electrolysis/alkene_hydrodimerisation"
-    ),
     # ⚠ AND TWO MORE CLASSES WERE SPLIT RATHER THAN REFUSED, on the
     # ``catalytic-hydrogenation`` precedent from M5 -- because like that class
     # and unlike ``fermentation``, every row here IS a clean mechanism.
@@ -1141,65 +1103,49 @@ TEMPLATE_CLASSES = {
     ),
 }
 
+
+def _template_classes() -> dict[str, str]:
+    """catalog reaction class -> what covers it, rows first and terms second.
+
+    Several templates may carry one class: that is a class covered by a FAMILY,
+    and the credit belongs to the family rather than to a member. A class in
+    both maps is carried by both and reads that way.
+    """
+    out = {c: " + ".join(n) for c, n in template_classes(tier="any").items()}
+    for cls, term in INTEGRATOR_TERM_CLASSES.items():
+        out[cls] = f"{out[cls]} + {term}" if cls in out else term
+    return dict(sorted(out.items()))
+
+
+TEMPLATE_CLASSES = _template_classes()
+
 # How many templates that is -- COUNTED, not asserted. Five hand-maintained
 # constants used to live here, each needing an increment from every session that
 # added a template, and enough sessions forgot that the report said 47 against
 # 57 in the tree. ``template_counts`` walks the source with ``ast``, so adding a
 # template moves this report without anyone editing this file.
 #
-# It counts CONSTRUCTION SITES, which is why the integrator TERMS still do not
-# appear: precipitation, calcination and roasting are terms in the RHS and
-# nothing constructs a ``ReactionTemplate`` for them. That is the distinction M3
-# and M6 were making when they declined to increment the old constants, and it
-# now holds itself instead of depending on a reader obeying a comment.
-_TEMPLATE_SOURCES = (
-    os.path.join(_ROOT, "src", "chemsim", "reactions"),
-    os.path.join(_ROOT, "src", "chemsim", "properties", "electrolyte.py"),
-)
-
-# T1, first half. ``reactions/template_data.py`` is generated from
-# ``data/templates/templates.psv`` and carries one ``ReactionTemplate(...)``
-# call -- the loop in ``TemplateRecord.build`` -- so the walk above would count
-# it as a fifty-eighth template. It is not one: it is a LOADER, and the 57 rows
-# behind it are the same 57 the constructors make, checked field for field by
-# ``tools/build_templates.py``. Counting both would count every template twice.
+# It counted CONSTRUCTION SITES in four modules, which is why the integrator
+# TERMS never appeared: precipitation, calcination and roasting are terms in the
+# RHS and nothing constructs a ``ReactionTemplate`` for them. That distinction is
+# what M3 and M6 were making when they declined to increment the old constants.
 #
-# SO THIS EXCLUSION IS TEMPORARY AND HAS TO GO WHEN THE CONSTRUCTORS DO. The
-# switch-over is the second half of T1: when ``synthesis.py`` and the rest stop
-# constructing templates, this walk finds one site in the whole tree and the
-# right count becomes ``len(template_data.TEMPLATES)``. Change it then; until
-# then the count is of the code that actually builds the library.
-_NOT_A_TEMPLATE_SOURCE = ("template_data.py",)
+# T1's switch-over retired the walk. The four modules construct no templates any
+# more -- they read ``data/templates/templates.psv`` through ``template_data``,
+# and the ONE construction site left in the tree is the loader's -- so the walk
+# would report 1 where it used to report 57. The count is now the number of ROWS,
+# by tier, which is the same claim about the same library and is counted rather
+# than asserted.
 
 
 def template_counts() -> dict[str, int]:
-    """``ReactionTemplate`` construction sites per module, biggest first."""
-    paths: list[str] = []
-    for source in _TEMPLATE_SOURCES:
-        if os.path.isdir(source):
-            paths += sorted(
-                os.path.join(source, f)
-                for f in os.listdir(source)
-                if f.endswith(".py") and f not in _NOT_A_TEMPLATE_SOURCE
-            )
-        else:
-            paths.append(source)
+    """Rows in ``data/templates/templates.psv``, by tier, biggest first.
 
-    found: dict[str, int] = {}
-    for path in paths:
-        with open(path, encoding="utf-8") as fh:
-            tree = ast.parse(fh.read(), path)
-        n = sum(
-            1
-            for node in ast.walk(tree)
-            if isinstance(node, ast.Call)
-            and isinstance(node.func, ast.Name)
-            and node.func.id == "ReactionTemplate"
-        )
-        if n:
-            rel = os.path.relpath(path, os.path.join(_ROOT, "src", "chemsim"))
-            found[rel.replace(os.sep, "/")] = n
-    return dict(sorted(found.items(), key=lambda kv: (-kv[1], kv[0])))
+    A ``literal`` row is extracted from ONE catalog step with kinetics from a
+    class policy table (T2); a ``family`` row is a hand-written mechanism. They
+    are reported apart because they are not the same kind of claim.
+    """
+    return dict(sorted(tier_counts().items(), key=lambda kv: (-kv[1], kv[0])))
 
 
 # ---------------------------------------------------------------------------
@@ -1514,7 +1460,7 @@ def main(argv: list[str] | None = None) -> int:
     w("## Reaction coverage -- the half that does not flatter")
     w("")
     tmpl_counts = template_counts()
-    where = ", ".join(f"{v} in `{k}`" for k, v in tmpl_counts.items())
+    where = ", ".join(f"{v} {k}" for k, v in tmpl_counts.items())
     w(
         f"The catalog's {len(steps)} steps use **{len(step_classes)} distinct "
         f"reaction classes**. This project implements "
@@ -1524,11 +1470,11 @@ def main(argv: list[str] | None = None) -> int:
     )
     w("")
     w(
-        "> The count is the number of `ReactionTemplate` construction sites in "
-        "those modules, read off the source. Precipitation, calcination, "
-        "roasting and the surface reactions are TERMS in the integrator and "
-        "construct no template, so they appear in the table below as covered "
-        "classes with no template count behind them."
+        "> The count is the number of rows in `data/templates/templates.psv`, "
+        "counted. Precipitation, calcination, roasting and the surface "
+        "reactions are TERMS in the integrator and have no row -- a lattice is "
+        "not a graph, so there is no SMARTS to write -- so they appear in the "
+        "table below as covered classes with no row behind them."
     )
     w("")
     w("| covered class | template | steps using it |")

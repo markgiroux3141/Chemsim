@@ -89,11 +89,11 @@ phase behaviour and the example for it says so.
 
 from __future__ import annotations
 
-from chemsim.reactions import hammett
 from chemsim.reactions.library import (
-    ACID_CATALYST, _kinetics, _maybe_catalyse, _surface_kinetics,
+    ACID_CATALYST, _catalysed_row, _row, _surface_row,
 )
 from chemsim.reactions.template import ReactionTemplate
+from chemsim.reactions.template_data import TEMPLATES
 
 # ---------------------------------------------------------------------------
 # SUGARS -- the glycosidic bond, and why one template covers a disaccharide
@@ -116,7 +116,8 @@ from chemsim.reactions.template import ReactionTemplate
 
 
 def glycoside_hydrolysis(
-    A: float = 1.0e11, Ea: float = 107_000.0, catalyst: str | None = None,
+    A: float | None = None, Ea: float | None = None,
+    catalyst: str | None = None,
 ) -> ReactionTemplate:
     """Glycoside + water -> sugar + aglycone. Sucrose inversion, and much else.
 
@@ -136,15 +137,8 @@ def glycoside_hydrolysis(
     reverse is glycosylation, which does not happen in water at a measurable rate
     and is the reason a chemist reaching for it uses a protected donor instead.
     """
-    return ReactionTemplate(
-        name="glycoside_hydrolysis" + ("_acid" if catalyst else ""),
-        smarts=_maybe_catalyse(
-            "[CX4;R:1]([OX2;R:2])[OX2;!R:3][#6:4].[OX2H2:5]"
-            ">>[C:1]([O:2])[OX2H1:5].[OX2H1:3][#6:4]",
-            catalyst,
-        ),
-        A=_kinetics(A, catalyst), Ea=Ea,
-    )
+    return _catalysed_row("glycoside_hydrolysis", catalyst, "_acid",
+                          A=A, Ea=Ea)
 
 
 # ---------------------------------------------------------------------------
@@ -182,14 +176,15 @@ def glycoside_hydrolysis(
 # 2.4e-5 of benzene's rate and 2,4-dinitrotoluene at 1.4e-8 of toluene's, i.e.
 # 4.6 and 7.9 orders of magnitude, against the four to six per nitro group that
 # make TNT manufacture a three-stage process. See validation/ring_deactivation.py,
-# which measures the stages rather than asserting them.
-NITRATION_RHO = -6.5
+# which measures the stages rather than asserting them. The value itself is the
+# row's, so the table is the only place it is written down.
+NITRATION_RHO = TEMPLATES["aromatic_nitration"].hammett_rho
 
 
 def aromatic_nitration(
-    A: float = 1.0e10, Ea: float = 60_000.0, alpha: float = 0.0,
-    catalyst: str | None = None, rho: float = NITRATION_RHO,
-    saturation: float = hammett.SATURATION_DECADES,
+    A: float | None = None, Ea: float | None = None, alpha: float | None = None,
+    catalyst: str | None = None, rho: float | None = None,
+    saturation: float | None = None,
 ) -> ReactionTemplate:
     """Ar-H + HNO3 -> Ar-NO2 + water. Electrophilic aromatic nitration.
 
@@ -230,16 +225,9 @@ def aromatic_nitration(
     happen thermally; the only real path back is ipso substitution by a different
     electrophile, which is a different mechanism and not this one.
     """
-    return ReactionTemplate(
-        name="aromatic_nitration" + ("_acid" if catalyst else ""),
-        smarts=_maybe_catalyse(
-            "[cH:1].[OX2H1:2][N+:3](=[O:4])[O-:5]"
-            ">>[c:1][N+:3](=[O:4])[O-:5].[OX2H2:2]",
-            catalyst,
-        ),
-        A=_kinetics(A, catalyst), Ea=Ea, alpha=alpha,
-        hammett_rho=rho, hammett_slot=0, hammett_saturation=saturation,
-    )
+    return _catalysed_row("aromatic_nitration", catalyst, "_acid",
+                          A=A, Ea=Ea, alpha=alpha,
+                          hammett_rho=rho, hammett_saturation=saturation)
 
 
 # Ea 85 kJ/mol. SN2 of an alkoxide or phenoxide on an alkyl halide; the classic
@@ -248,7 +236,7 @@ def aromatic_nitration(
 
 
 def williamson_ether_synthesis(
-    A: float = 1.0e9, Ea: float = 85_000.0,
+    A: float | None = None, Ea: float | None = None,
 ) -> ReactionTemplate:
     """R-O(-) + R'-X -> R-O-R' + X(-). The Williamson ether synthesis.
 
@@ -269,12 +257,7 @@ def williamson_ether_synthesis(
     ⚠ Irreversible. The reverse is halide attacking an ether, which needs
     conditions (strong acid, HI) that are a different mechanism.
     """
-    return ReactionTemplate(
-        name="williamson_ether_synthesis",
-        smarts="[#6:4][O-;X1:1].[CX4:2][F,Cl,Br,I:3]"
-               ">>[#6:4][O+0:1][C:2].[F,Cl,Br,I;-:3]",
-        A=A, Ea=Ea,
-    )
+    return _row("williamson_ether_synthesis", A=A, Ea=Ea)
 
 
 # Ea 65 kJ/mol. Acid-catalysed condensation of an arene with a carbonyl; the
@@ -283,7 +266,8 @@ def williamson_ether_synthesis(
 
 
 def friedel_crafts_hydroxyalkylation(
-    A: float = 1.0e8, Ea: float = 65_000.0, catalyst: str | None = None,
+    A: float | None = None, Ea: float | None = None,
+    catalyst: str | None = None,
 ) -> ReactionTemplate:
     """2 Ar-H + R2C=O -> Ar2CR2 + water. The diarylmethane condensation.
 
@@ -301,13 +285,8 @@ def friedel_crafts_hydroxyalkylation(
 
     ⚠ Irreversible: the water leaves and the diarylmethane is not attacked back.
     """
-    return ReactionTemplate(
-        name="friedel_crafts_hydroxyalkylation" + ("_acid" if catalyst else ""),
-        smarts=_maybe_catalyse(
-            "[cH:1].[cH:2].[CX3:3]=[OX1:4]>>[c:1][C:3][c:2].[OX2H2:4]", catalyst
-        ),
-        A=_kinetics(A, catalyst), Ea=Ea,
-    )
+    return _catalysed_row("friedel_crafts_hydroxyalkylation", catalyst,
+                          "_acid", A=A, Ea=Ea)
 
 
 # Ea 90 kJ/mol. Kolbe-Schmitt carboxylation of sodium phenoxide, run at 400 K
@@ -315,7 +294,7 @@ def friedel_crafts_hydroxyalkylation(
 
 
 def kolbe_schmitt(
-    A: float = 1.0e8, Ea: float = 90_000.0,
+    A: float | None = None, Ea: float | None = None,
 ) -> ReactionTemplate:
     """Phenoxide + CO2 -> salicylate. The carboxylation that makes aspirin possible.
 
@@ -332,12 +311,7 @@ def kolbe_schmitt(
     detailed balance derives one from the formation data, the same way the lead
     chamber's carrier ceiling is derived rather than declared.
     """
-    return ReactionTemplate(
-        name="kolbe_schmitt_carboxylation",
-        smarts="[O-:1][c:2][cH:3].[CX2:4](=[OX1:5])=[OX1:6]"
-               ">>[OX2H1;+0:1][c:2][c:3][C:4](=[O:5])[O-:6]",
-        A=A, Ea=Ea, reversible=True,
-    )
+    return _row("kolbe_schmitt_carboxylation", A=A, Ea=Ea)
 
 
 # ---------------------------------------------------------------------------
@@ -382,7 +356,9 @@ def kolbe_schmitt(
 # are still kept out of one bundle, because a doubled rate is a wrong rate.
 
 
-def saponification(A: float = 1.0e8, Ea: float = 46_000.0) -> ReactionTemplate:
+def saponification(
+    A: float | None = None, Ea: float | None = None,
+) -> ReactionTemplate:
     """Ester + hydroxide -> carboxylate + alcohol. Irreversible, and that is the point.
 
     ⚠ **THE IRREVERSIBILITY IS THE CHEMISTRY, NOT A CONVENIENCE.** Fischer
@@ -395,16 +371,12 @@ def saponification(A: float = 1.0e8, Ea: float = 46_000.0) -> ReactionTemplate:
     Matches an aryl ester as well as an alkyl one -- ``[#6:4]`` -- because
     hydroxide does not care either.
     """
-    return ReactionTemplate(
-        name="saponification",
-        smarts="[CX3:1](=[O:2])[OX2:3][#6:4].[OH-:5]"
-               ">>[CX3:1](=[O:2])[O-:5].[OX2H1:3][#6:4]",
-        A=A, Ea=Ea,
-    )
+    return _row("saponification", A=A, Ea=Ea)
 
 
 def ester_hydrolysis(
-    A: float = 1.0e8, Ea: float = 70_000.0, catalyst: str | None = None,
+    A: float | None = None, Ea: float | None = None,
+    catalyst: str | None = None,
 ) -> ReactionTemplate:
     """Ester + water <=> carboxylic acid + alcohol. Aspirin in a damp cabinet.
 
@@ -424,19 +396,11 @@ def ester_hydrolysis(
     much as its other face: same K from the same formation data, reached from the
     other side. Keep them in separate networks anyway.
     """
-    return ReactionTemplate(
-        name="ester_hydrolysis" + ("_acid" if catalyst else ""),
-        smarts=_maybe_catalyse(
-            "[CX3:1](=[O:2])[OX2:3][#6;!$([CX3]=[OX1]):4].[OX2H2:5]"
-            ">>[CX3:1](=[O:2])[OX2H1:5].[OX2H1:3][#6:4]",
-            catalyst,
-        ),
-        A=_kinetics(A, catalyst), Ea=Ea, reversible=True,
-    )
+    return _catalysed_row("ester_hydrolysis", catalyst, "_acid", A=A, Ea=Ea)
 
 
 def transesterification(
-    A: float = 1.0e7, Ea: float = 55_000.0, alpha: float = 0.0,
+    A: float | None = None, Ea: float | None = None, alpha: float | None = None,
 ) -> ReactionTemplate:
     """Ester + alcohol <=> ester' + alcohol'. Alcoholysis, and it is an equilibrium.
 
@@ -465,12 +429,7 @@ def transesterification(
     is a SPECIES limit rather than a template one: triolein and its glycerides are
     Joback-priced at C21-C57, well outside the estimator's domain.
     """
-    return ReactionTemplate(
-        name="transesterification",
-        smarts="[CX3:1](=[O:2])[OX2:3][CX4:4].[OX2H1:5][CX4:6]"
-               ">>[CX3:1](=[O:2])[O:5][C:6].[OX2H1:3][C:4]",
-        A=A, Ea=Ea, alpha=alpha, reversible=True,
-    )
+    return _row("transesterification", A=A, Ea=Ea, alpha=alpha)
 
 
 # ---------------------------------------------------------------------------
@@ -483,7 +442,9 @@ def transesterification(
 #   knoevenagel   Ea 70 kJ/mol -- amine-catalysed Doebner condensation, 60-80.
 
 
-def n_acylation(A: float = 1.0e8, Ea: float = 45_000.0) -> ReactionTemplate:
+def n_acylation(
+    A: float | None = None, Ea: float | None = None,
+) -> ReactionTemplate:
     """Amine + anhydride -> amide + carboxylic acid. Paracetamol in one line.
 
     The amine pattern excludes an existing amide -- ``!$(N[#6]=[O,S,N])`` -- so
@@ -499,15 +460,12 @@ def n_acylation(A: float = 1.0e8, Ea: float = 45_000.0) -> ReactionTemplate:
     ⚠ Irreversible: an anhydride is the activation, and the amide does not give it
     back.
     """
-    return ReactionTemplate(
-        name="n_acylation",
-        smarts="[NX3;H1,H2;!$(N[#6]=[O,S,N]):6].[CX3:1](=[O:2])[OX2:3][CX3:4]=[O:5]"
-               ">>[N:6][C:1]=[O:2].[OX2H1:3][C:4]=[O:5]",
-        A=A, Ea=Ea,
-    )
+    return _row("n_acylation", A=A, Ea=Ea)
 
 
-def cannizzaro(A: float = 1.0e7, Ea: float = 55_000.0) -> ReactionTemplate:
+def cannizzaro(
+    A: float | None = None, Ea: float | None = None,
+) -> ReactionTemplate:
     """2 Ar-CHO + hydroxide -> Ar-CH2OH + Ar-COO(-). Disproportionation of an aldehyde.
 
     ⚠ **RESTRICTED TO AN AROMATIC ALDEHYDE, AND THAT RESTRICTION IS THE
@@ -522,15 +480,12 @@ def cannizzaro(A: float = 1.0e7, Ea: float = 55_000.0) -> ReactionTemplate:
     second order in the aldehyde -- which is real, and is why a dilute Cannizzaro
     is slow out of proportion to its concentration.
     """
-    return ReactionTemplate(
-        name="cannizzaro_disproportionation",
-        smarts="[c:3][CX3H1:1]=[OX1:2].[c:6][CX3H1:4]=[OX1:5].[OH-:7]"
-               ">>[c:3][CH2:1][OX2H1:2].[c:6][C:4](=[O:5])[O-:7]",
-        A=A, Ea=Ea,
-    )
+    return _row("cannizzaro_disproportionation", A=A, Ea=Ea)
 
 
-def perkin_condensation(A: float = 1.0e9, Ea: float = 95_000.0) -> ReactionTemplate:
+def perkin_condensation(
+    A: float | None = None, Ea: float | None = None,
+) -> ReactionTemplate:
     """Ar-CHO + anhydride -> cinnamic acid + carboxylic acid. The Perkin reaction.
 
     The anhydride's methyl is the nucleophile and the aldehyde oxygen leaves in
@@ -541,16 +496,12 @@ def perkin_condensation(A: float = 1.0e9, Ea: float = 95_000.0) -> ReactionTempl
     ⚠ Irreversible. The product is a conjugated acid and the driving force is that
     conjugation; the retro-Perkin is not a bench reaction.
     """
-    return ReactionTemplate(
-        name="perkin_condensation",
-        smarts="[c:1][CX3H1:2]=[OX1:3].[CH3:4][CX3:5](=[O:6])[OX2:7][CX3:8]=[O:9]"
-               ">>[c:1][CH:2]=[CH:4][C:5](=[O:6])[OX2H1:7].[OX2H1:3][C:8]=[O:9]",
-        A=A, Ea=Ea,
-    )
+    return _row("perkin_condensation", A=A, Ea=Ea)
 
 
 def knoevenagel_doebner(
-    A: float = 1.0e8, Ea: float = 70_000.0, catalyst: str | None = None,
+    A: float | None = None, Ea: float | None = None,
+    catalyst: str | None = None,
 ) -> ReactionTemplate:
     """Ar-CHO + malonic acid -> cinnamic acid + CO2 + water. Condense, then decarboxylate.
 
@@ -569,17 +520,8 @@ def knoevenagel_doebner(
     ordering, and a flask holding both an anhydride and malonic acid will show it
     without anyone scripting which one wins.
     """
-    return ReactionTemplate(
-        name="knoevenagel_doebner_condensation" + ("_base" if catalyst else ""),
-        smarts=_maybe_catalyse(
-            "[c:1][CX3H1:2]=[OX1:3]."
-            "[CX4H2:4]([CX3:5](=[O:6])[OX2H1:7])[CX3:8](=[O:9])[OX2H1:10]"
-            ">>[c:1][CH:2]=[CH:4][C:5](=[O:6])[O:7].[C:8](=[O:9])=[O:10]."
-            "[OX2H2:3]",
-            catalyst,
-        ),
-        A=_kinetics(A, catalyst), Ea=Ea,
-    )
+    return _catalysed_row("knoevenagel_doebner_condensation", catalyst,
+                          "_base", A=A, Ea=Ea)
 
 
 # ---------------------------------------------------------------------------
@@ -615,8 +557,8 @@ def knoevenagel_doebner(
 
 
 def alkene_hydration(
-    A: float = 1.0e10, Ea: float = 80_000.0, alpha: float = 0.0,
-    catalyst: str | None = None, phase: str = "liquid",
+    A: float | None = None, Ea: float | None = None, alpha: float | None = None,
+    catalyst: str | None = None, phase: str | None = None,
 ) -> ReactionTemplate:
     """Alkene + water <=> alcohol. A flask reaction and an industrial one.
 
@@ -647,18 +589,13 @@ def alkene_hydration(
     Reversible. See the block comment above for the collision with
     ``library.alkene_dehydration`` and why it is declared rather than fixed.
     """
-    return ReactionTemplate(
-        name="alkene_hydration" + ("_acid" if catalyst else ""),
-        smarts=_maybe_catalyse(
-            "[CX3:1]=[CX3:2].[OX2H2:3]>>[C:1][C:2][OX2H1:3]", catalyst
-        ),
-        A=_kinetics(A, catalyst), Ea=Ea, alpha=alpha, reversible=True,
-        phase=phase,
-    )
+    return _catalysed_row("alkene_hydration", catalyst, "_acid",
+                          A=A, Ea=Ea, alpha=alpha, phase=phase)
 
 
 def alkyne_hydration(
-    A: float = 1.0e9, Ea: float = 70_000.0, catalyst: str | None = None,
+    A: float | None = None, Ea: float | None = None,
+    catalyst: str | None = None,
 ) -> ReactionTemplate:
     """Alkyne + water -> carbonyl. Acetylene to acetaldehyde, the Kucherov reaction.
 
@@ -669,17 +606,11 @@ def alkyne_hydration(
     hydration alone is reversible, the tautomerisation is the sink, and lumping
     them makes the pair one-way.
     """
-    return ReactionTemplate(
-        name="alkyne_hydration" + ("_acid" if catalyst else ""),
-        smarts=_maybe_catalyse(
-            "[CX2:1]#[CX2:2].[OX2H2:3]>>[C:1](=[O:3])[C:2]", catalyst
-        ),
-        A=_kinetics(A, catalyst), Ea=Ea,
-    )
+    return _catalysed_row("alkyne_hydration", catalyst, "_acid", A=A, Ea=Ea)
 
 
 def alkene_hydrogenation(
-    A: float = 1.0e7, Ea: float = 50_000.0, alpha: float = 0.0,
+    A: float | None = None, Ea: float | None = None, alpha: float | None = None,
     catalyst: str | None = "nickel",
 ) -> ReactionTemplate:
     """Alkene + H2 -> alkane. Hardening a fat, and the first template that eats H2.
@@ -707,12 +638,8 @@ def alkene_hydrogenation(
     ``[CX3]=[CX3]`` does not match and nobody has to say that hydrogenating an
     arene is harder.
     """
-    return ReactionTemplate(
-        name="alkene_hydrogenation",
-        smarts="[CX3:1]=[CX3:2].[H:3][H:4]>>[C:1]([H:3])[C:2][H:4]",
-        A=_surface_kinetics(A, catalyst), Ea=Ea, alpha=alpha,
-        solid_catalyst=catalyst,
-    )
+    return _surface_row("alkene_hydrogenation", catalyst,
+                        A=A, Ea=Ea, alpha=alpha)
 
 
 # ⚠ ``catalytic-hydrogenation`` WAS THE SIXTH OUTCOME LABEL, AND IT IS THE ONE M5
@@ -737,7 +664,8 @@ def alkene_hydrogenation(
 
 
 def nitro_hydrogenation(
-    A: float = 1.0e5, Ea: float = 50_000.0, catalyst: str | None = "nickel",
+    A: float | None = None, Ea: float | None = None,
+    catalyst: str | None = "nickel",
 ) -> ReactionTemplate:
     """Ar-NO2 + 3 H2 -> Ar-NH2 + 2 water. Nitrobenzene to aniline.
 
@@ -756,12 +684,7 @@ def nitro_hydrogenation(
     above. Irreversible: the reverse is oxidising an amine back to a nitro group
     with water, which is not a reaction.
     """
-    return ReactionTemplate(
-        name="nitro_hydrogenation",
-        smarts="[c:1][N+:2](=[O:3])[O-:4].[H:5][H:6].[H:7][H:8].[H:9][H:10]"
-               ">>[c:1][N+0:2]([H:5])[H:6].[O+0:3]([H:7])[H:8].[O+0:4]([H:9])[H:10]",
-        A=_surface_kinetics(A, catalyst), Ea=Ea, solid_catalyst=catalyst,
-    )
+    return _surface_row("nitro_hydrogenation", catalyst, A=A, Ea=Ea)
 
 
 # ---------------------------------------------------------------------------
@@ -772,7 +695,7 @@ def nitro_hydrogenation(
 
 
 def halogen_disproportionation(
-    A: float = 1.0e9, Ea: float = 35_000.0,
+    A: float | None = None, Ea: float | None = None,
 ) -> ReactionTemplate:
     """X2 + 2 OH(-) <=> X(-) + XO(-) + water. Chlorine into caustic gives bleach.
 
@@ -792,12 +715,7 @@ def halogen_disproportionation(
     hypobromite and hypoiodite, and the iodine case is the first step of the
     iodoform test.
     """
-    return ReactionTemplate(
-        name="halogen_disproportionation",
-        smarts="[Cl,Br,I;X1:1][Cl,Br,I;X1:2].[O;H1;X1;-:3].[O;H1;X1;-:4]"
-               ">>[Cl,Br,I;-:1].[Cl,Br,I;+0:2][O-;H0:3].[O;H2;+0:4]",
-        A=A, Ea=Ea, reversible=True,
-    )
+    return _row("halogen_disproportionation", A=A, Ea=Ea)
 
 
 # ---------------------------------------------------------------------------
@@ -839,7 +757,8 @@ def halogen_disproportionation(
 
 
 def ammonia_synthesis(
-    A: float = 1.0e6, Ea: float = 100_000.0, catalyst: str | None = "iron",
+    A: float | None = None, Ea: float | None = None,
+    catalyst: str | None = "iron",
 ) -> ReactionTemplate:
     """N2 + 3 H2 <=> 2 NH3. Haber-Bosch, and the iron is a SPECIES.
 
@@ -864,30 +783,20 @@ def ammonia_synthesis(
     ``ReactionTemplate.run`` to collapse explicit hydrogens. See the module
     docstring.
     """
-    return ReactionTemplate(
-        name="ammonia_synthesis",
-        smarts="[N:1]#[N:2].[H:3][H:4].[H:5][H:6].[H:7][H:8]"
-               ">>[N:1]([H:3])([H:5])[H:7].[N:2]([H:4])([H:6])[H:8]",
-        A=_surface_kinetics(A, catalyst), Ea=Ea, phase="gas", reversible=True,
-        solid_catalyst=catalyst,
-    )
+    return _surface_row("ammonia_synthesis", catalyst, A=A, Ea=Ea)
 
 
 def methanol_from_carbon_monoxide(
-    A: float = 1.0e6, Ea: float = 70_000.0, catalyst: str | None = "copper",
+    A: float | None = None, Ea: float | None = None,
+    catalyst: str | None = "copper",
 ) -> ReactionTemplate:
     """CO + 2 H2 <=> methanol. The main arrow of the Cu/ZnO synthesis."""
-    return ReactionTemplate(
-        name="methanol_from_carbon_monoxide",
-        smarts="[C-:1]#[O+:2].[H:3][H:4].[H:5][H:6]"
-               ">>[C+0:1]([H:3])([H:4])([H:5])[O+0:2][H:6]",
-        A=_surface_kinetics(A, catalyst), Ea=Ea, phase="gas", reversible=True,
-        solid_catalyst=catalyst,
-    )
+    return _surface_row("methanol_from_carbon_monoxide", catalyst, A=A, Ea=Ea)
 
 
 def methanol_from_carbon_dioxide(
-    A: float = 1.0e5, Ea: float = 80_000.0, catalyst: str | None = "copper",
+    A: float | None = None, Ea: float | None = None,
+    catalyst: str | None = "copper",
 ) -> ReactionTemplate:
     """CO2 + 3 H2 <=> methanol + water. The same reactor's second arrow.
 
@@ -897,13 +806,7 @@ def methanol_from_carbon_dioxide(
     route actually is. The water it makes is not a detail: it is why a real
     methanol loop needs a drier.
     """
-    return ReactionTemplate(
-        name="methanol_from_carbon_dioxide",
-        smarts="[O:1]=[C:2]=[O:3].[H:4][H:5].[H:6][H:7].[H:8][H:9]"
-               ">>[C:2]([H:4])([H:5])([H:6])[O:1][H:7].[O:3]([H:8])[H:9]",
-        A=_surface_kinetics(A, catalyst), Ea=Ea, phase="gas", reversible=True,
-        solid_catalyst=catalyst,
-    )
+    return _surface_row("methanol_from_carbon_dioxide", catalyst, A=A, Ea=Ea)
 
 
 # ---------------------------------------------------------------------------
@@ -974,7 +877,8 @@ def methanol_from_carbon_dioxide(
 
 
 def water_gas_shift(
-    A: float = 1.0e8, Ea: float = 110_000.0, catalyst: str | None = "hematite",
+    A: float | None = None, Ea: float | None = None,
+    catalyst: str | None = "hematite",
 ) -> ReactionTemplate:
     """CO + H2O <=> CO2 + H2. The shift, and the reason it is a SEPARATE reactor.
 
@@ -994,16 +898,12 @@ def water_gas_shift(
     reduced in situ from the hematite charged into it -- this engine holds the
     charged form, and the reduction is not modelled).
     """
-    return ReactionTemplate(
-        name="water_gas_shift",
-        smarts="[C-:1]#[O+:2].[OX2H2:3]>>[O+0:2]=[C+0:1]=[O:3].[H][H]",
-        A=_surface_kinetics(A, catalyst), Ea=Ea, phase="gas", reversible=True,
-        solid_catalyst=catalyst,
-    )
+    return _surface_row("water_gas_shift", catalyst, A=A, Ea=Ea)
 
 
 def steam_reforming(
-    A: float = 1.0e11, Ea: float = 240_000.0, catalyst: str | None = "nickel",
+    A: float | None = None, Ea: float | None = None,
+    catalyst: str | None = "nickel",
 ) -> ReactionTemplate:
     """CH4 + H2O <=> CO + 3 H2. Where nearly all industrial hydrogen comes from.
 
@@ -1024,16 +924,12 @@ def steam_reforming(
     their physical ceiling and the reaction is still slow below 900 K, which is
     what a reformer is like.
     """
-    return ReactionTemplate(
-        name="steam_reforming",
-        smarts="[C;H4:1].[O;H2:2]>>[C-:1]#[O+:2].[H][H].[H][H].[H][H]",
-        A=_surface_kinetics(A, catalyst), Ea=Ea, phase="gas", reversible=True,
-        solid_catalyst=catalyst,
-    )
+    return _surface_row("steam_reforming", catalyst, A=A, Ea=Ea)
 
 
 def deacon_oxidation(
-    A: float = 1.0e13, Ea: float = 100_000.0, catalyst: str | None = "tenorite",
+    A: float | None = None, Ea: float | None = None,
+    catalyst: str | None = "tenorite",
 ) -> ReactionTemplate:
     """4 HCl + O2 <=> 2 Cl2 + 2 H2O. Chlorine back out of spent hydrochloric acid.
 
@@ -1063,17 +959,11 @@ def deacon_oxidation(
     and unlike Haber-Bosch it gains nothing thermodynamically by it: 5 moles in,
     4 out, so compressing it helps the rate and the equilibrium alike here.
     """
-    return ReactionTemplate(
-        name="deacon_oxidation",
-        smarts="[Cl;H1:1].[Cl;H1:2].[Cl;H1:3].[Cl;H1:4].[OX1:5]=[OX1:6]"
-               ">>[Cl;H0:1][Cl;H0:2].[Cl;H0:3][Cl;H0:4].[O;H2:5].[O;H2:6]",
-        A=_surface_kinetics(A, catalyst), Ea=Ea, phase="gas", reversible=True,
-        solid_catalyst=catalyst,
-    )
+    return _surface_row("deacon_oxidation", catalyst, A=A, Ea=Ea)
 
 
 def hydrogen_sulfide_combustion(
-    A: float = 1.0e10, Ea: float = 100_000.0,
+    A: float | None = None, Ea: float | None = None,
 ) -> ReactionTemplate:
     """2 H2S + 3 O2 -> 2 SO2 + 2 H2O. The Claus THERMAL stage.
 
@@ -1090,20 +980,11 @@ def hydrogen_sulfide_combustion(
     one -- charge two moles of H2S for every one you want burnt and the pair of
     templates does the rest.
     """
-    h2s = "[S;H2:1].[S;H2:2]"
-    o2 = ".".join(f"[OX1:{3 + 2 * i}]=[OX1:{4 + 2 * i}]" for i in range(3))
-    out = ("[O:3]=[S;H0:1]=[O:4].[O:5]=[S;H0:2]=[O:6]"
-           ".[O;H2:7].[O;H2:8]")
-    return ReactionTemplate(
-        name="hydrogen_sulfide_combustion",
-        smarts=f"{h2s}.{o2}>>{out}",
-        A=A, Ea=Ea, phase="gas",
-        orders=(1.0, 0.0, 1.0, 0.0, 0.0),
-    )
+    return _row("hydrogen_sulfide_combustion", A=A, Ea=Ea)
 
 
 def claus_comproportionation(
-    A: float = 1.0e9, Ea: float = 50_000.0,
+    A: float | None = None, Ea: float | None = None,
 ) -> ReactionTemplate:
     """16 H2S + 8 SO2 -> 3 S8 + 16 H2O. Sulfur out of both of its own oxidation states.
 
@@ -1130,23 +1011,7 @@ def claus_comproportionation(
     The alumina is real and its absence is the barrier being apparent; declaring
     `corundum` would make the row's own reactant list unable to run it.
     """
-    h2s = ".".join(f"[S;H2:{i + 1}]" for i in range(16))
-    so2 = ".".join(
-        f"[O:{100 + 2 * i}]=[S;H0:{17 + i}]=[O:{101 + 2 * i}]" for i in range(8)
-    )
-    rings = ".".join(
-        "".join([f"[S;H0:{1 + 8 * r}]1"]
-                + [f"[S;H0:{1 + 8 * r + k}]" for k in range(1, 8)]
-                + ["1"])
-        for r in range(3)
-    )
-    waters = ".".join(f"[O;H2:{100 + i}]" for i in range(16))
-    return ReactionTemplate(
-        name="claus_comproportionation",
-        smarts=f"{h2s}.{so2}>>{rings}.{waters}",
-        A=A, Ea=Ea, phase="gas",
-        orders=(1.0,) + (0.0,) * 15 + (1.0,) + (0.0,) * 7,
-    )
+    return _row("claus_comproportionation", A=A, Ea=Ea)
 
 # ---------------------------------------------------------------------------
 # S11 -- HYDROFORMYLATION, AND THE FIRST TEMPLATE PAIR WHOSE POINT IS WHICH ONE
@@ -1238,7 +1103,8 @@ def claus_comproportionation(
 
 
 def hydroformylation_linear(
-    A: float = 1.0e10, Ea: float = 96_000.0, catalyst: str | None = "cobalt",
+    A: float | None = None, Ea: float | None = None,
+    catalyst: str | None = "cobalt",
 ) -> ReactionTemplate:
     """Alkene + CO + H2 -> the LINEAR aldehyde. The oxo process's major product.
 
@@ -1253,17 +1119,12 @@ def hydroformylation_linear(
     alone. See the block comment above: the class's two catalog rows are this
     reaction twice, and the selectivity between them is the whole process.
     """
-    return ReactionTemplate(
-        name="hydroformylation_linear",
-        smarts="[CX3H2:1]=[CX3:2].[C-:3]#[O+:4].[H:5][H:6]"
-               ">>[C:1]([C+0:3](=[O+0:4])[H:6])[C:2][H:5]",
-        A=_surface_kinetics(A, catalyst), Ea=Ea, phase="gas", reversible=True,
-        alpha=0.0, solid_catalyst=catalyst,
-    )
+    return _surface_row("hydroformylation_linear", catalyst, A=A, Ea=Ea)
 
 
 def hydroformylation_branched(
-    A: float = 1.0e10, Ea: float = 100_800.0, catalyst: str | None = "cobalt",
+    A: float | None = None, Ea: float | None = None,
+    catalyst: str | None = "cobalt",
 ) -> ReactionTemplate:
     """Alkene + CO + H2 -> the BRANCHED aldehyde. The oxo process's by-product.
 
@@ -1286,13 +1147,7 @@ def hydroformylation_branched(
     and a real cobalt oxo reactor sits at 410-450 K.**
     ``validation/hydroformylation.py`` panel 3 prints both columns side by side.
     """
-    return ReactionTemplate(
-        name="hydroformylation_branched",
-        smarts="[CX3H2:1]=[CX3:2].[C-:3]#[O+:4].[H:5][H:6]"
-               ">>[C:1]([H:5])[C:2][C+0:3](=[O+0:4])[H:6]",
-        A=_surface_kinetics(A, catalyst), Ea=Ea, phase="gas", reversible=True,
-        alpha=0.0, solid_catalyst=catalyst,
-    )
+    return _surface_row("hydroformylation_branched", catalyst, A=A, Ea=Ea)
 
 
 # ---------------------------------------------------------------------------
@@ -1353,7 +1208,8 @@ def hydroformylation_branched(
 
 
 def wacker_oxidation(
-    A: float = 1.0e9, Ea: float = 65_000.0, catalyst: str | None = "[Cu+2]",
+    A: float | None = None, Ea: float | None = None,
+    catalyst: str | None = "[Cu+2]",
 ) -> ReactionTemplate:
     """2 C2H4 + O2 -> 2 CH3CHO over aqueous copper(II). Acetaldehyde from ethylene.
 
@@ -1371,16 +1227,7 @@ def wacker_oxidation(
     ⚠ Irreversible. ln K is +113 at 400 K, and a declared rate order may never be
     reversible in any case -- see the block comment for both halves of that.
     """
-    return ReactionTemplate(
-        name="wacker_oxidation",
-        smarts=_maybe_catalyse(
-            "[CH2:1]=[CH2:2].[CH2:3]=[CH2:4].[OX1:5]=[OX1:6]"
-            ">>[CH3:1][CH1:2]=[O:5].[CH3:3][CH1:4]=[O:6]",
-            catalyst,
-        ),
-        A=_kinetics(A, catalyst), Ea=Ea, phase="liquid",
-        orders=(1.0, 0.0, 1.0, 1.0) if catalyst else (1.0, 0.0, 1.0),
-    )
+    return _catalysed_row("wacker_oxidation", catalyst, A=A, Ea=Ea)
 
 
 # ---------------------------------------------------------------------------
@@ -1464,7 +1311,7 @@ def wacker_oxidation(
 
 
 def skraup_cyclisation(
-    A: float = 3.0e6, Ea: float = 80_000.0,
+    A: float | None = None, Ea: float | None = None,
     catalyst: str | None = ACID_CATALYST,
 ) -> ReactionTemplate:
     """3 aniline + 3 acrolein + nitrobenzene -> 3 quinoline + aniline + 5 water.
@@ -1504,32 +1351,7 @@ def skraup_cyclisation(
     A flask with no acid in it does nothing at all, which is the correct answer
     for a Skraup.
     """
-    b = [1 + 12 * i for i in range(3)]
-    amines = [
-        f"[N;H2;+0:{k}][c:{k+1}]1[c;H1:{k+2}][c:{k+3}][c:{k+4}][c:{k+5}]"
-        f"[c:{k+6}]1"
-        for k in b
-    ]
-    enals = [f"[C;H2:{k+7}]=[C;H1:{k+8}][C;H1:{k+9}]=[O;+0:{k+10}]" for k in b]
-    quinolines = [
-        f"[n;+0:{k}]1[c;H1:{k+7}][c;H1:{k+8}][c;H1:{k+9}][c;H0:{k+2}]2"
-        f"[c:{k+3}][c:{k+4}][c:{k+5}][c:{k+6}][c;H0:{k+1}]12"
-        for k in b
-    ]
-    waters = [f"[O;H2;+0:{k+10}]" for k in b]
-    nitro_in = ("[O;+0:41]=[N;+1:40]([O;-1:42])[c:43]1[c:44][c:45][c:46]"
-                "[c:47][c:48]1")
-    nitro_out = ("[N;H2;+0:40][c:43]1[c:44][c:45][c:46][c:47][c:48]1"
-                 ".[O;H2;+0:41].[O;H2;+0:42]")
-    lhs = ".".join(x for pair in zip(amines, enals) for x in pair)
-    rhs = ".".join(x for pair in zip(quinolines, waters) for x in pair)
-    return ReactionTemplate(
-        name="skraup_cyclisation",
-        smarts=_maybe_catalyse(f"{lhs}.{nitro_in}>>{rhs}.{nitro_out}", catalyst),
-        A=_kinetics(A, catalyst), Ea=Ea, phase="liquid",
-        orders=((1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0) if catalyst
-                else (1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0)),
-    )
+    return _catalysed_row("skraup_cyclisation", catalyst, A=A, Ea=Ea)
 
 # ---------------------------------------------------------------------------
 # ---------------------------------------------------------------------------
@@ -1619,7 +1441,8 @@ def skraup_cyclisation(
 
 
 def alkene_isomerisation(
-    A: float = 1.0e9, Ea: float = 115_000.0, catalyst: str | None = "[OH-]",
+    A: float | None = None, Ea: float | None = None,
+    catalyst: str | None = "[OH-]",
 ) -> ReactionTemplate:
     """Aryl allyl -> aryl propenyl. Eugenol to isoeugenol, over hydroxide.
 
@@ -1673,14 +1496,7 @@ def alkene_isomerisation(
     -- so it matches an allyl arene and NOT an already-conjugated one. That is
     what stops it feeding itself: its own product has no CH2 next to the ring.
     """
-    return ReactionTemplate(
-        name="alkene_isomerisation",
-        smarts=_maybe_catalyse(
-            "[c:1][CH2:2][CH1:3]=[CH2:4]>>[c:1][CH1:2]=[CH1:3][CH3:4]",
-            catalyst,
-        ),
-        A=_kinetics(A, catalyst), Ea=Ea, phase="liquid", reversible=True,
-    )
+    return _catalysed_row("alkene_isomerisation", catalyst, A=A, Ea=Ea)
 
 
 # Ea 75 kJ/mol -- apparent barrier for the alkaline aerobic side-chain cleavage
@@ -1708,7 +1524,8 @@ def alkene_isomerisation(
 
 
 def oxidative_cleavage(
-    A: float = 1.0e9, Ea: float = 85_000.0, catalyst: str | None = None,
+    A: float | None = None, Ea: float | None = None,
+    catalyst: str | None = None,
 ) -> ReactionTemplate:
     """Ar-CH=CH-R + O2 -> Ar-CHO + R-CHO. Vanillin from isoeugenol or lignin.
 
@@ -1744,15 +1561,7 @@ def oxidative_cleavage(
     propene and 1-butene. ⚠ It cannot feed itself: neither product has a C=C
     left.
     """
-    return ReactionTemplate(
-        name="oxidative_cleavage",
-        smarts=_maybe_catalyse(
-            "[c:1][CH1:2]=[CH1:3][#6:4].[OX1:5]=[OX1:6]"
-            ">>[c:1][CH1:2]=[O:5].[#6:4][CH1:3]=[O:6]",
-            catalyst,
-        ),
-        A=_kinetics(A, catalyst), Ea=Ea, phase="liquid",
-    )
+    return _catalysed_row("oxidative_cleavage", catalyst, A=A, Ea=Ea)
 
 
 # ---------------------------------------------------------------------------
@@ -1894,9 +1703,8 @@ def oxidative_cleavage(
 # and **nothing in this engine can express a product poisoning its own catalyst**
 # when the catalyst is not in the flask.
 
-_FERMENTATION_EA = 55_000.0
-
-# The hexopyranose the three branches share. ⚠ NARROW IN EXACTLY ONE PLACE THAT
+# The hexopyranose the three ABE branches share -- the reactant half of their
+# three rows in ``templates.psv``. ⚠ NARROW IN EXACTLY ONE PLACE THAT
 # MATTERS: the anomeric carbon must carry an -OH (`[CH:5]([OX2H:6])`), so a
 # GLYCOSIDE does not match -- sucrose is inert to all four of these and has to be
 # inverted first, by `glycoside_hydrolysis`, which is what `ethanol-fermentation`
@@ -1913,10 +1721,6 @@ _FERMENTATION_EA = 55_000.0
 # sugar is a different pattern and this one does not reach it. That is S7's
 # pyranose/furanose finding -- *"the corpus spells one as a pyranose and the other
 # as a furanose"* -- costing a substrate rather than an equilibrium constant.
-_HEXOPYRANOSE = (
-    "[OX2H:1][CH2:2][CH:3]1[OX2:4][CH:5]([OX2H:6])[CH:7]([OX2H:8])"
-    "[CH:9]([OX2H:10])[CH:11]1[OX2H:12]"
-)
 # ⚠ THE SAME RING WITH ITS FOUR STEREOCENTRES SPELLED AS "either", AND IT IS NOT
 # COSMETIC. RDKit's rule is that chirality specified in the reactant template and
 # absent from the product template is REMOVED from the product; unspecified at
@@ -1927,14 +1731,11 @@ _HEXOPYRANOSE = (
 # decision (*"nothing here can price the difference"*) reached through a
 # stereocentre instead of a double bond. The three ABE branches make no
 # stereocentre and use the plain pattern.
-_HEXOPYRANOSE_ANY = (
-    "[OX2H:1][CH2:2][C;H1;@,@@:3]1[OX2:4][C;H1;@,@@:5]([OX2H:6])"
-    "[C;H1;@,@@:7]([OX2H:8])[C;H1;@,@@:9]([OX2H:10])[C;H1;@,@@:11]1[OX2H:12]"
-)
 
 
 def ethanolic_fermentation(
-    A: float = 1.2e3, Ea: float = _FERMENTATION_EA, catalyst: str | None = None,
+    A: float | None = None, Ea: float | None = None,
+    catalyst: str | None = None,
 ) -> ReactionTemplate:
     """glucose -> 2 ethanol + 2 CO2. Gay-Lussac's equation, and the oldest
     applied chemistry in the catalog.
@@ -1950,20 +1751,12 @@ def ethanolic_fermentation(
     ideal-gas one; carrying a reverse would buy stiffness and nothing else. See
     the block comment on why no K may be quoted for either number.
     """
-    return ReactionTemplate(
-        name="ethanolic_fermentation",
-        smarts=_maybe_catalyse(
-            _HEXOPYRANOSE
-            + ">>[CH3:5][CH2:7][OH:8].[CH3:2][CH2:3][OH:4]"
-              ".[O:6]=[C:9]=[O:10].[O:1]=[C:11]=[O:12]",
-            catalyst,
-        ),
-        A=_kinetics(A, catalyst), Ea=Ea, phase="liquid",
-    )
+    return _catalysed_row("ethanolic_fermentation", catalyst, A=A, Ea=Ea)
 
 
 def butanolic_fermentation(
-    A: float = 9.0e3, Ea: float = _FERMENTATION_EA, catalyst: str | None = None,
+    A: float | None = None, Ea: float | None = None,
+    catalyst: str | None = None,
 ) -> ReactionTemplate:
     """glucose -> 1-butanol + 2 CO2 + H2O. The B of ABE, and the majority branch.
 
@@ -1977,20 +1770,12 @@ def butanolic_fermentation(
     that water is in `acetonic_fermentation`'s rate law, which is why the solvent
     slate drifts. See the block comment.
     """
-    return ReactionTemplate(
-        name="butanolic_fermentation",
-        smarts=_maybe_catalyse(
-            _HEXOPYRANOSE
-            + ">>[CH3:2][CH2:3][CH2:5][CH2:7][OH:8]"
-              ".[O:6]=[C:9]=[O:10].[O:1]=[C:11]=[O:12].[OH2:4]",
-            catalyst,
-        ),
-        A=_kinetics(A, catalyst), Ea=Ea, phase="liquid",
-    )
+    return _catalysed_row("butanolic_fermentation", catalyst, A=A, Ea=Ea)
 
 
 def acetonic_fermentation(
-    A: float = 1.4e2, Ea: float = _FERMENTATION_EA, catalyst: str | None = None,
+    A: float | None = None, Ea: float | None = None,
+    catalyst: str | None = None,
 ) -> ReactionTemplate:
     """glucose + H2O -> acetone + 3 CO2 + 4 H2. The A of ABE, and the ONLY
     source of hydrogen in the flask.
@@ -2016,21 +1801,12 @@ def acetonic_fermentation(
     and that is what makes the flask's CO2:H2 ratio a consequence rather than a
     knob.
     """
-    return ReactionTemplate(
-        name="acetonic_fermentation",
-        smarts=_maybe_catalyse(
-            _HEXOPYRANOSE
-            + ".[OX2H2:13]>>[CH3:2][CH0:3](=[O:4])[CH3:5]"
-              ".[O:8]=[C:7]=[O:6].[O:10]=[C:9]=[O:1].[O:12]=[C:11]=[O:13]"
-              ".[H][H].[H][H].[H][H].[H][H]",
-            catalyst,
-        ),
-        A=_kinetics(A, catalyst), Ea=Ea, phase="liquid",
-    )
+    return _catalysed_row("acetonic_fermentation", catalyst, A=A, Ea=Ea)
 
 
 def homolactic_fermentation(
-    A: float = 1.0e3, Ea: float = _FERMENTATION_EA, catalyst: str | None = None,
+    A: float | None = None, Ea: float | None = None,
+    catalyst: str | None = None,
 ) -> ReactionTemplate:
     """glucose -> 2 lactic acid. `lactic-acid-pla` step 1, and the only
     fermentation in the corpus that makes no gas at all.
@@ -2060,16 +1836,7 @@ def homolactic_fermentation(
     in quantity, and a bundle carrying this beside the ABE three would report a
     slate no organism produces.
     """
-    return ReactionTemplate(
-        name="homolactic_fermentation",
-        smarts=_maybe_catalyse(
-            _HEXOPYRANOSE_ANY
-            + ">>[CH3:5][CH1:7]([OH:8])[CH0:9](=[O:10])[OH:6]"
-              ".[CH3:2][CH1:3]([OH:4])[CH0:11](=[O:12])[OH:1]",
-            catalyst,
-        ),
-        A=_kinetics(A, catalyst), Ea=Ea, phase="liquid",
-    )
+    return _catalysed_row("homolactic_fermentation", catalyst, A=A, Ea=Ea)
 
 
 # ---------------------------------------------------------------------------
@@ -2198,39 +1965,24 @@ def homolactic_fermentation(
 # opposite reason: it ends on two carboxylic acids and a ring that is no longer
 # there, and nothing in a hot acid liquor runs that backwards.
 
-_FURAN_ACID_EA_KETOSE = 140_000.0
-_FURAN_ACID_EA_ALDOSE = 130_000.0
-
 # The beta-D-fructofuranose ring, with its stereocentres spelled as "either".
 # ⚠ THE ANOMERIC -OH IS REQUIRED (`[OX2H:6]` on `:5`), so a glycoside does not
 # match and sucrose is inert until something inverts it.
 # ⚠ The exocyclic `[CH2:7][OX2H:8]` on the anomeric carbon is what makes this a
 # KETOhexose pattern: an aldofuranose carries an H in that position instead and
 # falls to the other template. Two patterns, two rows, no overlap -- measured.
-_KETOFURANOSE = (
-    "[OX2H:1][CH2:2][C;H1;@,@@:3]1[OX2:4][C;@,@@:5]([OX2H:6])([CH2:7][OX2H:8])"
-    "[C;H1;@,@@:9]([OX2H:10])[C;H1;@,@@:11]1[OX2H:12]"
-)
 
 # The D-xylofuranose ring, same device. ⚠ NOTE THAT `:4` -- the ring oxygen -- is
 # a LEAVING atom here and a SURVIVING one in the ketose pattern above. That single
 # difference is the whole distance between the two rows of this class.
-_ALDOFURANOSE = (
-    "[OX2H:1][CH2:2][C;H1;@,@@:3]1[OX2:4][C;H1;@,@@:5]([OX2H:6])"
-    "[C;H1;@,@@:7]([OX2H:8])[C;H1;@,@@:9]1[OX2H:10]"
-)
 
 # 5-HMF itself, for the rehydration. ⚠ SPECIFIC TO THE HYDROXYMETHYL, and that is
 # chemistry rather than convenience: furfural has none, does not match, and is
 # indeed the furan that survives the conditions which destroy HMF.
-_HYDROXYMETHYLFURFURAL = (
-    "[OX2H:1][CH2:2][c:3]1[cH:4][cH:5][c:6]([CH:7]=[O:8])[o:9]1"
-)
 
 
 def ketofuranose_dehydration(
-    A: float = 1.0e13,
-    Ea: float = _FURAN_ACID_EA_KETOSE,
+    A: float | None = None, Ea: float | None = None,
     catalyst: str | None = None,
 ) -> ReactionTemplate:
     """fructose -> 5-hydroxymethylfurfural + 3 H2O. `hmf-route` step 1.
@@ -2252,21 +2004,12 @@ def ketofuranose_dehydration(
     ⚠ Irreversible -- three waters eliminated into water, ending on an aromatic
     ring. See the block comment.
     """
-    return ReactionTemplate(
-        name="ketofuranose_dehydration" + ("_acid" if catalyst else ""),
-        smarts=_maybe_catalyse(
-            _KETOFURANOSE
-            + ">>[OH1:8][CH2:7][CH0:5]1=[CH1:9][CH1:11]=[CH0:3]([CH1:2]=[OH0:1])"
-              "[OH0:4]1.[OH2:6].[OH2:10].[OH2:12]",
-            catalyst,
-        ),
-        A=_kinetics(A, catalyst), Ea=Ea, phase="liquid",
-    )
+    return _catalysed_row("ketofuranose_dehydration", catalyst, "_acid",
+                          A=A, Ea=Ea)
 
 
 def aldofuranose_dehydration(
-    A: float = 1.0e13,
-    Ea: float = _FURAN_ACID_EA_ALDOSE,
+    A: float | None = None, Ea: float | None = None,
     catalyst: str | None = None,
 ) -> ReactionTemplate:
     """xylose -> furfural + 3 H2O. `furfural-route` step 2, and the catalog's
@@ -2288,20 +2031,13 @@ def aldofuranose_dehydration(
 
     ⚠ Irreversible, on its classmate's argument.
     """
-    return ReactionTemplate(
-        name="aldofuranose_dehydration" + ("_acid" if catalyst else ""),
-        smarts=_maybe_catalyse(
-            _ALDOFURANOSE
-            + ">>[OH0:6]=[CH1:5][CH0:7]1=[CH1:9][CH1:3]=[CH1:2][OH0:1]1"
-              ".[OH2:4].[OH2:8].[OH2:10]",
-            catalyst,
-        ),
-        A=_kinetics(A, catalyst), Ea=Ea, phase="liquid",
-    )
+    return _catalysed_row("aldofuranose_dehydration", catalyst, "_acid",
+                          A=A, Ea=Ea)
 
 
 def hydroxymethylfurfural_rehydration(
-    A: float = 5.0e5, Ea: float = 110_000.0, catalyst: str | None = None,
+    A: float | None = None, Ea: float | None = None,
+    catalyst: str | None = None,
 ) -> ReactionTemplate:
     """5-HMF + 2 H2O -> levulinic acid + formic acid. `hmf-route` step 2, which
     the corpus itself labels *"the side reaction that limits yield"*.
@@ -2348,17 +2084,8 @@ def hydroxymethylfurfural_rehydration(
 
     ⚠ Irreversible: it ends on two carboxylic acids and a ring that is gone.
     """
-    return ReactionTemplate(
-        name="hydroxymethylfurfural_rehydration" + ("_acid" if catalyst else ""),
-        smarts=_maybe_catalyse(
-            _HYDROXYMETHYLFURFURAL
-            + ".[OX2H2:10].[OX2H2:11]"
-              ">>[CH3:2][CH0:3](=[OH0:1])[CH2:4][CH2:5][CH0:6](=[OH0:9])[OH1:10]"
-              ".[CH1:7](=[OH0:8])[OH1:11]",
-            catalyst,
-        ),
-        A=_kinetics(A, catalyst), Ea=Ea, phase="liquid",
-    )
+    return _catalysed_row("hydroxymethylfurfural_rehydration", catalyst,
+                          "_acid", A=A, Ea=Ea)
 
 
 # bundles

@@ -1,24 +1,28 @@
-"""T1 -- templates as data: the table, the generated module, and the equality.
+"""T1 -- templates as data: the table, the generated module, and the two sets.
 
-**THE TEST THIS FILE EXISTS FOR IS `test_every_row_reproduces_its_constructor`.**
 Fifty-seven templates were transcribed out of Python into a PSV, and a
 transcription is exactly the kind of change that looks finished and is not: a
 dropped `orders=` tuple silently un-declares a rate law, a dropped
 `solid_catalyst` un-gates a heterogeneous catalyst, a dropped `hammett_rho`
 turns a staged nitration into one stage. P4 measured all three from the other
-side of the same hole in `TemplateSpec`. So the table is checked against the
-code it will replace, field for field, and stays checked until the switch-over
-deletes the constructors.
+side of the same hole in `TemplateSpec`.
 
-`test_the_columns_cover_every_field` is the second half of P4's lesson, and it
-is the half that generalises: the assertion is about the SET of fields rather
-than about whichever field somebody remembered, so a field added to
-`ReactionTemplate` tomorrow fails this file rather than going missing for three
-milestones.
+The first half of T1 checked every row against the constructor it copied, field
+for field. That test retired with the switch-over, because the constructors now
+READ their row: comparing them would compare the table with itself.
+`test_the_only_construction_sites_are_the_loaders` is what took its place, and it
+is the inverse claim -- if no code outside the loader can build a template, then
+every template IS a row, which is the property the equality check was defending.
+
+Both surviving structural tests are about a SET rather than about whichever
+field or file somebody remembered: the set of `ReactionTemplate` fields
+(`test_the_columns_cover_every_field`) and the set of construction sites. That is
+the half of P4's lesson that generalises.
 """
 
 from __future__ import annotations
 
+import importlib
 import os
 import sys
 from dataclasses import fields
@@ -49,18 +53,63 @@ def rows():
 
 
 # ---------------------------------------------------------------------------
-# 1. THE TABLE AGAINST THE CODE IT REPLACES
+# 1. THE TABLE IS THE ONLY PLACE A TEMPLATE COMES FROM
 # ---------------------------------------------------------------------------
 
 
-def test_every_row_reproduces_its_constructor(rows):
-    """Field for field, against every ``ReactionTemplate(`` site in the tree.
+def test_the_only_construction_sites_are_the_loaders():
+    """Nothing under `src/chemsim` builds a template except from a row.
 
-    The constructors are found by walking the source, not by a list here, so a
-    template added to `synthesis.py` and forgotten in the table fails this.
+    Found by walking the whole package, not by a list here, so a template
+    hand-written into `synthesis.py` tomorrow fails this instead of quietly
+    becoming a fifty-eighth template that no report counts and no extractor can
+    write. The four loaders and the save-file path are named in
+    `bt.CONSTRUCTION_SITES` with the reason each is allowed.
     """
-    problems = bt.verify(rows)
-    assert problems == []
+    bt.check_construction_sites()
+    assert set(bt.construction_sites()) == set(bt.CONSTRUCTION_SITES)
+
+
+def test_every_public_constructor_returns_its_row(rows):
+    """The 57 constructors are wrappers now: same name, same fields.
+
+    They still exist and are still the public API -- `catalyst=`, `eta_a=`, `A=`
+    are keyword arguments a caller can move and a row cannot be -- but called
+    with their defaults they hand back exactly the row they are named for.
+    """
+    # NOTE: ``import_module`` and not ``from chemsim.reactions import
+    # electrochemistry`` -- the package re-exports a BUNDLE FUNCTION of that
+    # name, so the plain import binds the function and the four electrode
+    # templates go missing. ``ui.examples.full_library`` has that bug today; see
+    # BACKLOG.md.
+    mods = [importlib.import_module(m) for m in (
+        "chemsim.reactions.library",
+        "chemsim.reactions.synthesis",
+        "chemsim.reactions.electrochemistry",
+        "chemsim.properties.electrolyte",
+    )]
+
+    made = {}
+    for mod in mods:
+        for name in dir(mod):
+            fn = getattr(mod, name)
+            if (name.startswith("_") or not callable(fn)
+                    or getattr(fn, "__module__", None) != mod.__name__):
+                continue
+            try:
+                got = fn()
+            except Exception:                              # noqa: BLE001, S112
+                continue
+            for tmpl in (got if isinstance(got, list) else [got]):
+                if isinstance(tmpl, ReactionTemplate):
+                    made.setdefault(tmpl.name, tmpl)
+
+    data_fields = [f.name for f in fields(ReactionTemplate)
+                   if not f.name.startswith("_")]
+    for name, rec in TEMPLATES.items():
+        assert name in made, f"{name} is a row no constructor hands back"
+        for f in data_fields:
+            assert getattr(made[name], f) == getattr(rec, f), (name, f)
 
 
 def test_the_columns_cover_every_field():

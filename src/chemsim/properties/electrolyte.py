@@ -388,94 +388,73 @@ def electrolyte_provider(
 # Dissociation as graph rewrites
 # ---------------------------------------------------------------------------
 # Written with water explicitly on both sides so delta_n = 0 -- see the module
-# docstring. A is deliberately large and Ea zero: proton transfer is diffusion
-# limited, far faster than anything else in the pot, so these equilibrate
-# essentially instantly and the stiff solver is what makes that affordable.
-
-# Proton transfer is diffusion limited -- far faster than anything else in the pot
-# -- so these equilibrate essentially instantly and the stiff solver is what makes
-# that affordable. Ea is set above the largest dissociation enthalpy in the table
-# (water's, 55.8 kJ/mol) so the elementary-barrier clamp in detailed_balance does
-# not have to fire for the ordinary case; A is raised to keep the rate fast.
-_FAST_A = 1.0e12
-_FAST_EA = 60_000.0
+# docstring. Proton transfer is diffusion limited -- far faster than anything
+# else in the pot -- so these equilibrate essentially instantly and the stiff
+# solver is what makes that affordable. Ea is set above the largest dissociation
+# enthalpy in the table (water's, 55.8 kJ/mol) so the elementary-barrier clamp in
+# detailed_balance does not have to fire for the ordinary case; A is raised to
+# keep the rate fast. Both numbers are the rows' now -- see
+# ``data/templates/templates.psv``.
 
 
-def dissociation_templates(A: float = _FAST_A, Ea: float = _FAST_EA):
-    """Templates covering the common ionizable groups, plus water autoionization."""
-    from chemsim.reactions import ReactionTemplate
+def dissociation_templates(A: float | None = None, Ea: float | None = None):
+    """Templates covering the common ionizable groups, plus water autoionization.
+
+    NOTE: this is the one place Layer 1 reaches up into Layer 2, and it did so
+    before the templates became data. Imported inside the function for that
+    reason; see this module's docstring.
+    """
+    from chemsim.reactions.library import _row
 
     return [
-        ReactionTemplate(
-            name="water_autoionization",
-            smarts="[OX2H2:1].[OX2H2:2]>>[OH3+:1].[OH-:2]",
-            A=A, Ea=Ea, reversible=True,
-        ),
-        ReactionTemplate(
-            name="carboxylic_acid_dissociation",
-            smarts="[CX3:1](=[O:2])[OX2H1:3].[OX2H2:4]>>[CX3:1](=[O:2])[O-:3].[OH3+:4]",
-            A=A, Ea=Ea, reversible=True,
-        ),
-        ReactionTemplate(
-            name="phenol_dissociation",
-            smarts="[c:1][OX2H1:2].[OX2H2:3]>>[c:1][O-:2].[OH3+:3]",
-            A=A, Ea=Ea, reversible=True,
-        ),
-        ReactionTemplate(
-            name="hydrogen_halide_dissociation",
-            smarts="[F,Cl,Br,I;H1:1].[OX2H2:2]>>[F,Cl,Br,I;-:1].[OH3+:2]",
-            A=A, Ea=Ea, reversible=True,
-        ),
-        ReactionTemplate(
-            name="mineral_oxyacid_dissociation",
-            smarts="[S,N,P;+0,+1:1](=[O:2])[OX2H1:3].[OX2H2:4]"
-                   ">>[S,N,P:1](=[O:2])[O-:3].[OH3+:4]",
-            A=A, Ea=Ea, reversible=True,
-        ),
-        # ⚠⚠⚠ WRITTEN IN THE PROTONATION DIRECTION, AND IT REPLACES A
-        # ``ammonium_dissociation`` THAT COULD NOT DEPROTONATE AN AMMONIUM.
-        #
-        # The old pattern was ``[NX4H+:1].[OX2H2:2]>>[NX3:1].[OH3+:2]``. In
-        # SMARTS a bare ``H`` inside brackets means EXACTLY ONE hydrogen, so
-        # ``[NX4H+]`` matches a protonated TERTIARY amine and nothing else --
-        # measured, it is False against [NH4+], against anilinium, against
-        # methylammonium and against pyridinium, and True only against
-        # C[NH+](C)C. The template named for the ammonium ion was the one ion it
-        # could not touch, and no example ever caught it because nothing in the
-        # corpus can put a trialkylammonium in a flask.
-        #
-        # ⚠⚠ AND THE DIRECTION IS THE POINT, NOT THE PATTERN. Discovery in
-        # ``network.builder`` runs templates FORWARD ONLY -- a reversible
-        # template's reverse is a concrete reaction in the network, but it is
-        # never used to enumerate species. So a deprotonation-forward template
-        # can only find an anilinium in a flask that already contains one, and a
-        # flask of aniline and mixed acid does not. Writing the same equilibrium
-        # protonation-forward finds it from the free base, which is the
-        # ``ester_hydrolysis`` decision again: when only one direction is
-        # discoverable, the direction you need is the direction you declare.
-        # Nothing is lost by the swap -- ``reversible=True`` puts the
-        # deprotonation in the network with its rate fixed by detailed balance
-        # from the same pKa.
-        #
-        # ⚠ ``[OX2H2;+0:2]`` and not ``[OX2H2:2]``: a mapped atom keeps its
-        # formal charge through a rewrite, so the un-annotated form hands back
-        # water with a +1 on it. ``_element_charge_balance`` catches that and
-        # drops the rewrite, which means the bug's symptom is a template that
-        # silently does nothing rather than a wrong number.
-        #
-        # ⚠ AN AMIDE, A NITRO GROUP, A NITRILE AND A PYRIDINE ARE ALL EXCLUDED
-        # and all four are measured in ``tests/test_protonation.py``. The amide
-        # exclusion is chemistry: its conjugate acid is a different pair with a
-        # pKa near zero, and this table does not carry it. The pyridine
-        # exclusion is a LIMIT and it is named -- an aromatic ring nitrogen is
-        # X2, not X3, so the pyridinium row now in ``_PAIRS`` is priced and
-        # still unreachable.
-        ReactionTemplate(
-            name="amine_protonation",
-            smarts="[NX3;!$([N+]);!$([NX3][CX3]=O);!$([NX3]=*);!$([NX3]#*):1]"
-                   ".[OH3+:2]>>[NX4+:1].[OX2H2;+0:2]",
-            A=A, Ea=Ea, reversible=True,
-        ),
+        _row(name, A=A, Ea=Ea)
+        for name in (
+            "water_autoionization",
+            "carboxylic_acid_dissociation",
+            "phenol_dissociation",
+            "hydrogen_halide_dissociation",
+            "mineral_oxyacid_dissociation",
+            # WARNING: ``amine_protonation`` IS WRITTEN IN THE PROTONATION
+            # DIRECTION, and it replaced an ``ammonium_dissociation`` that could
+            # not deprotonate an ammonium.
+            #
+            # The old pattern was ``[NX4H+:1].[OX2H2:2]>>[NX3:1].[OH3+:2]``. In
+            # SMARTS a bare ``H`` inside brackets means EXACTLY ONE hydrogen, so
+            # ``[NX4H+]`` matches a protonated TERTIARY amine and nothing else --
+            # measured, it is False against [NH4+], against anilinium, against
+            # methylammonium and against pyridinium, and True only against
+            # C[NH+](C)C. The template named for the ammonium ion was the one ion
+            # it could not touch, and no example ever caught it because nothing in
+            # the corpus can put a trialkylammonium in a flask.
+            #
+            # AND THE DIRECTION IS THE POINT, NOT THE PATTERN. Discovery in
+            # ``network.builder`` runs templates FORWARD ONLY -- a reversible
+            # template's reverse is a concrete reaction in the network, but it is
+            # never used to enumerate species. So a deprotonation-forward template
+            # can only find an anilinium in a flask that already contains one, and
+            # a flask of aniline and mixed acid does not. Writing the same
+            # equilibrium protonation-forward finds it from the free base, which is
+            # the ``ester_hydrolysis`` decision again: when only one direction is
+            # discoverable, the direction you need is the direction you declare.
+            # Nothing is lost by the swap -- ``reversible=True`` puts the
+            # deprotonation in the network with its rate fixed by detailed balance
+            # from the same pKa.
+            #
+            # ``[OX2H2;+0:2]`` and not ``[OX2H2:2]``: a mapped atom keeps its
+            # formal charge through a rewrite, so the un-annotated form hands back
+            # water with a +1 on it. ``_element_charge_balance`` catches that and
+            # drops the rewrite, which means the bug's symptom is a template that
+            # silently does nothing rather than a wrong number.
+            #
+            # An amide, a nitro group, a nitrile and a pyridine are all excluded
+            # and all four are measured in ``tests/test_protonation.py``. The amide
+            # exclusion is chemistry: its conjugate acid is a different pair with a
+            # pKa near zero, and this table does not carry it. The pyridine
+            # exclusion is a LIMIT and it is named -- an aromatic ring nitrogen is
+            # X2, not X3, so the pyridinium row now in ``_PAIRS`` is priced and
+            # still unreachable.
+            "amine_protonation",
+        )
     ]
 
 

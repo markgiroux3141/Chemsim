@@ -64,14 +64,16 @@ tuned away.
 from __future__ import annotations
 
 from chemsim.constants import FARADAY
+from chemsim.reactions.library import _row
 from chemsim.reactions.template import ReactionTemplate
+from chemsim.reactions.template_data import TEMPLATES
 
 # The electrochemical transfer coefficient, dimensionless, in [0, 1]. 0.5 is the
 # symmetric barrier every Butler-Volmer treatment starts from and the value
 # measured for most one-electron transfers at a metal electrode. It arrives here
 # as ``ReactionTemplate.alpha`` because the two really are the same coefficient
 # -- see that class's docstring for the algebra.
-TRANSFER_COEFFICIENT = 0.5
+TRANSFER_COEFFICIENT = TEMPLATES["water_electrolysis"].alpha
 
 # Pre-exponential for an electrode reaction: the rate in mol/(L s) at unit
 # concentrations and zero barrier.
@@ -113,21 +115,24 @@ TRANSFER_COEFFICIENT = 0.5
 # ``eta_a = (RT / alpha n F) ln(j / j0)``, and it is already declared once as
 # ``eta_a``. Splitting it across both would count it twice and would let an
 # author choose which product a flask makes while appearing to derive it.
-_A_ELECTRODE = 5.0e-8
 
+def _electrode_row(
+    name: str, A: float | None, eta_a: float | None,
+) -> ReactionTemplate:
+    """An electrode row, whose declared quantity is really a VOLTAGE.
 
-def _activation_barrier(electrons: int, eta_a: float) -> float:
-    """Activation overpotential (V) -> barrier (J/mol). ``Ea = n F eta_a``.
-
-    A function rather than four hand-multiplied literals so that what is declared
-    stays the VOLTAGE, which is the quantity Tafel data is published in and the
-    quantity a reader can check.
+    ``Ea = n F eta_a``, and ``n`` is the row's own ``electrons`` -- so the
+    activation overpotential is what a caller overrides and what the row's
+    ``source`` cell records, which is the quantity Tafel data is published in
+    and the quantity a reader can check. ``templates.psv`` carries the product,
+    because two numbers in one file that must agree is drift waiting to happen.
     """
-    return electrons * FARADAY * eta_a
+    Ea = None if eta_a is None else TEMPLATES[name].electrons * FARADAY * eta_a
+    return _row(name, A=A, Ea=Ea)
 
 
 def water_electrolysis(
-    A: float = _A_ELECTRODE, eta_a: float = 0.80,
+    A: float | None = None, eta_a: float | None = None,
 ) -> ReactionTemplate:
     """2 H2O -> 2 H2 + O2. The reference cell, and the one everything competes with.
 
@@ -148,21 +153,16 @@ def water_electrolysis(
     demonstration electrolyser needs about 2 V to bubble rather than the 1.23 V
     its thermodynamics asks for.
     """
-    return ReactionTemplate(
-        name="water_electrolysis",
-        # ⚠ The two product H2 are UNMAPPED and the O2 carries both mapped
-        # oxygens. Mapping the hydrogens would need them written as atoms, and
-        # ``run``'s RemoveHs would then collapse them onto a heavy neighbour they
-        # do not have; unmapped, RDKit builds them fresh and the balance check in
-        # the builder is what confirms it got them right.
-        smarts="[OX2H2:1].[OX2H2:2]>>[H][H].[H][H].[O:1]=[O:2]",
-        A=A, Ea=_activation_barrier(4, eta_a),
-        reversible=True, alpha=TRANSFER_COEFFICIENT, electrons=4,
-    )
+    # ⚠ The two product H2 are UNMAPPED and the O2 carries both mapped
+    # oxygens. Mapping the hydrogens would need them written as atoms, and
+    # ``run``'s RemoveHs would then collapse them onto a heavy neighbour they
+    # do not have; unmapped, RDKit builds them fresh and the balance check in
+    # the builder is what confirms it got them right.
+    return _electrode_row("water_electrolysis", A, eta_a)
 
 
 def halide_electrolysis(
-    A: float = _A_ELECTRODE, eta_a: float = 0.40,
+    A: float | None = None, eta_a: float | None = None,
 ) -> ReactionTemplate:
     """2 X- + 2 H2O -> X2 + H2 + 2 OH-, for X = Cl, Br, I. The chloralkali cell.
 
@@ -186,17 +186,11 @@ def halide_electrolysis(
     at 3 V evolve chlorine rather than oxygen even though oxygen is
     thermodynamically the easier product by more than a volt.
     """
-    return ReactionTemplate(
-        name="halide_electrolysis",
-        smarts="[Cl,Br,I;-1:1].[Cl,Br,I;-1:2].[OX2H2:3].[OX2H2:4]"
-               ">>[*;+0:1][*;+0:2].[OH-:3].[OH-:4].[H][H]",
-        A=A, Ea=_activation_barrier(2, eta_a),
-        reversible=True, alpha=TRANSFER_COEFFICIENT, electrons=2,
-    )
+    return _electrode_row("halide_electrolysis", A, eta_a)
 
 
 def kolbe_electrolysis(
-    A: float = _A_ELECTRODE, eta_a: float = 1.20,
+    A: float | None = None, eta_a: float | None = None,
 ) -> ReactionTemplate:
     """2 RCOO- + 2 H2O -> R-R + 2 CO2 + H2 + 2 OH-. Kolbe, 1849.
 
@@ -222,19 +216,11 @@ def kolbe_electrolysis(
     that a large overpotential eventually beats. Under those conditions the
     catalog row's "platinum anode, concentrated" is the whole recipe.
     """
-    return ReactionTemplate(
-        name="kolbe_electrolysis",
-        smarts="[#6:1][CX3:2](=[O:3])[O-:4].[#6:5][CX3:6](=[O:7])[O-:8]"
-               ".[OX2H2:9].[OX2H2:10]"
-               ">>[#6:1][#6:5].[O:3]=[C;+0:2]=[O;+0:4].[O:7]=[C;+0:6]=[O;+0:8]"
-               ".[OH-:9].[OH-:10].[H][H]",
-        A=A, Ea=_activation_barrier(2, eta_a),
-        reversible=True, alpha=TRANSFER_COEFFICIENT, electrons=2,
-    )
+    return _electrode_row("kolbe_electrolysis", A, eta_a)
 
 
 def alkene_hydrodimerisation(
-    A: float = 1.0e8, Ea: float = 55_000.0,
+    A: float | None = None, Ea: float | None = None,
 ) -> ReactionTemplate:
     """2 CH2=CH-C#N + H2 -> NC(CH2)4CN. Baizer's adiponitrile coupling.
 
@@ -276,12 +262,7 @@ def alkene_hydrodimerisation(
     Written over ``[CH2]=[CH]C#N``, so it fires on acrylonitrile and on
     methacrylonitrile and on nothing that has no nitrile to activate it.
     """
-    return ReactionTemplate(
-        name="alkene_hydrodimerisation",
-        smarts="[CH2:1]=[CH1:2][C:3]#[N:4].[CH2:5]=[CH1:6][C:7]#[N:8].[H][H]"
-               ">>[N:4]#[C:3][CH2:2][CH2:1][CH2:5][CH2:6][C:7]#[N:8]",
-        A=A, Ea=Ea, reversible=True,
-    )
+    return _row("alkene_hydrodimerisation", A=A, Ea=Ea)
 
 
 def electrochemistry() -> list[ReactionTemplate]:

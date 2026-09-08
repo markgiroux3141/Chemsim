@@ -27,7 +27,7 @@ touched; re-use a number already measured *this* session rather than re-running.
 | number | command |
 |---|---|
 | tests | `python -m pytest --co -q` |
-| templates | `grep -c 'ReactionTemplate(' src/chemsim/reactions/*.py src/chemsim/properties/electrolyte.py` |
+| templates | `python tools/build_templates.py --check` (the row count; the old `grep -c 'ReactionTemplate('` counts loaders now) |
 | catalog shape | `python tools/catalog.py` |
 | readiness columns | `data/catalog/COVERAGE_REPORT.md` (regenerate with `python validation/catalog_coverage.py`) |
 | playable routes | `data/catalog/PLAYABLE.md` (regenerate with `python tools/build_playable.py`, ~50 s) |

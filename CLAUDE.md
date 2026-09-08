@@ -31,7 +31,7 @@ python tools/catalog.py                         # structural validation of the P
 python validation/catalog_coverage.py           # regenerates data/catalog/COVERAGE_REPORT.md
 python tools/build_playable.py                  # regenerates data/catalog/PLAYABLE.md (~50 s)
 python tools/build_route_index.py               # regenerates data/catalog/ROUTE_INDEX.md
-python examples/named_routes.py                 # 17 routes end to end (~30 s)
+python examples/named_routes.py                 # BROKEN: dies on route 2, see BACKLOG T1d
 pwsh tools/loop/run-loop.ps1 -MaxSessions 3     # /session on repeat, unattended
 ```
 
@@ -49,8 +49,8 @@ properties/ thermochemistry (curated > Benson > Joback), volatility, condensed, 
 matter/     Molecule (canonical SMILES identity). Where RDKit is *supposed* to live.
 ```
 
-Two known breaches, both real: `properties/electrolyte.py:406` lazily imports
-`reactions.ReactionTemplate` upward; `reactions/template.py:25`,
+Two known breaches, both real: `properties/electrolyte.py:407` lazily imports
+`reactions.library._row` upward; `reactions/template.py:25`,
 `reactions/hammett.py:182` and `properties/fragmentation.py` import rdkit
 directly, so the README's "nothing above Layer 0 imports rdkit" is false today.
 

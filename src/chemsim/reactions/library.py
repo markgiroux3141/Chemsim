@@ -123,6 +123,7 @@ so needs none of this, which is why it was cheap and this is not finished.
 from __future__ import annotations
 
 from chemsim.reactions.template import ReactionTemplate
+from chemsim.reactions.template_data import TEMPLATE_FIELDS, TEMPLATES
 
 # mol/L of catalyst that the APPARENT pre-exponentials below were standing in for.
 # 0.1 M is an ordinary Fischer-esterification loading (a couple of mole percent of
@@ -194,6 +195,92 @@ def _kinetics(A: float, catalyst: str | None) -> float:
     """
     return A if catalyst is None else A / CATALYST_REFERENCE
 
+
+def _uncatalyse(smarts: str) -> str:
+    """The inverse of ``_maybe_catalyse``: drop the map-99 slot from both sides.
+
+    Needed because a ``templates.psv`` row carries the template its constructor
+    built with its DEFAULT arguments -- so where the default catalyst is on, the
+    row's SMARTS is already catalysed and ``catalyst=None`` has to undo it. The
+    slot is always last on each side because ``_maybe_catalyse`` appends it.
+    """
+    reactants, products = smarts.split(">>")
+    lhs, tag = reactants.rsplit(".", 1)
+    rhs, tag_out = products.rsplit(".", 1)
+    if ":99]" not in tag or tag != tag_out:
+        raise ValueError(
+            f"{smarts!r} does not end in a map-99 catalyst slot on both sides")
+    return f"{lhs}>>{rhs}"
+
+
+def _row(name: str, **over) -> ReactionTemplate:
+    """The ``templates.psv`` row called ``name``, built.
+
+    An override left ``None`` means "the row's own value", which is what keeps a
+    default in exactly one place -- the table -- rather than once there and once
+    in a Python signature.
+    """
+    rec = TEMPLATES[name]
+    kw = {f: getattr(rec, f) for f in TEMPLATE_FIELDS}
+    kw.update({k: v for k, v in over.items() if v is not None})
+    return ReactionTemplate(**kw)
+
+
+def _catalysed_row(
+    name: str, catalyst: str | None, suffix: str = "",
+    A: float | None = None, **over,
+) -> ReactionTemplate:
+    """A row whose HOMOGENEOUS catalyst the caller chooses.
+
+    The row may itself be catalysed; this undoes whatever the row carries and
+    then applies ``catalyst``, so an ``A`` -- the caller's or the row's own --
+    is always on the uncatalysed basis, exactly as ``_kinetics`` always saw it.
+    Undoing and re-applying is exact: every pre-exponential in the table
+    round-trips through ``CATALYST_REFERENCE`` to the last bit.
+
+    ``suffix`` is what the catalysed form adds to the name (``_acid``, ``_base``).
+    Only rows whose default catalyst is OFF carry one, so a row that arrives
+    already catalysed keeps its name whichever catalyst is asked for.
+    """
+    rec = TEMPLATES[name]
+    kw = {f: getattr(rec, f) for f in TEMPLATE_FIELDS}
+    if ":99]" in kw["smarts"]:
+        kw["smarts"] = _uncatalyse(kw["smarts"])
+        kw["A"] *= CATALYST_REFERENCE
+        if kw["orders"]:
+            kw["orders"] = kw["orders"][:-1]
+    if A is not None:
+        kw["A"] = A
+    kw.update({k: v for k, v in over.items() if v is not None})
+    kw["name"] = name + (suffix if catalyst else "")
+    kw["smarts"] = _maybe_catalyse(kw["smarts"], catalyst)
+    kw["A"] = _kinetics(kw["A"], catalyst)
+    if catalyst and kw["orders"]:
+        # the extra reactant slot needs its own exponent, and a catalyst's is 1
+        kw["orders"] = tuple(kw["orders"]) + (1.0,)
+    return ReactionTemplate(**kw)
+
+
+def _surface_row(
+    name: str, catalyst: str | None, A: float | None = None, **over,
+) -> ReactionTemplate:
+    """A row whose SOLID catalyst the caller chooses. ``_catalysed_row``'s twin.
+
+    A crystal is a GATE rather than a slot in the SMARTS, so nothing here
+    touches the pattern -- only ``A``, on the ``SOLID_CATALYST_REFERENCE``
+    basis, and the gate itself.
+    """
+    rec = TEMPLATES[name]
+    kw = {f: getattr(rec, f) for f in TEMPLATE_FIELDS}
+    if kw["solid_catalyst"] is not None:
+        kw["A"] *= SOLID_CATALYST_REFERENCE
+    if A is not None:
+        kw["A"] = A
+    kw.update({k: v for k, v in over.items() if v is not None})
+    kw["A"] = _surface_kinetics(kw["A"], catalyst)
+    kw["solid_catalyst"] = catalyst
+    return ReactionTemplate(**kw)
+
 # ---------------------------------------------------------------------------
 # esterification
 # ---------------------------------------------------------------------------
@@ -204,9 +291,9 @@ def _kinetics(A: float, catalyst: str | None) -> float:
 
 
 def esterification(
-    A: float = 5.0e7,
-    Ea: float = 55_000.0,
-    alpha: float = 0.0,
+    A: float | None = None,
+    Ea: float | None = None,
+    alpha: float | None = None,
     catalyst: str | None = None,
 ):
     """Carboxylic acid + alcohol <=> ester + water.
@@ -229,15 +316,8 @@ def esterification(
     catalyst. Had it been put on the forward direction only, adding acid would
     have moved the equilibrium.
     """
-    return ReactionTemplate(
-        name="fischer_esterification" + ("_acid" if catalyst else ""),
-        smarts=_maybe_catalyse(
-            "[CX3:1](=[O:2])[OX2H1:3].[OX2H1:4][CX4:5]"
-            ">>[CX3:1](=[O:2])[O:4][CX4:5].[OH2:3]",
-            catalyst,
-        ),
-        A=_kinetics(A, catalyst), Ea=Ea, alpha=alpha, reversible=True,
-    )
+    return _catalysed_row("fischer_esterification", catalyst, "_acid",
+                          A=A, Ea=Ea, alpha=alpha)
 
 
 # ---------------------------------------------------------------------------
@@ -259,7 +339,7 @@ def esterification(
 
 
 def ether_condensation(
-    A: float = 1.0e11, Ea: float = 125_000.0,
+    A: float | None = None, Ea: float | None = None,
     catalyst: str | None = None,
 ):
     """2 R-OH -> R-O-R + water. The lower-temperature dehydration.
@@ -270,18 +350,11 @@ def ether_condensation(
     Note the two slots match independently, so a mixed feed gives the mixed
     ether as well as both symmetrical ones.
     """
-    return ReactionTemplate(
-        name="ether_condensation" + ("_acid" if catalyst else ""),
-        smarts=_maybe_catalyse(
-            "[CX4:1][OX2H1:2].[CX4:3][OX2H1:4]>>[C:1][O:2][C:3].[OH2:4]",
-            catalyst,
-        ),
-        A=_kinetics(A, catalyst), Ea=Ea,
-    )
+    return _catalysed_row("ether_condensation", catalyst, "_acid", A=A, Ea=Ea)
 
 
 def alkene_dehydration(
-    A: float = 1.0e13, Ea: float = 160_000.0,
+    A: float | None = None, Ea: float | None = None,
     catalyst: str | None = None,
 ):
     """R-CH2-CH2-OH -> alkene + water. The higher-temperature dehydration.
@@ -293,13 +366,7 @@ def alkene_dehydration(
 
     Methanol correctly refuses -- there is no beta carbon to eliminate towards.
     """
-    return ReactionTemplate(
-        name="alkene_dehydration" + ("_acid" if catalyst else ""),
-        smarts=_maybe_catalyse(
-            "[CX4;!H0:1][CX4:2][OX2H1:3]>>[C:1]=[C:2].[OH2:3]", catalyst
-        ),
-        A=_kinetics(A, catalyst), Ea=Ea,
-    )
+    return _catalysed_row("alkene_dehydration", catalyst, "_acid", A=A, Ea=Ea)
 
 
 # ---------------------------------------------------------------------------
@@ -320,22 +387,17 @@ def alkene_dehydration(
 #   over_ox     Ea 50 kJ/mol -- peroxide oxidation of an aldehyde, faster
 
 
-def aerobic_oxidation(A: float = 1.0e9, Ea: float = 65_000.0):
+def aerobic_oxidation(A: float | None = None, Ea: float | None = None):
     """R-CH(OH)- + O2 -> R-C(=O)- + H2O2. Alcohol to carbonyl.
 
     ``[CX4;!H0:1]`` is the whole selectivity model -- see the module docstring.
     Primary alcohols give aldehydes, secondary give ketones, tertiary refuse,
     and a polyol gives every product its distinct sites allow.
     """
-    return ReactionTemplate(
-        name="aerobic_oxidation",
-        smarts="[CX4;!H0:1][OX2H1:2].[OX1:3]=[OX1:4]"
-               ">>[C:1]=[O:2].[OX2H1:3][OX2H1:4]",
-        A=A, Ea=Ea,
-    )
+    return _row("aerobic_oxidation", A=A, Ea=Ea)
 
 
-def peroxide_over_oxidation(A: float = 1.0e8, Ea: float = 50_000.0):
+def peroxide_over_oxidation(A: float | None = None, Ea: float | None = None):
     """R-CHO + H2O2 -> R-COOH + water. Aldehyde to carboxylic acid.
 
     Restricted to an ALDEHYDE (``[CX3H1:1]=[OX1:2]``) rather than any carbonyl,
@@ -344,12 +406,7 @@ def peroxide_over_oxidation(A: float = 1.0e8, Ea: float = 50_000.0):
     stops cleanly at acetone while ethanol runs on to acetic acid -- a
     difference nobody declared.
     """
-    return ReactionTemplate(
-        name="peroxide_over_oxidation",
-        smarts="[CX3H1:1]=[OX1:2].[OX2H1:3][OX2H1:4]"
-               ">>[CX3:1](=[O:2])[OX2H1:3].[OH2:4]",
-        A=A, Ea=Ea,
-    )
+    return _row("peroxide_over_oxidation", A=A, Ea=Ea)
 
 
 # ---------------------------------------------------------------------------
@@ -416,7 +473,7 @@ def peroxide_over_oxidation(A: float = 1.0e8, Ea: float = 50_000.0):
 
 
 def sulfur_dioxide_oxidation(
-    A: float = 1.0e9, Ea: float = 40_000.0,
+    A: float | None = None, Ea: float | None = None,
 ) -> ReactionTemplate:
     """SO2 + NO2 + H2O -> H2SO4 + NO. The lead chamber's core step.
 
@@ -433,16 +490,11 @@ def sulfur_dioxide_oxidation(
     perfectly happily and is not sulfuric acid. Both were caught by reading the
     product SMILES rather than by anything failing.
     """
-    return ReactionTemplate(
-        name="sulfur_dioxide_oxidation_by_nitrogen_dioxide",
-        smarts="[O:1]=[S:2]=[O:3].[N+:4](=[O:5])[O-:6].[OX2H2:7]"
-               ">>[O:1]=[S:2](=[O:3])([O+0;H1:6])[O:7].[N+0;H0:4]=[O:5]",
-        A=A, Ea=Ea, phase="gas", reversible=True,
-    )
+    return _row("sulfur_dioxide_oxidation_by_nitrogen_dioxide", A=A, Ea=Ea)
 
 
 def nitric_oxide_reoxidation(
-    A: float = 4.35e10, Ea: float = -4_400.0,
+    A: float | None = None, Ea: float | None = None,
 ) -> ReactionTemplate:
     """2 NO + O2 -> 2 NO2. The step that makes the carrier a CYCLE.
 
@@ -455,12 +507,7 @@ def nitric_oxide_reoxidation(
     ceiling is DERIVED by detailed balance from the formation data rather than
     declared as an operating limit.
     """
-    return ReactionTemplate(
-        name="nitric_oxide_reoxidation",
-        smarts="[N;H0:1]=[O:2].[N;H0:3]=[O:4].[OX1:5]=[OX1:6]"
-               ">>[N+1;H0:1](=[O:2])[O-:5].[N+1;H0:3](=[O:4])[O-:6]",
-        A=A, Ea=Ea, phase="gas", reversible=True,
-    )
+    return _row("nitric_oxide_reoxidation", A=A, Ea=Ea)
 
 
 # ---------------------------------------------------------------------------
@@ -555,7 +602,7 @@ def nitric_oxide_reoxidation(
 
 
 def sulfur_combustion(
-    A: float = 1.0e10, Ea: float = 100_000.0,
+    A: float | None = None, Ea: float | None = None,
 ) -> ReactionTemplate:
     """S8 + 8 O2 -> 8 SO2. Native sulfur to the chamber's feedstock.
 
@@ -570,16 +617,7 @@ def sulfur_combustion(
     trace of condensate landed in the ``DRYOUT_MOLES`` band and the solve created
     oxygen -- and that half is closed; see the block comment above.
     """
-    ring = "[S:1]1[S:2][S:3][S:4][S:5][S:6][S:7][S:8]1"
-    o2 = ".".join(f"[OX1:{9 + 2 * i}]=[OX1:{10 + 2 * i}]" for i in range(8))
-    so2 = ".".join(f"[O:{9 + 2 * i}]=[S:{1 + i}]=[O:{10 + 2 * i}]"
-                   for i in range(8))
-    return ReactionTemplate(
-        name="sulfur_combustion",
-        smarts=f"{ring}.{o2}>>{so2}",
-        A=A, Ea=Ea, phase="gas",
-        orders=(1.0, 1.0) + (0.0,) * 7,
-    )
+    return _row("sulfur_combustion", A=A, Ea=Ea)
 
 
 # ⚠ THE LOW-ORDER WORKAROUND IS STILL BLOCKED BY THE ELEMENT TABLE, CORRECTLY,
@@ -703,7 +741,7 @@ def sulfur_combustion(
 
 
 def sulfur_trioxide_hydration(
-    A: float = 1.0e10, Ea: float = 23_600.0,
+    A: float | None = None, Ea: float | None = None,
 ) -> ReactionTemplate:
     """SO3 + H2O -> H2SO4. The receiver on the end of a vitriol retort.
 
@@ -724,12 +762,7 @@ def sulfur_trioxide_hydration(
     Gas phase. The liquid channel was built and REFUSED on a measurement -- it
     buys 0.000% and costs a 2.9e-06 mol projection residual.
     """
-    return ReactionTemplate(
-        name="sulfur_trioxide_hydration",
-        smarts="[OX1:1]=[SX3:2](=[OX1:3])=[OX1:4].[OX2H2:5]"
-               ">>[O:1]=[S:2](=[O:3])([O;H1:4])[O;H1:5]",
-        A=A, Ea=Ea, phase="gas", reversible=True,
-    )
+    return _row("sulfur_trioxide_hydration", A=A, Ea=Ea)
 
 
 # ---------------------------------------------------------------------------
