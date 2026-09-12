@@ -25,3 +25,8 @@ desktop.ini
 # The unattended loop keeps its transcripts and its brake out of the repo
 tools/loop/state/
 tools/loop/STOP
+
+# T4 crash-resume cache; tools/build_reachable.py deletes it on success
+data/catalog/derived/*.partial.json
+
+data/catalog/derived/*.pending.json

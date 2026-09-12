@@ -31,6 +31,7 @@ python tools/catalog.py                         # structural validation of the P
 python validation/catalog_coverage.py           # regenerates data/catalog/COVERAGE_REPORT.md
 python tools/build_playable.py                  # regenerates data/catalog/PLAYABLE.md (~50 s)
 python tools/build_route_index.py               # regenerates data/catalog/ROUTE_INDEX.md
+python tools/build_reachable.py                 # regenerates derived/reachable.psv, ~35 min
 python examples/named_routes.py                 # 17 named routes end to end, ~34 s
 pwsh tools/loop/run-loop.ps1 -MaxSessions 3     # /session on repeat, unattended
 ```
@@ -69,8 +70,8 @@ directly, so the README's "nothing above Layer 0 imports rdkit" is false today.
    README quoted 275 tests against 1,264 and a 25-second suite against 30 minutes.
    If you cannot regenerate a number, delete it.
 5. **Generated files are regenerated, never edited.** `*_data.py`,
-   `COVERAGE_REPORT.md`, `PLAYABLE.md`, `ROUTE_INDEX.md`. Commit input and output
-   together.
+   `COVERAGE_REPORT.md`, `PLAYABLE.md`, `ROUTE_INDEX.md`, `derived/*.psv`.
+   Commit input and output together.
 6. **Preserve each file's own line endings.** The repo is mixed: `README.md`,
    `GAME_DESIGN.md` and the history files are CRLF, most source is LF. A
    whole-file rewrite with the wrong terminator turns a one-line edit into a

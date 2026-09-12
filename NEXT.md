@@ -9,7 +9,7 @@ Every number came from a command run on 2026-09-12. The command is named.
 
 | fact | value | command |
 |---|---|---|
-| tests | 1,279 collected | `python -m pytest --co -q` |
+| tests | 1,284 collected | `python -m pytest --co -q` |
 | fast check | `./check.ps1`, ~70 s, green | ruff + docs + catalog + templates + 39 smoke tests |
 | full check | `./check.ps1 -Full`, ~2.5 min, green | adds both report `--check` ratchets |
 | full suite | ~30 min, no markers yet | ask before running |
@@ -22,74 +22,75 @@ Every number came from a command run on 2026-09-12. The command is named.
 | rows extractable and uncovered | 174 of 377, in 132 classes (102 single-row) | `python validation/extraction_yield.py` |
 | upper bound if all 174 became templates | template-ready 110, intersection 66 | same command, last two panels |
 | named routes end to end | 17 routes in 32.4 s | `python examples/named_routes.py` |
+| templates a natural pair can reach | 25 of 57; 32 silent and named | `data/catalog/derived/reachable.psv` |
+| distinct reactions from the shelf | 24,828, but 98% is four templates | same file, `tools/build_reachable.py` (~35 min) |
 | `SAVE_VERSION` | 9 | `src/chemsim/engine/world.py:122` |
 | line endings | mixed: `BACKLOG.md`, `NEXT.md`, `CHANGELOG.md`, the PSVs and the generated `*_data.py` are CRLF; most source is LF | `git ls-files --eol <file>` |
 
 ## Last session, in five lines
 
-T1d is done: `examples/named_routes.py` runs to the end, 17 routes in 32.4 s.
-The cause was not route 2 -- `OutsideEstimatorDomain` on an ion means "wrong
-provider" and the builder passes it through, but with the overlay ALREADY ON it
-means the opposite, so one missing pKa raised out of the whole build. New
-`UnpricedIon`; a template that needs the price drops the rewrite and reports it,
-one that does not still carries the ion. Four tests pinned that traceback.
+T4 is in: the first number that scores the ENGINE rather than the corpus.
+Every pair of the 36 natural shelf rows, to a fixpoint, with all 57 templates
+-- 24,828 distinct reactions, 98% of it four templates over a sugar frontier,
+and **only 25 of 57 fire at all**. The 32 silent ones are T6. The sweep also
+found a hole in T1d, and segfaults at random, so it checkpoints.
 
 ## Do this now
 
-1. **T4 -- reactions reachable from the shelf.** Spec in `BACKLOG.md`. This is the
-   headline metric that replaces the organic-family checklist, and the bench
-   library is the whole table now so the count will not have to be redone. Read
-   `tools/build_playable.py` for how a report is generated and `--check`ed and
-   `network/builder.py` for `build_network`'s bounds. Measure ONE pair and
-   multiply first: 45 natural rows is ~1,000 pairs.
-   *Done when:* the reachable-reaction count prints in `COVERAGE_REPORT.md`
-   beside the intersection, with the command that produced it, and its `--check`
-   ratchet passes.
+1. **T6 -- classify the 32 templates the shelf cannot reach.** Spec in
+   `BACKLOG.md`. T4's output turned into work, and a measurement before a
+   build: the 32 split into substrate-not-on-the-shelf, needs-a-third-reagent
+   (a pair sweep cannot see it), and cannot-fire-at-all -- a bug, and the most
+   valuable of the three. Read the `silent_templates` line of
+   `data/catalog/derived/reachable.psv`, then each one's SMARTS in
+   `data/templates/templates.psv`.
+   *Done when:* all 32 carry a label with its evidence and the third group is
+   filed as bugs.
 
-2. **T5 -- measure what the 30-row pKa table bounds.** Spec in `BACKLOG.md`, and
-   it is a measurement before a build. T1d made "no pKa for this ion" a reported
-   limit and five turned up in one session; nobody knows the real width. Sweep
-   the priced corpus against the dissociation templates, group the misses by the
-   acid class that would fix them, and do it before writing any pKa.
+2. **T5 -- measure what the 30-row pKa table bounds.** Spec in `BACKLOG.md`.
+   T1d made "no pKa for this ion" a reported limit: five turned up in one
+   session and T4's sweep reported nineteen in a single flask. Sweep the priced
+   corpus against the dissociation templates and group the misses by the acid
+   class that would fix them, before writing any pKa.
    *Done when:* the count and its top acid classes are in this table with the
    command, and a follow-up item names the fix the number argues for.
 
-3. **R4/E3 -- delete `discovery/refine.py`.** Decided; the argument is in
-   `BACKLOG.md`. Half an hour, and it only removes code.
+3. **R4/E3 -- delete `discovery/refine.py`.** Decided in `BACKLOG.md`; half an
+   hour, and it only removes code.
    *Done when:* the module, `discovery/__init__.py`, the README layer row and the
    `chemsim/__init__.py` mention are gone and `./check.ps1` is green.
 
-T0.4 and T1b's second half (retiring the per-template test files) both need a
-full-suite run, so they go to whichever session is asked to run the suite.
+T0.4 and T1b's second half need a full-suite run: they go to a session asked
+for one.
 
 ## Decisions already taken — do not reopen
 
+- **The headline is templates fired, not reactions reached.** A reaction total
+  is whatever the most promiscuous template does over a sugar frontier: 98% of
+  T4's 24,828 is four of them. What a shelf can DO is the count that fire at all
+  and the names of the ones that do not -- computed, never declared.
+- **A long sweep checkpoints and names the unit it is on.** `build_reachable`
+  segfaults out of RDKit at a different pair each run, with no traceback. A
+  35-minute job that cannot say where it died cannot be finished.
 - **An ion refusal is two different claims and the overlay tells them apart.**
-  With no ion overlay, refusing a charged species means the PROVIDER is wrong,
-  and the builder passes it through -- unchanged. With the overlay ON and the
-  ion not in its 30-row table, no source in this project prices it, so it is a
-  coverage limit: `UnpricedIon`. It drops the rewrite only for a template that
-  NEEDS the price (reversible or Evans-Polanyi); an irreversible one still
-  carries the ion, which is what keeps `saponification` working on tristearin.
+  Overlay off, a charged species means the PROVIDER is wrong and the builder
+  passes it through. Overlay ON and the ion not in its 30-row table, nothing in
+  this project prices it: `UnpricedIon`, a coverage limit. It drops the rewrite
+  only for a template that NEEDS the price -- an irreversible one still carries
+  the ion, which keeps `saponification` working on tristearin.
 - **A library's chemistry is part of the electrolyte question.** `needs_electrolyte`
-  takes the charge AND the templates: a template that makes an ion needs the
-  overlay whether or not anyone poured one, and the overlay is a superset of the
-  plain provider so it changes no neutral price. The test is net formal charge
-  per SMARTS SLOT, not per atom -- `[N+](=O)[O-]`, `[C-]#[O+]`.
-- **A sweep over modules is not a library.** Two shipped, both wrong: 44 by
-  naming convention, 50 of 57 by result type -- and not a subset.
-- **A PSV row is the template built with its constructor's DEFAULT arguments,**
-  every field of it: the row carries the already-catalysed SMARTS and rescaled
-  `A`, and `library._catalysed_row`/`_surface_row` undo whichever the row carries
-  and apply the caller's. An empty optional cell means the dataclass default.
-- **The constructors stay:** the public API, carrying the keyword arguments a
-  row cannot -- `catalyst=`, `eta_a=`, `A=`, `rho=`. And **`Ea_J` is the only
-  barrier column**; an electrode's declared voltage (`Ea = n F eta_a`) goes in
-  `source`.
+  takes the charge AND the templates, and the test is net charge per SMARTS
+  SLOT, not per atom (`[N+](=O)[O-]`). The overlay is a superset, so turning it
+  on changes no neutral price. And a sweep over MODULES is not a library.
+- **A PSV row is the template with its constructor's DEFAULT arguments,** every
+  field: the row carries the already-catalysed SMARTS and rescaled `A`, and
+  `library._catalysed_row`/`_surface_row` undo whichever it carries and apply the
+  caller's. An empty optional cell means the dataclass default. The constructors
+  stay as the public API for `catalyst=`, `eta_a=`, `A=`, `rho=`, and `Ea_J` is
+  the only barrier column.
 - **What holds "a template is a row" is `CONSTRUCTION_SITES`** -- the
   `ReactionTemplate(` sites under `src/chemsim` are exactly the five loaders.
-- **`TEMPLATE_CLASSES` is derived.** 14 integrator-TERM entries stay hand-typed
-  in `validation/catalog_coverage.py`; the other 46 come from the `class` column.
+  `TEMPLATE_CLASSES` is derived: 14 integrator-TERM entries, 46 from `class`.
 - **`PLAYABLE.md`'s last line is a contract** parsed by
   `catalog_coverage._PLAYABLE_FOOTER`; change its shape and the regex together.
   Regeneration order is playable, then coverage, as `check.ps1 -Full` runs it.
@@ -97,18 +98,15 @@ full-suite run, so they go to whichever session is asked to run the suite.
   intersection at the ceiling -- and the LP passes rows atom-mapping will refuse.
 - **`discovery/refine.py` is deleted, not wired.** A fixpoint is cheap where it
   matters, the species cap bounds the rest, and silent pruning breaks rule 10.
-- **The organic-family checklist is not a headline metric.** The headline is
-  reactions reachable from the shelf (T4), which is computed. **The README stays
-  at 561 lines** until C1 moves the physics prose out; the budget is 400.
+- **The organic-family checklist is not a headline.** T4 is, and it is computed.
+  **The README stays at 561 lines** until C1 moves the physics prose out.
 
 ## Open questions for the user
 
-- **`rxnmapper` as a curation-time dependency** for T2. Same standing as
-  `chemicals` and RMG-database: build-time only. Without it T2 needs an
-  RDKit-only mapper, a session of its own.
+- **`rxnmapper` as a curation-time dependency** for T2, same standing as
+  `chemicals`: build-time only. Without it T2 needs an RDKit-only mapper.
 - **Species work is half of T2's payoff.** 36 of the 64 routes extraction would
-  make template-ready are held by an unpriceable species; hydrogen-cyanide and
-  vanadium-pentoxide each hold three.
+  make template-ready are held by an unpriceable species.
 
 ## Do not
 

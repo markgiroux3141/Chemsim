@@ -86,21 +86,6 @@ is one or two sessions, not a repeating one.
 **Done when:** the 6 families are written or refused with a reason, and the
 retired row count is in `CHANGELOG.md`.
 
-### T4 — one new headline metric: reactions reachable from the shelf (M)
-Run `build_network` to a fixpoint (`generations=None`, 400-species cap, 60 s
-budget, cached by species pair) from every pair of natural shelf rows and count
-distinct concrete reactions. This measures what a player can actually do, it is
-computed rather than declared, and it cannot be gamed by adding rows to a list.
-Decision 2026-09-01: the ~70-row organic-family checklist that was proposed
-beside it is **not** adopted as a headline. A list the project writes and then
-scores itself against is the same trap G4 found in the granularity scorer — an
-instrument you can charge the target with. Keep such a list if it helps as a work
-queue, in `BACKLOG.md` or a tools file, never in the report as a score.
-The 173-route intersection stays as the second headline: it is the only number
-anchored to chemistry the project did not invent.
-**Done when:** the reachable-reaction count prints in `COVERAGE_REPORT.md` with
-the command that produced it, beside the intersection.
-
 ### T5 — measure what the 30-row pKa table bounds (S, measurement first)
 T1d turned "no pKa for this ion" from a traceback into a reported coverage
 limit, and the reports promptly named five in one session: salicyl alcohol's
@@ -115,6 +100,20 @@ kind of thing `element_data` exists to refuse.
 **Done when:** the count and its top acid classes are in `NEXT.md`'s state table
 with the command, and a follow-up item names whichever of the two fixes the
 number argues for.
+
+### T6 — the 32 templates the shelf cannot reach (M, computed queue)
+T4 measured it: 25 of 57 templates fire from some pair of natural materials and
+**32 never fire at all**, named in `data/catalog/derived/reachable.psv`. That
+list is a work queue nobody wrote by hand, and it splits three ways which have
+different fixes — a template whose substrate is not on the shelf (grant the
+row, or find the route that makes it), one whose substrate needs a third
+reagent a pair sweep cannot show (widen the sweep to triples for those alone),
+and one that cannot fire at all (a bug, and the most valuable of the three).
+Classify all 32 before building anything: `aromatic_nitration` silent when
+`nitric-acid` is not a natural row is expected, and `cannizzaro_disproportionation`
+silent with benzaldehyde reachable would not be.
+**Done when:** each of the 32 carries one of the three labels with its evidence,
+and the ones in the third group are filed as bugs.
 
 ---
 

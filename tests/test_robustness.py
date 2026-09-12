@@ -46,6 +46,7 @@ STEARATE = Molecule.from_smiles("CCCCCCCCCCCCCCCCCC(=O)[O-]").smiles
 # killed examples/named_routes.py on route 2 for want of a pKa row.
 SALIGENIN = Molecule.from_smiles("OCc1ccccc1O").smiles
 SALIGENOLATE = Molecule.from_smiles("[O-]c1ccccc1CO").smiles
+OLEATE = Molecule.from_smiles(r"CCCCCCCC/C=C\CCCCCCCC(=O)[O-]").smiles
 
 
 @pytest.fixture(scope="module")
@@ -496,3 +497,36 @@ def test_an_ion_the_OVERLAY_cannot_price_is_a_coverage_limit(thermo):
     assert SALIGENOLATE not in net.species
     assert "no AcidPair" in net.unpriced[SALIGENOLATE]
     assert [n for n in net.notices if "could not be PRICED" in n]
+
+
+def test_an_ion_ALREADY_IN_THE_FLASK_drops_its_reaction_and_not_itself():
+    """The hole the product screen alone left, and the T4 sweep is what found it.
+
+    ``_unpriceable`` runs over NEW products: a species already in ``molecules``
+    is not re-screened, which is R1's second boundary and is right -- it is
+    either a product priced earlier or one the caller CHARGED. So an ion that
+    arrives by another route reaches detailed balance anyway, and the build
+    still died. Measured on gypsum + triolein: saponification makes the oleate,
+    then ``carboxylic_acid_dissociation`` wants its reverse rate.
+
+    Both directions of THAT reaction go, and nothing else does. A reversible
+    template with its reverse dropped would run to completion, which is a
+    different reaction; the species itself is in the flask legitimately and
+    stays. The notice says which reaction was lost.
+    """
+    from chemsim.engine import inventory as inv
+    from chemsim.properties import VolatilityProvider
+    from chemsim.ui.examples import full_library
+
+    thermo = electrolyte_provider()
+    feed = sorted(set(inv.find("gypsum").species)
+                  | set(inv.find("triolein").species))
+    net = build_network(feed, list(full_library()), thermo=thermo,
+                        volatility=VolatilityProvider(thermo),
+                        max_species=400, generations=None)
+    dropped = [n for n in net.notices
+               if "REVERSIBLE and its reverse rate cannot be derived" in n]
+    assert len(dropped) == 1, dropped
+    assert "carboxylic_acid_dissociation" in dropped[0]
+    assert net.reactions, "only the one reaction is lost"
+    assert OLEATE in net.species, "the ion itself is in the flask legitimately"

@@ -954,6 +954,29 @@ def _concrete_in_phase(
         db = detailed_balance(
             fwd, thermo, tmpl.A, Ea, T_ref=T_ref, volatility=volatility
         )
+    except UnpricedIon as exc:
+        # T1d's SECOND HALF, and the first half alone left a hole. The screen in
+        # ``_unpriceable`` runs over NEW products only -- a species already in
+        # ``molecules`` is not re-screened, by design (R1's second boundary) --
+        # so an ion that entered by some other route, or was charged, reaches
+        # here and the build died anyway. Found by running the T4 sweep: oleic
+        # acid dissociating, with the oleate already in the flask.
+        #
+        # The reaction is dropped, not the species. The species is in this
+        # network legitimately; what cannot be done is DERIVE A REVERSE RATE for
+        # it, and a reversible template without its reverse would be a different
+        # reaction that runs to completion. So both directions go, and the
+        # notice names the template, the reaction and the missing pKa.
+        notices[f"{fwd.key()}|unpriced-ion"] = (
+            f"[build_network] NOTICE: template {tmpl.name!r} on "
+            f"'{' + '.join(r_smiles)} -> {' + '.join(p_smiles)}' ({phase} "
+            f"phase) is REVERSIBLE and its reverse rate cannot be derived: "
+            f"{exc}. Both directions are dropped -- a reversible template "
+            f"without its reverse would run to completion, which is a "
+            f"different reaction. The species stays in the flask; this "
+            f"reaction of it does not."
+        )
+        return []
     except Exception as exc:  # missing/unfragmentable species -- say which reaction
         lhs, rhs = " + ".join(r_smiles), " + ".join(p_smiles)
         raise ValueError(

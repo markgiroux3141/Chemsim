@@ -821,6 +821,10 @@ Template-ready routes: `vitriol-distillation`, `pyrite-roasting`, `claus-process
 
 > ⚠⚠ **And a route in the BOTH column may still be unreachable.** This audit never asks whether a feedstock can be *obtained*. `PLAYABLE.md` does, and it scores the same corpus against the G-series GOAL: **44 runnable, 21 playable from natural materials, 3 tiers deep** — with the whole of tiers 2 and 3 hanging off a *byproduct* of one zinc retort. Its work order (22 routes that are already fed and only need a template) is ranked by playability rather than by class coverage, and **the two rankings are not the same list.**
 
+> **And the third headline is not a route count at all.** Every pair of the 36 chargeable natural shelf rows, expanded to a fixpoint with all 57 `family` templates, reaches **24828 distinct reactions** — and that number is nearly worthless on its own: **98% of it is four templates** (`ether_condensation`, `fischer_esterification`, `friedel_crafts_hydroxyalkylation`, `transesterification`) multiplying over a sugar and polyol frontier. The one to read is that **only 25 of 57 templates fire at all**. The other 32 are chemistry the shelf cannot reach, they are named in the artefact, and that list is a work queue nobody wrote by hand.
+
+> And the sweep's own bounds: **320 of 630 pairs do nothing at all** — over half the shelf is inert two at a time — while 264 hit the 400-species cap and are therefore UNDERCOUNTED. A reaction needing a third starting material is invisible here, so the total is a lower bound twice over. `python tools/build_reachable.py` (~35 min), read from `data/catalog/derived/reachable.psv`.
+
 ### The 32 routes species-ready on a lattice
 
 These are species-ready only because a species in them is priced as a crystal on the solid basis from `mineral_data`, after all three ideal-gas providers refused it. The refusals are correct -- the fusion law is the engine's only route from a solid into solution and it is measured wrong for a lattice by up to 407x in **both** directions -- but refusing to *dissolve* a species is not refusing to *price* it, and this column used to conflate the two.

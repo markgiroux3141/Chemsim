@@ -1180,6 +1180,25 @@ def playable_headline(path: str | None = None) -> dict[str, int]:
     return {k: int(v) for k, v in m.groupdict().items()}
 
 
+def reachable_headline() -> dict:
+    """T4's counts, read out of ``data/catalog/derived/reachable.psv``.
+
+    Empty when the artefact has not been generated, and the report then SAYS the
+    number has not been computed. The alternative -- a hand-typed fallback -- is
+    exactly the drift ``_PLAYABLE_FOOTER`` above exists to prevent.
+    """
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "tools"))
+    from build_reachable import MAX_SPECIES, read_summary
+
+    got = read_summary()
+    if not got:
+        return {}
+    out = {k: (int(v) if isinstance(v, str) and v.isdigit() else v)
+           for k, v in got.items()}
+    out["max_species"] = MAX_SPECIES
+    return out
+
+
 def marginal_unlock(steps, routes):
     """Ranked by ROUTES UNLOCKED per class added, plus the greedy set-cover curve.
 
@@ -1722,6 +1741,54 @@ def main(argv: list[str] | None = None) -> int:
         "template) is ranked by playability rather than by class coverage, and "
         "**the two rankings are not the same list.**"
     )
+    w("")
+    # T4 -- THE THIRD HEADLINE, AND THE ONLY ONE THAT IS NOT A ROUTE COUNT.
+    # Every number above scores the CORPUS: 173 routes somebody else wrote down.
+    # This one scores the ENGINE against what a player can dig up, and it is
+    # computed by running the templates rather than by matching class names, so
+    # it cannot be moved by editing a list. Read out of the artefact rather than
+    # recomputed here: the sweep is ~35 minutes and this report runs in seconds.
+    #
+    # THE TEMPLATE COUNT IS THE ONE TO READ, NOT THE REACTION COUNT. A
+    # reaction total is dominated by whichever template is most promiscuous over
+    # a sugar frontier; the count of templates that FIRE AT ALL is what says
+    # what the shelf can do, and the silent ones are the work queue.
+    reach = reachable_headline()
+    if not reach:
+        w("> **T4, reactions reachable from the shelf: NOT COMPUTED.** Run "
+          "`python tools/build_reachable.py` (~35 min) to write "
+          "`data/catalog/derived/reachable.psv`; this report reads it and will "
+          "not guess.")
+    else:
+        busiest = reach["busiest"]
+        top4 = 100.0 * sum(n for n, _ in busiest[:4]) / reach["distinct_reactions"]
+        named = ", ".join(f"`{n}`" for _, n in busiest[:4])
+        w(
+            f"> **And the third headline is not a route count at all.** Every "
+            f"pair of the {reach['natural_rows']} chargeable natural shelf rows, "
+            f"expanded to a fixpoint with all {reach['templates']} "
+            f"`{reach['tier']}` templates, reaches "
+            f"**{reach['distinct_reactions']} distinct reactions** — and that "
+            f"number is nearly worthless on its own: **{top4:.0f}% of it is four "
+            f"templates** ({named}) multiplying over a sugar and polyol "
+            f"frontier. The one to read is that **only "
+            f"{reach['templates_fired']} of {reach['templates']} templates fire "
+            f"at all**. The other "
+            f"{reach['templates'] - reach['templates_fired']} are chemistry the "
+            f"shelf cannot reach, they are named in the artefact, and that list "
+            f"is a work queue nobody wrote by hand."
+        )
+        w("")
+        w(
+            f"> And the sweep's own bounds: **{reach['inert_pairs']} of "
+            f"{reach['pairs']} pairs do nothing at all** — over half the shelf "
+            f"is inert two at a time — while {reach['capped_pairs']} hit the "
+            f"{reach['max_species']}-species cap and are therefore UNDERCOUNTED. "
+            f"A reaction needing a third starting material is invisible here, so "
+            f"the total is a lower bound twice over. "
+            f"`python tools/build_reachable.py` (~35 min), read from "
+            f"`data/catalog/derived/reachable.psv`."
+        )
     w("")
 
     # ---- what the mineral tier carries ---------------------------------

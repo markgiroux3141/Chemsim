@@ -4,6 +4,21 @@ Newest first. One entry per session, twelve lines at most, enforced by
 `tools/check_docs.py`. When this file passes 400 lines the older half rolls into
 `docs/history/changelog-YYYY-MM.md`.
 
+## 2026-09-12 — T4: the third headline is computed, and it says 25 of 57
+
+`tools/build_reachable.py` expands every pair of the 36 chargeable natural shelf rows to
+a fixpoint with all 57 templates: **24,828 distinct reactions, and only 25 of 57 fire at
+all**. The reaction total is the number NOT to quote — **98% of it is four templates**
+(`ether_condensation`, `fischer_esterification`, `friedel_crafts_hydroxyalkylation`,
+`transesterification`) over a sugar frontier — so the report leads with the template
+count and names the 32 silent ones, a work queue nobody wrote by hand (T6). Bounds
+reported: 320 of 630 pairs inert, 264 capped and undercounted, a three-reagent reaction
+invisible. `COVERAGE_REPORT.md` READS the artefact; the sweep is ~35 min and segfaults
+out of RDKit non-deterministically (pair 397 one run, 547 the next, 547 fine alone), so
+it checkpoints, names the pair it attempts, resumes, and records one that dies twice.
+Also closed the T1d hole it found: an ion already in the flask skips the product screen,
+so that reversible reaction is now dropped with a notice. Tests 1279 -> 1284, green.
+
 ## 2026-09-12 — T1d: a missing pKa reports itself instead of killing the build
 
 `examples/named_routes.py` runs to the end again — **17 routes in 32.4 s**, quoted from
