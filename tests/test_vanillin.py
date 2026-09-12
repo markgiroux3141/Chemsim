@@ -405,17 +405,21 @@ def test_the_dissociation_set_REFUSES_because_eugenol_is_a_phenol(thermo, vol):
     that.**
 
     Eugenol IS a phenol, so ``phenol_dissociation`` fires on it and the network
-    refuses for want of a pKa for the eugenolate. G5's rule reaching a new
-    substrate: *an open-ended rewrite over a curated table will find the edge of
-    the table* -- met on an amine there, on a phenol here. The refusal is KEPT:
-    this route needs no phenolate.
+    has no pKa for the eugenolate. G5's rule reaching a new substrate: *an
+    open-ended rewrite over a curated table will find the edge of the table* --
+    met on an amine there, on a phenol here.
+
+    T1d: the edge is REPORTED rather than raised. The eugenolate is named in
+    ``unpriced``, the dissociation that would have made it is dropped, and the
+    two reactions this route is actually about still run. The refusal is kept;
+    it is no longer a traceback.
     """
-    with pytest.raises(ValueError) as exc:
-        _net(thermo, vol, [WATER, EUGENOL, O2, NA, OH],
-             vanillin_chemistry() + list(dissociation_templates()))
-    msg = str(exc.value)
-    assert "phenol_dissociation" in msg
-    assert "net charge of -1" in msg
+    n_all = _net(thermo, vol, [WATER, EUGENOL, O2, NA, OH],
+                 vanillin_chemistry() + list(dissociation_templates()))
+    refused = {smi: why for smi, why in n_all.unpriced.items()
+               if "net charge of -1" in why}
+    assert refused, sorted(n_all.unpriced)
+    assert "oxidative_cleavage" in {r.name for r in n_all.reactions}
 
     # and without them it builds and runs
     n = _net(thermo, vol, [WATER, EUGENOL, O2, NA, OH], vanillin_chemistry())

@@ -462,11 +462,21 @@ def test_a_protonation_template_over_a_curated_ion_table_refuses(electro):
     pKa values would buy -- nothing, because the ion channel carries 1e-7% of
     the rate -- so a refusal naming the missing datum beats a number wrong by
     three decades. The element floor's rule, applied to a pKa.
+
+    T1d moved the refusal from a TRACEBACK to a reported coverage limit, which
+    is the shape every other bound in this engine already has: the overlay is
+    on, the ion is not in its table, the protonation that would make it is
+    dropped, and `unpriced` names it and says what would fix it. The datum is
+    still missing and still named; the other 59 species are still reachable.
     """
-    with pytest.raises(ValueError, match="net charge"):
-        build_network([ANILINE, NITRIC, WATER],
-                      [aromatic_nitration(), *dissociation_templates()],
-                      thermo=electro, max_species=60, max_molar_mass=250.0)
+    net = build_network([ANILINE, NITRIC, WATER],
+                        [aromatic_nitration(), *dissociation_templates()],
+                        thermo=electro, max_species=60, max_molar_mass=250.0)
+    refused = [smi for smi in net.unpriced if "net charge" in net.unpriced[smi]]
+    assert refused, sorted(net.unpriced)
+    for smi in refused:
+        assert Molecule.from_smiles(smi).charge != 0
+        assert smi not in net.species
 
 
 def test_the_pyridinium_is_priced_and_still_unreachable(ions):

@@ -28,6 +28,7 @@ import numpy as np
 from chemsim.matter import Molecule
 from chemsim.properties import (
     OutsideEstimatorDomain,
+    UnpricedIon,
     ThermochemistryProvider,
     VolatilityProvider,
 )
@@ -659,7 +660,7 @@ def _expand_once(
                 # no thermochemistry is worse than either alternative: it would
                 # consume its reactants into an index the energy balance and the
                 # vapour-liquid split cannot price.
-                unpriced = _unpriceable(products, molecules, thermo, state)
+                unpriced = _unpriceable(products, molecules, thermo, state, tmpl)
                 if unpriced:
                     state.unpriced.update(unpriced)
                     state.unpriced_rewrites += 1
@@ -703,6 +704,7 @@ def _unpriceable(
     molecules: dict[str, Molecule],
     thermo: ThermochemistryProvider | None,
     state: _ExpansionState,
+    tmpl: ReactionTemplate,
 ) -> dict[str, str]:
     """Which of these NEW products no provider can price, and the refusal why.
 
@@ -758,6 +760,25 @@ def _unpriceable(
             continue
         try:
             thermo.get(pm)
+        except UnpricedIon as exc:
+            # T1d, AND THE NARROW CASE IS THE WHOLE POINT. The overlay that
+            # prices ions is already on and this one is not in its table, so no
+            # source in this project prices it -- a coverage limit rather than
+            # the setup error the branch below handles. But it is only a limit
+            # for a template that NEEDS the price: an ion nothing asks about
+            # sits in a network perfectly well, and dropping it unasked deletes
+            # chemistry the engine can do. Measured, and it is the case R1's own
+            # docstring names: `saponification` on tristearin makes a stearate
+            # with no pKa row, is irreversible, and produced 5 reactions before
+            # this branch and 0 after when the drop was unconditional.
+            #
+            # So the question is whether anything in THIS reaction will price
+            # it. A reversible template derives its reverse rate from
+            # thermochemistry and an Evans-Polanyi one its barrier; both raise
+            # out of `build_network` two calls later, and that raise is what
+            # killed a seventeen-route example for one missing pKa.
+            if tmpl.uses_thermochemistry:
+                out[pm.smiles] = str(exc)
         except OutsideEstimatorDomain:
             # NOT a coverage limit, and the distinction is the sharpest thing R1
             # found. This refusal says the PROVIDER is wrong, not that the

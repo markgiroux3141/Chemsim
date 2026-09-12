@@ -42,6 +42,10 @@ TRISTEARIN = Molecule.from_smiles(
     "CCCCCCCCCCCCCCCCCC(=O)OCC(OC(=O)CCCCCCCCCCCCCCCCC)COC(=O)"
     "CCCCCCCCCCCCCCCCC").smiles
 STEARATE = Molecule.from_smiles("CCCCCCCCCCCCCCCCCC(=O)[O-]").smiles
+# Salicyl alcohol and its phenoxide -- T1d's own substrate, and the one that
+# killed examples/named_routes.py on route 2 for want of a pKa row.
+SALIGENIN = Molecule.from_smiles("OCc1ccccc1O").smiles
+SALIGENOLATE = Molecule.from_smiles("[O-]c1ccccc1CO").smiles
 
 
 @pytest.fixture(scope="module")
@@ -448,12 +452,17 @@ def test_a_species_the_WRONG_PROVIDER_refuses_is_not_dropped(thermo):
     ``OutsideEstimatorDomain`` -- an element, an ion, a mixture -- does not say
     the species is unknown. It says THIS provider is the wrong one, and it names
     the right one. Dropping it would report a hole in the data where the truth
-    is a hole in the setup, and it would delete chemistry this engine can do:
-    the stearate ion below is priced perfectly well by
-    ``electrolyte_provider()``. Every network in this repo that carries an ionic
-    product under a neutral provider has always carried it, because
-    ``VolatilityProvider`` short-circuits a charged species to non-volatile
-    without ever consulting thermochemistry.
+    is a hole in the setup, and it would delete chemistry this engine can do.
+    Every network in this repo that carries an ionic product under a neutral
+    provider has always carried it, because ``VolatilityProvider`` short-circuits
+    a charged species to non-volatile without ever consulting thermochemistry.
+
+    NOTE: this docstring used to say the stearate below is "priced perfectly
+    well by ``electrolyte_provider()``", and T1d measured that false -- there is
+    no stearic-acid pair in ``_PAIRS``, so the overlay refuses it too. The claim
+    the test actually rests on is the weaker and true one: NOTHING HERE ASKS FOR
+    ITS PRICE. ``saponification`` is irreversible with alpha = 0, so no barrier
+    and no reverse rate is derived from it, and that is why the ion rides along.
     """
     net = build_network([TRISTEARIN, "[OH-]", NA, WATER], [saponification()],
                         thermo=thermo, max_species=60)
@@ -462,3 +471,28 @@ def test_a_species_the_WRONG_PROVIDER_refuses_is_not_dropped(thermo):
     assert not [n for n in net.notices if "could not be PRICED" in n]
     with pytest.raises(ValueError, match="carries a net charge"):
         thermo.get(STEARATE)          # and the refusal is still there, unchanged
+
+
+def test_an_ion_the_OVERLAY_cannot_price_is_a_coverage_limit(thermo):
+    """T1d: the same refusal one level finer, and the two halves are opposite.
+
+    ``OutsideEstimatorDomain`` says *wrong provider*, which is true only while
+    the ion overlay is off. With it ON and the ion still missing, no source in
+    this project prices the species -- ``UnpricedIon`` -- and a family template
+    that needs the price (reversible, or Evans-Polanyi) had been raising out of
+    the whole build for one missing pKa row. It reports and drops now, which is
+    what every other bound in this engine does.
+
+    The two assertions below are the two halves. Neither alone is the rule.
+    """
+    phenol_dissociation = next(t for t in dissociation_templates()
+                               if t.name == "phenol_dissociation")
+    seed, tmpl = [SALIGENIN, WATER], [phenol_dissociation]
+    with pytest.raises(ValueError, match="cannot derive reverse kinetics"):
+        build_network(seed, tmpl, thermo=thermo, max_species=20)
+
+    net = build_network(seed, tmpl, thermo=electrolyte_provider(), max_species=20)
+    assert SALIGENOLATE in net.unpriced
+    assert SALIGENOLATE not in net.species
+    assert "no AcidPair" in net.unpriced[SALIGENOLATE]
+    assert [n for n in net.notices if "could not be PRICED" in n]

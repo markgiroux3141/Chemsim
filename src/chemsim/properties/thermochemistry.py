@@ -66,6 +66,34 @@ class OutsideEstimatorDomain(ValueError):
     """
 
 
+class UnpricedIon(OutsideEstimatorDomain):
+    """An ion refused by a provider whose ION OVERLAY IS ALREADY ON.
+
+    The distinction above, drawn one level finer. ``OutsideEstimatorDomain``
+    says *this provider is the wrong one, and here is the right one* -- true of
+    a charged species under a plain provider, and the reason ``network.builder``
+    passes that refusal through rather than reporting a data gap. It is not true
+    when the right provider is already in hand and its pKa table is short a row:
+    then no source in this project prices the species, which is a coverage limit
+    like any other and belongs in ``ReactionNetwork.unpriced`` with its reason.
+
+    T1d found the conflation from the far side. ``examples/named_routes.py``
+    builds with ``electrolyte_provider()`` and still died on route 2: salicin
+    hydrolyses to salicyl alcohol, ``phenol_dissociation`` takes its phenol
+    proton, and ``_PAIRS`` has no entry for that phenoxide. The refusal told a
+    correctly-configured caller to configure itself, the builder passed it
+    through as a setup error, and the reversible template's detailed balance
+    raised out of ``build_network``. One missing pKa killed a seventeen-route
+    example, where a missing boiling point would have dropped one rewrite and
+    said so.
+
+    NOTE: it is what makes a FAMILY dissociation template usable at all. The
+    pKa table is 30-odd hand-typed pairs and ``phenol_dissociation`` matches any
+    aromatic hydroxyl, so the two cannot be kept in step by curation -- the
+    engine has to be able to say "not this one, and here is why".
+    """
+
+
 @dataclass(frozen=True)
 class ThermoData:
     Hf: float                       # kJ/mol, standard enthalpy of formation (ideal gas, 298.15 K)
@@ -460,8 +488,16 @@ class ThermochemistryProvider:
         self._curated: dict[str, ThermoData] = {}
         for smi, data in _CURATED_RAW.items():
             self._curated[Molecule.from_smiles(smi).smiles] = data
+        # How many IONS the overlay handed us, counted rather than declared. It
+        # is what tells a refusal for a charged species apart from a refusal
+        # for a MISCONFIGURED network -- see ``UnpricedIon``. The parse is
+        # already being done on the line above, so the count is free.
+        self._ions_priced = 0
         for smi, data in (extra_curated or {}).items():
-            self._curated[Molecule.from_smiles(smi).smiles] = data
+            mol = Molecule.from_smiles(smi)
+            self._curated[mol.smiles] = data
+            if mol.charge != 0:
+                self._ions_priced += 1
         self._curated = StereoFallback(self._curated, stereo_fallback)
         self._fusion = StereoFallback({
             Molecule.from_smiles(smi).smiles: v
@@ -811,6 +847,19 @@ class ThermochemistryProvider:
                    if allotropes else "")
                 + "Add it to properties/element_data.py via "
                   "tools/build_element_data.py."
+            )
+        if mol.charge != 0 and self._ions_priced:
+            raise UnpricedIon(
+                f"refusing to price {mol.smiles!r}: it carries a net charge of "
+                f"{mol.charge:+d} and the ion overlay is ON -- it prices "
+                f"{self._ions_priced} ions and this is not one of them. So this "
+                f"is a MISSING MEASUREMENT rather than a missing provider: an "
+                f"ion is priced from the measured pKa of its conjugate acid "
+                f"against this project's water reference, and there is no "
+                f"AcidPair for this one in properties/electrolyte._PAIRS. Add "
+                f"it with a sourced pKa -- for a CATION the neutral member is "
+                f"the BASE, so it goes in as AcidPair(<this ion>, <the neutral "
+                f"amine>, pKa)."
             )
         if mol.charge != 0:
             raise OutsideEstimatorDomain(

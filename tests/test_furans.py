@@ -386,11 +386,18 @@ def test_no_template_pair_disagrees_about_a_species_one_of_them_made(
             assert len(t.run((mol,))) == len(t.run((ref,))), (smi, t.name)
 
 
-def test_the_kolbe_cascade_needs_its_generation_cap_declared():
+def test_the_kolbe_cascade_reports_the_ion_it_cannot_price():
     """⚠⚠ REMOVING THE BUG REMOVED AN ACCIDENTAL CAP. ``kolbe_schmitt`` feeds
-    itself through the phenoxide it makes, and generation 4 wants a dianion the
-    corpus does not price. The bound is declared in ``test_named_routes.py``
-    now; this pins WHY it has to be."""
+    itself through the phenoxide it makes, and generation 4 wants a dianion no
+    pKa in ``_PAIRS`` reaches.
+
+    This used to pin a RAISE, and T1d is why it no longer does. The overlay
+    that prices ions was already on, so the refusal was a missing MEASUREMENT
+    and not a missing provider -- ``UnpricedIon`` -- and a missing measurement
+    drops its rewrite and reports it, like every other coverage limit. The
+    cascade is still bounded here; what changed is that the bound is now
+    visible in ``unpriced`` instead of being a traceback.
+    """
     th = electrolyte_provider()
     vl = VolatilityProvider(th)
     seed = [_c("Oc1ccccc1"), _c("O=C=O"), WATER]
@@ -398,9 +405,12 @@ def test_the_kolbe_cascade_needs_its_generation_cap_declared():
     n3 = build_network(seed, tm, thermo=th, volatility=vl, max_species=40,
                        generations=3)
     assert _c("O=C([O-])c1ccccc1[O-]") in n3.species
-    with pytest.raises(ValueError, match="cannot derive reverse kinetics"):
-        build_network(seed, tm, thermo=th, volatility=vl, max_species=40,
-                      generations=4)
+    n4 = build_network(seed, tm, thermo=th, volatility=vl, max_species=40,
+                       generations=4)
+    dianion = _c("O=C([O-])c1cccc(C(=O)[O-])c1O")
+    assert dianion in n4.unpriced
+    assert dianion not in n4.species
+    assert "no AcidPair" in n4.unpriced[dianion]
 
 
 def test_the_salicylate_second_pka_is_priced(thermo):

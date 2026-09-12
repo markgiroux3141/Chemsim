@@ -4,6 +4,21 @@ Newest first. One entry per session, twelve lines at most, enforced by
 `tools/check_docs.py`. When this file passes 400 lines the older half rolls into
 `docs/history/changelog-YYYY-MM.md`.
 
+## 2026-09-12 — T1d: a missing pKa reports itself instead of killing the build
+
+`examples/named_routes.py` runs to the end again — **17 routes in 32.4 s**, quoted from
+its own output, and `CLAUDE.md`'s run list says so. The cause was not route 2:
+`OutsideEstimatorDomain` on a charged species means *wrong provider, here is the right
+one*, and `network.builder` passes it through on that promise — but with the ion overlay
+ALREADY ON it means the opposite. New `UnpricedIon` draws the line, raised only when the
+provider carries ions (counted, not declared) and this is not one. A template needing the
+price (reversible, or Evans-Polanyi) DROPS the rewrite and reports it in `unpriced`; one
+that does not still carries it, keeping `saponification` at 5 reactions on tristearin
+instead of 0. Four tests pinned the traceback and now pin the report — Kolbe cascade,
+eugenolate, nitroanilinium, hypochlorite: one bug recorded four times as "the refusal is
+KEPT". Filed T5 to measure the pKa table's edge. Tests 1278 -> 1279; `check.ps1 -Full`
+green plus 690 across 30 files; COVERAGE_REPORT regenerated, exception name only.
+
 ## 2026-09-12 — T1c: the bench loads all 57 templates, and a library can ask for ions
 
 `ui.examples.full_library()` is `load_templates(tier="family")` — 57, was a module

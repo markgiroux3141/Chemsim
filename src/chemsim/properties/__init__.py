@@ -41,6 +41,7 @@ from chemsim.properties.electrolyte import (
 )
 from chemsim.properties.thermochemistry import (
     OutsideEstimatorDomain,
+    UnpricedIon,
     ThermoData,
     ThermochemistryProvider,
 )
@@ -64,6 +65,7 @@ __all__ = [
     "build_activity_arrays",
     "ThermoData",
     "OutsideEstimatorDomain",
+    "UnpricedIon",
     "ThermochemistryProvider",
     "Volatility",
     "VolatilityProvider",

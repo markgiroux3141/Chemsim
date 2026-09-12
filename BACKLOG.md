@@ -62,19 +62,6 @@ full-suite run, so it is the same session or the one after.
 count is in `NEXT.md`'s state table, and the file count under `tests/` has
 dropped by the number of per-template files it replaced.
 
-### T1d — `examples/named_routes.py` dies on route 2 (S, pre-existing)
-Measured 2026-09-08 at `cf636da` and after the T1 switch-over: identical
-traceback both sides, so this is not the switch-over. It prints `invert-sugar`
-and then raises on the next route —
-`cannot derive reverse kinetics for reversible template 'phenol_dissociation' on
-'OCc1ccccc1O + O -> [O-]c1ccccc1CO + [OH3+]'`, i.e. salicyl alcohol's phenol
-dissociating with no electrolyte provider and no `_PAIRS` entry for the anion.
-The file has not been touched since S1, so something downstream of it moved.
-`CLAUDE.md`'s run list still advertises it as "17 routes end to end (~30 s)" and
-`tests/test_named_routes.py` passes, which is how it stayed hidden.
-**Done when:** the example runs to the end, its route count is quoted from its
-own output, and `CLAUDE.md`'s run list matches.
-
 ### T2 — extract literal templates from the catalog (L, unblocked: T1.0 and T1 are in)
 `tools/extract_templates.py`: resolve each step's reactants and products to
 SMILES, infer stoichiometry, atom-map, extract a reaction SMARTS with one bond of
@@ -113,6 +100,21 @@ The 173-route intersection stays as the second headline: it is the only number
 anchored to chemistry the project did not invent.
 **Done when:** the reachable-reaction count prints in `COVERAGE_REPORT.md` with
 the command that produced it, beside the intersection.
+
+### T5 — measure what the 30-row pKa table bounds (S, measurement first)
+T1d turned "no pKa for this ion" from a traceback into a reported coverage
+limit, and the reports promptly named five in one session: salicyl alcohol's
+phenoxide, the Kolbe dianion, eugenolate, a nitroanilinium, hypochlorite. A
+family template matches any aromatic hydroxyl or any amine; `_PAIRS` is 30
+hand-typed rows. Nobody knows how wide the gap is. Sweep the 1167 priced corpus
+species, fire each dissociation template on each, and count the ions with no
+pair — grouped by the acid class that would fix them, since one sourced pKa
+series can cover many rows. Do this BEFORE writing any pKa: the answer decides
+whether the fix is a dozen rows or an estimator, and an estimator for pKa is the
+kind of thing `element_data` exists to refuse.
+**Done when:** the count and its top acid classes are in `NEXT.md`'s state table
+with the command, and a follow-up item names whichever of the two fixes the
+number argues for.
 
 ---
 

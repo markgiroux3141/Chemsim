@@ -324,11 +324,18 @@ def test_hypochlorite_is_still_refused_by_name(thermo, volatility):
     """The disproportionation template is correct and cannot run, because HOCl has
     no measured boiling point in any source -- the same standing refusal
     ``electrolyte.py`` records for carbonic acid. ⚠ The day someone adds the pair,
-    this test is what tells them the route opened."""
-    with pytest.raises(ValueError, match=r"\[O-\]Cl"):
-        net_of([c("ClCl"), WATER, HYDROXIDE, SODIUM],
-               [halogen_disproportionation()] + list(dissociation_templates()),
-               thermo, volatility, max_species=40)
+    this test is what tells them the route opened.
+
+    T1d changed the SHAPE of the refusal and not the refusal. The ion overlay is
+    on and hypochlorite is not in its table, so this is a missing measurement
+    rather than a missing provider: the rewrite is dropped and named in
+    ``unpriced`` instead of raising out of the build.
+    """
+    net = net_of([c("ClCl"), WATER, HYDROXIDE, SODIUM],
+                 [halogen_disproportionation()] + list(dissociation_templates()),
+                 thermo, volatility, max_species=40)
+    assert c("[O-]Cl") in net.unpriced
+    assert c("[O-]Cl") not in net.species
 
 
 def test_triolein_volatility_is_declined_rather_than_fitted(volatility):
