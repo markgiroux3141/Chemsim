@@ -62,35 +62,6 @@ full-suite run, so it is the same session or the one after.
 count is in `NEXT.md`'s state table, and the file count under `tests/` has
 dropped by the number of per-template files it replaced.
 
-### T1c — the bench's library is 50 of 57 templates (S, measured)
-`ui.examples.full_library()` claims "every reaction template in the project" and
-its docstring says a stale list is the one rot the bench cannot afford. Measured
-2026-09-08: it gathers **50**, and the 50 are not a subset of the 57.
-
-- The four electrode templates are missing because
-  `from chemsim.reactions import electrochemistry as _electro` binds the BUNDLE
-  FUNCTION of that name re-exported by `reactions/__init__.py`, not the module.
-  A one-line fix (`importlib.import_module`), and
-  `tests/test_template_table.py::test_every_public_constructor_returns_its_row`
-  carries the note.
-- The six dissociation templates are missing because the sweep never looks in
-  `properties/electrolyte.py`.
-- Three ACID-CATALYSED DUPLICATES are present — `fischer_esterification_acid`,
-  `ether_condensation_acid`, `alkene_dehydration_acid` — swept out of the
-  `acid_catalysed_chemistry()` bundle, so the default bench runs esterification
-  twice, once gated on hydronium and once not.
-
-The fix is `load_templates(tier="family")`, which is also T2a's done-when, and it
-is NOT a one-liner: measured, it refuses at build time —
-`cannot derive reverse kinetics for reversible template 'water_autoionization'`
-— because `inventory.scenario_for` turns `electrolyte` on when an ION IS BEING
-CHARGED and the bench's default items are water, glucose, oxygen and nitrogen.
-The guarantee has to extend from the charge to the LIBRARY: a library carrying a
-template that makes an ion needs the electrolyte provider whether or not anyone
-charged one.
-**Done when:** `full_library()` is `load_templates(tier="family")`, reports its
-tier, returns 57, the bench builds, and `./check.ps1` is green.
-
 ### T1d — `examples/named_routes.py` dies on route 2 (S, pre-existing)
 Measured 2026-09-08 at `cf636da` and after the T1 switch-over: identical
 traceback both sides, so this is not the switch-over. It prints `invert-sugar`
@@ -119,22 +90,6 @@ Rows that fail go to `needs_stoichiometry.psv` or `needs_review.psv`, never
 silently.
 **Done when:** the extracted rows pass T1b's row-level product check and the
 report distinguishes template-ready-via-family from via-literal.
-
-### T2a — do not let literal rows poison selectivity (S, part of T2)
-S11 established that selectivity is a rate ratio between templates racing in the
-same flask. A hundred literal rows carrying policy-table `A` and `Ea` would make
-every multi-template flask's selectivity noise. Literal rows must be loadable
-per-route or per-tier, not swept into the default library, and `full_library()`
-must say which tier it loaded.
-The gate arrived with the table, before the rows it guards: `load_templates()`
-defaults to `tier="family"`, `tier="any"` is a deliberate act, and
-`tests/test_template_table.py::test_a_literal_row_cannot_enter_the_default_library`
-injects a literal row and asserts the default refuses it. What is left is
-`full_library()` saying which tier it loaded, and that did NOT land with the
-switch-over: T1c measured why, and it is an `electrolyte` gate rather than a
-tier argument.
-**Done when:** T1c is done — `load_templates(tier="family")` is what the bench
-uses by default — and `full_library()` reports its tier.
 
 ### T3 — generalise the literal rows that cluster (M, bounded)
 Cluster literal rows by reacting centre; where three or more share one, write a

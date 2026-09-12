@@ -53,7 +53,8 @@ a network is derived from its FEED. So choosing shelf rows is not filling a list
 -- it is defining the scenario, and the world has to be rebuilt when the
 selection changes. ``scenario_for`` takes the chosen items and guarantees the two
 things that cannot be left to a caller: every charged species is in
-``feed_species``, and ``electrolyte`` is on whenever an ion is being charged.
+``feed_species``, and ``electrolyte`` is on whenever an ion is being charged --
+or whenever the LIBRARY carries a template that makes one (T1c).
 """
 
 from __future__ import annotations
@@ -275,14 +276,28 @@ def feed_species(items) -> list[str]:
     return out
 
 
-def needs_electrolyte(items) -> bool:
-    """True if any chosen item charges an ion.
+def needs_electrolyte(items, templates=()) -> bool:
+    """True if the CHARGE holds an ion or the LIBRARY can make one.
 
     Without ``Scenario.electrolyte`` the network cannot price an ion at all, so
     this is not a preference: charging rock salt into a non-electrolyte world is
     a refusal waiting to happen at build time.
+
+    The second half is T1c's finding. The guarantee used to read the charge
+    only, and the bench's default items are water, glucose, oxygen and nitrogen
+    -- not an ion among them -- so loading the whole template table refused at
+    build time with ``cannot derive reverse kinetics for reversible template
+    'water_autoionization'``. Water dissociating is the library's chemistry
+    rather than the player's selection, so the question a shelf asks is the
+    union of the two: does anything in this flask, POURED OR POSSIBLE, want an
+    ion priced. See ``ReactionTemplate.touches_ions``.
     """
-    return any(item.electrolyte for item in items)
+    if any(item.electrolyte for item in items):
+        return True
+    return any(
+        (t.build() if isinstance(t, TemplateSpec) else t).touches_ions
+        for t in templates
+    )
 
 
 def open_shelf(items) -> Shelf:
@@ -309,8 +324,8 @@ def scenario_for(items, *, templates=(), volume: float = 1.0,
     caller. Every species the selection would charge is in ``feed_species``,
     because ``Vessel.charge_state`` refuses one the network does not carry and a
     network is derived from its feed. And ``electrolyte`` is on whenever an ion
-    is in the selection, because ion formation energies are an overlay the plain
-    provider does not have.
+    is in the selection OR the library can make one, because ion formation
+    energies are an overlay the plain provider does not have.
 
     ⚠ ``generations=1`` IS THE DEFAULT, AND IT IS THE MECHANIC RATHER THAN A
     BUDGET. "What can the things in this flask do, once" is what a bench step
@@ -321,14 +336,15 @@ def scenario_for(items, *, templates=(), volume: float = 1.0,
     ``Snapshot.unexpanded`` carries it. Pass ``None`` for a fixpoint.
     """
     chosen = tuple(items)
+    library = tuple(templates)
     return Scenario(
         templates=[
             t if isinstance(t, TemplateSpec) else TemplateSpec.of(t)
-            for t in templates
+            for t in library
         ],
         feed_species=feed_species(chosen),
         vessels={"flask": VesselSpec(volume=volume, T=T, T_env=T, **vessel)},
         max_species=max_species,
         generations=generations,
-        electrolyte=needs_electrolyte(chosen),
+        electrolyte=needs_electrolyte(chosen, library),
     )

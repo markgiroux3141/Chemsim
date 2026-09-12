@@ -319,12 +319,51 @@ def test_a_scenario_carries_every_species_the_selection_would_charge():
     assert len(sc.feed_species) == len(set(sc.feed_species))
 
 
+def _neutral_pick():
+    return ([inv.find("water"), inv.find("ethanol")] if "ethanol" in ROSTER
+            else [inv.find("water"), inv.find("benzaldehyde")])
+
+
 def test_a_selection_with_no_ions_does_not_turn_the_overlay_on():
     """The flag is derived, not defaulted: an overlay nothing needs is cost."""
-    sc = inv.scenario_for([inv.find("water"), inv.find("ethanol")]
-                          if "ethanol" in ROSTER else
-                          [inv.find("water"), inv.find("benzaldehyde")])
+    sc = inv.scenario_for(_neutral_pick())
     assert not sc.electrolyte
+
+
+def test_a_library_that_makes_an_ion_turns_the_overlay_on_by_itself():
+    """T1c. The guarantee used to read the CHARGE only.
+
+    Nothing in the bench's default items is an ion -- water, glucose, oxygen,
+    nitrogen -- so loading the whole template table refused at build time:
+    ``cannot derive reverse kinetics for reversible template
+    'water_autoionization'``. Water dissociating is the library's chemistry, not
+    the player's selection, so the question is the union of the two.
+    """
+    from chemsim.reactions.template_data import load_templates
+
+    neutral = _neutral_pick()
+    ionic = [t for t in load_templates(tier="family") if t.touches_ions]
+    assert ionic, "the table carries ionic templates; the gate has nothing to do"
+    assert inv.scenario_for(neutral, templates=ionic).electrolyte
+    quiet = [t for t in load_templates(tier="family")
+             if t.name in ("fischer_esterification", "sulfur_combustion")]
+    assert len(quiet) == 2
+    assert not inv.scenario_for(neutral, templates=quiet).electrolyte
+
+
+def test_a_neutral_molecule_with_charged_atoms_is_not_an_ionic_template():
+    """A nitro group is ``[N+](=O)[O-]`` and carbon monoxide is ``[C-]#[O+]``.
+
+    Summing formal charge over ATOMS rather than over SLOTS calls fifteen
+    ordinary organic templates ionic, aromatic nitration among them.
+    """
+    from chemsim.reactions.template_data import load_templates
+
+    by_name = {t.name: t for t in load_templates(tier="family")}
+    assert not by_name["aromatic_nitration"].touches_ions
+    assert not by_name["water_gas_shift"].touches_ions
+    assert by_name["water_autoionization"].touches_ions
+    assert by_name["saponification"].touches_ions
 
 
 def test_the_whole_loop_runs_and_the_players_shelf_is_depleted():

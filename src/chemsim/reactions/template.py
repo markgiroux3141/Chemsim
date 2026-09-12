@@ -435,6 +435,31 @@ class ReactionTemplate:
         """True if this template's kinetics cannot be built without reaction thermo."""
         return self.reversible or self.alpha != 0.0
 
+    @property
+    def touches_ions(self) -> bool:
+        """True if any slot of this rewrite is a CHARGED SPECIES.
+
+        The question a library has to answer before a flask is built: a template
+        whose reactants or products include an ion needs the electrolyte overlay
+        to price it, whether or not the player charged an ion. Without it a
+        reversible ionic template refuses at build time -- measured, the bench
+        with the whole table loaded dies on ``water_autoionization`` -- and an
+        irreversible one quietly makes a species nothing can price.
+
+        NOTE: the sum is per SLOT and not per atom. A nitro group is
+        ``[N+](=O)[O-]`` and carbon monoxide is ``[C-]#[O+]``; both carry charged
+        atoms inside a neutral molecule, and a per-atom test calls fifteen
+        ordinary organic templates ionic. The net charge of the slot is the thing
+        the thermochemistry sees.
+        """
+        rxn = self._rxn
+        slots = [rxn.GetReactantTemplate(i)
+                 for i in range(rxn.GetNumReactantTemplates())]
+        slots += [rxn.GetProductTemplate(i)
+                  for i in range(rxn.GetNumProductTemplates())]
+        return any(sum(a.GetFormalCharge() for a in m.GetAtoms()) != 0
+                   for m in slots)
+
     def barrier(self, dH: float) -> float:
         """The Evans-Polanyi barrier for one member of the family, J/mol.
 

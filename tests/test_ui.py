@@ -519,24 +519,30 @@ def test_a_refused_shelf_row_never_reaches_the_flask():
     assert len(ex.opening) == 1
 
 
-def test_the_bench_library_holds_the_templates_a_name_rule_missed():
-    """⚠⚠ The bench claims *every template in the project*, and the first
-    version of that claim was false by more than half.
+def test_the_bench_library_is_the_whole_template_table_and_not_a_sweep():
+    """⚠⚠ The bench claims *every template in the project*, and TWO sweeps that
+    made the claim were false -- the second one quietly.
 
-    Collecting only ``*_chemistry`` bundles -- the rule
-    ``validation/playable_levers.py`` uses -- silently skips every template
-    exported as a function of its own. **Playing it is what found that**: sulfur,
-    air and water off the shelf gave four species, no reactions and an empty
-    frontier, which is the engine correctly reporting a library with no sulfur
-    chemistry in it.
+    Collecting only ``*_chemistry`` bundles gathered 44 and skipped every
+    template exported as a function of its own; playing it is what found that,
+    with sulfur, air and water giving four species and an empty frontier.
+    Sweeping the reaction MODULES by result type gathered 50 of 57 and the 50
+    were not a subset: a package re-export shadowed ``electrochemistry`` so the
+    four electrode templates went missing, ``properties/electrolyte`` was never
+    looked in so the six dissociation templates did too, and three acid-gated
+    DUPLICATES rode along. The library is the table now, so the assertion is an
+    equality rather than a floor.
     """
-    from chemsim.ui.examples import full_library
+    from chemsim.reactions.template_data import load_templates
+    from chemsim.ui.examples import LIBRARY_TIER, full_library
 
     names = {t.name for t in full_library()}
+    assert names == {t.name for t in load_templates(tier=LIBRARY_TIER)}
     for wanted in ("sulfur_combustion", "sulfur_trioxide_hydration",
-                   "fischer_esterification", "cannizzaro_disproportionation"):
+                   "fischer_esterification", "cannizzaro_disproportionation",
+                   "water_electrolysis", "water_autoionization"):
         assert wanted in names, f"{wanted} is missing from the bench library"
-    assert len(names) >= 50
+    assert "fischer_esterification_acid" not in names
 
 
 def test_the_burner_declares_first_order_in_oxygen_through_a_scenario():
@@ -602,9 +608,14 @@ def test_one_more_generation_actually_finds_more_chemistry():
         "the lead chamber makes sulfuric acid in the second generation; if it "
         "no longer does, the play in validation/shelf.py panel 4 is stale"
     )
-    third = World(rebuilt(ex, generations=3).scenario).network
-    assert not third.unexpanded, (
-        "the third generation should exhaust this network, so the control can "
+    # NOTE: FIVE, and it was three until T1c gave the bench the whole table. The two
+    # extra generations are the six dissociation templates arriving: sulfuric
+    # acid goes on to bisulfate and then sulfate, and the ammonia the third
+    # generation makes is protonated to ammonium. Measured 2026-09-12 --
+    # 15/18/20/21/21 species and a frontier that empties at 5.
+    fifth = World(rebuilt(ex, generations=5).scenario).network
+    assert not fifth.unexpanded, (
+        "the fifth generation should exhaust this network, so the control can "
         "say 'the chemistry is finished' rather than 'the budget ran out'"
     )
 

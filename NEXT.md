@@ -1,58 +1,61 @@
-# NEXT — overwritten 2026-09-08
+# NEXT — overwritten 2026-09-12
 
 Rewritten from scratch at the end of every session, never appended to. Anything
 still true next time gets re-typed; anything not re-typed is gone.
 
 ## State of the box
 
-Every number came from a command run on 2026-09-08. The command is named.
+Every number came from a command run on 2026-09-12. The command is named.
 
 | fact | value | command |
 |---|---|---|
-| tests | 1,276 collected | `python -m pytest --co -q` |
+| tests | 1,278 collected | `python -m pytest --co -q` |
 | fast check | `./check.ps1`, ~70 s, green | ruff + docs + catalog + templates + 39 smoke tests |
 | full check | `./check.ps1 -Full`, ~2.5 min, green | adds both report `--check` ratchets |
 | full suite | ~30 min, no markers yet | ask before running |
 | templates | 57 rows, all `tier=family`, covering 46 catalog classes | `python tools/build_templates.py --check` |
 | where a template comes from | `data/templates/templates.psv` only: 5 `ReactionTemplate(` sites in `src/chemsim`, all loaders | same command |
+| the bench's library | all 57, and it reports its tier | `ui.examples.full_library()` |
 | catalog | 1,583 compounds, 173 routes, 377 steps, 240 classes | `python tools/catalog.py` |
 | routes template-ready / species-ready / both | 46 / 85 / 38 | `data/catalog/COVERAGE_REPORT.md` |
 | routes playable from natural materials | 21, three tiers deep; 44 runnable, 22 fed but unrunnable | `data/catalog/PLAYABLE.md` footer |
 | rows extractable and uncovered | 174 of 377, in 132 classes (102 single-row) | `python validation/extraction_yield.py` |
 | upper bound if all 174 became templates | template-ready 110, intersection 66 | same command, last two panels |
-| the bench's library | 50 of 57 templates, and not a subset — see T1c | `ui.examples.full_library()` |
 | `SAVE_VERSION` | 9 | `src/chemsim/engine/world.py:122` |
 | line endings | mixed: `BACKLOG.md`, `NEXT.md`, `CHANGELOG.md`, the PSVs and the generated `*_data.py` are CRLF; most source is LF | `git ls-files --eol <file>` |
 
 ## Last session, in five lines
 
-T1 is done. The 57 constructors in `reactions/{library,synthesis,electrochemistry}`
-and `properties/electrolyte` are wrappers over `load_templates()`; they keep their
-keyword arguments and hold no data. Proven by snapshotting every
-template-producing callable over a keyword grid before and after: 577 variants
-across 69 callables, byte-identical. Adding a template is one row, measured. Two
-pre-existing breaks surfaced and were filed rather than fixed: T1c and T1d.
+T1c is done, and T2a with it. `full_library()` is `load_templates(tier="family")`
+-- the module sweep it replaced gathered 50 of 57 and the 50 were not a subset.
+The blocker was `inventory.needs_electrolyte` reading the CHARGE only; it reads
+the LIBRARY too now, through `ReactionTemplate.touches_ions`. The default bench
+went 26 species / 19 reactions to 35 / 24, and sulfur + air + water + NO2 now
+takes five generations to exhaust where it took three.
 
 ## Do this now
 
-1. **T1c — the bench's library is 50 of 57 templates.** Spec in `BACKLOG.md`,
-   which carries the three separate causes and the measured blocker. Read
-   `src/chemsim/ui/examples.py` (`full_library`, `bench`), then
-   `engine/inventory.py`'s `scenario_for`. The fix is
-   `load_templates(tier="family")`, and it refuses at build time until
-   `scenario_for` turns `electrolyte` on for a LIBRARY that makes ions rather
-   than only for a CHARGE that contains one.
-   *Done when:* `full_library()` returns 57 and reports its tier, the bench
-   builds, and `./check.ps1` is green.
+1. **T4 -- reactions reachable from the shelf.** Spec in `BACKLOG.md`. This is the
+   headline metric that replaces the organic-family checklist, and the bench
+   library is finally the whole table so the count will not have to be redone.
+   Read `tools/build_playable.py` for how a report is generated and `--check`ed,
+   `engine/inventory.py` for the natural tier, and `network/builder.py` for
+   `build_network`'s bounds. Measure ONE pair and multiply before launching the
+   sweep: 45 natural rows is ~1,000 pairs.
+   *Done when:* the reachable-reaction count prints in `COVERAGE_REPORT.md`
+   beside the intersection, with the command that produced it, and its `--check`
+   ratchet passes.
 
-2. **T4 — reactions reachable from the shelf.** Spec in `BACKLOG.md`. This is
-   the headline metric that replaces the organic-family checklist, and it reads
-   the template table, which now exists. Take it after T1c: a reachability count
-   computed off a 50-template library would be the wrong number.
-   *Done when:* the count prints in `COVERAGE_REPORT.md` beside the
-   intersection, with the command that produced it.
+2. **T1d -- `examples/named_routes.py` dies on route 2.** Spec in `BACKLOG.md`.
+   The traceback is `cannot derive reverse kinetics for reversible template
+   'phenol_dissociation'` on salicyl alcohol: no electrolyte provider and no
+   `_PAIRS` entry for that anion. T1c's `touches_ions` is the near half of the
+   fix -- the example builds its own `Scenario`s and can ask the same question --
+   but the missing `_PAIRS` entry is a data question of its own.
+   *Done when:* the example runs to the end, its route count is quoted from its
+   own output, and `CLAUDE.md`'s run list matches.
 
-3. **R4/E3 — delete `discovery/refine.py`.** Decided; the argument is in
+3. **R4/E3 -- delete `discovery/refine.py`.** Decided; the argument is in
    `BACKLOG.md`. Half an hour, and it only removes code.
    *Done when:* the module, `discovery/__init__.py`, the README layer row and the
    `chemsim/__init__.py` mention are gone and `./check.ps1` is green.
@@ -62,37 +65,34 @@ full-suite run, so they go to whichever session is asked to run the suite.
 
 ## Decisions already taken — do not reopen
 
-- **A PSV row is the template built with its constructor's DEFAULT arguments,
-  and every field of it.** Where a default catalyst is on, the row carries the
-  already-catalysed SMARTS and the already-rescaled `A`;
-  `library._catalysed_row` and `_surface_row` undo whichever the row carries and
-  apply the caller's, so `A` is always on the uncatalysed basis exactly as
-  `_kinetics` always saw it. Every pre-exponential in the table round-trips
-  through `CATALYST_REFERENCE` to the last bit — checked, not assumed.
-- **An empty optional cell means the `ReactionTemplate` default**, read off the
-  dataclass, so a default lives in one place; in a constructor's signature that
-  default is now spelled `None`.
+- **A library's chemistry is part of the electrolyte question.** `needs_electrolyte`
+  takes the charge AND the templates: a template that makes an ion needs the
+  overlay whether or not anyone poured one, and the overlay is a superset of the
+  plain provider so it changes no neutral price. The test is net formal charge
+  per SMARTS SLOT, not per atom -- `[N+](=O)[O-]`, `[C-]#[O+]`.
+- **A sweep over modules is not a library.** Two shipped, both wrong: by naming
+  convention (44) and by result type (50 of 57, not a subset).
+- **A PSV row is the template built with its constructor's DEFAULT arguments,**
+  every field of it: where a default catalyst is on the row carries the
+  already-catalysed SMARTS and the already-rescaled `A`, and
+  `library._catalysed_row`/`_surface_row` undo whichever the row carries and
+  apply the caller's. An empty optional cell means the `ReactionTemplate`
+  default, read off the dataclass and spelled `None` in a signature.
 - **The constructors stay.** They are the public API and carry the keyword
-  arguments a row cannot — `catalyst=`, `eta_a=`, `A=`, `rho=`. Not data.
+  arguments a row cannot -- `catalyst=`, `eta_a=`, `A=`, `rho=`. Not data.
 - **`Ea_J` is the only barrier column.** An electrode template's declared
-  quantity is a voltage (`Ea = n F eta_a`, `n` the row's own `electrons`), and
-  that goes in `source`, not in a second column.
-- **The row-vs-constructor check is replaced by `CONSTRUCTION_SITES`.** With the
-  constructors reading their rows, comparing the two compares the table with
-  itself. What holds "a template is a row" is the inverse claim: the set of
-  `ReactionTemplate(` sites under `src/chemsim` is exactly the five loaders, and
-  a new site has to be argued for in `tools/build_templates.py`.
+  quantity is a voltage (`Ea = n F eta_a`), and that goes in `source`.
+- **What holds "a template is a row" is `CONSTRUCTION_SITES`** -- the set of
+  `ReactionTemplate(` sites under `src/chemsim` is exactly the five loaders.
 - **`TEMPLATE_CLASSES` is derived.** 14 integrator-TERM entries stay hand-typed
-  in `validation/catalog_coverage.py` — a lattice is not a graph and can have no
-  row — and the other 46 come from the `class` column.
-  `acid-displacement-precipitating` is carried by both, and the merge says so.
+  in `validation/catalog_coverage.py`; the other 46 come from the `class` column.
 - **`PLAYABLE.md`'s last line is a contract.** `catalog_coverage._PLAYABLE_FOOTER`
   parses it; change its shape and update the regex in the same commit.
-- **Regeneration order is playable, then coverage.** The coverage report reads
-  the playable footer. `check.ps1 -Full` runs them in that order.
+- **Regeneration order is playable, then coverage.** `check.ps1 -Full` runs them
+  in that order.
 - **T2 and T3 go ahead.** 174 extractable-and-uncovered rows, +28 on the
-  intersection at the ceiling — and a ceiling is a ceiling, since the LP passes
-  rows atom-mapping will refuse. T3 is bounded: 6 classes have 3+ such rows.
+  intersection at the ceiling, and a ceiling is a ceiling: the LP passes rows
+  atom-mapping will refuse.
 - **`discovery/refine.py` is deleted, not wired.** A fixpoint is cheap for the
   chemistry that matters, the species cap bounds the expensive case and reports
   itself, and silent pruning breaks rule 10.

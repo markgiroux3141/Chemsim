@@ -4,6 +4,21 @@ Newest first. One entry per session, twelve lines at most, enforced by
 `tools/check_docs.py`. When this file passes 400 lines the older half rolls into
 `docs/history/changelog-YYYY-MM.md`.
 
+## 2026-09-12 — T1c: the bench loads all 57 templates, and a library can ask for ions
+
+`ui.examples.full_library()` is `load_templates(tier="family")` — 57, was a module
+sweep gathering **50, and not a subset**: a package re-export shadowed
+`electrochemistry` (4 electrode templates), `properties/electrolyte` was never swept
+(6 dissociations), and 3 acid-gated duplicates ran esterification twice. The blocker:
+`inventory.needs_electrolyte` read the CHARGE only and the bench's default items carry
+no ion, so the whole table refused at build time on `water_autoionization`. It reads
+the library too now, through `ReactionTemplate.touches_ions` — net charge per SLOT,
+since a per-ATOM sum calls 15 neutral templates ionic (`[N+](=O)[O-]`, `[C-]#[O+]`).
+Measured: the default bench goes 26 species/19 reactions to 35/24, and sulfur + air +
+water + NO2 exhausts at 5 generations where it exhausted at 3 (H2SO4 -> bisulfate ->
+sulfate, NH3 -> ammonium). Tests 1276 -> 1278, `check.ps1 -Full` green, `src/chemsim`
+glyphs 1043 -> 1042. Next: T4, reachable reactions, on the whole table.
+
 ## 2026-09-08 — T1 switch-over: the engine builds its templates from the table
 
 The 57 constructors in `reactions/` and `properties/electrolyte.py` are wrappers

@@ -80,8 +80,9 @@ def test_every_public_constructor_returns_its_row(rows):
     # NOTE: ``import_module`` and not ``from chemsim.reactions import
     # electrochemistry`` -- the package re-exports a BUNDLE FUNCTION of that
     # name, so the plain import binds the function and the four electrode
-    # templates go missing. ``ui.examples.full_library`` has that bug today; see
-    # BACKLOG.md.
+    # templates go missing. That is one of the three causes that made
+    # ``ui.examples.full_library`` gather 50 of 57 (T1c); it reads the table
+    # now, so this sweep is the last place the shadow can bite.
     mods = [importlib.import_module(m) for m in (
         "chemsim.reactions.library",
         "chemsim.reactions.synthesis",

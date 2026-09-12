@@ -17,7 +17,8 @@ experiment".
 examples with hand-chosen chemistry; the bench is whatever the player took off
 the shelf, built through ``engine.inventory.scenario_for`` so that the two things
 a selection must guarantee -- every charged species in the feed, and the
-electrolyte overlay on when an ion is charged -- cannot be got wrong by a widget.
+electrolyte overlay on when an ion is charged or MAKEABLE -- cannot be got wrong
+by a widget.
 It carries the WHOLE template library rather than a curated handful, because
 "mix two things and see" is the promise, and it defaults to ONE generation
 because that is what a bench step is.
@@ -25,23 +26,19 @@ because that is what a bench step is.
 
 from __future__ import annotations
 
-import inspect as _inspect
 from dataclasses import dataclass, replace
 
 from chemsim.engine.inventory import find, scenario_for
 from chemsim.engine.scenario import Scenario, TemplateSpec, VesselSpec
 from chemsim.matter import Molecule
 from chemsim.properties import dissociation_templates
-from chemsim.reactions import ReactionTemplate
-from chemsim.reactions import electrochemistry as _electro
-from chemsim.reactions import library as _library
-from chemsim.reactions import synthesis as _synthesis
 from chemsim.reactions.library import (
     aerobic_oxidation,
     esterification,
     ether_condensation,
     peroxide_over_oxidation,
 )
+from chemsim.reactions.template_data import load_templates
 from chemsim.recipes import BENZOIC_ACID_PREP
 
 
@@ -238,60 +235,38 @@ def _prep() -> Example:
 BENCH_DEFAULT = ("water", "glucose", "oxygen", "nitrogen")
 
 
-def full_library() -> list:
-    """Every reaction template in the project, deduplicated by name.
+LIBRARY_TIER = "family"
 
-    Read off the modules rather than listed here, because a list here would go
-    stale the first time a session adds a template, and that is the one kind of
-    rot the bench cannot afford: its whole claim is *mix anything*, and a bench
-    missing the newest chemistry would quietly stop being that.
 
-    ⚠⚠ **THE FIRST VERSION COLLECTED ONLY ``*_chemistry`` BUNDLES AND THAT WAS
-    WRONG BY MORE THAN HALF.** It is the rule ``validation/playable_levers.py``
-    panel 5 uses, it gathers 44 templates, and it silently skips every template
-    exported as a function of its own -- ``sulfur_combustion``,
-    ``sulfur_dioxide_oxidation``, ``sulfur_trioxide_hydration``,
-    ``lead_chamber``, ``esterification``, ``cannizzaro`` and about forty more.
-    **Playing it is what found that**: sulfur, air and water off the shelf gave
+def full_library(tier: str = LIBRARY_TIER) -> list:
+    """Every reaction template of one tier, read from the template table.
+
+    The bench's whole claim is *mix anything*, so a library that goes stale the
+    first time a session adds a template is the one kind of rot it cannot
+    afford. Since T1 a template IS a row in ``data/templates/templates.psv``,
+    so this is ``load_templates`` and nothing else, and a new row is in the
+    bench the moment it is written.
+
+    ⚠ **THE TWO SWEEPS THIS REPLACES WERE BOTH WRONG, AND NEITHER SAID SO.**
+    The first collected only ``*_chemistry`` bundles: 44 templates, and it
+    silently skipped every template exported as a function of its own --
+    ``sulfur_combustion``, ``lead_chamber``, ``esterification``, forty more.
+    Playing it is what found that: sulfur, air and water off the shelf gave
     four species, no reactions and an EMPTY FRONTIER at every generation count,
-    which is the engine correctly reporting that it had been handed a library
-    with no sulfur chemistry in it. A blurb claiming "every template in the
-    project" was in the window at the time.
+    while a blurb claiming "every template in the project" sat in the window.
+    The second swept the three reaction modules by RESULT TYPE, which cannot be
+    fooled by a naming convention -- and gathered 50 of 57, the 50 not even a
+    subset: it missed the four electrode templates (``reactions/__init__``
+    re-exports a BUNDLE FUNCTION named ``electrochemistry``, which shadows the
+    module the sweep thought it had) and the six dissociation templates (it
+    never looked in ``properties/electrolyte``), and it carried three
+    acid-catalysed DUPLICATES that ran esterification twice, once gated on
+    hydronium and once not.
 
-    So the sweep is by RESULT TYPE and not by name: every module-level function
-    that needs no arguments is called, and whatever hands back a
-    ``ReactionTemplate`` -- alone or in a sequence -- is a template factory.
-    Anything else is skipped. That cannot be fooled by a naming convention
-    nobody promised to keep.
+    A sweep over modules can only ever be an estimate of a set that is now
+    written down. ``tier`` defaults to ``family``; the bench reports it.
     """
-    seen: set[str] = set()
-    out: list = []
-    for mod in (_library, _synthesis, _electro):
-        for name in sorted(dir(mod)):
-            fn = getattr(mod, name)
-            if not _inspect.isfunction(fn) or name.startswith("_"):
-                continue
-            if fn.__module__ != mod.__name__:
-                continue                        # a re-export; its own module has it
-            params = _inspect.signature(fn).parameters.values()
-            if any(p.default is p.empty
-                   and p.kind in (p.POSITIONAL_ONLY, p.POSITIONAL_OR_KEYWORD)
-                   for p in params):
-                continue                        # parameterised: not a plain factory
-            try:
-                got = fn()
-            except Exception:                                   # noqa: BLE001, S112
-                continue
-            found = [got] if isinstance(got, ReactionTemplate) else (
-                list(got) if isinstance(got, (list, tuple))
-                and all(isinstance(x, ReactionTemplate) for x in got) and got
-                else []
-            )
-            for tmpl in found:
-                if tmpl.name not in seen:
-                    seen.add(tmpl.name)
-                    out.append(tmpl)
-    return out
+    return load_templates(tier=tier)
 
 
 def bench(items=(), *, generations: int | None = 1, max_species: int = 400,
@@ -308,12 +283,14 @@ def bench(items=(), *, generations: int | None = 1, max_species: int = 400,
     ``Scenario`` built here. That function owns the two guarantees a selection
     cannot be trusted to make -- every charged species in ``feed_species``,
     because ``Vessel.charge_state`` refuses one the network does not carry, and
-    ``electrolyte`` on whenever an ion is being charged.
+    ``electrolyte`` on whenever an ion is being charged OR the library can make
+    one.
     """
     chosen = tuple(items) or tuple(find(cid) for cid in BENCH_DEFAULT)
     live = tuple(i for i in chosen if i.chargeable)
+    library = full_library()
     scenario = scenario_for(
-        live, templates=full_library(), volume=volume, T=T,
+        live, templates=library, volume=volume, T=T,
         generations=generations, max_species=max_species, UA=5.0, kla=5.0,
     )
     opening = tuple(
@@ -328,7 +305,8 @@ def bench(items=(), *, generations: int | None = 1, max_species: int = 400,
         blurb=(
             f"In the flask: {names}.\n"
             f"\n"
-            f"Explored to {gens}, with every template in the project loaded. One "
+            f"Explored to {gens}, with all {len(library)} '{LIBRARY_TIER}' "
+            f"templates in the table loaded. One "
             f"generation is 'what can the things in this flask do, ONCE' -- the "
             f"products of that step become reactants only when you ask for "
             f"another. If the reports heading says the flask has more to give, "
