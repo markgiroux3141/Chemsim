@@ -3,16 +3,19 @@
     The check to run after every change. Fast by default.
 
 .DESCRIPTION
-    Five steps: lint, the documentation caps, the catalog's structural
-    validation, the template table against the constructors it copies, and a
-    smoke subset of the test suite.
+    Six steps: lint, the documentation caps, the catalog's structural
+    validation, the template table against the constructors it copies, the
+    classification of the templates the shelf cannot reach, and a smoke subset
+    of the test suite.
 
     The smoke subset is a hand-named list because the suite has no markers yet.
     T0.4 in BACKLOG.md replaces it with `pytest -m "not slow"`; when that lands,
     delete $SmokeTests and use the marker.
 
     The full suite is about 30 minutes on the user's own machine. It is not run
-    here, and it is not run without asking.
+    here, and it is not run without asking. What IS printed here is how long it
+    has been: `data/checks/cadence.psv` carries every expensive check, its
+    cadence in commits, and where the fix goes if one comes back red.
 
 .PARAMETER Full
     Also run the two report generators with --check, so a stale committed report
@@ -26,7 +29,11 @@ $failures = @()
 $SmokeTests = @(
     'tests/test_conservation.py',
     'tests/test_ui.py',
-    'tests/test_threads.py'
+    'tests/test_threads.py',
+    # Under a second between them, and both guard a committed artefact against
+    # the code that writes it rather than against a hand-typed number.
+    'tests/test_reachable.py',
+    'tests/test_cadence.py'
 )
 
 function Step {
@@ -46,6 +53,10 @@ Step 'catalog' { python tools/catalog.py }
 # Fast (~5 s) and it guards a transcription: --check refuses a stale
 # template_data.py AND any row that has drifted from the constructor it copies.
 Step 'templates' { python tools/build_templates.py --check }
+# T6's classifier over T4's silent list. ~2 s, and it re-derives rather than
+# re-reading: a template that stops being silent, or a shelf row that changes
+# what the closure can make, fails here instead of drifting in a committed file.
+Step 'silent templates' { python tools/classify_silent.py --check }
 Step 'smoke tests' { python -m pytest -q @SmokeTests }
 
 if ($Full) {
@@ -56,6 +67,15 @@ if ($Full) {
     Step 'playable report' { python tools/build_playable.py --check }
     Step 'coverage report' { python validation/catalog_coverage.py --check }
 }
+
+# Not a step: it runs nothing and it cannot fail the check. It is the standing
+# answer to "how long has it been since the suite?", which used to be nobody's
+# job. `tools/cadence.py` derives what it can from the artefacts and stamps only
+# what leaves no trace.
+Write-Host ''
+Write-Host '=== expensive checks' -ForegroundColor Cyan
+python tools/cadence.py --due
+$LASTEXITCODE = 0
 
 Write-Host ''
 if ($failures.Count -gt 0) {

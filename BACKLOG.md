@@ -101,19 +101,39 @@ kind of thing `element_data` exists to refuse.
 with the command, and a follow-up item names whichever of the two fixes the
 number argues for.
 
-### T6 — the 32 templates the shelf cannot reach (M, computed queue)
-T4 measured it: 25 of 57 templates fire from some pair of natural materials and
-**32 never fire at all**, named in `data/catalog/derived/reachable.psv`. That
-list is a work queue nobody wrote by hand, and it splits three ways which have
-different fixes — a template whose substrate is not on the shelf (grant the
-row, or find the route that makes it), one whose substrate needs a third
-reagent a pair sweep cannot show (widen the sweep to triples for those alone),
-and one that cannot fire at all (a bug, and the most valuable of the three).
-Classify all 32 before building anything: `aromatic_nitration` silent when
-`nitric-acid` is not a natural row is expected, and `cannizzaro_disproportionation`
-silent with benzaldehyde reachable would not be.
-**Done when:** each of the 32 carries one of the three labels with its evidence,
-and the ones in the third group are filed as bugs.
+### T7 — carbon monoxide, and the four templates waiting for it (M)
+T6 measured it. 23 missing substrates hold the 29 `no-substrate` rows of
+`data/catalog/derived/silent_templates.psv`, and the largest single one is
+`[C-]#[O+]`: `water_gas_shift`, `steam_reforming` and both hydroformylations
+plus `methanol_from_carbon_monoxide` want carbon monoxide and the shelf cannot
+make a molecule of it. The closure HAS its ingredients -- `O=C=O` and `[H][H]`
+are both in the 41 species -- and `water_gas_shift` is written CO + H2O -> CO2 +
+H2 with `reversible=yes`, so the reaction that would make CO is derived and
+never DISCOVERED. Discovery runs templates forward only; `amine_protonation`
+carries a note saying it was written backwards for exactly this reason.
+
+That makes this a direction problem, not a chemistry problem, and the fix is
+NOT simply flipping the row: a flask charged with CO and water would then
+discover nothing, which is the forward use the named routes depend on. So the
+options are a mirror row, a discovery pass that also tries the derived reverse,
+or a solid-carbon term (`C` + `CO2`, which no `family` row can express -- all 57
+are liquid or gas). Decide which, with the reasoning, before writing anything.
+**Done when:** `[C-]#[O+]` is in the closure, `templates_fired` in
+`reachable.psv` has been re-measured, and `silent_templates.psv` has lost the
+four rows or says why it has not.
+
+### T8 — the two templates a missing pKa switches off (S, T5's first answer)
+T6's third group came back with two members and neither is a bug:
+`carboxylic_acid_dissociation` on `oleic-acid+water` and `phenol_dissociation`
+on `tannic-acid-core+water` both APPLY and have the rewrite discarded because
+the product ion cannot be priced. Two natural shelf rows, in the flask, with a
+template that matches, producing nothing. `halogen_disproportionation` is the
+same refusal one step further out. That is T5's question already answered for
+the shelf: the 30-row table costs three templates before anybody leaves the
+natural tier.
+**Done when:** the oleate, the tannate phenoxide and hypochlorite have sourced
+pKa values or a recorded refusal, and `silent_templates.psv` re-derives with
+those rows gone.
 
 ---
 

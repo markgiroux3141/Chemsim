@@ -31,6 +31,8 @@ python tools/catalog.py                         # structural validation of the P
 python validation/catalog_coverage.py           # regenerates data/catalog/COVERAGE_REPORT.md
 python tools/build_playable.py                  # regenerates data/catalog/PLAYABLE.md (~50 s)
 python tools/build_route_index.py               # regenerates data/catalog/ROUTE_INDEX.md
+python tools/classify_silent.py                 # why each silent template is silent, ~2 s
+python tools/cadence.py                         # which expensive checks are owed
 python tools/build_reachable.py                 # regenerates derived/reachable.psv, ~35 min
 python examples/named_routes.py                 # 17 named routes end to end, ~34 s
 pwsh tools/loop/run-loop.ps1 -MaxSessions 3     # /session on repeat, unattended

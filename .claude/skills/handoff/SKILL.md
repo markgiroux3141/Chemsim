@@ -32,6 +32,8 @@ touched; re-use a number already measured *this* session rather than re-running.
 | readiness columns | `data/catalog/COVERAGE_REPORT.md` (regenerate with `python validation/catalog_coverage.py`) |
 | playable routes | `data/catalog/PLAYABLE.md` (regenerate with `python tools/build_playable.py`, ~50 s) |
 | save format | `src/chemsim/engine/world.py` `SAVE_VERSION` |
+| what the shelf cannot reach | `data/catalog/derived/silent_templates.psv` (regenerate with `python tools/classify_silent.py`, ~2 s) |
+| expensive checks owed | `python tools/cadence.py` |
 
 If a number did not move, say so and quote it anyway. A `NEXT.md` whose state
 table is stale is worse than no table.
@@ -48,6 +50,27 @@ could have moved — anything in `numerics/`, `vessel/` or `network/`.
 
 Report failures plainly, in the CHANGELOG entry as well as to the user. A
 handoff that hides a red check hands over a trap.
+
+### The expensive checks have a ledger — use it
+
+`python tools/cadence.py` says which of them are owed and how long it has been.
+The clock is commits on `main`, not days, and a row that writes a committed
+artefact derives its own last run from git. Three obligations, and they are the
+whole point of running the slow things seldom:
+
+- **Run what you cheaply can.** A due row under two minutes just gets run.
+- **Record what you ran**, pass or fail: `python tools/cadence.py --record
+  <check> --result pass|fail --note "..."`. A red result is recorded red and
+  its note is what the next session reads first. Never stamp a check green to
+  clear the board, and never stamp one you did not run.
+- **Hand over what you did not run.** If a row is due and you did not run it, it
+  goes in `NEXT.md` — under `Do this now` when the session's own change could
+  have broken it, under the state table otherwise. A due check that nobody
+  mentions is the failure mode this ledger exists to stop.
+
+When a slow check comes back red, its `on_surprise` cell already names where the
+fix goes. Start there rather than from the failing test, and if that cell turns
+out to be wrong, fix the cell — that is a finding about the ledger.
 
 ## Step 3 — `BACKLOG.md`: delete what is done, record what was decided
 

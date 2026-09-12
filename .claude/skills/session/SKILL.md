@@ -29,11 +29,22 @@ Commit to one task. Do not take a second one afterwards, however short it
 looks; the user asked for a predictable unit, and the second task belongs to
 the next invocation with a fresh context.
 
+Then run `python tools/cadence.py` and read what it says before you start. It
+names the expensive checks that are owed, how long it has been in commits, and
+where the fix goes if one comes back red. A due row under two minutes is run
+now; a due row over ten is the user's call, and the answer to "is this task
+safe without it" belongs in the report either way.
+
 ## Step 2 — Do it
 
 Work to the task's done-when, not to your own sense of finished. After every
-change, `./check.ps1`. Regenerate any generated file you touched and run its
-`--check`. A number you write down comes from a command you ran today.
+change, `./check.ps1` — its last section prints what the ledger says is owed.
+Regenerate any generated file you touched and run its `--check`. A number you
+write down comes from a command you ran today.
+
+If you ran a slow check, record it (`python tools/cadence.py --record <check>
+--result pass|fail --note "..."`) in the same breath, pass or fail. A result
+that is not recorded did not happen as far as the next session can tell.
 
 When a task turns out to be wrong as written — the measurement it asked for
 cannot be made, the file it names has moved, its premise is false — do not

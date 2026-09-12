@@ -1,0 +1,117 @@
+# DERIVED by tools/classify_silent.py -- do not hand-edit.
+# Why each template named on reachable.psv's silent_templates line
+# never fires from a pair of natural shelf rows.
+# template | label | slots | witness_cost | witness | blocker |
+#   evidence
+#
+# no-substrate            no species the shelf holds or can make
+#                         matches one of its reactant slots -- or one
+#                         matches only as a substructure and the
+#                         rewrite that follows is impossible.
+# needs-more-than-a-pair  every slot is matched, and satisfying them
+#                         all costs three or more sources, or a
+#                         condition the sweep holds fixed
+#                         (cell_potential=0).
+# cannot-fire             a flask the sweep ALREADY HELD matched every
+#                         slot and yielded nothing. The group worth
+#                         taking first.
+#
+# A witness is the smallest set of shelf rows matching every slot,
+# searched exhaustively to 4, then BUILT: the network is the arbiter
+# and the SMARTS match only the candidate.
+#
+# 'closure' in a witness is the small-molecule half of the shelf
+# expanded to a fixpoint. Its frontier is reported below: a non-zero
+# frontier would make every 'cannot make' here an estimate. It counts
+# as ONE source in witness_cost and is 23 rows, so a witness naming it
+# is above a pair by construction and is never 'cannot-fire'.
+#! cannot-fire = 2
+#! needs-more-than-a-pair = 1
+#! no-substrate = 29
+#! silent = 32
+#! closure_rows = 23
+#! closure_species = 41
+#! closure_frontier = 0
+#
+# THE WORK ORDER: one missing substrate holds several
+# templates, so the queue is this list and not the 32.
+#! blocking_substrates = 23
+#   4  [C-]#[O+]
+#      hydroformylation_branched, hydroformylation_linear, methanol_from_carbon_monoxide, water_gas_shift
+#   3  [c][CX3H1]=[OX1]
+#      cannizzaro_disproportionation, knoevenagel_doebner_condensation, perkin_condensation
+#   2  [S;H2]
+#      claus_comproportionation, hydrogen_sulfide_combustion
+#   1  [#6][CX3](=[O])[O-]
+#      kolbe_electrolysis
+#   1  [C;H4]
+#      steam_reforming
+#   1  [CH2]=[CH1][C]#[N]
+#      alkene_hydrodimerisation
+#   1  [CH2]=[CH2]
+#      wacker_oxidation
+#   1  [CX2]#[CX2]
+#      alkyne_hydration
+#   1  [CX4][F,Cl,Br,I]
+#      williamson_ether_synthesis
+#   1  [Cl;H1]
+#      deacon_oxidation
+#   1  [F,Cl,Br,I;H1]
+#      hydrogen_halide_dissociation
+#   1  [N+](=[O])[O-]
+#      sulfur_dioxide_oxidation_by_nitrogen_dioxide
+#   1  [N;H0]=[O]
+#      nitric_oxide_reoxidation
+#   1  [N;H2;+0][c]1[c;H1][c][c][c][c]1
+#      skraup_cyclisation
+#   1  [NX3;H1,H2;!$(N[#6]=[O,S,N])]
+#      n_acylation
+#   1  [O-][c][cH]
+#      kolbe_schmitt_carboxylation
+#   1  [OX1]=[SX3](=[OX1])=[OX1]
+#      sulfur_trioxide_hydration
+#   1  [OX2H1][N+](=[O])[O-]
+#      aromatic_nitration
+#   1  [OX2H][CH2][C;H1;@,@@]1[OX2][C;@,@@]([OX2H])([CH2][OX2H])[C;H1;@,@@]([OX2H])[C;H1;@,@@]1[OX2H]
+#      ketofuranose_dehydration
+#   1  [OX2H][CH2][C;H1;@,@@]1[OX2][C;H1;@,@@]([OX2H])[C;H1;@,@@]([OX2H])[C;H1;@,@@]1[OX2H]
+#      aldofuranose_dehydration
+#   1  [OX2H][CH2][c]1[cH][cH][c]([CH]=[O])[o]1
+#      hydroxymethylfurfural_rehydration
+#   1  [S,N,P;+0,+1](=[O])[OX2H1]
+#      mineral_oxyacid_dissociation
+#   1  [c][N+](=[O])[O-]
+#      nitro_hydrogenation
+#
+aldofuranose_dehydration | no-substrate | 1 | 0 |  | [OX2H:1][CH2:2][C;H1;@,@@:3]1[OX2:4][C;H1;@,@@:5]([OX2H:6])[C;H1;@,@@:7]([OX2H:8])[C;H1;@,@@:9]1[OX2H:10] | nothing the shelf holds or can make matches it
+alkene_hydrodimerisation | no-substrate | 3 | 0 |  | [CH2:1]=[CH1:2][C:3]#[N:4] | nothing the shelf holds or can make matches it
+alkyne_hydration | no-substrate | 2 | 0 |  | [CX2:1]#[CX2:2] | nothing the shelf holds or can make matches it
+aromatic_nitration | no-substrate | 2 | 0 |  | [OX2H1:2][N+:3](=[O:4])[O-:5] | nothing the shelf holds or can make matches it
+cannizzaro_disproportionation | no-substrate | 3 | 0 |  | [c:3][CX3H1:1]=[OX1:2] | nothing the shelf holds or can make matches it
+carboxylic_acid_dissociation | cannot-fire | 2 | 2 | oleic-acid+water |  | the template applies and the rewrite is discarded: 1 product species cannot be priced
+claus_comproportionation | no-substrate | 24 | 0 |  | [S;H2:1] | nothing the shelf holds or can make matches it
+deacon_oxidation | no-substrate | 5 | 0 |  | [Cl;H1:1] | nothing the shelf holds or can make matches it
+halogen_disproportionation | needs-more-than-a-pair | 3 | 1 | closure |  | reachable only through the closure, and then the template applies and the rewrite is discarded: 1 product species cannot be priced
+hydroformylation_branched | no-substrate | 3 | 0 |  | [C-:3]#[O+:4] | nothing the shelf holds or can make matches it
+hydroformylation_linear | no-substrate | 3 | 0 |  | [C-:3]#[O+:4] | nothing the shelf holds or can make matches it
+hydrogen_halide_dissociation | no-substrate | 2 | 0 |  | [F,Cl,Br,I;H1:1] | nothing the shelf holds or can make matches it
+hydrogen_sulfide_combustion | no-substrate | 5 | 0 |  | [S;H2:1] | nothing the shelf holds or can make matches it
+hydroxymethylfurfural_rehydration | no-substrate | 3 | 0 |  | [OX2H:1][CH2:2][c:3]1[cH:4][cH:5][c:6]([CH:7]=[O:8])[o:9]1 | nothing the shelf holds or can make matches it
+ketofuranose_dehydration | no-substrate | 1 | 0 |  | [OX2H:1][CH2:2][C;H1;@,@@:3]1[OX2:4][C;@,@@:5]([OX2H:6])([CH2:7][OX2H:8])[C;H1;@,@@:9]([OX2H:10])[C;H1;@,@@:11]1[OX2H:12] | nothing the shelf holds or can make matches it
+knoevenagel_doebner_condensation | no-substrate | 2 | 0 |  | [c:1][CX3H1:2]=[OX1:3] | nothing the shelf holds or can make matches it
+kolbe_electrolysis | no-substrate | 4 | 0 |  | [#6:1][CX3:2](=[O:3])[O-:4] | nothing the shelf holds or can make matches it
+kolbe_schmitt_carboxylation | no-substrate | 2 | 0 |  | [O-:1][c:2][cH:3] | nothing the shelf holds or can make matches it
+methanol_from_carbon_monoxide | no-substrate | 3 | 0 |  | [C-:1]#[O+:2] | nothing the shelf holds or can make matches it
+mineral_oxyacid_dissociation | no-substrate | 2 | 0 |  | [S,N,P;+0,+1:1](=[O:2])[OX2H1:3] | nothing the shelf holds or can make matches it
+n_acylation | no-substrate | 2 | 0 |  | [NX3;H1,H2;!$(N[#6]=[O,S,N]):6] | nothing the shelf holds or can make matches it
+nitric_oxide_reoxidation | no-substrate | 3 | 2 | oxygen+potassium-nitrate | [N;H0:1]=[O:2] | no rewrite survives: the pool matches it only inside a larger molecule
+nitro_hydrogenation | no-substrate | 4 | 0 |  | [c:1][N+:2](=[O:3])[O-:4] | nothing the shelf holds or can make matches it
+perkin_condensation | no-substrate | 2 | 0 |  | [c:1][CX3H1:2]=[OX1:3] | nothing the shelf holds or can make matches it
+phenol_dissociation | cannot-fire | 2 | 2 | tannic-acid-core+water |  | the template applies and the rewrite is discarded: 4 product species cannot be priced
+skraup_cyclisation | no-substrate | 8 | 0 |  | [N;H2;+0:1][c:2]1[c;H1:3][c:4][c:5][c:6][c:7]1 | nothing the shelf holds or can make matches it
+steam_reforming | no-substrate | 2 | 0 |  | [C;H4:1] | nothing the shelf holds or can make matches it
+sulfur_dioxide_oxidation_by_nitrogen_dioxide | no-substrate | 3 | 2 | gypsum+potassium-nitrate | [N+:4](=[O:5])[O-:6] | no rewrite survives: the pool matches it only inside a larger molecule
+sulfur_trioxide_hydration | no-substrate | 2 | 0 |  | [OX1:1]=[SX3:2](=[OX1:3])=[OX1:4] | nothing the shelf holds or can make matches it
+wacker_oxidation | no-substrate | 4 | 0 |  | [CH2:1]=[CH2:2] | nothing the shelf holds or can make matches it
+water_gas_shift | no-substrate | 2 | 0 |  | [C-:1]#[O+:2] | nothing the shelf holds or can make matches it
+williamson_ether_synthesis | no-substrate | 2 | 0 |  | [CX4:2][F,Cl,Br,I:3] | nothing the shelf holds or can make matches it

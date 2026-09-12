@@ -4,6 +4,20 @@ Newest first. One entry per session, twelve lines at most, enforced by
 `tools/check_docs.py`. When this file passes 400 lines the older half rolls into
 `docs/history/changelog-YYYY-MM.md`.
 
+## 2026-09-12 — T6: every silent template carries a label, and a ledger for the slow checks
+
+`tools/classify_silent.py` classifies all 32 templates T4 found silent, in 2 s,
+without re-running the 35-minute sweep: the 23 small-molecule shelf rows expand
+to a TRUE fixpoint (41 species, frontier 0, `closure_frontier` in the artefact),
+so "the shelf cannot make this" rests on a closure and not on a cap. 29
+`no-substrate`, 1 `needs-more-than-a-pair`, 2 `cannot-fire` — and the 29 group
+into 23 missing substrates, of which `[C-]#[O+]` alone holds four templates
+(T7). The two `cannot-fire` rows are not bugs: both APPLY and lose the rewrite
+to an unpriceable ion (T8). `data/checks/cadence.psv` + `tools/cadence.py` say
+which expensive checks are owed, clocked in commits and derived from the
+artefact where there is one. Tests 1,284 -> 1,297; smoke 39 -> 56.
+`./check.ps1 -Full` green; the suite and the tolerance audit are DUE, not run.
+
 ## 2026-09-12 — T4: the third headline is computed, and it says 25 of 57
 
 `tools/build_reachable.py` expands every pair of the 36 chargeable natural shelf rows to

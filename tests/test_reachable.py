@@ -91,3 +91,73 @@ def test_the_artefact_on_disk_is_the_shape_the_current_code_writes():
     rows = [ln for ln in br.OUT.read_text(encoding="utf-8").splitlines()
             if ln and not ln.startswith("#")]
     assert len(rows) == int(got["pairs"])
+
+
+# ---------------------------------------------------------------------------
+# T6 -- the classifier over the sweep's silent list.
+# ---------------------------------------------------------------------------
+
+import classify_silent as cs  # noqa: E402
+
+
+def test_a_top_level_dot_separates_slots_and_a_nested_one_does_not():
+    """The splitter is the whole instrument: get it wrong and a template's
+    reactant count is wrong, so its witness is wrong, so its label is wrong."""
+    assert cs.slots("[C:1].[O:2]>>[C:1][O:2]") == ["[C:1]", "[O:2]"]
+    # A recursive SMARTS carries dots that are not separators.
+    one = "[C;$(C.C):1]>>[C:1]"
+    assert cs.slots(one) == ["[C;$(C.C):1]"]
+    # Twenty-four reactant slots is not a bug: claus_comproportionation writes
+    # eight sulfur rings out atom by atom.
+    rec = cs.TEMPLATES["claus_comproportionation"]
+    assert len(cs.slots(rec.smarts)) == 24
+
+
+def test_atom_map_numbers_do_not_split_one_missing_substrate_into_two():
+    """Four templates want carbon monoxide and two of them spell its slot with
+    different map numbers. Grouping on the raw text reports two gaps, not one."""
+    assert cs.unmapped("[C-:1]#[O+:2]") == cs.unmapped("[C-:3]#[O+:4]")
+    assert cs.unmapped("[C-:1]#[O+:2]") == "[C-]#[O+]"
+
+
+def test_the_closure_flask_is_the_small_molecule_half_and_nothing_else():
+    """The one hand constant in the tool. The shelf jumps from sulfur's eight
+    heavy atoms to alpha-pinene's ten, so any threshold in between picks the
+    same rows -- and if a future shelf row lands in the gap, this fails."""
+    rows = cs.natural_rows()
+    small = cs.small_rows(rows)
+    ids = {i.id for i in small}
+    assert "sulfur-s8" in ids
+    assert "glucose" not in ids
+    assert "triolein" not in ids
+    assert len(small) < len(rows)
+
+
+def test_the_artefact_labels_every_template_the_sweep_named_as_silent():
+    """The two files are one measurement: a template that stops being silent
+    must leave this artefact, and one that starts must arrive in it."""
+    if not cs.OUT.exists() or not cs.REACHABLE.exists():
+        pytest.skip("the artefacts have not been generated in this checkout")
+    labelled = {}
+    for line in cs.OUT.read_text(encoding="utf-8").splitlines():
+        if not line or line.startswith("#"):
+            continue
+        cells = [c.strip() for c in line.split("|")]
+        labelled[cells[0]] = cells[1]
+    assert set(labelled) == set(cs.silent_names())
+    assert set(labelled.values()) <= {"no-substrate", "needs-more-than-a-pair",
+                                      "cannot-fire"}
+
+
+def test_the_closure_reported_in_the_artefact_is_a_fixpoint_not_a_cap():
+    """Every 'the shelf cannot make this' in the file rests on the closure. A
+    non-zero frontier would turn each of them into an estimate, silently."""
+    if not cs.OUT.exists():
+        pytest.skip("the artefact has not been generated in this checkout")
+    keys = {}
+    for line in cs.OUT.read_text(encoding="utf-8").splitlines():
+        if line.startswith("#! "):
+            key, _, value = line[3:].partition(" = ")
+            keys[key.strip()] = value.strip()
+    assert keys["closure_frontier"] == "0"
+    assert int(keys["closure_species"]) > int(keys["closure_rows"])
