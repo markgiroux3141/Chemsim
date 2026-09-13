@@ -27,7 +27,7 @@ MEASURED AT GENERATION:
     ... where the declared phase and the
         engine's own estimate DISAGREE              1
 
-Generated 2026-09-12.
+Generated 2026-09-13.
 """
 
 from __future__ import annotations
@@ -1687,17 +1687,17 @@ ROSTER: dict[str, RosterEntry] = {
         'iron-ii-sulfide', 'iron(II) sulfide',
         '[Fe+2].[S-2]', 'ions',
         (('[Fe+2]', 1.0), ('[S-2]', 1.0)),
-        'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
-        True, '', 'ion',
+        'solid', "the ions of 'troilite' in the solid block: no solid-state or surface reaction consumes this lattice, and its Ksp does dissolve it -- charged as the lattice it would be inert for ever",
+        True, 'troilite', 'ion',
         '',
     ),
     'iron-disulfide': RosterEntry(
         'iron-disulfide', 'pyrite',
-        '[Fe+2].[S-]S[S-]', 'ions',
-        (('[Fe+2]', 1.0), ('[S-]S[S-]', 1.0)),
+        '[Fe+2].[S-][S-]', 'ions',
+        (('[Fe+2]', 1.0), ('[S-][S-]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "UnpricedIon: refusing to price '[S-]S[S-]': it carries a net charge of -2 and the ion overlay is ON -- ",
+        "UnpricedIon: refusing to price '[S-][S-]': it carries a net charge of -2 and the ion overlay is ON -- i",
     ),
     'zinc-sulfide': RosterEntry(
         'zinc-sulfide', 'zinc sulfide',

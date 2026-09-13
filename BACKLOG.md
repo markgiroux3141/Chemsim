@@ -125,6 +125,21 @@ prescribes: give each example its own tight tolerance, as `lime_cycle.py` and
 **Done when:** `python validation/tolerance_audit.py` exits 0, or the ledger
 note says which of the three is a standing refusal and why.
 
+### T17 — one test has been red since T8 and nothing looked (S, found in T15)
+`tests/test_playable_levers.py::test_the_shelf_file_holds_exactly_what_this_audit_measured`
+fails on `calcium-hydroxide`: `build_playable`'s deep chain now reports it as a
+CHAIN-blocked species and `shelf.psv` has no `intermediate` row for it, so the
+file and the audit disagree. Bisected on 2026-09-13 -- green at 77c6bd1 (T9),
+red from 188f22a (T8) onward, so it is the three pKa rows' last uncaught tail:
+exactly the cascade the T8 memory note warns about, one scoreboard further out
+than that session looked. It survived two sessions because it is not one of the
+62 smoke tests and the suite has not been run since. The test's own message is
+the work order and says to ADD the row; check first whether the honest fix is
+instead that the chain SHOULD reach slaked lime, since `lime-cycle` is playable
+and `calcium-hydroxide` is `brucite`'s calcium twin.
+**Done when:** the test is green and `PLAYABLE.md` is regenerated, or the item
+is rewritten as the decision that the audit rather than the shelf is wrong.
+
 ### T13 — an unpriced ion in the flask still stops `to_arrays` (S, found in T8)
 `_unpriceable` deliberately KEEPS an ion the template that made it does not
 need a price for -- `saponification` is irreversible with alpha = 0, so its
@@ -154,23 +169,6 @@ and report how many rows a single plateau value would cover against how many
 genuinely need their own measurement. T5 is the same question one level up.
 **Done when:** the count is in `NEXT.md` with its command, and a follow-up
 item says whether the fix is rows or a rule.
-### T15 — the sulfide half of the shelf is still half-represented (S, found in T12)
-T12 priced `[S-2]`, so pyrrhotite is chargeable and the closure reaches H2S.
-Two things did not come with it, and `tools/build_shelf.py` now prints the
-first one by name rather than asserting nobody can hit it.
-* `iron-ii-sulfide` declares `solid` with ion species and has NO Ksp, because
-  troilite is not in `mineral_data`. Its ions therefore sit in the solid block
-  for ever: DISCOVERY reacts them and the integrator cannot move them, which is
-  panel 5's "the score and the chemistry came out of different tables" arriving
-  from the shelf side. `chemicals` has FeS under CAS 1317-37-9 (Hfs -100.0,
-  S0s 60.3), so the mineral row is a tuple in `tools/build_mineral_data.py`.
-* `iron-disulfide` is written `[Fe+2].[S-]S[S-]`, which is FeS3, not pyrite.
-  Fixing the SMILES to `[S-][S-]` gives the formula `corpus_balance` needs for
-  `pyrite-roasting` and does NOT make the row chargeable: the disulfide is in
-  `ion_data` but its acid (HS-SH) is in no pKa pair. Two separate repairs.
-**Done when:** a flask of pyrrhotite and water makes H2S in the INTEGRATOR, or
-the shelf row says `liquid` and says why; and pyrite's formula is FeS2.
-
 ### T16 — the other loose sulfur-dioxide slot (S, found in T12)
 `sulfur_dioxide_oxidation_by_nitrogen_dioxide` still writes SO2 as
 `[O:1]=[S:2]=[O:3]`, the pattern that made `claus_comproportionation` take

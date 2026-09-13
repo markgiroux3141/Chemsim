@@ -213,6 +213,21 @@ CANDIDATES: list[tuple[str, str, str, dict, str]] = [
      {"Cu": 2, "S": 1}, "Cu2S -- the other copper ore, and matte"),
     ("cinnabar", "1344-48-5", "[Hg+2].[S-2]",
      {"Hg": 1, "S": 1}, "HgS -- vermilion, and the mercury ore"),
+    # --- added for T15: the sulfide half of the SHELF, not of roasting ---
+    # Every sulfide above is here because a solid-state or surface reaction
+    # consumes its lattice, so `build_shelf` rule 1 charges it as a crystal.
+    # Troilite is the opposite case and that is why it was missing: NOTHING
+    # reacts FeS as a crystal, so the shelf charged pyrrhotite as its ions --
+    # and with no `mineral_data` row there was no Ksp, so those ions sat in
+    # the solid block for ever while DISCOVERY happily reacted them. The row
+    # below is what rule 2 needs; it prices on the ordinary rule, CRC
+    # carrying Hfs, S0s, Cps and Vm in the same compilation. Its DISULFIDE
+    # partner still does not: `pyrite` above is refused for want of an S0s,
+    # which is the entry `pyrite-roasting` is blocked on.
+    ("troilite", "1317-37-9", "[Fe+2].[S-2]",
+     {"Fe": 1, "S": 1},
+     "FeS -- pyrrhotite: the shelf's one sulfide that DISSOLVES, and the "
+     "acid-on-a-sulfide route to H2S"),
     # Two more oxides, each of which makes a REFUSAL land in the right place.
     ("corundum", "1344-28-1", "[Al+3].[Al+3].[O-2].[O-2].[O-2]",
      {"Al": 2, "O": 3},

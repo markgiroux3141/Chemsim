@@ -4,6 +4,21 @@ Newest first. One entry per session, twelve lines at most, enforced by
 `tools/check_docs.py`. When this file passes 400 lines the older half rolls into
 `docs/history/changelog-YYYY-MM.md`.
 
+## 2026-09-13 — T15: pyrrhotite saturates its own water, and pyrite is FeS2
+
+Two repairs, both curation. `troilite` joins `build_mineral_data.CANDIDATES`
+(CRC 1317-37-9, Hfs -100.0, S0s 60.3, Cps and Vm from one compilation), so
+`iron-ii-sulfide` stops being the shelf row whose ions sit in the solid block for
+ever: `build_shelf` moves it from SOLID IONS, INERT to a crop that dissolves,
+lattices 49 -> 50, buildable-with-a-Ksp 28 -> 29, still 2 cation-blocked. pKsp
+18.775 is derived, and the flask reaches exactly sqrt(Ksp) = 4.10e-10 M in each
+ion and holds femtomoles of H2S over T12's two sulfide pKa rows. Acid keeps it
+going and cannot speed it up -- the drive is `k_diss*V*(Qroot - Ksproot)`, so HCl
+buys nanomoles an hour. `iron-disulfide` was `[Fe+2].[S-]S[S-]`, FeS3; now FeS2,
+a formula fix for `corpus_balance` and not a price. Tests 1307 -> 1309; 46/89/40
+and 22 playable unmoved; `./check.ps1` green, `routes` pass (149 tests, 223 s).
+NOTE: `test_playable_levers` is RED and already was -- bisected to 188f22a, T8.
+
 ## 2026-09-13 — T12: the sulfide is priced by subtraction, and [S;H2] leaves the work order
 
 C2 refused a pKa for HS- -> S2- because the compilations span 12.9 to 19; it was

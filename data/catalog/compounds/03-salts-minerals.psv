@@ -35,7 +35,7 @@ sodium-sulfide | sodium sulfide | [Na+].[Na+].[S-2] | salt | reagent | leblanc;t
 sodium-hydrosulfide | sodium hydrosulfide | [Na+].[SH-] | salt | reagent | thiol-synthesis | NaSH
 calcium-sulfide | calcium sulfide | [Ca+2].[S-2] | salt | byproduct | leblanc | galligu waste
 iron-ii-sulfide | iron(II) sulfide | [Fe+2].[S-2] | mineral | feedstock | h2s-generation | troilite
-iron-disulfide | pyrite | [Fe+2].[S-]S[S-] | mineral | feedstock | vitriol;sulfuric-acid | fool gold
+iron-disulfide | pyrite | [Fe+2].[S-][S-] | mineral | feedstock | vitriol;sulfuric-acid | fool gold
 zinc-sulfide | zinc sulfide | [Zn+2].[S-2] | mineral | feedstock | zinc-smelting;phosphors | sphalerite
 lead-sulfide | lead sulfide | [Pb+2].[S-2] | mineral | feedstock | lead-smelting | galena
 copper-sulfide | copper(II) sulfide | [Cu+2].[S-2] | mineral | feedstock | copper-smelting | covellite

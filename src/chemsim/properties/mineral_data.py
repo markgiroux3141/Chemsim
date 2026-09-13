@@ -673,6 +673,22 @@ MINERALS: dict[str, MineralRecord] = {
         Cp_solid=48.4, Vm_solid=0.028477,
         condensed_source='Cps from the same CRC row as Hfs/S0s; Vm from the CRC inorganic solid-density table, via chemicals 1.5.2',
     ),
+    # FeS -- pyrrhotite: the shelf's one sulfide that DISSOLVES, and the acid-on-a-sulfide route to H2S
+    'troilite': MineralRecord(
+        name='troilite', cas='1317-37-9',
+        ions=('[Fe+2]', '[S-2]'),
+        lattice='[Fe+2].[S-2]',
+        formula={'Fe': 1, 'S': 1},
+        purpose="FeS -- pyrrhotite: the shelf's one sulfide that DISSOLVES, and the acid-on-a-sulfide route to H2S",
+        Hf_solid=-100.0, Gf_solid=-100.27, S0_solid=60.3,
+        Tm=1461.15, Hfus=31.5,
+        source='Hfs and S0s both from CRC via chemicals 1.5.2; Gf DERIVED against the CRC element reference states',
+        physical_source='Tm=CRC_INORG; Hfus=CRC',
+        fusion_law_bound=None,
+        solubility_note=None,
+        Cp_solid=50.5, Vm_solid=0.018704,
+        condensed_source='Cps from the same CRC row as Hfs/S0s; Vm from the CRC inorganic solid-density table, via chemicals 1.5.2',
+    ),
     # Al2O3 -- so that `bayer-process` step 3 is refused on GIBBSITE alone
     'corundum': MineralRecord(
         name='corundum', cas='1344-28-1',

@@ -258,8 +258,10 @@ def test_a_refused_row_is_visible_carries_its_reason_and_refuses_to_pour():
     working: an estimator outside its domain answers confidently and wrongly.
 
     T12 took one row OFF this list -- pyrrhotite, once the second sulfide pKa
-    priced the [S-2] it is written as. Pyrite stays, because the SMILES the
-    corpus gives it is [S-]S[S-], a trisulfide, and no pKa reaches that.
+    priced the [S-2] it is written as. Pyrite stays. T15 repaired its SMILES
+    from [S-]S[S-], a TRIsulfide, to [S-][S-] -- which is a formula fix for
+    `corpus_balance` and not a price: `_PAIRS` reaches S2- and HS- and has no
+    row for the disulfide, whose acid is HS-SH.
     """
     refused = [i for i in inv.shelf() if not i.chargeable]
     assert {i.id for i in refused} == {
@@ -405,3 +407,93 @@ def test_the_whole_loop_runs_and_the_players_shelf_is_depleted():
 def test_a_refused_row_is_skipped_by_open_shelf_rather_than_raising():
     book = inv.open_shelf(inv.shelf(("natural",)))
     assert len(book) == 43 - 6
+
+
+# ---------------------------------------------------------------------------
+# 6. T15 -- THE SULFIDE HALF OF THE SHELF
+# ---------------------------------------------------------------------------
+
+
+def test_pyrrhotite_saturates_its_own_solution_and_makes_hydrogen_sulfide():
+    """T15. The row used to be matter no mechanic could move, and now it is not.
+
+    `iron-ii-sulfide` declares `solid` and resolves to its ions, so before
+    troilite was in `mineral_data` there was no Ksp behind it: the ions sat in
+    the solid block for ever while DISCOVERY happily reacted them, which is the
+    score and the chemistry coming out of different tables, arriving from the
+    shelf side.
+
+    What it does now is the chain with nothing declared anywhere in it --
+    FeS(s) -> Fe2+ + S2- on a derived Ksp, then S2- + H2O -> HS- + OH- and
+    HS- + H2O -> H2S + OH- on the two `_PAIRS` rows T12 wrote. A flask of
+    pyrrhotite and water therefore holds hydrogen sulfide, and holds
+    femtomoles of it, because pKsp 18.8 and pKa 12.91 say so together.
+
+    The bound worth knowing is in the numbers rather than in a notice: the
+    dissolution drive is `k_diss * V * (Qroot - Ksproot)`, so an empty solution
+    dissolves at most `k_diss * V * Ksp**(1/N)` mol/s, and that root is
+    4.1e-10 mol/L. Acid pulls the sulfide out and keeps it going, and CANNOT
+    make it faster, which is why the same flask with HCl in it reaches
+    nanomoles in an hour rather than dissolving. A real acid attack on a
+    sulfide is surface chemistry this engine has no term for; the
+    EQUILIBRIUM is derived and the RATE is the vessel's one knob.
+    """
+    import math
+
+    from chemsim.properties.solubility_product import solubility_product
+
+    rec = MINERALS["troilite"]
+    fe, s = rec.ions
+    assert (fe, s) == ("[Fe+2]", "[S-2]")
+    thermo = electrolyte_provider()
+    net = build_network(["O", fe, s], list(dissociation_templates()),
+                        thermo=thermo, max_species=40)
+    v = Vessel(net, volume=1.0, thermo=thermo, T=298.15, T_env=298.15,
+               k_diss=1.0)
+    v.charge({fe: 0.5, s: 0.5}, phase="solid")
+    v.charge({"O": 30.0})
+    v.run(600.0, rtol=1.0e-8, atol=1.0e-14)
+    st = v.state()
+
+    dissolved = st.n_liquid.get(fe, 0.0)
+    assert dissolved > 0.0, (
+        "the pyrrhotite row is stranded matter again -- either troilite lost "
+        "its mineral_data entry or its Ksp stopped pricing"
+    )
+    root = math.exp(solubility_product(rec).ln_Ksp / 2.0)
+    assert dissolved / v.liquid_volume == pytest.approx(root, rel=1.0e-3), (
+        "a saturated solution of a 1:1 lattice is sqrt(Ksp) molar in each ion"
+    )
+    assert st.n_liquid.get(s, 0.0) == pytest.approx(dissolved, rel=1.0e-2), (
+        "both ions leave the lattice together: nu is (1, 1)"
+    )
+    h2s = st.n_liquid.get("S", 0.0) + st.n_gas.get("S", 0.0)
+    assert h2s > 0.0, "the two sulfide pKa rows are what carry S2- to H2S"
+    assert h2s < 1.0e-12, (
+        "H2S at more than a picomole from water alone would mean the Ksp or "
+        "one of the two sulfide pKa rows moved; check which, do not retune this"
+    )
+
+
+def test_pyrite_is_a_disulfide_and_troilite_is_not():
+    """T15. `iron-disulfide` was written `[Fe+2].[S-]S[S-]`, which is FeS3.
+
+    The corpus carries no formulas, so `corpus_balance` counts atoms off the
+    SMILES and a third sulfur is a silent wrong answer for `pyrite-roasting`.
+    Fixing it does not make the row chargeable and is not meant to: the
+    disulfide ion has no pKa pair, and `pyrite` itself is refused a lattice
+    entry for want of an S0s in the database that holds its Hfs.
+    """
+    from rdkit import Chem
+    from rdkit.Chem import rdMolDescriptors
+
+    def formula(smiles):
+        return rdMolDescriptors.CalcMolFormula(Chem.MolFromSmiles(smiles))
+
+    assert formula(ROSTER["iron-disulfide"].smiles) == "FeS2"
+    assert formula(ROSTER["iron-ii-sulfide"].smiles) == "FeS"
+    assert "pyrite" not in MINERALS, (
+        "pyrite has an Hfs in WEBBOOK and an S0s in nothing; if it prices now, "
+        "`pyrite-roasting` is unblocked and PLAYABLE.md has a row to lose"
+    )
+    assert not inv.find("iron-disulfide").chargeable

@@ -238,7 +238,7 @@ def test_the_lattices_that_have_a_Ksp_and_cannot_be_put_in_a_flask(thermo):
     assert set(blocked) == {"chalcocite", "cinnabar"}
     assert not any("[S-2]" in m for m in blocked.values())
     assert sorted({i for m in blocked.values() for i in m}) == ["[Cu+]", "[Hg+2]"]
-    assert buildable == 28
+    assert buildable == 29, "28 until T15 added troilite, the FeS the shelf pours"
     assert ROCK_NAME not in blocked
     # the aqueous table is strictly bigger than what a network can reach
     assert not all(priced(i) for i in AQUEOUS_IONS)
