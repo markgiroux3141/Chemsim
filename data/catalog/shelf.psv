@@ -30,7 +30,7 @@
 #                 corpus grows a route.
 #
 # Measured by `validation/playable_levers.py` panel 3 on 2026-09-13: granting
-# the 23 intermediate and 4 bottle species takes playable routes from 23 to 43,
+# the 25 intermediate and 4 bottle species takes playable routes from 23 to 44,
 # with no new chemistry of any kind. Granting every one of the 46 missing
 # template classes instead is worth +14 (tests/test_playable_levers.py), so a
 # shelf edit is still the cheapest distance on the board by a wide margin, and
@@ -140,6 +140,8 @@ palladium                  | intermediate | 0.02  | solid  | chain: a catalyst m
 phenol                     | intermediate | 0.3   | solid  | chain: cumene, or a fused benzenesulfonate -- and it MELTS at 314 K
 propylene                  | intermediate | 0.05  | gas    | chain: a cracker product
 sodium-acetate             | intermediate | 0.3   | liquid | chain: soda and vinegar -- dissolved: no lattice record
+sodium-stearate            | intermediate | 0.2   | liquid | chain: a fat saponified -- dissolved: no lattice record
+tristearin                 | intermediate | 0.1   | solid  | chain: a hardened fat -- margarine makes it and needs nickel
 xylose                     | intermediate | 0.3   | solid  | chain: hemicellulose hydrolysed
 
 # --- BOTTLE: 4 rows. NOTHING in 173 routes makes any of these, and they

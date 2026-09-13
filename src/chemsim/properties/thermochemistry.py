@@ -13,6 +13,7 @@ the "measured vs. estimated, with provenance" discipline in practice.
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass, replace
 
 from chemsim.matter import Molecule
@@ -463,6 +464,7 @@ class ThermochemistryProvider:
         benson: bool = True,
         measured_physical: bool = True,
         stereo_fallback: bool = True,
+        ion_fallback: Callable[[Molecule], ThermoData | None] | None = None,
     ):
         # ``benson=False`` reproduces the Joback-only basis, kept so the
         # difference can be measured rather than only described -- the same
@@ -476,6 +478,15 @@ class ThermochemistryProvider:
         # session that added a tier has to be able to measure what it bought.
         self._benson = benson
         self._measured_physical = measured_physical
+        # T18. A RULE consulted only where the TABLE missed, for an ion. The
+        # table is thirty-odd curated pairs and a family dissociation template
+        # matches anything with the group, so the two cannot be kept in step by
+        # curation -- see ``UnpricedIon``, which is that gap saying so. A caller
+        # that has a defensible rule for part of the gap injects it here; the
+        # hook is a plain callable so this module stays ignorant of whose rule
+        # it is and Layer 1 gains no new edge. ``None`` is every provider built
+        # before T18 and every one built since that did not ask.
+        self._ion_fallback = ion_fallback
         self._physical = StereoFallback({
             Molecule.from_smiles(smi).smiles: v
             for smi, v in MEASURED_PHYSICAL.items()
@@ -895,6 +906,19 @@ class ThermochemistryProvider:
                     data, source=data.source + fallback_note(smi, curated_key))
             self._cache[smi] = data
             return data
+
+        # T18. The rule, AFTER the table and BEFORE the refusal, which is the
+        # only order that keeps every curated value the last word: a species
+        # with a hand-typed pKa returns above and never reaches here, so no
+        # measurement is ever overridden by a generalisation of itself. A single
+        # fragment only -- a dot-separated SMILES is a mixture and is refused
+        # below for a reason that has nothing to do with pKa.
+        if (self._ion_fallback is not None and mol.charge != 0
+                and "." not in smi):
+            derived = self._ion_fallback(mol)
+            if derived is not None:
+                self._cache[smi] = derived
+                return derived
 
         # NOTHING BELOW THIS LINE MAY SEE AN ELEMENT OR AN ION. See
         # ``_refuse_outside_estimator_domain``.

@@ -55,7 +55,7 @@ from dataclasses import dataclass, replace
 
 from chemsim.constants import R
 from chemsim.matter import Molecule
-from chemsim.properties import standard_state
+from chemsim.properties import carboxylic_pka, standard_state
 from chemsim.properties.thermochemistry import ThermoData, ThermochemistryProvider
 from chemsim.properties.volatility import VolatilityProvider
 
@@ -261,6 +261,13 @@ _IONIC_SOLIDS: dict[str, tuple[str, str]] = {
 
 _DERIVED = "derived from measured pKa against this project's water reference"
 
+# T18. The marker a reader greps for, and the reason it is a CONSTANT rather
+# than a wording: ``network.builder`` reports a derived pKa as a coverage limit
+# through ``notices``, and it decides by looking at this string in the record's
+# ``source``. A notice that matched on a sentence would go silent the first time
+# the sentence was reworded, which is exactly the failure rule 10 forbids.
+PLATEAU_RULE = "carboxylic plateau rule"
+
 
 class _NoShiftVolatility:
     """A volatility provider that declines every standard-state shift.
@@ -413,22 +420,100 @@ def ion_thermochemistry(
     return out
 
 
+def plateau_pair(
+    smiles: str, pairs: tuple[AcidPair, ...] = _PAIRS
+) -> AcidPair | None:
+    """The ``AcidPair`` the plateau rule gives this carboxyl, or ``None``.
+
+    Takes either half of the pair -- the audit asks about acids, the engine asks
+    about the anion it has just been handed -- and returns ``None`` for anything
+    the domain refuses, which is most of the corpus and says so in
+    ``carboxylic_pka.domain``.
+
+    The pKa is ``carboxylic_pka.plateau(pairs)``, measured off ``pairs``
+    themselves. So the rule cannot disagree with the table it generalises, and
+    if the table's own unbranched rows ever spread out, the value moves with
+    them rather than a docstring quietly becoming false.
+    """
+    site = carboxylic_pka.in_domain(smiles)
+    if site is None:
+        return None
+    level = carboxylic_pka.plateau(pairs)
+    if level is None:
+        return None
+    mol = Molecule.from_smiles(smiles)
+    acid = mol.reprotonated(site[1], 0, 1)
+    base = mol.reprotonated(site[1], -1, 0)
+    if acid is None or base is None:
+        return None
+    return AcidPair(acid.smiles, base.smiles, level.pKa,
+                    name=f"{PLATEAU_RULE}, {level.describe()}")
+
+
+def _plateau_fallback(
+    base: ThermochemistryProvider,
+    volatility: VolatilityProvider | None,
+    pairs: tuple[AcidPair, ...],
+):
+    """The lookup-time half of the rule, as the hook ``get`` consults.
+
+    It derives THROUGH ``ion_thermochemistry`` with a one-row table rather
+    than repeating its arithmetic. The order the two terms are added in moved
+    ten anions by one bit the last time it was regrouped (see the comment
+    there), so a second copy of that sum is a second answer waiting to happen.
+    A one-row call re-prices water and hydronium each time, which the provider's
+    own cache makes free after the first.
+    """
+    def fallback(mol: Molecule):
+        if mol.charge != -1:
+            return None
+        pair = plateau_pair(mol.smiles, pairs)
+        if pair is None:
+            return None
+        # The rule prices the ANION of the pair. Asked about an acid that
+        # happens to be charged, or about a spelling whose base is some other
+        # species, it declines rather than guessing which half it was given.
+        if pair.base != mol.smiles:
+            return None
+        derived = ion_thermochemistry(base, (pair,), volatility=volatility)
+        data = derived.get(pair.base)
+        if data is None:
+            return None          # no priceable neutral anchor: a real refusal
+        return replace(data, source=(
+            f"{_DERIVED}, and the pKa is NOT a measurement of this acid: it is "
+            f"the {pair.name}. Domain: one carboxyl, no basic nitrogen, and "
+            f"alpha/beta/gamma unbranched saturated CH2 with no heteroatom, "
+            f"ring or charge -- inductive withdrawal dies off by ~3x per bond, "
+            f"so what sets a plateau pKa is the three carbons nearest the "
+            f"carboxyl. Curate an AcidPair for this acid to override it."
+        ))
+    return fallback
+
+
 def electrolyte_provider(
     base: ThermochemistryProvider | None = None,
     extra_pairs: tuple[AcidPair, ...] = (),
     volatility: VolatilityProvider | None = None,
+    plateau_rule: bool = True,
 ) -> ThermochemistryProvider:
     """A ThermochemistryProvider that also prices ions.
 
     Ions are injected as curated entries, so everything downstream -- detailed
     balance, the energy balance, the phase model -- treats them exactly like any
     other species and needs no special case.
+
+    ``plateau_rule=False`` is the pre-T18 provider: the table and nothing else,
+    kept so the rule's effect can be measured rather than only described, the
+    same way ``benson=False`` keeps the Joback-only basis reachable.
     """
     base = base or ThermochemistryProvider()
-    ions = ion_thermochemistry(
-        base, _PAIRS + tuple(extra_pairs), volatility=volatility
+    pairs = _PAIRS + tuple(extra_pairs)
+    ions = ion_thermochemistry(base, pairs, volatility=volatility)
+    return ThermochemistryProvider(
+        extra_curated=ions,
+        ion_fallback=(_plateau_fallback(base, volatility, pairs)
+                      if plateau_rule else None),
     )
-    return ThermochemistryProvider(extra_curated=ions)
 
 
 # ---------------------------------------------------------------------------

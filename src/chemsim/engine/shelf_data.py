@@ -5,9 +5,9 @@ docstring carries the resolution rule and the measurements behind it. The two
 inputs are ``data/catalog/shelf.psv`` (the three tiers, hand-maintained) and
 ``data/catalog/compounds`` (all 1583 corpus species, audited).
 
-``SHELF``   the 70 starting rows, in file order.
+``SHELF``   the 72 starting rows, in file order.
 ``ROSTER``  every corpus species by id -- the picker's whole content, including
-            the 409 that are REFUSED a price and may never be charged.
+            the 408 that are REFUSED a price and may never be charged.
             A refused row carries its REASON, because GAME_DESIGN.md 8.3 says a
             player who cannot find sodium metal must be told the engine declines
             to price it rather than left to conclude the game is broken.
@@ -15,13 +15,13 @@ inputs are ``data/catalog/shelf.psv`` (the three tiers, hand-maintained) and
 MEASURED AT GENERATION:
 
     corpus species                               1583
-    ... chargeable                               1174
-    ... REFUSED a price                           409
-    shelf rows                                     70
-    ... natural / intermediate / bottle            43 /  23 /   4
+    ... chargeable                               1175
+    ... REFUSED a price                           408
+    shelf rows                                     72
+    ... natural / intermediate / bottle            43 /  25 /   4
     ... refused, and kept anyway                    6
     ... charged as a reacting mineral LATTICE      15
-    ... charged as IONS                            14
+    ... charged as IONS                            15
     ... a lattice that CANNOT be dissolved
         because it reacts as a crystal instead      6
     ... where the declared phase and the
@@ -212,6 +212,10 @@ SHELF: tuple[ShelfEntry, ...] = (
                'chain: a cracker product'),
     ShelfEntry('sodium-acetate', 'intermediate', 0.3, 'liquid',
                'chain: soda and vinegar -- dissolved: no lattice record'),
+    ShelfEntry('sodium-stearate', 'intermediate', 0.2, 'liquid',
+               'chain: a fat saponified -- dissolved: no lattice record'),
+    ShelfEntry('tristearin', 'intermediate', 0.1, 'solid',
+               'chain: a hardened fat -- margarine makes it and needs nickel'),
     ShelfEntry('xylose', 'intermediate', 0.3, 'solid',
                'chain: hemicellulose hydrolysed'),
     ShelfEntry('benzaldehyde', 'bottle', 0.3, 'liquid',
@@ -2126,8 +2130,8 @@ ROSTER: dict[str, RosterEntry] = {
         'CCCCCCCCCCCCCCCCCC(=O)[O-].[Na+]', 'ions',
         (('[Na+]', 1.0), ('CCCCCCCCCCCCCCCCCC(=O)[O-]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
-        True, '', 'refused',
-        "UnpricedIon: refusing to price 'CCCCCCCCCCCCCCCCCC(=O)[O-]': it carries a net charge of -1 and the ion ",
+        True, '', 'ion',
+        '',
     ),
     'potassium-oleate': RosterEntry(
         'potassium-oleate', 'potassium oleate',

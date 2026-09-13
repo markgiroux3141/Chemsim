@@ -57,7 +57,7 @@ import os
 import sys
 import time
 
-from rdkit import Chem, RDLogger
+from rdkit import RDLogger
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__))), "tools"))
@@ -72,149 +72,33 @@ from chemsim.properties import (  # noqa: E402
     electrolyte,
     electrolyte_provider,
 )
+from chemsim.properties.carboxylic_pka import (  # noqa: E402
+    as_pair,
+    carboxyl_sites,
+    domain,
+)
 from chemsim.properties.thermochemistry import ThermochemistryProvider  # noqa: E402
 from chemsim.ui.examples import full_library  # noqa: E402
 
 RDLogger.DisableLog("rdApp.*")
 
-# The template's own slot, minus the requirement that the proton still be on:
-# this has to find the anion as well, because the corpus spells 34 compounds as
-# a carboxylate salt and the pool is full of them.
-CARBOXYL = Chem.MolFromSmarts("[CX3](=[OX1])[OX2H1,OX1H0-]")
+# T18 MOVED THE PREDICATE. ``carboxyl_sites``, ``as_pair`` and ``domain`` are
+# imported from ``chemsim.properties.carboxylic_pka`` above, where the engine
+# consults them at lookup time to price an unmeasured carboxylate; the copies
+# that used to live here were the same code with an RDKit mol in place of a
+# ``Molecule``. What stays here is the AUDIT: the corpus sweep, the pool sweep
+# and the three panels, none of which the engine has any use for.
 
 # The bench's bound, so the pool and ``reachable.psv`` stop in the same place.
 MAX_SPECIES = 400
 
-# How far inductive withdrawal is still worth a decimal place. Alpha, beta and
-# gamma; the fourth carbon moves a pKa by less than the spread of the plateau
-# itself and cannot be resolved by a rule that quotes one number.
-LOCAL_DEPTH = 3
 
-# A basic nitrogen anywhere in the molecule takes it out of the domain however
-# far away it sits, and this exclusion was added because the first run of this
-# audit put GABA in the plateau bucket. GABA's carboxyl is measured at 4.03 and
-# 6-aminohexanoic acid's at 4.43, both a long way below the 4.87 the plateau
-# claims -- because at any pH where the carboxyl is titrated the amine is
-# already protonated, so what sits four bonds away is not a neutral dipole
-# dying off by a factor of three per bond but a FULL POSITIVE CHARGE. The
-# molecule being titrated is a zwitterion and a different acid.
-#
-# The pattern is the amine and not the amide: an amide nitrogen is not basic,
-# which is why every nylon unit below still has to be read one N at a time. A
-# nitrile N is X1 and a nitro N is either charged or doubly bonded, so all three
-# fall out without a clause of their own. An aromatic ring nitrogen is ``n`` and
-# is NOT matched -- a pyridine carboxylic acid is left in whatever bucket its
-# ring puts it in, which is a limit of this exclusion and not a claim about it.
-BASIC_N = Chem.MolFromSmarts("[NX3;!$(N[#6]=[O,N,S]);!$(N=*);!$([N+])]")
-
-
-def canon(smiles: str) -> str:
-    return Molecule.from_smiles(smiles).smiles
-
-
-def carboxyl_sites(mol) -> list[tuple[int, int]]:
-    """``(carboxyl carbon, acidic oxygen)`` for every carboxyl in the molecule."""
-    return [(m[0], m[2]) for m in mol.GetSubstructMatches(CARBOXYL)]
-
-
-def as_pair(mol, c_idx: int, o_idx: int) -> tuple[str, str] | None:
-    """The conjugate acid and base this one carboxyl would give the table.
-
-    Written by editing the acidic oxygen in both directions rather than by
-    firing the template, so a compound the corpus already spells as a salt gives
-    the same pair as the free acid does. Returns ``None`` if either half will
-    not sanitise.
-    """
-    out = []
-    for charge, hs in ((0, 1), (-1, 0)):
-        rw = Chem.RWMol(mol)
-        atom = rw.GetAtomWithIdx(o_idx)
-        atom.SetFormalCharge(charge)
-        atom.SetNoImplicit(True)
-        atom.SetNumExplicitHs(hs)
-        try:
-            Chem.SanitizeMol(rw)
-            out.append(canon(Chem.MolToSmiles(rw)))
-        except Exception:  # noqa: BLE001
-            return None
-    return (out[0], out[1])
-
-
-def _heavy(atom) -> int:
-    return sum(1 for n in atom.GetNeighbors() if n.GetAtomicNum() > 1)
-
-
-def domain(mol, c_idx: int, o_idx: int, n_sites: int) -> tuple[str, str]:
-    """Which domain this carboxyl sits in, and the reason if it sits outside.
-
-    Returns ``("strict"|"local"|"outside", reason)``. The reason is empty inside
-    the domain and names one structural fact outside it -- the first that
-    applies, in order of how far it moves a pKa -- because the grouped reasons
-    are the work order for whatever a second rule would have to be.
-    """
-    if n_sites > 1:
-        return "outside", f"polyprotic ({n_sites} carboxyls)"
-    if mol.HasSubstructMatch(BASIC_N):
-        return "outside", "zwitterion (basic nitrogen in the molecule)"
-
-    carboxyl = {c_idx, o_idx}
-    for nb in mol.GetAtomWithIdx(c_idx).GetNeighbors():
-        if nb.GetAtomicNum() == 8 and nb.GetIdx() != o_idx:
-            carboxyl.add(nb.GetIdx())
-
-    alpha = [n for n in mol.GetAtomWithIdx(c_idx).GetNeighbors()
-             if n.GetIdx() not in carboxyl]
-    if not alpha:
-        return "outside", "formyl (no carbon on the carboxyl)"
-    if len(alpha) > 1:
-        return "outside", "two carbons on the carboxyl carbon"
-    if alpha[0].GetAtomicNum() != 6:
-        return "outside", "heteroatom acyl (not a carboxylic acid at all)"
-    if alpha[0].GetIsAromatic():
-        return "outside", "aromatic ring on the carboxyl"
-
-    # Breadth-first over bonds, carboxyl oxygens excluded, to LOCAL_DEPTH.
-    #
-    # Only carbons are ever queued, and a heteroatom is found by LOOKING OUT
-    # from the carbon it hangs off rather than by being walked onto. Both halves
-    # of that matter, and the second is why: lactic acid's alpha carbon bears a
-    # methyl and a hydroxyl, so walking onto it reports an "alpha branch" -- true
-    # and beside the point, since what moves lactic acid to 3.86 is the hydroxyl
-    # and not the methyl. Naming the substituent by the carbon it sits on is
-    # also what a chemist means by alpha-hydroxy: that oxygen is TWO bonds from
-    # the carboxyl carbon, so its own depth would call it beta.
-    seen, frontier = set(carboxyl), [(alpha[0], 1)]
-    labels = {1: "alpha", 2: "beta", 3: "gamma"}
-    while frontier:
-        atom, d = frontier.pop(0)
-        if atom.GetIdx() in seen:
-            continue
-        seen.add(atom.GetIdx())
-        where = labels[d]
-        if any(n.GetAtomicNum() not in (1, 6) and n.GetIdx() not in carboxyl
-               for n in atom.GetNeighbors()):
-            return "outside", f"heteroatom on the {where} carbon"
-        if atom.GetFormalCharge():
-            return "outside", f"formal charge on the {where} carbon"
-        if atom.IsInRing():
-            return "outside", f"{where} ring atom"
-        if atom.GetHybridization() != Chem.HybridizationType.SP3:
-            return "outside", f"{where} unsaturation"
-        if _heavy(atom) > 2:
-            return "outside", f"{where} branch"
-        if d < LOCAL_DEPTH:
-            frontier += [(n, d + 1) for n in atom.GetNeighbors()
-                         if n.GetIdx() not in seen and n.GetAtomicNum() == 6]
-
-    # Inside the local domain. Strict is the whole molecule saying the same.
-    for atom in mol.GetAtoms():
-        if atom.GetIdx() in carboxyl:
-            continue
-        if atom.GetAtomicNum() not in (1, 6):
-            return "local", ""
-        if atom.IsInRing() or _heavy(atom) > 2:
-            return "local", ""
-    return "strict", ""
+def molecule(smiles: str) -> Molecule | None:
+    """``Molecule`` or ``None`` -- the corpus is allowed to hold a bad SMILES."""
+    try:
+        return Molecule.from_smiles(smiles)
+    except ValueError:
+        return None
 
 
 def table_series() -> list[tuple[int, float, str, str]]:
@@ -228,7 +112,7 @@ def table_series() -> list[tuple[int, float, str, str]]:
     """
     out = []
     for pair in electrolyte.known_pairs():
-        mol = Chem.MolFromSmiles(pair.acid)
+        mol = molecule(pair.acid)
         if mol is None:
             continue
         sites = carboxyl_sites(mol)
@@ -237,18 +121,18 @@ def table_series() -> list[tuple[int, float, str, str]]:
         where, _ = domain(mol, sites[0][0], sites[0][1], len(sites))
         if where == "outside":
             continue
-        carbons = sum(1 for a in mol.GetAtoms() if a.GetAtomicNum() == 6)
+        carbons = sum(1 for a in mol.topology() if a.element == "C")
         out.append((carbons, pair.pKa, pair.name, where))
     return sorted(out)
 
 
-ESTER = Chem.MolFromSmarts("[CX3](=[OX1])[OX2][#6]")
+ESTER = "[CX3](=[OX1])[OX2][#6]"
 
 
 def _oligomer(smiles: str) -> bool:
     """Does this acid carry an ester, i.e. is it a condensate and not an acid?"""
-    mol = Chem.MolFromSmiles(smiles)
-    return mol is not None and mol.HasSubstructMatch(ESTER)
+    mol = molecule(smiles)
+    return mol is not None and bool(mol.substructure_matches(ESTER))
 
 
 def routes_touched(ids: set[str]) -> dict[str, set[str]]:
@@ -285,15 +169,44 @@ def fragments(smiles: str) -> list[str]:
     return smiles.split(".")
 
 
-def sweep(mols: dict[str, str], priced: set[str]) -> list[dict]:
-    """Classify every carboxyl in a set of ``label -> SMILES``."""
+def priced_test(provider, table: set[str]):
+    """``base SMILES -> "table" | "rule" | ""`` -- how this ion prices today.
+
+    T18 turned the second answer on. Before it, an ion was priced if and only if
+    ``ion_thermochemistry`` had built an entry for it, so a set membership test
+    was the whole story; now the provider consults the plateau rule when the
+    table misses, and a set built from the table alone would report every acid
+    the rule covers as a gap. The tier is read off the record's own ``source``
+    rather than inferred from which call answered, because that string is what
+    ``build_network`` reports to the player and the audit should be scoring the
+    same thing the player is told.
+    """
+    def tier(base: str) -> str:
+        if base in table:
+            return "table"
+        try:
+            data = provider.get(base)
+        except Exception:  # noqa: BLE001 -- a refusal is an answer here
+            return ""
+        return "rule" if electrolyte.PLATEAU_RULE in data.source else "table"
+    return tier
+
+
+def sweep(mols: dict[str, str], priced) -> list[dict]:
+    """Classify every carboxyl in a set of ``label -> SMILES``.
+
+    ``priced`` answers "would this conjugate base price today", and T18 made
+    that a QUESTION RATHER THAN A SET: the plateau rule is consulted at lookup
+    time, so a set built from ``ion_thermochemistry`` is the table alone and
+    would report every acid the rule now covers as missing. See ``priced_test``.
+    """
     rows = []
     pieces = {}
     for label, smiles in mols.items():
         for part in fragments(smiles):
             pieces.setdefault(part, label)
     for smiles, label in sorted(pieces.items(), key=lambda kv: (kv[1], kv[0])):
-        mol = Chem.MolFromSmiles(smiles)
+        mol = molecule(smiles)
         if mol is None:
             continue
         sites = carboxyl_sites(mol)
@@ -308,7 +221,7 @@ def sweep(mols: dict[str, str], priced: set[str]) -> list[dict]:
             where, why = domain(mol, c_idx, o_idx, len(sites))
             rows.append({"label": label, "acid": acid, "base": base,
                          "domain": where, "reason": why,
-                         "covered": base in priced})
+                         "covered": priced(base)})
     return rows
 
 
@@ -330,13 +243,17 @@ def panel(title: str) -> None:
 
 def report(pairs: dict[str, dict], thermo, *, anchors: bool) -> None:
     covered = {k: v for k, v in pairs.items() if v["covered"]}
+    by_rule = {k: v for k, v in covered.items() if v["covered"] == "rule"}
     missing = {k: v for k, v in pairs.items() if not v["covered"]}
     strict = {k: v for k, v in missing.items() if v["domain"] == "strict"}
     local = {k: v for k, v in missing.items() if v["domain"] == "local"}
     outside = {k: v for k, v in missing.items() if v["domain"] == "outside"}
 
     print(f"  distinct conjugate pairs        {len(pairs):5d}")
-    print(f"  already priced by _PAIRS        {len(covered):5d}")
+    print(f"  priced today                    {len(covered):5d}")
+    print(f"    by a curated _PAIRS row       {len(covered) - len(by_rule):5d}")
+    print(f"    by the plateau RULE (T18)     {len(by_rule):5d}   "
+          "derived, and it says so")
     print(f"  missing                         {len(missing):5d}")
     print(f"    inside the strict domain      {len(strict):5d}   "
           "one plateau value, whole molecule")
@@ -365,38 +282,39 @@ def report(pairs: dict[str, dict], thermo, *, anchors: bool) -> None:
 
     if not anchors:
         return
-    # Panel 3. A pKa without a priceable neutral half buys nothing: see
-    # ``ion_thermochemistry``, which skips such a pair silently and correctly.
-    plateau = dict(strict, **local)
-    ok, no_anchor = [], []
-    for key, v in sorted(plateau.items()):
-        try:
-            with contextlib.redirect_stdout(io.StringIO()):
-                thermo.get(v["acid"])
-        except Exception:  # noqa: BLE001
-            no_anchor.append((key, v))
-            continue
-        ok.append((key, v))
+    # Panel 3. Before T18 this panel asked what a hand-typed ROW would buy, and
+    # the answer had two parts: the pairs inside the domain, and the subset of
+    # those whose NEUTRAL half ``ion_thermochemistry`` can anchor -- a pKa for an
+    # acid nothing can price is skipped, silently and correctly, and buys
+    # nothing. The rule is now in the engine, so the same two parts are read the
+    # other way round: what the rule ACTUALLY priced, and what is inside its
+    # domain and still not priced, which can only be a missing anchor.
+    priced_here = sorted(by_rule.items())
+    stranded = sorted(dict(strict, **local).items())
     print()
-    print(f"  of the {len(plateau)} plateau pairs, {len(ok)} have a priceable "
-          "neutral anchor")
-    print(f"  and {len(no_anchor)} do not, so a pKa row for them would be "
-          "skipped by")
-    print("  ion_thermochemistry and buy nothing at all")
-    named = [(k, v) for k, v in ok if not _oligomer(v["acid"])]
+    print(f"  the plateau rule priced {len(priced_here)} of these pairs, and "
+          f"{len(stranded)} sit inside its")
+    print("  domain and are still not priced -- which can only be an acid with "
+          "no priceable")
+    print("  neutral half, since the rule needs no row of its own.")
+    named = [(k, v) for k, v in priced_here if not _oligomer(v["acid"])]
     for key, v in named:
         print(f"      {v['domain']:6s}  {v['labels'][0]:34s}  {key}")
-    if len(named) < len(ok):
-        print(f"      ... and {len(ok) - len(named)} oligomers of the same acid, "
-              "not listed")
-    if no_anchor:
-        print("  no neutral anchor, so not writable today:")
-        for key, v in no_anchor:
-            print(f"      {v['domain']:6s}  {v['labels'][0]:34s}  {key}")
-    routes = routes_touched({v["labels"][0] for _, v in ok})
+    if len(named) < len(priced_here):
+        print(f"      ... and {len(priced_here) - len(named)} oligomers of the "
+              "same acid, not listed")
+    for key, v in stranded:
+        with contextlib.redirect_stdout(io.StringIO()):
+            try:
+                thermo.get(v["acid"])
+                why = "priceable acid, so the rule declined for another reason"
+            except Exception as exc:  # noqa: BLE001
+                why = str(exc).split(":")[0]
+        print(f"      NOT PRICED  {v['labels'][0]:30s}  {key}  ({why})")
+    routes = routes_touched({v["labels"][0] for _, v in priced_here})
     print()
     print(f"  {len(routes)} of the catalog's 173 routes name one of those "
-          f"{len(ok)} compounds in a step:")
+          f"{len(priced_here)} compounds in a step:")
     for route, species in sorted(routes.items()):
         print(f"      {route:34s}  {', '.join(sorted(species))}")
 
@@ -419,8 +337,8 @@ def pool(thermo, volatility) -> dict[str, str]:
                                 max_species=MAX_SPECIES, generations=None)
         capped += len(net.species) >= MAX_SPECIES
         for s in net.species:
-            mol = Chem.MolFromSmiles(s)
-            if mol is not None and mol.HasSubstructMatch(CARBOXYL):
+            mol = molecule(s)
+            if mol is not None and carboxyl_sites(mol):
                 out.setdefault(s, s)
     print(f"  {len(natural)} flasks in {time.perf_counter() - started:.0f} s; "
           f"{capped} of them hit the {MAX_SPECIES}-species cap and were cut "
@@ -437,7 +355,8 @@ def main() -> int:
     thermo = electrolyte_provider()
     volatility = VolatilityProvider(thermo)
     neutral = ThermochemistryProvider()
-    priced = set(electrolyte.ion_thermochemistry(neutral, volatility=volatility))
+    table = set(electrolyte.ion_thermochemistry(neutral, volatility=volatility))
+    priced = priced_test(thermo, table)
 
     print(__doc__.split("Run:")[0].rstrip())
 
@@ -476,7 +395,7 @@ def main() -> int:
         pool_pairs = by_pair(sweep(reached, priced))
         report(pool_pairs, neutral, anchors=False)
 
-    panel("3. WHAT A ROW WOULD BUY -- the corpus and the pool together")
+    panel("3. WHAT IS LEFT AFTER THE RULE -- the corpus and the pool together")
     both = dict(corpus_pairs)
     for k, v in pool_pairs.items():
         both.setdefault(k, v)

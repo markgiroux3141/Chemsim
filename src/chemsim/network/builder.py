@@ -33,6 +33,8 @@ from chemsim.properties import (
     VolatilityProvider,
 )
 from chemsim.properties import standard_state
+from chemsim.properties.carboxylic_pka import plateau
+from chemsim.properties.electrolyte import PLATEAU_RULE, known_pairs
 from chemsim.reactions import hammett
 from chemsim.reactions import (
     ConcreteReaction,
@@ -514,6 +516,45 @@ def build_network(
             "would go on to undergo was not discovered. What is in the flask is "
             "real; what it would become next was not looked for. Raise "
             "generations to go further. Unexpanded: " + shown
+        )
+
+    # T18. A pKa the RULE supplied rather than the table, reported once per
+    # build with the species that got it. Rule 10: an approximation that touches
+    # matter is admissible only if the player can see that it happened, and this
+    # one touches matter twice over -- every equilibrium the ion sits in, and the
+    # reverse rate detailed balance derives from it.
+    #
+    # It asks the RECORD and not the provider, which is what keeps it honest
+    # across a provider shared by several flasks: a rule-priced ion is stamped in
+    # its own ``source``, so what is reported here is what THIS network holds.
+    # Only charged species are asked, so the pass is a handful of cached lookups.
+    derived_pka = []
+    for smi in sorted(molecules):
+        if molecules[smi].charge == 0:
+            continue
+        try:
+            source = thermo.get(molecules[smi]).source
+        except Exception:  # noqa: BLE001 -- an unpriced ion is reported elsewhere
+            continue
+        if PLATEAU_RULE in source:
+            derived_pka.append(smi)
+    if derived_pka:
+        shown = ", ".join(derived_pka[:_NOTICE_SPECIES])
+        if len(derived_pka) > _NOTICE_SPECIES:
+            shown += f", ... (+{len(derived_pka) - _NOTICE_SPECIES} more)"
+        level = plateau(known_pairs())
+        notices["derived-pka"] = (
+            f"[build_network] NOTICE: {len(derived_pka)} ion(s) are priced from "
+            f"a RULE and not from a measured pKa of their own acid -- the "
+            f"{PLATEAU_RULE}, "
+            + (level.describe() + ". " if level is not None else ". ")
+            + "Its domain is one carboxyl, no basic nitrogen anywhere, and "
+            "alpha, beta and gamma unbranched saturated CH2 with no "
+            "heteroatom, ring or charge: inductive withdrawal dies off by "
+            "about 3x per bond, so a plateau pKa is set by the three carbons "
+            "nearest the carboxyl and not by the molecule. Their equilibria "
+            "and the reverse rates derived from them are as good as that "
+            "generalisation and no better. Priced by the rule: " + shown
         )
 
     messages = list(notices.values()) + state.reports(max_species, len(unexpanded))

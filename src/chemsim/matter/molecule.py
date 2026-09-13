@@ -200,6 +200,33 @@ class Molecule:
         Chem.Kekulize(m, clearAromaticFlags=True)
         return Molecule._views(m)
 
+    def reprotonated(self, index: int, charge: int, n_hydrogens: int) -> "Molecule | None":
+        """The same graph with one atom's charge and hydrogen count set.
+
+        The graph edit a conjugate pair is: an acid and its base differ by one
+        proton on one atom and by nothing else, so writing the pair this way
+        gives the same answer whether the corpus spelled the compound as the
+        free acid or as its salt. ``None`` if the result will not sanitise,
+        which is a real answer -- the edit can produce a valence that does not
+        exist.
+
+        It lives here and not in ``properties`` because it is a graph rewrite,
+        and Boundary 0 is that the graphs are matter's. T18 needed the reverse
+        direction of what ``validation/fatty_acid_pka.py`` had been doing with
+        RDKit directly: given a carboxylate the engine has been handed, put the
+        proton back on so its neutral half can be priced.
+        """
+        rw = Chem.RWMol(self._mol)
+        atom = rw.GetAtomWithIdx(index)
+        atom.SetFormalCharge(charge)
+        atom.SetNoImplicit(True)
+        atom.SetNumExplicitHs(n_hydrogens)
+        try:
+            Chem.SanitizeMol(rw)
+        except Exception:  # noqa: BLE001 -- an impossible valence is an answer
+            return None
+        return Molecule(Chem.Mol(rw))
+
     def ring_sizes(self) -> tuple[int, ...]:
         """Sizes of the smallest set of smallest rings.
 

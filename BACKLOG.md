@@ -85,8 +85,16 @@ T14 did exactly this for ONE acid class and the answer was a rule with a domain,
 not rows — so this sweep now looks for the OTHER classes that argument reaches,
 and `validation/fatty_acid_pka.py` is the shape to copy. Do it before writing any
 pKa: an estimator for pKa is what `element_data` exists to refuse.
+T18 BUILT THE MACHINERY AND LEFT IT WITH ONE CALLER. `ThermochemistryProvider`
+takes an `ion_fallback` consulted after the curated table misses, and
+`properties/carboxylic_pka.py` is the one rule passed into it. A phenoxide is
+the obvious next candidate — T1d's `salicin-hydrolysis` is the route standing
+behind it — and it is also the warning: the carboxylic plateau spans 0.15 pKa
+units and `_PAIRS`'s two phenols are 9.95 and 10.19 with nothing between them
+and nothing either side. A rule needs a measured spread, not a hook.
 **Done when:** the count and its top acid classes are in `NEXT.md`'s state table
-with the command, and a follow-up item names the fix the number argues for.
+with the command, and a follow-up item names the fix the number argues for —
+including a refusal, if the spread inside a candidate domain is too wide.
 
 ### T11 — an artefact-backed check that changes nothing can never clear (S)
 Found 2026-09-12 while closing T7. `playable` went DUE at 8 commits, was re-run
@@ -127,8 +135,10 @@ playable counts do not match the artefact, and it is green today.
 ### T13 — an unpriced ion in the flask still stops `to_arrays` (S, found in T8)
 `_unpriceable` deliberately KEEPS an ion the template that made it does not
 need a price for -- `saponification` is irreversible with alpha = 0, so its
-stearate is registered unpriced on purpose, and dropping it would delete
-chemistry the engine can do. T8 then guarded the two places that ask for the
+product is registered unpriced on purpose, and dropping it would delete
+chemistry the engine can do. (T18 priced the stearate itself off the plateau
+rule, so the witness below is now the PHENOXIDE rather than the fatty ion; the
+hole is in the same place.) T8 then guarded the two places that ask for the
 price later (the Evans-Polanyi barrier, and detailed balance since T1d), so
 `build_network` no longer raises. `ReactionNetwork.to_arrays` still does:
 measured today on a flask charged with saligenolate plus saligenol plus water,
@@ -141,28 +151,11 @@ the second changes what is in the flask silently unless it notices too.
 **Done when:** a network holding an unpriced ion either integrates or refuses
 with a notice naming the species, and one test pins whichever was chosen.
 
-### T18 — the carboxylic plateau as a rule with a domain (M, decided by T14)
-T14 counted it on 2026-09-13 (`python validation/fatty_acid_pka.py`, ~2 min) and
-the count decides the shape: a rule, not rows. 624 distinct conjugate pairs over
-the corpus and 36 oleic-acid flasks, 12 priced; 270 sit inside the plateau
-domain and 243 of those are oligomers of ONE acid, a self-esterifying series
-with no last member that stopped only at the species cap. A table closes a list
-and that is not a list. Write it as a domain predicate over the acid's graph and
-never an estimator fitted to anything: one carboxyl, no basic nitrogen, alpha to
-gamma unbranched saturated CH2 with no heteroatom, ring or charge.
-`validation/fatty_acid_pka.py:domain` is that predicate, pinned by
-`tests/test_fatty_acid_pka.py`; the work is moving it under `properties/` and
-giving `ion_thermochemistry` a fallback consulted after `_PAIRS` misses. The
-value is the plateau `_PAIRS` itself measures from C3 up, 4.87 to 5.02. It must
-report itself through `notices` like every other approximation touching matter.
-**Done when:** a stearate prices with no hand-typed row, the notice names the
-rule and its domain, and the audit reports the plateau bucket as covered.
-
 ### T19 — the diacid is the bigger half (S, found in T14)
 230 of the 342 pairs needing their own measurement are polyprotic. A diacid is
 not the plateau twice: adipic is already in `_PAIRS` at 4.43 against propanoic's
-4.87 because the second carboxyl withdraws. T18's predicate refuses them, rightly;
-the open question is whether a long-chain diacid converges on the plateau from
+4.87 because the second carboxyl withdraws. `carboxylic_pka.domain` refuses them,
+rightly; the open question is whether a long-chain diacid converges on it from
 both ends, and it is measured off the rows that exist before anything is written.
 **Done when:** a second domain or a refusal with its reasoning is written down.
 

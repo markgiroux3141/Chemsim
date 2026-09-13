@@ -94,11 +94,17 @@ def test_the_headline_and_the_tiers_are_what_the_report_says(bp):
     is credited now. The other side of the same correction is a deleted shelf
     row -- `copper-ii-oxide`, which `copper-smelting` row 1 roasts and row 2
     reduces, is earned rather than given.
+
+    T18 moved RUNNABLE and not the headline. The carboxylic plateau rule prices
+    a stearate with no curated row, so `soap-saponification` builds and runs:
+    46 runnable becomes 47. It is not playable, because nothing on the shelf
+    supplies its tristearin -- which is the ordinary shape of an unblock here,
+    and why the two counts are asserted separately.
     """
     assert len(bp.routes) == 173
     assert len(bp.PLAYABLE) == 23
     assert max(bp.PLAYABLE.values()) == 3
-    assert len(bp.RUNNABLE) == 46
+    assert len(bp.RUNNABLE) == 47
     assert bp.PLAYABLE["hmf-route"] == 2
     assert bp.PLAYABLE["invert-sugar"] == 1
     assert bp.PLAYABLE["abe-fermentation"] == 1
@@ -374,14 +380,21 @@ def cat_roles(bp, rid):
 
 
 def test_a_catalyst_is_a_feedstock_and_that_rule_makes_the_third_tier(bp):
-    """Drop it and the corpus has no third tier at all.
+    """Drop it and methanol has no reason to be in the third tier.
 
     Methanol needs no tier-2 *reagent* -- its CO is tier 1 and its hydrogen is
     tier 1 (chloralkali throws hydrogen off making caustic soda from rock salt).
     It is tier 3 for exactly one reason: the copper has to be smelted first.
+
+    T18 REFUTED THE STRONGER CLAIM this test used to make, which was that
+    dropping the rule leaves no third tier at all. It leaves a different one:
+    with catalysts free, `soap-saponification` -- runnable since T18 priced its
+    stearate off the plateau rule -- reaches tier 3 on a tier-2 tristearin. So
+    the claim is now about METHANOL, which is the route the rule is actually
+    about, and the depth of the tree is asserted where it belongs, on PLAYABLE.
     """
     free_catalysts, _ = bp.closure(with_catalysts=False)
-    assert max(free_catalysts.values()) == 2
+    assert free_catalysts["methanol-synthesis"] == 2
     assert max(bp.PLAYABLE.values()) == 3
     # and granting copper collapses the third tier
     with_copper, _ = bp.closure(extra={"copper"})
@@ -400,8 +413,15 @@ def test_a_catalyst_is_a_feedstock_and_that_rule_makes_the_third_tier(bp):
     # playable. The artefact appears only in this counterfactual, which is the
     # one place `route_roles` still gets to answer -- and it appeared the moment
     # C5 made `furfural-route` RUNNABLE, having been latent until then.
+    #
+    # T18 added `soap-saponification` to this set for a different reason again:
+    # it is runnable now, and with catalysts free its caustic soda is given, so
+    # the only thing left between it and the shelf is tristearin -- which a
+    # tier-2 route makes. That is what puts the third tier back into this
+    # counterfactual and why the assertion above is about methanol.
     assert set(free_catalysts) - set(bp.PLAYABLE) == {
-        "furfural-route", "haber-bosch", "hydrogenation-margarine"}
+        "furfural-route", "haber-bosch", "hydrogenation-margarine",
+        "soap-saponification"}
     assert "xylose" in cat_roles(bp, "furfural-route").catalysts
     assert "xylose" in bp.needs("furfural-route")
 

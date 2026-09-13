@@ -4,6 +4,21 @@ Newest first. One entry per session, twelve lines at most, enforced by
 `tools/check_docs.py`. When this file passes 400 lines the older half rolls into
 `docs/history/changelog-YYYY-MM.md`.
 
+## 2026-09-13 — T18: the plateau is a rule, and a soap route starts running
+
+`properties/carboxylic_pka.py` (new) holds T14's domain predicate, moved out of
+`validation/` and rewritten against `Molecule` so Layer 1 gains no RDKit edge --
+`matter.Molecule.reprotonated` is the one graph edit it needed. Its plateau
+value is DERIVED from `_PAIRS` (4.95, the mean of the two in-domain rows from C3
+up, span 4.87-5.02) and never typed. `ThermochemistryProvider` takes an
+`ion_fallback` consulted after the curated table misses and before the refusal,
+so a measurement is never overridden; `build_network` reports every ion the rule
+priced through `notices`. Stearic acid + water: 12 species / 4 reactions -> 21 /
+21. Corpus pairs priced 14 -> 32 (`validation/fatty_acid_pka.py --corpus-only`),
+species-ready 89 -> 90, runnable 46 -> 47 (`soap-saponification`), shelf 70 -> 72
+rows as its two feeds are newly STRANDED, playable unmoved at 23. `./check.ps1`
+green, 18 test files + the 17 named routes byte-identical; suite/tolerance due.
+
 ## 2026-09-13 — T17: the scorer credits every step product, and a route falls out
 
 `tools/build_playable.shelves` credited `route_roles.products`, so a species a

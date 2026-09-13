@@ -73,7 +73,13 @@ def test_the_three_tiers_are_the_measured_ones():
     assert set(inv.TIERS) == {"natural", "intermediate", "bottle"}
     assert got["rows"] == got["natural"] + got["intermediate"] + got["bottle"]
     assert got["natural"] == 43
-    assert got["intermediate"] == 23   # T17 earned copper(II) oxide off the roaster
+    # T18 ADDED TWO, which is the tier moving in the direction it is not
+    # supposed to. It is the rule working: `soap-saponification` became
+    # RUNNABLE when the plateau rule priced its stearate, so the two species it
+    # is short of -- tristearin and the stearate itself -- are newly STRANDED
+    # rather than newly unreachable. `tests/test_playable_levers.py` is what
+    # reported it, and a route that cannot run at all strands nothing.
+    assert got["intermediate"] == 25
     assert got["bottle"] == 4
     assert got["intermediate"] > 0, (
         "an empty intermediate tier means every stranded route became "
