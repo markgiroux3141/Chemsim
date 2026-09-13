@@ -114,6 +114,19 @@ work order block first, then check whether the cleavage template is in the 57.
 **Done when:** either substrate is in the closure and those rows have left
 `silent_templates.psv`, or the file says which shelf row would put it there.
 
+### T11 — an artefact-backed check that changes nothing can never clear (S)
+Found 2026-09-12 while closing T7. `playable` went DUE at 8 commits, was re-run
+(45 s, `--check` green), and produced BYTE-IDENTICAL output -- so there is no
+commit touching `data/catalog/PLAYABLE.md` to derive a last-run from, and
+`--record` refuses an artefact-backed row by design. The row therefore reads DUE
+for ever until the artefact's CONTENT happens to move, which is the one thing a
+passing check does not do. Deriving the date from git is still right -- it is
+what stops a row being stamped green by hand -- so the fix is a third state: a
+run that confirms no change is recorded as such, distinct from both a stamp and
+a commit. Note the same trap waits for `reachable`.
+**Done when:** re-running an artefact-backed check whose output is unchanged
+clears its DUE, and `python tools/cadence.py` explains which of the two happened.
+
 ### T10 — two examples print a digit that depends on the solver (S)
 `validation/tolerance_audit.py`'s first recorded run came back red on
 `activity` (worst 0.128%) and `multistep_prep` (0.107%): a quotable digit moves

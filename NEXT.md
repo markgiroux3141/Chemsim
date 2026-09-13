@@ -12,7 +12,7 @@ Every number came from a command run on 2026-09-12. The command is named.
 | tests | 1,301 collected, 1,301 passed in 28m51s | `python -m pytest -q` |
 | fast check | `./check.ps1`, ~80 s, green | ruff + docs + catalog + templates + silent + 60 smoke tests |
 | full check | `./check.ps1 -Full`, ~2.5 min, green | adds both report `--check` ratchets |
-| expensive checks owed | 0 of 5; all five recorded today | `python tools/cadence.py` |
+| expensive checks owed | 0 of 5 at the time of the commit; `playable` then tipped DUE and cannot clear (T11) | `python tools/cadence.py` |
 | tolerance audit | recorded FAIL, 11m12s, 3 findings all pre-existing | `python validation/tolerance_audit.py` |
 | templates | 57 rows, all `tier=family`, covering 46 catalog classes | `python tools/build_templates.py --check` |
 | catalog | 1,583 compounds, 173 routes, 377 steps | `python tools/catalog.py` |
