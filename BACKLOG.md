@@ -28,18 +28,15 @@ There are no pytest markers at all, so the only way to run less than the
 ## Tier 1 — change the slope of coverage
 
 The measurement behind this tier: 240 reaction classes over 377 catalog steps,
-169 classes used by exactly one step, best single template unlocks 3 routes and
-after 7 templates the curve is flat at +1. Historical velocity is +3 to +5
-classes per session, so the remaining 181 classes are ~40 sessions and the curve
-is flat. The bottleneck is that a template is a hand-written Python function.
-Full argument: `fable analysis/05-COVERAGE-STRATEGY.md`.
-
+169 used by exactly one step, best single template unlocks 3 routes and after 7
+the curve is flat at +1. The bottleneck is that a template is a hand-written
+Python function. Full argument: `fable analysis/05-COVERAGE-STRATEGY.md`.
 T1.0 measured the gate on 2026-09-02 (`python validation/extraction_yield.py`,
 argued in `docs/design/extraction-yield.md`): 174 of 377 rows resolve, balance
-and sit in an uncovered class, spread over 132 classes of which 102 hold one row.
-Upper bound if all became templates: intersection 38 -> 66, template-ready 46 ->
-110; 36 of the 64 gained routes are then held by an unpriceable species. T1 and
-T2 survive. The LP passes rows atom-mapping will refuse, so 174 is a ceiling.
+and sit in an uncovered class, over 132 classes of which 102 hold one row. Upper
+bound if all became templates: intersection 38 -> 66, template-ready 46 -> 110,
+with 36 of the 64 gained routes then held by an unpriceable species. The LP
+passes rows atom-mapping will refuse, so 174 is a ceiling.
 
 ### T1b — the row-level product check (M, was T1's fourth bullet)
 The switch-over landed without it. `tools/build_templates.py` now checks the
@@ -61,15 +58,13 @@ dropped by the number of per-template files it replaced.
 `tools/extract_templates.py`: resolve each step's reactants and products to
 SMILES, infer stoichiometry, atom-map, extract a reaction SMARTS with one bond of
 context, verify it regenerates the products, assign kinetics from a class policy
-table, write the row with `tier=literal`.
-Note two things the analysis missed: the corpus carries **no stoichiometric
-coefficients at all**, so balancing is an inference and not a check — and the LP
-that does it now returns its vector: `corpus_balance.coefficients()`. The vector
-is not unique when the element matrix has a two-dimensional nullspace
-(`phthalic-anhydride-route` step 2 comes back fractional), so the extractor needs
-a smallest-integer-vector step after the LP before it can write coefficients.
-Rows that fail go to `needs_stoichiometry.psv` or `needs_review.psv`, never
-silently.
+table, write the row with `tier=literal`. Note what the analysis missed: the
+corpus carries no stoichiometric coefficients at all, so balancing is an
+inference and not a check, and the LP that does it returns a vector that is not
+unique when the element matrix has a 2-D nullspace (`phthalic-anhydride-route`
+step 2 comes back fractional) — so a smallest-integer-vector step is needed after
+`corpus_balance.coefficients()`. Rows that fail go to `needs_stoichiometry.psv`
+or `needs_review.psv`, never silently.
 **Done when:** the extracted rows pass T1b's row-level product check and the
 report distinguishes template-ready-via-family from via-literal.
 
@@ -83,22 +78,15 @@ retired row count is in `CHANGELOG.md`.
 
 ### T5 — measure what the 30-row pKa table bounds (S, measurement first)
 T1d turned "no pKa for this ion" from a traceback into a reported coverage
-limit, and the reports promptly named five in one session: salicyl alcohol's
-phenoxide, the Kolbe dianion, eugenolate, a nitroanilinium, hypochlorite. A
-family template matches any aromatic hydroxyl or any amine; `_PAIRS` is 30
-hand-typed rows. Nobody knows how wide the gap is. Sweep the 1167 priced corpus
-species, fire each dissociation template on each, and count the ions with no
-pair — grouped by the acid class that would fix them, since one sourced pKa
-series can cover many rows. Do this BEFORE writing any pKa: the answer decides
-whether the fix is a dozen rows or an estimator, and an estimator for pKa is the
-kind of thing `element_data` exists to refuse.
-T8 answered three of them by hand (oleate, eugenolate, hypochlorite) and the
-table went 30 -> 33 rows, so the sweep is now over a table just shown to be
-three short of what a flask of NATURAL shelf rows reaches in one generation.
-T14 asks the same question for one acid class.
+limit, and the reports named five in one session: salicyl alcohol's phenoxide,
+the Kolbe dianion, eugenolate, a nitroanilinium, hypochlorite. A family template
+matches any aromatic hydroxyl or any amine; `_PAIRS` is 33 hand-typed rows.
+T14 did exactly this for ONE acid class and the answer was a rule with a domain,
+not rows — so this sweep now looks for the OTHER classes that argument reaches,
+and `validation/fatty_acid_pka.py` is the shape to copy. Do it before writing any
+pKa: an estimator for pKa is what `element_data` exists to refuse.
 **Done when:** the count and its top acid classes are in `NEXT.md`'s state table
-with the command, and a follow-up item names whichever of the two fixes the
-number argues for.
+with the command, and a follow-up item names the fix the number argues for.
 
 ### T11 — an artefact-backed check that changes nothing can never clear (S)
 Found 2026-09-12 while closing T7. `playable` went DUE at 8 commits, was re-run
@@ -157,18 +145,40 @@ the second changes what is in the flask silently unless it notices too.
 **Done when:** a network holding an unpriced ion either integrates or refuses
 with a notice naming the species, and one test pins whichever was chosen.
 
-### T14 — the fatty-acid pKa wall (S, measurement first)
-T8 priced the oleate and the cascade in `gypsum + oleic-acid` promptly reached
-a stearate, a hydroxystearate and two partial-glyceride carboxylates that
-`_PAIRS` does not carry. Each is the SAME number to three figures -- every
-unbranched aliphatic carboxylic acid sits on the 4.9 plateau the table's own
-formic/acetic/propanoic series is converging to -- so this is not 30 lookups,
-it is one rule with a domain. Before writing any of them, count them: sweep
-the corpus and the pool for carboxylates whose acid is an unbranched chain,
-and report how many rows a single plateau value would cover against how many
-genuinely need their own measurement. T5 is the same question one level up.
-**Done when:** the count is in `NEXT.md` with its command, and a follow-up
-item says whether the fix is rows or a rule.
+### T18 — the carboxylic plateau as a rule with a domain (M, decided by T14)
+T14 counted it on 2026-09-13 (`python validation/fatty_acid_pka.py`, ~2 min) and
+the count decides the shape: a rule, not rows. 624 distinct conjugate pairs over
+the corpus and 36 oleic-acid flasks, 12 priced; 270 sit inside the plateau
+domain and 243 of those are oligomers of ONE acid, a self-esterifying series
+with no last member that stopped only at the species cap. A table closes a list
+and that is not a list. Write it as a domain predicate over the acid's graph and
+never an estimator fitted to anything: one carboxyl, no basic nitrogen, alpha to
+gamma unbranched saturated CH2 with no heteroatom, ring or charge.
+`validation/fatty_acid_pka.py:domain` is that predicate, pinned by
+`tests/test_fatty_acid_pka.py`; the work is moving it under `properties/` and
+giving `ion_thermochemistry` a fallback consulted after `_PAIRS` misses. The
+value is the plateau `_PAIRS` itself measures from C3 up, 4.87 to 5.02. It must
+report itself through `notices` like every other approximation touching matter.
+**Done when:** a stearate prices with no hand-typed row, the notice names the
+rule and its domain, and the audit reports the plateau bucket as covered.
+
+### T19 — the diacid is the bigger half (S, found in T14)
+230 of the 342 pairs needing their own measurement are polyprotic. A diacid is
+not the plateau twice: adipic is already in `_PAIRS` at 4.43 against propanoic's
+4.87 because the second carboxyl withdraws. T18's predicate refuses them, rightly;
+the open question is whether a long-chain diacid converges on the plateau from
+both ends, and it is measured off the rows that exist before anything is written.
+**Done when:** a second domain or a refusal with its reasoning is written down.
+
+### T20 — one template makes an unbounded oligoester series (S, found in T14)
+Not a pKa item. Oleic acid hydrates and esterifies onto itself: T14's sweep
+reached 243 distinct oligoesters six condensations deep and 11 of its 36 flasks
+hit the cap — P0's "31500 reactions per 9 credited steps" in a second place.
+Self-condensation is real, so this is a bound question: molar mass, condensation
+depth, or the cap naming the template that filled it.
+**Done when:** most of the 36 flasks reach a fixpoint, or `Snapshot.notices`
+names the template filling the cap.
+
 ### T16 — the other loose sulfur-dioxide slot (S, found in T12)
 `sulfur_dioxide_oxidation_by_nitrogen_dioxide` still writes SO2 as
 `[O:1]=[S:2]=[O:3]`, the pattern that made `claus_comproportionation` take
@@ -197,21 +207,16 @@ as 0.5 mol of its ions, and the six shelf rows that had to pick a representation
 regain the other mechanic.
 
 ### R4 / E3 — delete `discovery/refine.py` (S, decided)
-Decision 2026-09-01: **delete it**, and with it the `[done]` on Layer 4.5 in the
-README's layer table and the `discovery` layer in `chemsim/__init__.py`.
-The reasoning, so it is not relitigated: rate-aware pruning exists to make a
-network tractable, and the R-series measured that a fixpoint is free for the
-chemistry that matters (sulfur/air/water/NO2 closes at 14 species in 1.5 s).
-Where a network *is* too big, the species cap already bounds it and reports
-itself through `notices`; pruning would drop species silently, which rule 10
-forbids without a report. The module as it stands is a sketch — zero callers,
-zero tests, a duplicated `build_network`, and a `_rates_of` that judges species
-on `to_arrays(thermo=None)`, i.e. on forward kinetics with no derived reverse,
-no `T^n`, no declared orders against solids, no Hammett and no electrode work,
-which is not the rate anything actually runs at. R3 already deleted
-`prune_threshold` for a related reason. If T1/T2 make networks explode, rebuild
-pruning against that measured need, where the charge is known, and make it
-report what it dropped.
+Decision 2026-09-01: delete it, and with it the `[done]` on Layer 4.5 in the
+README's layer table and the `discovery` layer in `chemsim/__init__.py`. The
+reasoning, so it is not relitigated: rate-aware pruning exists to make a network
+tractable, the R-series measured a fixpoint as free for the chemistry that
+matters, the species cap already bounds the rest and reports itself, and pruning
+would drop species silently where rule 10 forbids it. The module is a sketch:
+zero callers, zero tests, a duplicated `build_network`, and a `_rates_of` that
+judges species on forward kinetics with no derived reverse, no declared orders,
+no Hammett and no electrode work. If T1/T2 make networks explode, rebuild it
+where the charge is known and make it report what it dropped.
 **Done when:** the module, its `discovery/__init__.py`, the layer row and the
 README claim are gone, and `./check.ps1` is green.
 

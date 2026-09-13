@@ -4,6 +4,20 @@ Newest first. One entry per session, twelve lines at most, enforced by
 `tools/check_docs.py`. When this file passes 400 lines the older half rolls into
 `docs/history/changelog-YYYY-MM.md`.
 
+## 2026-09-13 — T14: the plateau is a rule, and the pool is why
+
+`validation/fatty_acid_pka.py` (new, 118 s) counts the carboxylic pKa wall
+before anything is written. Corpus: 172 compounds carry a carboxyl, 182 distinct
+conjugate pairs, 11 priced, 19 inside the plateau domain, 152 needing their own
+measurement. Pool (oleic acid against each of the 36 other natural shelf rows,
+11 capped at 400 species): 446 pairs, 253 in the domain — but 243 of those are
+oligomers of ONE acid self-esterifying, a series with no last member. Corpus and
+pool share 4 of 624. So rows close a list and this is not a list: T14 is
+replaced by T18 (the rule), T19 (230 diacids, a different question) and T20 (the
+oligoester series is a bound question). The plateau's width is derived from
+`_PAIRS` rather than asserted: 4.87 to 5.02 from C3 up. Tests 1309 -> 1329.
+No `src/` change, so no trajectory moved; suite and tolerance still due at 7.
+
 ## 2026-09-13 — T15: pyrrhotite saturates its own water, and pyrite is FeS2
 
 Two repairs, both curation. `troilite` joins `build_mineral_data.CANDIDATES`
