@@ -45,9 +45,9 @@
 #! closure_species = 48
 #! closure_frontier = 0
 #! step_rows = 13
-#! step_frontier = 306
+#! step_frontier = 265
 #! pool_species = 289
-#! pool_unpriceable = 41
+#! pool_unpriceable = 0
 #
 # THE WORK ORDER: one missing substrate holds several
 # templates, so the queue is this list and not the 24.
@@ -99,7 +99,7 @@ aldofuranose_dehydration | no-substrate | 1 | 0 |  | [OX2H][CH2][C;H1;@,@@]1[OX2
 alkene_hydrodimerisation | no-substrate | 3 | 0 |  | [CH2]=[CH1][C]#[N] | nothing the shelf holds or can make matches it
 alkyne_hydration | no-substrate | 2 | 0 |  | [CX2]#[CX2] | nothing the shelf holds or can make matches it
 aromatic_nitration | no-substrate | 2 | 0 |  | [OX2H1][N+](=[O])[O-] | nothing the shelf holds or can make matches it
-cannizzaro_disproportionation | needs-more-than-a-pair | 3 | 2 | lignin-monomer-coniferyl@1 |  | fires on lignin-monomer-coniferyl@1 -- a row expanded one generation against the closure's 24 rows
+cannizzaro_disproportionation | needs-more-than-a-pair | 3 | 2 | lignin-monomer-coniferyl@1 |  | reachable only above a pair (lignin-monomer-coniferyl@1), and then the template applies and the rewrite is discarded: 1 product species cannot be priced
 claus_comproportionation | needs-more-than-a-pair | 24 | 1 | closure |  | fires on the closure, which is 24 rows, and 0 row(s) of its own
 hydroformylation_branched | needs-more-than-a-pair | 3 | 2 | closure+eugenol |  | fires on the closure, which is 24 rows, and 1 row(s) of its own
 hydroformylation_linear | needs-more-than-a-pair | 3 | 2 | closure+eugenol |  | fires on the closure, which is 24 rows, and 1 row(s) of its own

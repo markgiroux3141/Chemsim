@@ -4,6 +4,21 @@ Newest first. One entry per session, twelve lines at most, enforced by
 `tools/check_docs.py`. When this file passes 400 lines the older half rolls into
 `docs/history/changelog-YYYY-MM.md`.
 
+## 2026-09-13 — T13: an unpriceable species never reaches the integrator
+
+Which half moves was decided by `vessel.build_phase_arrays`: it prices EVERY
+species for heat capacity and molar volume before a reaction is looked at, so a
+flask holding an unpriceable one cannot integrate whatever its reactions are.
+So `_unpriceable` drops unconditionally -- T1d's `tmpl.uses_thermochemistry`
+condition read the templates, the wrong half of the engine -- and a new
+`_refuse_unpriceable_feed` refuses a CHARGED one at `build_network`'s door,
+naming the species, since dropping it would delete matter the caller put in.
+Measured: a branched-acid triglyceride + hydroxide went 10 species / 7
+reactions / `to_arrays` raising -> 4 / 0 / runnable; `silent_templates.psv`
+reads `pool_unpriceable` 41 -> 0, `step_frontier` 306 -> 265. PLAYABLE.md,
+COVERAGE_REPORT.md and the 17 named routes regenerate byte-identical (23
+playable, 46/90/40). `./check.ps1` green plus 371 tests in 13 modules.
+
 ## 2026-09-13 — T18: the plateau is a rule, and a soap route starts running
 
 `properties/carboxylic_pka.py` (new) holds T14's domain predicate, moved out of

@@ -432,6 +432,7 @@ def build_network(
     for smi in initial_smiles:
         m = Molecule.from_smiles(smi)
         molecules[m.smiles] = m
+    _refuse_unpriceable_feed(molecules, thermo)
 
     # ⚠ A DECLARED SOLID CATALYST IS ADDED TO THE SPECIES LIST WHETHER OR NOT
     # ANYONE CHARGES IT, AND THAT IS THE WHOLE MECHANIC. Its amount is what gates
@@ -946,6 +947,47 @@ def _forward_confirms(
     return None
 
 
+def _refuse_unpriceable_feed(
+    molecules: dict[str, Molecule],
+    thermo: ThermochemistryProvider | None,
+) -> None:
+    """A species the CALLER charged that nothing can price is a hard error, here.
+
+    T13. That sentence was already in ``build_network``'s docstring and in
+    ``_unpriceable``'s -- dropping a feed species would delete matter the player
+    put in the flask, so it may not be dropped -- but nothing enforced it until
+    ``to_arrays``, one call after the notices the player was given. What decides
+    where it belongs is ``vessel.build_phase_arrays``: it refuses the species
+    ALONE, for its heat capacity and molar volume, before any reaction is looked
+    at. So a flask holding one cannot be integrated whatever its reactions are,
+    and the honest place to say so is the call that charged it.
+
+    Only ``UnpricedIon`` is caught. Its parent ``OutsideEstimatorDomain`` says
+    the PROVIDER is wrong -- an ion under a neutral provider, which the overlay
+    prices perfectly well -- and a mineral lattice is refused by name and priced
+    from ``mineral_data`` downstream, so neither is this refusal's business.
+    """
+    if thermo is None:
+        return
+    for m in molecules.values():
+        try:
+            thermo.get(m)
+        except UnpricedIon as exc:
+            raise ValueError(
+                f"{m.smiles!r} was CHARGED into this flask and no source in "
+                f"this project prices it: {exc} Dropping it would delete matter "
+                "the caller put in, so this is a refusal rather than a notice -- "
+                "what the templates MAKE is droppable and reported in "
+                "ReactionNetwork.unpriced, what the caller charges is not."
+            ) from exc
+        except OutsideEstimatorDomain:
+            continue
+        except ValueError:
+            # Every other refusal belongs to whoever asks next: a lattice is
+            # priced from ``mineral_data`` at the vessel, not from here.
+            continue
+
+
 def _unpriceable(
     products: tuple[Molecule, ...],
     molecules: dict[str, Molecule],
@@ -1008,24 +1050,22 @@ def _unpriceable(
         try:
             thermo.get(pm)
         except UnpricedIon as exc:
-            # T1d, AND THE NARROW CASE IS THE WHOLE POINT. The overlay that
-            # prices ions is already on and this one is not in its table, so no
-            # source in this project prices it -- a coverage limit rather than
-            # the setup error the branch below handles. But it is only a limit
-            # for a template that NEEDS the price: an ion nothing asks about
-            # sits in a network perfectly well, and dropping it unasked deletes
-            # chemistry the engine can do. Measured, and it is the case R1's own
-            # docstring names: `saponification` on tristearin makes a stearate
-            # with no pKa row, is irreversible, and produced 5 reactions before
-            # this branch and 0 after when the drop was unconditional.
+            # T1d. The overlay that prices ions is already on and this one is
+            # not in its table, so no source in this project prices it -- a
+            # coverage limit rather than the setup error the branch below
+            # handles, and it drops unconditionally.
             #
-            # So the question is whether anything in THIS reaction will price
-            # it. A reversible template derives its reverse rate from
-            # thermochemistry and an Evans-Polanyi one its barrier; both raise
-            # out of `build_network` two calls later, and that raise is what
-            # killed a seventeen-route example for one missing pKa.
-            if tmpl.uses_thermochemistry:
-                out[pm.smiles] = str(exc)
+            # T1d made the drop conditional on ``tmpl.uses_thermochemistry``,
+            # reasoning that an ion nothing asks about sits in a network
+            # perfectly well. T13 measured that false by asking the other half
+            # of the engine: ``vessel.build_phase_arrays`` prices EVERY species
+            # for its heat capacity and molar volume before a reaction is looked
+            # at, so the reactions the condition preserved were reactions in a
+            # flask no integrator could accept -- built, reported and
+            # un-runnable, with the player hearing at ``to_arrays`` rather than
+            # in the notices. See ``_refuse_unpriceable_feed`` for the caller's
+            # half of the same rule.
+            out[pm.smiles] = str(exc)
         except OutsideEstimatorDomain:
             # NOT a coverage limit, and the distinction is the sharpest thing R1
             # found. This refusal says the PROVIDER is wrong, not that the

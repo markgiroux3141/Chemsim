@@ -132,24 +132,21 @@ disagree. Chapters 29 and 30 are the two that quote generated counts.
 **Done when:** a command in `check.ps1` fails on a manual chapter whose quoted
 playable counts do not match the artefact, and it is green today.
 
-### T13 — an unpriced ion in the flask still stops `to_arrays` (S, found in T8)
-`_unpriceable` deliberately KEEPS an ion the template that made it does not
-need a price for -- `saponification` is irreversible with alpha = 0, so its
-product is registered unpriced on purpose, and dropping it would delete
-chemistry the engine can do. (T18 priced the stearate itself off the plateau
-rule, so the witness below is now the PHENOXIDE rather than the fatty ion; the
-hole is in the same place.) T8 then guarded the two places that ask for the
-price later (the Evans-Polanyi barrier, and detailed balance since T1d), so
-`build_network` no longer raises. `ReactionNetwork.to_arrays` still does:
-measured today on a flask charged with saligenolate plus saligenol plus water,
-which builds 7 reactions and then refuses. So a network can be built, reported
-and un-runnable, and the player finds out one call later than the notice.
-Decide which it is: either the species is dropped at registration after all
-(and the notice says the flask lost matter), or `to_arrays` reports the same
-way the builder does and the vessel runs without it. Do not pick by taste --
-the second changes what is in the flask silently unless it notices too.
-**Done when:** a network holding an unpriced ion either integrates or refuses
-with a notice naming the species, and one test pins whichever was chosen.
+### T22 — two guards T13 made unreachable, and an instrument that now reports 0 (S, found in T13)
+T13's invariant is that no species `build_network` registers is unpriceable:
+what the templates make is dropped, what the caller charges is refused. That
+makes the two `UnpricedIon` catches inside `_concrete_reactions` -- the
+Evans-Polanyi barrier (T8) and detailed balance (T1d) -- unreachable through
+`build_network`, and T13 deleted the two tests that pinned them because their
+witnesses could no longer be built. Same shape in `tools/classify_silent.py`:
+its `priceable()` post-filter dropped 41 species and now drops 0 every time.
+Neither is wrong, and both are now untested claims about a path nobody takes.
+Decide per site: delete, or keep as defence against a hand-built
+`ReactionNetwork` and say in one line that the builder is what makes it dead.
+A unit test reaching into a private function to pin an unreachable branch is
+not the answer.
+**Done when:** each of the three sites is deleted or carries the one line, and
+no test pins a branch `build_network` cannot reach.
 
 ### T19 — the diacid is the bigger half (S, found in T14)
 230 of the 342 pairs needing their own measurement are polyprotic. A diacid is
