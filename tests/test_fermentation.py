@@ -510,13 +510,13 @@ def test_the_class_is_worth_the_TWO_PLAYABLE_ROUTES_section_8b_priced():
         return len(bp.closure(pool=pool)[0])
 
     both = playable(set())
-    assert both == 22                                # T8's baseline
+    assert both == 23                                # T17's baseline
     base = playable({"solventogenic-fermentation"})
-    assert base == 20
+    assert base == 21
     assert both - base == 2
     # homolactic buys no PLAYABILITY at all -- `lactic-acid-pla` needs a
     # polymerisation as well. It was built for the class and the stereo finding.
-    assert playable({"homolactic-fermentation"}) == 22
+    assert playable({"homolactic-fermentation"}) == 23
 
 
 def test_granting_the_top_row_made_the_work_order_LONGER_again():
@@ -540,14 +540,18 @@ def test_granting_the_top_row_made_the_work_order_LONGER_again():
     # T8 took `hypochlorite-bleach` off it (22 -> 21) and the ceiling DID move,
     # 45 -> 46: `bleaching-powder` runs on the hypochlorite the first route
     # makes, so a pKa fed a route the way C4's fermentation fed four.
-    assert len(bp.FED_BUT_UNRUNNABLE) == 21
+    # T17 put two back on it (21 -> 23) and moved the ceiling 46 -> 50 while
+    # building nothing: crediting every step product to the shelf promoted
+    # `bleaching-powder` out of the list and fed three more routes into it.
+    # The four routes this test is about are still all here.
+    assert len(bp.FED_BUT_UNRUNNABLE) == 23
     assert "abe-fermentation" not in bp.FED_BUT_UNRUNNABLE
     assert "acetic-fermentation" not in bp.FED_BUT_UNRUNNABLE
     for grown in ("white-lead-route", "chloral-route",
                   "acetic-anhydride-ketene", "mercury-fulminate-route"):
         assert grown in bp.FED_BUT_UNRUNNABLE
     ceiling, _ = bp.closure(pool=bp.RUNNABLE | set(bp.FED_BUT_UNRUNNABLE))
-    assert len(ceiling) == 46
+    assert len(ceiling) == 50
 
 
 def test_the_work_order_no_longer_has_a_PLUS_TWO_ROW():
@@ -565,6 +569,8 @@ def test_the_work_order_no_longer_has_a_PLUS_TWO_ROW():
     # the only one with a runnable BONUS), so the table is FIVE at +1 and 24 at
     # +0. The claim -- there is no +2 row and the cheap end is over -- is what
     # this test is about, and it is the `max` line that carries it.
+    # T17 re-priced the whole table by correcting the shelf rule rather than by
+    # building anything, and it is SEVEN at +1 and 22 at +0. Still no +2.
     worths = {c: g for g, _r, c, _ in bp.CLASS_WORTH}
     assert max(worths.values()) == 1
-    assert sum(1 for w in worths.values() if w == 1) == 5
+    assert sum(1 for w in worths.values() if w == 1) == 7

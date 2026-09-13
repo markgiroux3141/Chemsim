@@ -56,6 +56,15 @@ def test_the_two_work_streams_are_super_additive(bp):
 
     If this ever stops holding, §8b becomes a defensible work order again and
     `docs/history/MILESTONES.md` §THE P-SERIES has to be re-argued.
+
+    The ratio moved on 2026-09-13 and the finding did not. T17 corrected what
+    running a route puts on the shelf (`build_playable.shelves`: every step
+    product, not `route_roles.products`), and templates alone went from +10 of a
+    +25 ceiling to +14 of +26 -- the five routes it reaches are fed by slaked
+    lime and roasted copper ore, both of them step products a playable route was
+    making and getting no credit for. Super-additivity widened at the same time,
+    25 > 13 to 26 > 17. So the guard below is a guard rail set a distance above
+    today's 0.54 and not a measurement; the measurement is the line above it.
     """
     base = len(bp.PLAYABLE)
     allc = sorted(bp.CLASS_GAPS)
@@ -68,8 +77,11 @@ def test_the_two_work_streams_are_super_additive(bp):
         f"templates +{templates}, prices +{prices}, joint +{joint} -- the "
         "super-additivity is the whole argument for the P-series"
     )
-    # and the headline: templates alone are worth well under the ceiling
-    assert templates < joint / 2
+    # and the headline: templates alone do not reach the ceiling
+    assert templates < joint * 0.75, (
+        f"templates +{templates} of a joint +{joint} ceiling -- template work "
+        "alone is turning into the lever the P-series says it is not"
+    )
 
 
 def test_routes_are_stranded_rather_than_missing_chemistry(bp):

@@ -491,10 +491,10 @@ def test_the_PAIR_is_worth_more_than_the_sum_of_its_parts():
         return len(bp.closure(pool=pool)[0])
 
     both = playable(set())
-    assert both == 22                                        # T8's baseline
-    assert playable({"alkene-isomerisation"}) == 21          # -1: cleavage only
-    assert playable({"oxidative-cleavage"}) == 20            # -2: neither route
-    assert playable({"alkene-isomerisation", "oxidative-cleavage"}) == 20
+    assert both == 23                                        # T17's baseline
+    assert playable({"alkene-isomerisation"}) == 22          # -1: cleavage only
+    assert playable({"oxidative-cleavage"}) == 21            # -2: neither route
+    assert playable({"alkene-isomerisation", "oxidative-cleavage"}) == 21
 
     # ⚠⚠ READ AS DIFFERENCES, NOT AS LEVELS -- which is why this test
     # survived C4 with four numbers changed and its FINDING untouched. C4 added

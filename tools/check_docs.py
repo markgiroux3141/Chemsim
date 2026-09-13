@@ -70,7 +70,7 @@ GLYPH_BUDGETS = {
     "src/chemsim": 1042,
     "tests": 826,
     "validation": 336,
-    "tools": 145,
+    "tools": 144,
     "examples": 38,
 }
 

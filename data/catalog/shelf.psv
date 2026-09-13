@@ -29,10 +29,12 @@
 #   bottle        nothing in 173 catalog routes makes it at all. Bought, or the
 #                 corpus grows a route.
 #
-# Measured by `validation/playable_levers.py` panel 3: granting the 24
-# intermediate and 4 bottle species takes playable routes from 21 to 41, with no
-# new chemistry of any kind. That is the cheapest distance on the board by a
-# factor of four, and it is why this file exists before any more templates do.
+# Measured by `validation/playable_levers.py` panel 3 on 2026-09-13: granting
+# the 23 intermediate and 4 bottle species takes playable routes from 23 to 43,
+# with no new chemistry of any kind. Granting every one of the 46 missing
+# template classes instead is worth +14 (tests/test_playable_levers.py), so a
+# shelf edit is still the cheapest distance on the board by a wide margin, and
+# that is why this file exists before any more templates do.
 #
 # ## FOUR THINGS THIS FILE IS NOT
 #
@@ -124,7 +126,6 @@ chloral                    | intermediate | 0.2   | liquid | chain: ethanol chlo
 chlorobenzene              | intermediate | 0.3   | liquid | chain: benzene chlorinated
 cobalt                     | intermediate | 0.05  | solid  | chain: a catalyst metal nothing in the corpus smelts
 copper-ii-ion              | intermediate | 0.1   | liquid | chain: dissolved copper -- it IS an ion, there is no lattice to charge
-copper-ii-oxide            | intermediate | 0.3   | solid  | chain: roasted copper ore
 ethylene                   | intermediate | 0.05  | gas    | chain: a cracker product
 glycerol                   | intermediate | 0.3   | liquid | chain: a fat saponified
 hydrogen-chloride          | intermediate | 0.05  | gas    | chain: salt and vitriol

@@ -20,11 +20,12 @@ down.
 ## THE THREE TIERS, AND THE ONE AXIS THAT IS NOT A TIER
 
     natural       out of the ground, the air, or something living      43 rows
-    intermediate  a STRANDED route makes it, so it is EARNABLE         24 rows
+    intermediate  a STRANDED route makes it, so it is EARNABLE         23 rows
     bottle        nothing in 173 catalog routes makes it at all         4 rows
 
-Granting the last two takes playable routes from 21 to 41 with no new chemistry
-of any kind (``validation/playable_levers.py`` panel 3), and the tier column is
+Granting the last two takes playable routes from 23 to 43 with no new chemistry
+of any kind (``validation/playable_levers.py`` panel 3, 2026-09-13), and the
+tier column is
 what lets the shelf SHRINK: when a session makes a stranded route reachable its
 ``intermediate`` rows are deleted from ``shelf.psv`` and the player earns them.
 

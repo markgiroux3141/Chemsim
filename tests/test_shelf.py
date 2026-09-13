@@ -61,7 +61,7 @@ def test_the_psv_and_the_generated_module_say_the_same_thing():
 
 
 def test_the_three_tiers_are_the_measured_ones():
-    """43 / 24 / 4, and the relation rather than the level is what is pinned.
+    """43 / 23 / 4, and the relation rather than the level is what is pinned.
 
     ⚠ C4's rule: a test that pins a LEVEL gets re-numbered by the next session
     that moves it and the claim quietly becomes someone else's arithmetic. So the
@@ -73,7 +73,7 @@ def test_the_three_tiers_are_the_measured_ones():
     assert set(inv.TIERS) == {"natural", "intermediate", "bottle"}
     assert got["rows"] == got["natural"] + got["intermediate"] + got["bottle"]
     assert got["natural"] == 43
-    assert got["intermediate"] == 24
+    assert got["intermediate"] == 23   # T17 earned copper(II) oxide off the roaster
     assert got["bottle"] == 4
     assert got["intermediate"] > 0, (
         "an empty intermediate tier means every stranded route became "

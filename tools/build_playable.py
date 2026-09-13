@@ -229,16 +229,24 @@ def needs_by_roles(rid: str) -> set[str]:
 
 
 def shelves(rid: str) -> set[str]:
-    """What running this route puts on the player's shelf.
+    """What running this route puts on the player's shelf: every step product.
 
-    ⚠ THE TARGET IS UNIONED IN AND THAT IS NOT REDUNDANT. ``route_roles``
-    classifies a species that is both produced and consumed as an INTERMEDIATE,
-    and ``lead-chamber``'s row 4 consumes its own sulfuric acid to make chamber
-    crystals -- the process's fouling product. Crediting products alone loses the
-    acid, and with it ``saltpetre-nitric``. Same catalog row as G4's, opposite
-    direction.
+    This is ``needs``'s mirror and it has to be read in step order for the same
+    reason. ``route_roles`` calls a species that is both produced and consumed
+    anywhere in the route an INTERMEDIATE, and an earlier rule here credited
+    ``roles.products`` -- so a route could be run without holding its
+    intermediate (``needs`` is ordered) and then be credited with nothing for
+    making it. ``lead-chamber``'s row 4 consumes its own sulfuric acid to make
+    chamber crystals, which is why the target was unioned in by hand; the same
+    hole swallowed ``lime-cycle``'s slaked lime, made by row 2 and carbonated
+    back to limestone by row 3, and with it ``bleaching-powder``.
+
+    A step boundary is where a player can stop. The corpus's steps carry their
+    own conditions column and their own vessel, so a step's products are a real
+    material in the flask whether or not a later step consumes them. The target
+    stays unioned in for a route whose last row does not name it.
     """
-    return {routes[rid].target} | set(cat.route_roles(steps, rid).products)
+    return {routes[rid].target} | {p for s in route_steps(rid) for p in s.products}
 
 
 def reachable(rid: str) -> bool:

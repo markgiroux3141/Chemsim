@@ -113,20 +113,16 @@ prescribes: give each example its own tight tolerance, as `lime_cycle.py` and
 **Done when:** `python validation/tolerance_audit.py` exits 0, or the ledger
 note says which of the three is a standing refusal and why.
 
-### T17 — one test has been red since T8 and nothing looked (S, found in T15)
-`tests/test_playable_levers.py::test_the_shelf_file_holds_exactly_what_this_audit_measured`
-fails on `calcium-hydroxide`: `build_playable`'s deep chain now reports it as a
-CHAIN-blocked species and `shelf.psv` has no `intermediate` row for it, so the
-file and the audit disagree. Bisected on 2026-09-13 -- green at 77c6bd1 (T9),
-red from 188f22a (T8) onward, so it is the three pKa rows' last uncaught tail:
-exactly the cascade the T8 memory note warns about, one scoreboard further out
-than that session looked. It survived two sessions because it is not one of the
-62 smoke tests and the suite has not been run since. The test's own message is
-the work order and says to ADD the row; check first whether the honest fix is
-instead that the chain SHOULD reach slaked lime, since `lime-cycle` is playable
-and `calcium-hydroxide` is `brucite`'s calcium twin.
-**Done when:** the test is green and `PLAYABLE.md` is regenerated, or the item
-is rewritten as the decision that the audit rather than the shelf is wrong.
+### T21 — the manual quotes the scoreboard by hand and nothing checks it (S, found in T17)
+`docs/manual/chapters/30-playable.md` carried "21 of 173 playable" and a tier
+table of 10/10/1 while `PLAYABLE.md` said 22 and 10/11/1 — stale by a session
+before T17 moved it again, and nothing failed. T17 re-typed six numbers there by
+hand, which is the same debt one session older. The chapter is prose and should
+stay prose, so the fix is a check rather than a generator: parse the numbers the
+chapter states against `PLAYABLE.md`'s footer and §1 table, and fail when they
+disagree. Chapters 29 and 30 are the two that quote generated counts.
+**Done when:** a command in `check.ps1` fails on a manual chapter whose quoted
+playable counts do not match the artefact, and it is green today.
 
 ### T13 — an unpriced ion in the flask still stops `to_arrays` (S, found in T8)
 `_unpriceable` deliberately KEEPS an ion the template that made it does not

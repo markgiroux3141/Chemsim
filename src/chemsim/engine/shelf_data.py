@@ -5,7 +5,7 @@ docstring carries the resolution rule and the measurements behind it. The two
 inputs are ``data/catalog/shelf.psv`` (the three tiers, hand-maintained) and
 ``data/catalog/compounds`` (all 1583 corpus species, audited).
 
-``SHELF``   the 71 starting rows, in file order.
+``SHELF``   the 70 starting rows, in file order.
 ``ROSTER``  every corpus species by id -- the picker's whole content, including
             the 409 that are REFUSED a price and may never be charged.
             A refused row carries its REASON, because GAME_DESIGN.md 8.3 says a
@@ -17,10 +17,10 @@ MEASURED AT GENERATION:
     corpus species                               1583
     ... chargeable                               1174
     ... REFUSED a price                           409
-    shelf rows                                     71
-    ... natural / intermediate / bottle            43 /  24 /   4
+    shelf rows                                     70
+    ... natural / intermediate / bottle            43 /  23 /   4
     ... refused, and kept anyway                    6
-    ... charged as a reacting mineral LATTICE      16
+    ... charged as a reacting mineral LATTICE      15
     ... charged as IONS                            14
     ... a lattice that CANNOT be dissolved
         because it reacts as a crystal instead      6
@@ -184,8 +184,6 @@ SHELF: tuple[ShelfEntry, ...] = (
                'chain: a catalyst metal nothing in the corpus smelts'),
     ShelfEntry('copper-ii-ion', 'intermediate', 0.1, 'liquid',
                'chain: dissolved copper -- it IS an ion, there is no lattice to charge'),
-    ShelfEntry('copper-ii-oxide', 'intermediate', 0.3, 'solid',
-               'chain: roasted copper ore'),
     ShelfEntry('ethylene', 'intermediate', 0.05, 'gas',
                'chain: a cracker product'),
     ShelfEntry('glycerol', 'intermediate', 0.3, 'liquid',

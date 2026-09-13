@@ -84,9 +84,19 @@ def test_the_headline_and_the_tiers_are_what_the_report_says(bp):
     first route in this file that could not have run at all before an ENGINE fix
     -- see `tests/test_furans.py`, where a template could not consume a species
     another template had made.
+
+    T17 bought a route with no chemistry at all, which is the first time that
+    has happened here. `bleaching-powder` lands at tier 2 because the scorer
+    was corrected rather than because anything was built: `shelves` credited
+    `route_roles.products`, so `lime-cycle` could be run without holding slaked
+    lime (`needs` reads step order) and then earned no credit for the slaked
+    lime row 2 makes, row 3 carbonating it back to limestone. Every step product
+    is credited now. The other side of the same correction is a deleted shelf
+    row -- `copper-ii-oxide`, which `copper-smelting` row 1 roasts and row 2
+    reduces, is earned rather than given.
     """
     assert len(bp.routes) == 173
-    assert len(bp.PLAYABLE) == 22
+    assert len(bp.PLAYABLE) == 23
     assert max(bp.PLAYABLE.values()) == 3
     assert len(bp.RUNNABLE) == 46
     assert bp.PLAYABLE["hmf-route"] == 2
@@ -98,6 +108,7 @@ def test_the_headline_and_the_tiers_are_what_the_report_says(bp):
     assert bp.PLAYABLE["phosphoric-wet"] == 2
     assert bp.PLAYABLE["superphosphate"] == 2
     assert bp.PLAYABLE["vanillin-eugenol"] == 2
+    assert bp.PLAYABLE["bleaching-powder"] == 2      # T17's, on lime-cycle
     assert bp.PLAYABLE["vanillin-lignin"] == 2
     # ⚠ AND THE BASE IS WHAT PUTS THEM IN TIER 2, which is the whole reason
     # a catalyst is a feedstock (rule 3). Both feedstocks are on the natural
@@ -146,10 +157,16 @@ def test_the_tech_tree_is_a_shallow_bush(bp):
     that was a session buying a route that stands on another route's output.
     ⚠ Tier 3 is STILL one route, six sessions running, and that is the part that
     has not moved.
+
+    T17 took tier 2 from 11 to 12 (`bleaching-powder`) without touching tier 1
+    or tier 3, so the operator holds with a wider margin: 10 of 23. A scoreboard
+    correction lands in the middle tier because what it corrected is credit for
+    a route's own output, and a route that stands on nothing cannot gain from
+    that.
     """
     tier1 = [r for r, d in bp.PLAYABLE.items() if d == 1]
     assert len(tier1) == 10
-    assert len([r for r, d in bp.PLAYABLE.items() if d == 2]) == 11
+    assert len([r for r, d in bp.PLAYABLE.items() if d == 2]) == 12
     assert len([r for r, d in bp.PLAYABLE.items() if d == 3]) == 1
     # G3's ">" became "==" in C3 and is "<" now, and the OPERATOR is the finding
     assert len(tier1) < len(bp.PLAYABLE) / 2
@@ -188,14 +205,22 @@ def test_the_ceiling_is_the_goal_and_it_is_a_finite_named_list(bp):
     while the answer grew 18 -> 20. **The goal a session is measured against is
     not a constant**, and two sessions in a row where it sat still were a
     property of what they built rather than of the instrument.
+
+    T17 moved the ceiling 46 -> 50 without adding a route to the corpus or a
+    template to the library, by crediting every step product to the shelf: the
+    list grew 21 -> 23 and three more routes fall out free, `deacon-process` on
+    roasted copper ore and `lead-chamber` on its own NOx carrier once the
+    granted routes make one. That is the largest single move this cell has had,
+    and it measures how much of the goal was hidden inside routes the scorer
+    ran and then took the output of.
     """
-    assert len(bp.FED_BUT_UNRUNNABLE) == 21
+    assert len(bp.FED_BUT_UNRUNNABLE) == 23
     ceiling, _ = bp.closure(pool=bp.RUNNABLE | set(bp.FED_BUT_UNRUNNABLE))
-    assert len(ceiling) == 46
+    assert len(ceiling) == 50
     # two fall out for free once the shelf grows -- G3 had four, C3 had three,
     # and `acetic-fermentation` is the one C4 promoted into PLAYABLE outright
     free = set(ceiling) - set(bp.PLAYABLE) - set(bp.FED_BUT_UNRUNNABLE)
-    assert free == {"bleaching-powder", "haber-bosch", "thermite"}
+    assert free == {"deacon-process", "haber-bosch", "lead-chamber", "thermite"}
 
 
 # ---------------------------------------------------------------------------
@@ -209,8 +234,8 @@ def test_a_need_is_decided_by_order_not_by_route_roles(bp):
     all* and was playable for free.
     """
     wrong, _ = bp.closure(needs_rule=bp.needs_by_roles)
-    assert len(wrong) == 23
-    assert len(bp.PLAYABLE) == 22, "the correction moves the headline DOWN"
+    assert len(wrong) == 24
+    assert len(bp.PLAYABLE) == 23, "the correction moves the headline DOWN"
 
     assert bp.needs_by_roles("lime-cycle") == set()
     assert bp.needs("lime-cycle") == {"calcium-carbonate", "water"}
@@ -277,11 +302,19 @@ def test_the_fouling_row_takes_the_target_off_the_shelf(bp):
     # cell that DID move is the target-only one, in the test below. **The two
     # rules are measured as a grid because fixing one masked another once (G3),
     # and a session that moves one column has to print all of them.**
+    # T17 re-measured the grid a sixth time and the difference is no longer
+    # zero: +1 in both rows. The cost was zero for five sessions because the
+    # rule being priced was a one-line patch -- union the target in, because
+    # `route_roles` had mislaid the lead chamber's own sulfuric acid. The rule
+    # is now every step product, which is what `needs` is the mirror of, and it
+    # buys `bleaching-powder` off the slaked lime `lime-cycle` makes and
+    # carbonates away again. A difference that appears when a rule is
+    # strengthened is not the difference that was measured at zero.
     kw = dict(needs_rule=bp.needs_by_roles)
     assert len(bp.closure(shelf_rule="products", **kw)[0]) == 23
-    assert len(bp.closure(shelf_rule="both", **kw)[0]) == 23
+    assert len(bp.closure(shelf_rule="both", **kw)[0]) == 24
     assert len(bp.closure(shelf_rule="products")[0]) == 22
-    assert len(bp.closure(shelf_rule="both")[0]) == 22
+    assert len(bp.closure(shelf_rule="both")[0]) == 23
 
 
 def test_target_only_shelving_never_starts_the_deep_chain(bp):
@@ -316,6 +349,13 @@ def test_target_only_shelving_never_starts_the_deep_chain(bp):
     target-only shelf reaches it and the gap stays at 5. *One session moved the
     shortfall and the next moved only the level; printing both cells is what
     lets a reader tell those apart.*
+
+    T17 moved the shortfall, 6 -> 7, and left the level at 16. `bleaching-powder`
+    is fed by slaked lime, which is not `lime-cycle`'s target and is not even
+    one of its `route_roles` products -- it is a step product the route makes
+    and then consumes. So this cell counts intermediates now as well as
+    byproducts, and both are the same finding: a shelf rule that reads a route's
+    declared output cannot see what the route actually put in the flask.
     """
     target_only, _ = bp.closure(shelf_rule="target")
     assert len(target_only) == 16
@@ -324,7 +364,7 @@ def test_target_only_shelving_never_starts_the_deep_chain(bp):
     assert "acetic-fermentation" not in target_only
     assert "abe-fermentation" in target_only          # ITS target is fine
     assert "hmf-route" in target_only                 # C5's, on invert-sugar
-    assert len(bp.PLAYABLE) - len(target_only) == 6
+    assert len(bp.PLAYABLE) - len(target_only) == 7
 
 
 def cat_roles(bp, rid):

@@ -4,6 +4,21 @@ Newest first. One entry per session, twelve lines at most, enforced by
 `tools/check_docs.py`. When this file passes 400 lines the older half rolls into
 `docs/history/changelog-YYYY-MM.md`.
 
+## 2026-09-13 — T17: the scorer credits every step product, and a route falls out
+
+`tools/build_playable.shelves` credited `route_roles.products`, so a species a
+route makes and then consumes earned nothing -- while `needs` has read step
+order since G4. `lime-cycle` row 2 slakes lime and row 3 carbonates it away, so
+slaked lime was invisible and `bleaching-powder` stayed chain-blocked behind a
+test red for three sessions. Every step product is credited now. Playable 22 ->
+23 (`bleaching-powder`, tier 2), ceiling 46 -> 50, fed-but-unrunnable 21 -> 23,
+target-only shortfall 6 -> 7; `copper-ii-oxide` is earned off the copper roaster
+so its shelf row is deleted, 71 -> 70 rows and intermediates 24 -> 23. The
+fouling-rule grid's difference is no longer zero, +1 in both rows, because the
+rule it prices was strengthened. Nine pins re-measured over five test files;
+`./check.ps1` green and 127 tests pass in the six files that import the scorer.
+Suite and tolerance still due at 8; the deep chain's digits are unchanged.
+
 ## 2026-09-13 — T14: the plateau is a rule, and the pool is why
 
 `validation/fatty_acid_pka.py` (new, 118 s) counts the carboxylic pKa wall

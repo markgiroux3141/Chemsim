@@ -11,17 +11,17 @@ generation actually **runs** chemistry.
 | tier | routes | meaning |
 |---|---:|---|
 | **1 --- from the ground** | 10 | every feedstock and every catalyst is a natural material |
-| **2 --- one step up** | 10 | needs the output of a tier-1 route |
+| **2 --- one step up** | 12 | needs the output of a tier-1 route |
 | **3 --- two steps up** | 1 | needs the output of a tier-2 route |
 | *runnable but unfed* | 23 | the engine can run it; nothing can supply it |
-| *not runnable* | 129 | see the coverage report |
+| *not runnable* | 127 | see the coverage report |
 | | **173** | |
 
-**21 of 173 named routes are playable from natural materials**, against a stated
+**23 of 173 named routes are playable from natural materials**, against a stated
 goal of about 40. The deepest chain in the corpus is **three tiers**.
 
 ::: {.keypoint title="The tech tree is a shallow BUSH, not a tree"}
-Ten of the 21 playable routes are tier 1 --- they touch nothing another route
+Ten of the 23 playable routes are tier 1 --- they touch nothing another route
 made. The corpus is not a connected progression that happens to be short; it is
 a **fan of one-step routes off the ground with one thin chain hanging off it.**
 
@@ -50,7 +50,7 @@ that most changes every number in the file.
   collagen, coal.
 
 The goal says ~10, so this list is already generous by a factor of four --- and
-therefore **21 is an upper bound on playability, not a lower one.**
+therefore **23 is an upper bound on playability, not a lower one.**
 
 ## The deep chain, run end to end
 
@@ -176,7 +176,7 @@ is the same reasoning as the three-point tolerance sweep in Chapter 20.
 ## What the queue looks like now
 
 The project's current work order is a per-class table in `PLAYABLE.md` §8b:
-22 rows, projected to take playability from 21 to about 45.
+22 rows, projected to take playability from 23 to about 50.
 
 Six sessions have worked through it --- oil of vitriol from a rock, phosphate
 rock digested in sulfuric acid, vanillin from clove oil, the ABE fermentation,
