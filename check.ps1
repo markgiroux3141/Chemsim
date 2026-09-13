@@ -56,9 +56,12 @@ Step 'catalog' { python tools/catalog.py }
 # Fast (~5 s) and it guards a transcription: --check refuses a stale
 # template_data.py AND any row that has drifted from the constructor it copies.
 Step 'templates' { python tools/build_templates.py --check }
-# T6's classifier over T4's silent list. ~2 s, and it re-derives rather than
+# T6's classifier over T4's silent list. ~23 s, and it re-derives rather than
 # re-reading: a template that stops being silent, or a shelf row that changes
 # what the closure can make, fails here instead of drifting in a committed file.
+# Most of the 23 s is T9's second pool tier -- each of the 13 natural rows too
+# big for the closure, expanded one generation against it, because the closure
+# alone said the shelf could not make an aromatic aldehyde it makes in one step.
 Step 'silent templates' { python tools/classify_silent.py --check }
 Step 'smoke tests' { python -m pytest -q @SmokeTests }
 

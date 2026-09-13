@@ -4,6 +4,21 @@ Newest first. One entry per session, twelve lines at most, enforced by
 `tools/check_docs.py`. When this file passes 400 lines the older half rolls into
 `docs/history/changelog-YYYY-MM.md`.
 
+## 2026-09-12 — T9: the shelf makes an aromatic aldehyde, and the work order was wrong
+
+`tools/classify_silent.py` asked what the shelf can make from shelf species plus
+the small-molecule closure, and coniferyl alcohol is 13 heavy atoms so it never
+entered: `oxidative_cleavage` turns it and air into VANILLIN in one generation,
+the substrate the file had at the head of its own work order as unmakeable.
+Three defects, all in the classifier. The pool gains a bounded second tier --
+each row too big for the closure, plus the closure, one generation, `<row>@1`,
+reporting `step_frontier = 304` and `pool_unpriceable = 42`. The witness search
+minimises COST not set size, so a real pair beats a one-tier cover that hid a
+`cannot-fire`. A template is charged to EVERY missing slot, not the first: the
+aldehyde blocked three templates and would have unblocked one. no-substrate
+25 -> 20, needs-more-than-a-pair 1 -> 6; `[S;H2]` is the new head (T12).
+`./check.ps1` green, 1,303 collected, `playable` green at 48 s, still DUE (T11).
+
 ## 2026-09-12 — T7: an equilibrium can be approached from either side
 
 `network.builder._expand_reverse` searches every reversible template from its

@@ -161,3 +161,42 @@ def test_the_closure_reported_in_the_artefact_is_a_fixpoint_not_a_cap():
             keys[key.strip()] = value.strip()
     assert keys["closure_frontier"] == "0"
     assert int(keys["closure_species"]) > int(keys["closure_rows"])
+
+
+def _artefact():
+    keys, rows = {}, []
+    for line in cs.OUT.read_text(encoding="utf-8").splitlines():
+        if line.startswith("#! "):
+            key, _, value = line[3:].partition(" = ")
+            keys[key.strip()] = value.strip()
+        elif line and not line.startswith("#"):
+            rows.append([c.strip() for c in line.split("|")])
+    return keys, rows
+
+
+def test_the_one_generation_tier_reports_the_bound_the_closure_does_not_need():
+    """The closure is a fixpoint and says nothing more is needed. The tier that
+    reaches past it -- a big row plus the closure, one generation -- is bounded,
+    and a bound that does not report itself is the one thing rule 10 forbids."""
+    if not cs.OUT.exists():
+        pytest.skip("the artefact has not been generated in this checkout")
+    keys, rows = _artefact()
+    assert "step_frontier" in keys and "pool_unpriceable" in keys
+    # A witness naming a @1 tier spends two sources by construction, so it can
+    # never be the group that says a flask the PAIR sweep held yielded nothing.
+    for row in rows:
+        if cs.STEP in row[4]:
+            assert row[1] != "cannot-fire", row[0]
+
+
+def test_a_template_short_of_two_substrates_names_both_of_them():
+    """Charging a template to its first missing slot only is what put an
+    aromatic aldehyde at the top of the work order on the strength of three
+    templates, one of which it would have unblocked."""
+    if not cs.OUT.exists():
+        pytest.skip("the artefact has not been generated in this checkout")
+    keys, rows = _artefact()
+    blockers = [row[5] for row in rows if row[5]]
+    assert any(" + " in b for b in blockers)
+    assert (int(keys["substrates_that_unblock_alone"])
+            <= sum(len(b.split(" + ")) for b in blockers))

@@ -9,97 +9,95 @@ Every number came from a command run on 2026-09-12. The command is named.
 
 | fact | value | command |
 |---|---|---|
-| tests | 1,301 collected, 1,301 passed in 28m51s | `python -m pytest -q` |
-| fast check | `./check.ps1`, ~80 s, green | ruff + docs + catalog + templates + silent + 60 smoke tests |
-| full check | `./check.ps1 -Full`, ~2.5 min, green | adds both report `--check` ratchets |
-| expensive checks owed | 0 of 5 at the time of the commit; `playable` then tipped DUE and cannot clear (T11) | `python tools/cadence.py` |
-| tolerance audit | recorded FAIL, 11m12s, 3 findings all pre-existing | `python validation/tolerance_audit.py` |
+| tests | 1,303 collected; last full run 1,301 passed in 28m51s (two commits ago) | `python -m pytest --co -q` |
+| fast check | `./check.ps1`, ~105 s, green | ruff + docs + catalog + templates + silent + 62 smoke tests |
+| expensive checks owed | `playable` DUE at 9 commits and cannot clear — re-run green today at 48 s, byte-identical output, so no commit touches it (T11) | `python tools/cadence.py` |
+| tolerance audit | recorded FAIL two commits ago, 11m12s, 3 findings all pre-existing (T10) | `python validation/tolerance_audit.py` |
 | templates | 57 rows, all `tier=family`, covering 46 catalog classes | `python tools/build_templates.py --check` |
 | catalog | 1,583 compounds, 173 routes, 377 steps | `python tools/catalog.py` |
-| routes template-ready / species-ready / both | 46 / 85 / 38 — unmoved by T7 | `data/catalog/COVERAGE_REPORT.md` |
+| routes template-ready / species-ready / both | 46 / 85 / 38 — unmoved by T9 | `data/catalog/COVERAGE_REPORT.md` |
 | routes playable from natural materials | 21, three tiers deep; 44 runnable, 22 fed but unrunnable | `data/catalog/PLAYABLE.md` footer |
-| templates a natural PAIR can reach | 29 of 57, up from 25; 28 silent and named | `data/catalog/derived/reachable.psv` |
-| distinct reactions from 630 pairs | 24,836; 264 pairs capped, 320 inert, 0 crashed | same file |
-| why the 28 are silent | 25 no-substrate, 1 needs-more-than-a-pair, 2 cannot-fire | `python tools/classify_silent.py` |
-| what the small-molecule shelf can make | 43 species from 23 rows, frontier 0 — a closure, not a cap | `data/catalog/derived/silent_templates.psv` |
-| missing substrates behind the 25 | 21, the largest being `[c][CX3H1]=[OX1]` at three templates | same file, THE WORK ORDER block |
-| named routes end to end | 17 routes in 35.6 s, every yield bit-identical to pre-T7 | `python examples/named_routes.py` |
+| templates a natural PAIR can reach | 29 of 57; 28 silent and named | `data/catalog/derived/reachable.psv` |
+| why the 28 are silent | 20 no-substrate, 6 needs-more-than-a-pair, 2 cannot-fire | `python tools/classify_silent.py` |
+| what the shelf's pool holds | 282 species: 43 from the closure (frontier 0) plus 13 one-generation tiers (frontier 304); 42 more discovered and refused a price | `data/catalog/derived/silent_templates.psv` |
+| the work order | 22 blocking substrates, 18 of which block one template and nothing else; head is `[S;H2]` at 2 | same file, THE WORK ORDER block |
 | `SAVE_VERSION` | 9 | `src/chemsim/engine/world.py:122` |
-| line endings | mixed: `BACKLOG.md`, `NEXT.md`, `CHANGELOG.md`, the PSVs and the generated `*_data.py` are CRLF; most source is LF | `git ls-files --eol <file>` |
+| line endings | mixed: `BACKLOG.md`, `NEXT.md`, `CHANGELOG.md`, the PSVs and `tools/classify_silent.py` are CRLF, `tests/test_reachable.py` is BOTH, most source is LF | `git ls-files --eol <file>` |
 
 ## Last session, in five lines
 
-T7 is in, and it was a defect rather than a missing row: discovery matched
-REACTANT patterns only, so an equilibrium could be approached solely from the
-side its SMARTS was typed on, and carbon dioxide plus hydrogen made nothing
-while detailed balance held the reverse shift rate all along. `_expand_reverse`
-now searches from the product side, the forward rewrite arbitrates every
-proposal, and no rate is declared anywhere. `templates_fired` 25 -> 29 of 57.
-All five expensive checks ran and are recorded, two of them for the first time.
+T9 was filed as "source an aromatic aldehyde" and turned out to be three defects
+in the instrument that asked for it. Coniferyl alcohol plus air makes vanillin in
+one generation with a template already in the 57, but the classifier's pool was
+shelf species plus the small-molecule closure, and coniferyl is too big for it.
+The pool now has a bounded second tier, the witness search minimises cost rather
+than set size, and a template is charged to every missing slot rather than the
+first. no-substrate 25 -> 20. No engine code was touched.
 
 ## Do this now
 
-1. **T9 — an aromatic aldehyde, the substrate three templates wait on.** Spec in
-   `BACKLOG.md`; the top of the work order now that carbon monoxide is off it.
-   `[c][CX3H1]=[OX1]` holds `cannizzaro_disproportionation`,
-   `knoevenagel_doebner_condensation` and `perkin_condensation`; `[CX3H2]=[CX3]`,
-   a terminal alkene, holds both hydroformylations, which T7 moved here from
-   carbon monoxide. The shelf has eugenol and coniferyl alcohol and
-   `vanillin_chemistry` cleaves them: read the WORK ORDER block of
-   `data/catalog/derived/silent_templates.psv` and find out whether the closure
-   reaches an aldehyde, and which template or shelf row is missing.
-   *Done when:* either substrate is in the closure and those rows have left
-   `silent_templates.psv`, or the file says which shelf row would put it there.
-
-2. **T8 — the two templates a missing pKa switches off.** Spec in `BACKLOG.md`;
-   small, and unchanged by T7. `carboxylic_acid_dissociation` on
-   `oleic-acid+water` and `phenol_dissociation` on `tannic-acid-core+water` both
-   apply and lose the rewrite to an unpriceable ion. Source the oleate, the
-   tannate phenoxide and hypochlorite, or record a refusal with its reason.
+1. **T8 — the templates a missing pKa switches off.** Spec in `BACKLOG.md`;
+   small. `carboxylic_acid_dissociation` on `gypsum+oleic-acid` and
+   `phenol_dissociation` on `eugenol+gypsum` both apply and lose the rewrite to
+   an ion `properties/electrolyte._PAIRS` cannot price; `halogen_disproportionation`
+   is the same refusal on the closure. Source the oleate, the eugenolate and
+   hypochlorite, or record a refusal with its reason. Note T9 renamed both
+   witnesses — gypsum is a dissolved row, so it carries the water the old
+   witnesses named; the ions are unchanged.
    *Done when:* `python tools/classify_silent.py` re-derives with those rows gone.
 
+2. **T12 — hydrogen sulfide, the new head of the work order.** Spec in
+   `BACKLOG.md`. `[S;H2]` blocks `claus_comproportionation` and
+   `hydrogen_sulfide_combustion` and neither is short of anything else, so it is
+   the only substrate in the file worth two templates. Hydrogen sulfide is a
+   shelf row already, at tier `intermediate`; the sweep is over `natural`, and
+   pyrite, galena and pyrrhotite are all natural rows the closure makes no H2S
+   from. Find the missing template between a metal sulfide and an acid, or
+   record that the gap is the shelf tier and not the chemistry.
+   *Done when:* `[S;H2]` has left the work order, or `BACKLOG.md` says which
+   template would put it there.
+
 3. **T10 — two examples print a digit that depends on the solver.** Spec in
-   `BACKLOG.md`; the tolerance audit's own prescription, and the only red row in
+   `BACKLOG.md`; the tolerance audit's own prescription and the only red row in
    the ledger. `activity` moves 0.128% and `multistep_prep` 0.107% between the
    default tolerance and rtol 1e-8, and `named_routes` raises at 1e-8. All three
-   are pre-existing, measured: both print byte-identical output on pre-T7 and
-   post-T7 source. Give each its own tight tolerance, as `lime_cycle.py` does.
+   are pre-existing and measured. Give each its own tight tolerance, as
+   `lime_cycle.py` does. Costs a ~11 min audit run — ask before taking it.
    *Done when:* the audit exits 0, or the ledger note says which is a refusal.
 
-Nothing is due. A session that changes `network/` should ask about the suite
-(~29 min) and the tolerance audit (~11 min) before closing.
+`playable` is due and cannot clear until T11 lands; it was re-run green today.
+A session that changes `network/`, `numerics/` or `vessel/` should ask about the
+suite (~29 min) and the tolerance audit (~11 min) before closing.
 
 ## Decisions already taken — do not reopen
 
-- **Backwards is retrosynthesis, and it must be forbidden to build up.** Forward
-  expansion is bounded by what a flask can become; running a template backwards
-  asks what could have made this, and every acid and alcohol is a candidate
-  precursor of an absent ester. Aspirin and water reached the species cap up a
-  polyester ladder. A reverse proposal is refused when it introduces a species
-  heavier than what it came from — a comparison, not a threshold — and the
-  refusals report through `notices`. What it gives up -- a reverse step that
-  genuinely builds up -- is a coverage limit, and it says so.
-- **The reverse rewrite proposes; the forward rewrite decides.** A reversed
-  SMARTS is a textual swap and can propose what the forward rule would never
-  make. Every candidate is re-run forward and kept only if it reproduces the
-  products it came from, then built in the template's own orientation, so the
-  reaction is the one forward discovery would have built — measured identical on
-  key, `A` and `Ea`. A mirror row with kinetics of its own was refused on rule 9.
-- **`amine_protonation` and `ester_hydrolysis` stay as written.** The direction
-  they were forced into is now a choice; re-typing a row buys only risk.
-- **A closure beats a cap, and the shelf has one.** 23 natural rows at most 8
-  heavy atoms reach a fixpoint in under a second; any threshold in (8, 10) picks
-  the same rows, so the constant is not a knob.
+- **The closure is the small-molecule half and stays a fixpoint.** 23 natural
+  rows at most 8 heavy atoms reach it in under a second; any threshold in (8, 10)
+  picks the same rows. The whole shelf cannot be closed — the sugars cap a flask
+  in the first round — so reaching past the closure is a BOUNDED tier that
+  reports its frontier, never a wider closure that pretends to be one.
+- **A witness is ranked by cost, and a plain shelf row outranks a tier.** A
+  witness of shelf rows is a flask the pair sweep actually held, so what happens
+  in it is a measurement; one reaching through the closure is an argument about
+  what the shelf could become. Same cost, weaker evidence loses.
+- **A template is charged to every missing slot.** Charging it to the first is
+  what put an aromatic aldehyde at the head of a work order on three templates,
+  exactly one of which it would have unblocked. `blocked` and `alone` are both
+  printed and `alone` is the queue's sort key.
+- **`UnpricedIon`, not `OutsideEstimatorDomain`, gates the pool.** A lattice and
+  a bare element are refused by the same `get` and are neither missing nor
+  unusable — calcite and iron are shelf rows. Filtering on the parent threw 15
+  of the closure's 43 species away and called them missing measurements.
+- **Backwards is retrosynthesis and must be forbidden to build up.** A reverse
+  proposal is refused when it introduces a species heavier than what it came
+  from, and the refusals report through `notices`. The reverse rewrite proposes;
+  the forward rewrite decides.
 - **A template that applies and loses its rewrite is not a bug.** Both
-  `cannot-fire` rows are the 30-row pKa table refusing to price a product ion.
-  The fix is a pKa, not code.
+  `cannot-fire` rows are the 30-row pKa table refusing a product ion. T8.
 - **The expensive checks are clocked in COMMITS**, and a check writing a
   committed artefact derives its own last run from git rather than a stamp.
 - **The headline is templates fired, not reactions reached.** 98% of the 24,836
   is four templates over a sugar frontier.
-- **A long sweep checkpoints and names the unit it is on.** `build_reachable`
-  segfaults out of RDKit at a different pair each run -- it resumed twice today,
-  then finished clean. Re-run it until it exits 0.
 - **T2 and T3 go ahead** (174 extractable-and-uncovered rows, +28 at the
   ceiling). **`discovery/refine.py` is deleted, not wired** (R4/E3, still open),
   and **the README stays at 561 lines** until C1.
@@ -118,3 +116,5 @@ Nothing is due. A session that changes `network/` should ask about the suite
   A template is edited in `data/templates/templates.psv`.
 - Do not read `docs/history/` whole (grep it) and do not add a physics module.
 - Do not stamp a cadence row you did not run, and do not clear a red one.
+- Do not rewrite a mixed-ending file whole: `tests/test_reachable.py` holds 93
+  CRLF lines and 109 LF ones, and `read_text` then `write_text` flattens it.

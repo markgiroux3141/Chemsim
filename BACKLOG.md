@@ -101,19 +101,6 @@ kind of thing `element_data` exists to refuse.
 with the command, and a follow-up item names whichever of the two fixes the
 number argues for.
 
-### T9 — an aromatic aldehyde, the substrate three templates wait on (M)
-T7 cleared `[C-]#[O+]` off the work order and the top of
-`data/catalog/derived/silent_templates.psv` is now `[c][CX3H1]=[OX1]` at three
-templates (`cannizzaro_disproportionation`, `knoevenagel_doebner_condensation`,
-`perkin_condensation`) and `[CX3H2]=[CX3]`, a TERMINAL alkene, at two (both
-hydroformylations -- T7 moved them here from carbon monoxide). The shelf holds
-eugenol and coniferyl alcohol, so an aromatic aldehyde is one oxidative cleavage
-away and `vanillin_chemistry` already does it; the question is whether the
-closure reaches it and, if not, which shelf row or template is missing. Read the
-work order block first, then check whether the cleavage template is in the 57.
-**Done when:** either substrate is in the closure and those rows have left
-`silent_templates.psv`, or the file says which shelf row would put it there.
-
 ### T11 — an artefact-backed check that changes nothing can never clear (S)
 Found 2026-09-12 while closing T7. `playable` went DUE at 8 commits, was re-run
 (45 s, `--check` green), and produced BYTE-IDENTICAL output -- so there is no
@@ -139,18 +126,33 @@ prescribes: give each example its own tight tolerance, as `lime_cycle.py` and
 **Done when:** `python validation/tolerance_audit.py` exits 0, or the ledger
 note says which of the three is a standing refusal and why.
 
-### T8 — the two templates a missing pKa switches off (S, T5's first answer)
-T6's third group came back with two members and neither is a bug:
-`carboxylic_acid_dissociation` on `oleic-acid+water` and `phenol_dissociation`
-on `tannic-acid-core+water` both APPLY and have the rewrite discarded because
-the product ion cannot be priced. Two natural shelf rows, in the flask, with a
-template that matches, producing nothing. `halogen_disproportionation` is the
-same refusal one step further out. That is T5's question already answered for
-the shelf: the 30-row table costs three templates before anybody leaves the
-natural tier.
-**Done when:** the oleate, the tannate phenoxide and hypochlorite have sourced
-pKa values or a recorded refusal, and `silent_templates.psv` re-derives with
-those rows gone.
+### T8 — the templates a missing pKa switches off (S, T5's first answer)
+Two `cannot-fire` rows, and neither is a bug: `carboxylic_acid_dissociation` on
+`gypsum+oleic-acid` and `phenol_dissociation` on `eugenol+gypsum` both APPLY and
+have the rewrite discarded because one product ion cannot be priced. (T9's
+cheapest-witness search renamed both witnesses -- they were `oleic-acid+water`
+and `tannic-acid-core+water`, and gypsum is a dissolved row so it carries the
+water. The oleate and the eugenolate are the ions either way.)
+`halogen_disproportionation` is the same refusal one step further out, on the
+closure. Natural shelf rows, in the flask, with a template that matches,
+producing nothing: the 30-row table costs three templates before anybody leaves
+the natural tier.
+**Done when:** the oleate, the eugenolate and hypochlorite have sourced pKa
+values or a recorded refusal, and `silent_templates.psv` re-derives with those
+rows gone.
+
+### T12 — hydrogen sulfide is the new head of the work order (S)
+T9's rewrite of `tools/classify_silent.py` re-ordered the queue by what sourcing
+a substrate would actually UNBLOCK, and `[S;H2]` came out top: two templates
+(`claus_comproportionation`, `hydrogen_sulfide_combustion`), both short of
+nothing else. Hydrogen sulfide is already a `data/catalog/shelf.psv` row at tier
+`intermediate`, and the sweep is over `natural` rows, so the question is whether
+a natural row makes it -- pyrite, galena and pyrrhotite are all on the shelf and
+the closure holds none of it. Find out which template is missing between a metal
+sulfide and an acid, or record that the gap is the shelf tier and not the
+chemistry.
+**Done when:** `[S;H2]` has left the work order, or `BACKLOG.md` says which
+template would put it there and at what cost.
 
 ---
 
