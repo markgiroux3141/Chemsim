@@ -46,7 +46,7 @@ STEARATE = Molecule.from_smiles("CCCCCCCCCCCCCCCCCC(=O)[O-]").smiles
 # killed examples/named_routes.py on route 2 for want of a pKa row.
 SALIGENIN = Molecule.from_smiles("OCc1ccccc1O").smiles
 SALIGENOLATE = Molecule.from_smiles("[O-]c1ccccc1CO").smiles
-OLEATE = Molecule.from_smiles(r"CCCCCCCC/C=C\CCCCCCCC(=O)[O-]").smiles
+OLEATE_SMILES = Molecule.from_smiles(r"CCCCCCCC/C=C\CCCCCCCC(=O)[O-]").smiles
 
 
 @pytest.fixture(scope="module")
@@ -504,29 +504,69 @@ def test_an_ion_ALREADY_IN_THE_FLASK_drops_its_reaction_and_not_itself():
 
     ``_unpriceable`` runs over NEW products: a species already in ``molecules``
     is not re-screened, which is R1's second boundary and is right -- it is
-    either a product priced earlier or one the caller CHARGED. So an ion that
+    either a product priced earlier or one the caller charged. So an ion that
     arrives by another route reaches detailed balance anyway, and the build
-    still died. Measured on gypsum + triolein: saponification makes the oleate,
-    then ``carboxylic_acid_dissociation`` wants its reverse rate.
+    still died.
 
-    Both directions of THAT reaction go, and nothing else does. A reversible
+    The witness used to be gypsum + triolein, where saponification put the
+    oleate in the flask before ``carboxylic_acid_dissociation`` asked for its
+    reverse rate. T8 sourced a pKa for oleic acid, so that flask now prices the
+    oleate and the notice is gone -- which is the fix working, not the boundary
+    disappearing. The other half of the same sentence still reaches it and is
+    cheaper: charge the unpriceable ion, and the template that makes it finds it
+    already in ``molecules`` and skips the screen. Saligenolate is one of the 41
+    the pool still cannot price.
+
+    Both directions of that reaction go, and nothing else does. A reversible
     template with its reverse dropped would run to completion, which is a
     different reaction; the species itself is in the flask legitimately and
     stays. The notice says which reaction was lost.
     """
-    from chemsim.engine import inventory as inv
     from chemsim.properties import VolatilityProvider
     from chemsim.ui.examples import full_library
 
     thermo = electrolyte_provider()
-    feed = sorted(set(inv.find("gypsum").species)
-                  | set(inv.find("triolein").species))
+    feed = ["OCc1ccccc1O", "O", SALIGENOLATE]
     net = build_network(feed, list(full_library()), thermo=thermo,
                         volatility=VolatilityProvider(thermo),
-                        max_species=400, generations=None)
+                        max_species=60, generations=1)
     dropped = [n for n in net.notices
                if "REVERSIBLE and its reverse rate cannot be derived" in n]
     assert len(dropped) == 1, dropped
-    assert "carboxylic_acid_dissociation" in dropped[0]
+    assert "phenol_dissociation" in dropped[0]
     assert net.reactions, "only the one reaction is lost"
-    assert OLEATE in net.species, "the ion itself is in the flask legitimately"
+    assert SALIGENOLATE in net.species, "the ion itself was charged and stays"
+
+
+def test_an_unpriced_ion_at_the_EVANS_POLANYI_barrier_drops_its_reaction():
+    """The same hole at the forward end, and T8 is what walked into it.
+
+    ``_unpriceable`` keeps an ion the template that made it does not need a
+    price for -- ``saponification`` is irreversible with alpha = 0, so the
+    stearate it makes is registered unpriced on purpose. A later template with
+    a nonzero alpha then prices its barrier off that reaction's own enthalpy,
+    reads the ion out of ``molecules`` where no screen runs, and raised
+    ``UnpricedIon`` straight out of ``build_network``.
+
+    Reached by sourcing a pKa for oleic acid: the fatty-acid cascade in
+    gypsum + oleic-acid then ran one step further than it ever had, and the
+    35-minute reachability sweep died on ``kolbe_electrolysis`` coupling a
+    stearate the pKa table does not carry. Two natural shelf rows, a traceback,
+    and nothing between them but a template that got further than before.
+    """
+    from chemsim.properties import VolatilityProvider
+    from chemsim.ui.examples import full_library
+
+    thermo = electrolyte_provider()
+    kolbe = [t for t in full_library() if t.name == "kolbe_electrolysis"]
+    assert kolbe and kolbe[0].alpha != 0.0, "the barrier has to depend on dH"
+    feed = ["CCCCCCCCCCCCCCCCCC(=O)[O-]",            # stearate: no AcidPair
+            OLEATE_SMILES,                            # T8 priced this one
+            "O"]
+    net = build_network(feed, kolbe, thermo=thermo,
+                        volatility=VolatilityProvider(thermo),
+                        max_species=40, generations=1, cell_potential=2.0)
+    dropped = [n for n in net.notices if "cannot be computed" in n]
+    assert len(dropped) == 2, dropped        # stearate homo- and cross-coupling
+    assert "kolbe_electrolysis" in dropped[0]
+    assert net.reactions, "the oleate pair still couples, both directions"

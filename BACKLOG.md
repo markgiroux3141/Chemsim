@@ -97,6 +97,10 @@ pair — grouped by the acid class that would fix them, since one sourced pKa
 series can cover many rows. Do this BEFORE writing any pKa: the answer decides
 whether the fix is a dozen rows or an estimator, and an estimator for pKa is the
 kind of thing `element_data` exists to refuse.
+T8 answered three of them by hand (oleate, eugenolate, hypochlorite) and the
+table went 30 -> 33 rows, so the sweep is now over a table just shown to be
+three short of what a flask of NATURAL shelf rows reaches in one generation.
+T14 asks the same question for one acid class.
 **Done when:** the count and its top acid classes are in `NEXT.md`'s state table
 with the command, and a follow-up item names whichever of the two fixes the
 number argues for.
@@ -126,21 +130,35 @@ prescribes: give each example its own tight tolerance, as `lime_cycle.py` and
 **Done when:** `python validation/tolerance_audit.py` exits 0, or the ledger
 note says which of the three is a standing refusal and why.
 
-### T8 — the templates a missing pKa switches off (S, T5's first answer)
-Two `cannot-fire` rows, and neither is a bug: `carboxylic_acid_dissociation` on
-`gypsum+oleic-acid` and `phenol_dissociation` on `eugenol+gypsum` both APPLY and
-have the rewrite discarded because one product ion cannot be priced. (T9's
-cheapest-witness search renamed both witnesses -- they were `oleic-acid+water`
-and `tannic-acid-core+water`, and gypsum is a dissolved row so it carries the
-water. The oleate and the eugenolate are the ions either way.)
-`halogen_disproportionation` is the same refusal one step further out, on the
-closure. Natural shelf rows, in the flask, with a template that matches,
-producing nothing: the 30-row table costs three templates before anybody leaves
-the natural tier.
-**Done when:** the oleate, the eugenolate and hypochlorite have sourced pKa
-values or a recorded refusal, and `silent_templates.psv` re-derives with those
-rows gone.
+### T13 — an unpriced ion in the flask still stops `to_arrays` (S, found in T8)
+`_unpriceable` deliberately KEEPS an ion the template that made it does not
+need a price for -- `saponification` is irreversible with alpha = 0, so its
+stearate is registered unpriced on purpose, and dropping it would delete
+chemistry the engine can do. T8 then guarded the two places that ask for the
+price later (the Evans-Polanyi barrier, and detailed balance since T1d), so
+`build_network` no longer raises. `ReactionNetwork.to_arrays` still does:
+measured today on a flask charged with saligenolate plus saligenol plus water,
+which builds 7 reactions and then refuses. So a network can be built, reported
+and un-runnable, and the player finds out one call later than the notice.
+Decide which it is: either the species is dropped at registration after all
+(and the notice says the flask lost matter), or `to_arrays` reports the same
+way the builder does and the vessel runs without it. Do not pick by taste --
+the second changes what is in the flask silently unless it notices too.
+**Done when:** a network holding an unpriced ion either integrates or refuses
+with a notice naming the species, and one test pins whichever was chosen.
 
+### T14 — the fatty-acid pKa wall (S, measurement first)
+T8 priced the oleate and the cascade in `gypsum + oleic-acid` promptly reached
+a stearate, a hydroxystearate and two partial-glyceride carboxylates that
+`_PAIRS` does not carry. Each is the SAME number to three figures -- every
+unbranched aliphatic carboxylic acid sits on the 4.9 plateau the table's own
+formic/acetic/propanoic series is converging to -- so this is not 30 lookups,
+it is one rule with a domain. Before writing any of them, count them: sweep
+the corpus and the pool for carboxylates whose acid is an unbranched chain,
+and report how many rows a single plateau value would cover against how many
+genuinely need their own measurement. T5 is the same question one level up.
+**Done when:** the count is in `NEXT.md` with its command, and a follow-up
+item says whether the fix is rows or a rule.
 ### T12 — hydrogen sulfide is the new head of the work order (S)
 T9's rewrite of `tools/classify_silent.py` re-ordered the queue by what sourcing
 a substrate would actually UNBLOCK, and `[S;H2]` came out top: two templates

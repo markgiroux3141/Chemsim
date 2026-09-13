@@ -104,7 +104,13 @@ def test_the_only_cations_in_the_table_are_the_four_plus_the_hydronium(ions):
     # cation list above is unchanged. ⚠ It was EXPOSED rather than
     # missed: nothing could reach the mono-anion with a template until C5
     # fixed `ReactionTemplate.run`. See `tests/test_furans.py`.
-    assert len(ions) == 30
+    # T8 grew it 30 -> 33 in one go: oleate, eugenolate and hypochlorite, the
+    # three ions that were switching a template off in a flask of natural shelf
+    # rows. All three are anions, so the cation list above is still unchanged.
+    # Re-measured as instructed: corpus refusals 416 -> 412, species-ready
+    # 85 -> 88, and the intersection to quote 38 -> 40 on `bleaching-powder`
+    # and `hypochlorite-bleach`.
+    assert len(ions) == 33
 
 
 def test_an_anion_is_still_anchored_on_its_acid_bit_for_bit(ions):

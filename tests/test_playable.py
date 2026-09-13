@@ -86,9 +86,9 @@ def test_the_headline_and_the_tiers_are_what_the_report_says(bp):
     another template had made.
     """
     assert len(bp.routes) == 173
-    assert len(bp.PLAYABLE) == 21
+    assert len(bp.PLAYABLE) == 22
     assert max(bp.PLAYABLE.values()) == 3
-    assert len(bp.RUNNABLE) == 44
+    assert len(bp.RUNNABLE) == 46
     assert bp.PLAYABLE["hmf-route"] == 2
     assert bp.PLAYABLE["invert-sugar"] == 1
     assert bp.PLAYABLE["abe-fermentation"] == 1
@@ -149,7 +149,7 @@ def test_the_tech_tree_is_a_shallow_bush(bp):
     """
     tier1 = [r for r, d in bp.PLAYABLE.items() if d == 1]
     assert len(tier1) == 10
-    assert len([r for r, d in bp.PLAYABLE.items() if d == 2]) == 10
+    assert len([r for r, d in bp.PLAYABLE.items() if d == 2]) == 11
     assert len([r for r, d in bp.PLAYABLE.items() if d == 3]) == 1
     # G3's ">" became "==" in C3 and is "<" now, and the OPERATOR is the finding
     assert len(tier1) < len(bp.PLAYABLE) / 2
@@ -189,13 +189,13 @@ def test_the_ceiling_is_the_goal_and_it_is_a_finite_named_list(bp):
     not a constant**, and two sessions in a row where it sat still were a
     property of what they built rather than of the instrument.
     """
-    assert len(bp.FED_BUT_UNRUNNABLE) == 22
+    assert len(bp.FED_BUT_UNRUNNABLE) == 21
     ceiling, _ = bp.closure(pool=bp.RUNNABLE | set(bp.FED_BUT_UNRUNNABLE))
-    assert len(ceiling) == 45
+    assert len(ceiling) == 46
     # two fall out for free once the shelf grows -- G3 had four, C3 had three,
     # and `acetic-fermentation` is the one C4 promoted into PLAYABLE outright
     free = set(ceiling) - set(bp.PLAYABLE) - set(bp.FED_BUT_UNRUNNABLE)
-    assert free == {"haber-bosch", "thermite"}
+    assert free == {"bleaching-powder", "haber-bosch", "thermite"}
 
 
 # ---------------------------------------------------------------------------
@@ -209,8 +209,8 @@ def test_a_need_is_decided_by_order_not_by_route_roles(bp):
     all* and was playable for free.
     """
     wrong, _ = bp.closure(needs_rule=bp.needs_by_roles)
-    assert len(wrong) == 22
-    assert len(bp.PLAYABLE) == 21, "the correction moves the headline DOWN"
+    assert len(wrong) == 23
+    assert len(bp.PLAYABLE) == 22, "the correction moves the headline DOWN"
 
     assert bp.needs_by_roles("lime-cycle") == set()
     assert bp.needs("lime-cycle") == {"calcium-carbonate", "water"}
@@ -278,10 +278,10 @@ def test_the_fouling_row_takes_the_target_off_the_shelf(bp):
     # rules are measured as a grid because fixing one masked another once (G3),
     # and a session that moves one column has to print all of them.**
     kw = dict(needs_rule=bp.needs_by_roles)
-    assert len(bp.closure(shelf_rule="products", **kw)[0]) == 22
-    assert len(bp.closure(shelf_rule="both", **kw)[0]) == 22
-    assert len(bp.closure(shelf_rule="products")[0]) == 21
-    assert len(bp.closure(shelf_rule="both")[0]) == 21
+    assert len(bp.closure(shelf_rule="products", **kw)[0]) == 23
+    assert len(bp.closure(shelf_rule="both", **kw)[0]) == 23
+    assert len(bp.closure(shelf_rule="products")[0]) == 22
+    assert len(bp.closure(shelf_rule="both")[0]) == 22
 
 
 def test_target_only_shelving_never_starts_the_deep_chain(bp):
@@ -324,7 +324,7 @@ def test_target_only_shelving_never_starts_the_deep_chain(bp):
     assert "acetic-fermentation" not in target_only
     assert "abe-fermentation" in target_only          # ITS target is fine
     assert "hmf-route" in target_only                 # C5's, on invert-sugar
-    assert len(bp.PLAYABLE) - len(target_only) == 5
+    assert len(bp.PLAYABLE) - len(target_only) == 6
 
 
 def cat_roles(bp, rid):
@@ -466,7 +466,7 @@ def test_the_top_content_row_is_hall_heroult_and_it_opens_the_deepest_chain(bp):
         worth_route(r) for r in bp.FED_BUT_UNRUNNABLE)
 
 
-def test_two_of_the_work_order_need_no_template_at_all(bp):
+def test_the_work_order_rows_that_need_no_template_at_all(bp):
     """They are blocked purely on a species the engine refuses to price, which
     makes a DATA refusal measurably a playability blocker.
 
@@ -482,10 +482,18 @@ def test_two_of_the_work_order_need_no_template_at_all(bp):
     (Hfs in WEBBOOK, S0s in nothing) and `sodium-hypochlorite` (neither). **A
     data job is only cheap when the data is there, and there is no cheap data row
     left in this table.** See `validation/phosphate_rock.py` panel 1.
+
+    T8 cashed the hypochlorite half, and the name had to change with it
+    because the name carried the count. That measurement above was right and
+    was not the answer: an ion is never priced from a formation table at all,
+    it is anchored to its own neutral acid through a measured pKa, and Joback
+    prices hypochlorous acid happily. *A species missing from every database a
+    session thought to ask can still be reachable through a table of a
+    different shape.*
     """
     species_only = [r for r in bp.FED_BUT_UNRUNNABLE
                     if not {s.cls for s in bp.route_steps(r)} - set(bp.TC)]
-    assert sorted(species_only) == ["hypochlorite-bleach", "pyrite-roasting"]
+    assert sorted(species_only) == ["pyrite-roasting"]
     # pyrite is the engine queue's own source-blocked entry
     assert not bp.priced("iron-disulfide")
     # ⚠ and the row C2 took is priced now, which is what moved the headline

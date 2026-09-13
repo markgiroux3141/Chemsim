@@ -329,22 +329,28 @@ def test_an_ester_in_water_finds_the_same_equilibrium_from_either_side(
     assert reachable.reactions
 
 
-def test_hypochlorite_is_still_refused_by_name(thermo, volatility):
-    """The disproportionation template is correct and cannot run, because HOCl has
-    no measured boiling point in any source -- the same standing refusal
-    ``electrolyte.py`` records for carbonic acid. ⚠ The day someone adds the pair,
-    this test is what tells them the route opened.
+def test_hypochlorite_is_priced_and_the_disproportionation_runs(thermo, volatility):
+    """The day the pair was added, and this test is what said the route opened.
 
-    T1d changed the SHAPE of the refusal and not the refusal. The ion overlay is
-    on and hypochlorite is not in its table, so this is a missing measurement
-    rather than a missing provider: the rewrite is dropped and named in
-    ``unpriced`` instead of raising out of the build.
+    It used to assert the refusal, with a note that whoever added the pair would
+    be told by this line. T8 added it: 7.53 at 298 K, Morris 1966. Chlorine into
+    hydroxide now makes chloride and hypochlorite, reversibly, with the reverse
+    rate derived rather than declared.
+
+    Its old docstring blamed the refusal on HOCl having no measured boiling
+    point. That was the wrong diagnosis and is worth leaving on the record:
+    Joback prices the neutral perfectly well, and what was missing was never a
+    physical half at all -- it was the ONE ROW that anchors the ion to it.
     """
     net = net_of([c("ClCl"), WATER, HYDROXIDE, SODIUM],
                  [halogen_disproportionation()] + list(dissociation_templates()),
                  thermo, volatility, max_species=40)
-    assert c("[O-]Cl") in net.unpriced
-    assert c("[O-]Cl") not in net.species
+    assert c("[O-]Cl") in net.species
+    assert c("[O-]Cl") not in net.unpriced
+    fired = [r.key() for r in net.reactions
+             if r.key()[0].startswith("halogen_disproportionation")]
+    assert len(fired) == 2, fired          # forward and its derived reverse
+    assert fired[0][2] == ("O", "[Cl-]", "[O-]Cl")
 
 
 def test_triolein_volatility_is_declined_rather_than_fitted(volatility):

@@ -1091,7 +1091,27 @@ def _concrete_in_phase(
     # the declared barrier is returned unchanged and nothing here costs anything.
     Ea = tmpl.Ea
     if tmpl.alpha != 0.0:
-        dH = reaction_deltas(fwd, thermo, volatility)[0] * 1000.0   # kJ -> J/mol
+        try:
+            dH = reaction_deltas(fwd, thermo, volatility)[0] * 1000.0  # kJ->J
+        except UnpricedIon as exc:
+            # The same hole R1 left at the reverse end, at the forward one.
+            # ``_unpriceable`` screens the new side only, so a species matched
+            # out of ``molecules`` -- charged, or priced when it entered by a
+            # route that did not need its formation data -- reaches the
+            # Evans-Polanyi barrier and used to raise out of build_network.
+            # Found by T8: pricing the oleate let the fatty-acid cascade run one
+            # step further, to a stearate the pKa table does not carry, and the
+            # 35-minute reachability sweep died on it. A barrier that cannot be
+            # computed is not a barrier of zero, so the reaction goes, not the
+            # species, exactly as the reverse-rate branch below does.
+            notices[f"{fwd.key()}|unpriced-ion-barrier"] = (
+                f"[build_network] NOTICE: template {tmpl.name!r} on "
+                f"'{' + '.join(r_smiles)} -> {' + '.join(p_smiles)}' ({phase} "
+                f"phase) prices its barrier from its own reaction enthalpy and "
+                f"that enthalpy cannot be computed: {exc}. The reaction is "
+                f"dropped; the species stays in the flask."
+            )
+            return []
         Ea = tmpl.barrier(dH)
         fwd = ConcreteReaction(tmpl.name, r_smiles, p_smiles, tmpl.A, Ea, phase,
                                orders=tmpl.orders, solid_catalyst=cat,

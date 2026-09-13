@@ -4,6 +4,21 @@ Newest first. One entry per session, twelve lines at most, enforced by
 `tools/check_docs.py`. When this file passes 400 lines the older half rolls into
 `docs/history/changelog-YYYY-MM.md`.
 
+## 2026-09-12 — T8: three pKa rows, and the cannot-fire column is empty
+
+`properties/electrolyte._PAIRS` 30 -> 33: oleic acid 5.02 (PubChem CID 445639,
+Riddick 1985), eugenol 10.19 (IUPAC via CID 3314, Brauer 1964), hypochlorous
+acid 7.53 (Morris, J. Phys. Chem. 70 (1966) 3798). The oleate is the molecular
+constant, not the 8-10 the fatty-acid literature reports for a micelle surface
+this engine has no phase for. `classify_silent.py` cannot-fire 2 -> 0, silent
+28 -> 24, work order 22 -> 20; `build_reachable.py` (638 s) 29 -> 33 templates
+fired; `build_playable.py` 21 -> 22; `catalog_coverage.py` refused 416 -> 412,
+species-ready 85 -> 88, intersection 38 -> 40 on `hypochlorite-bleach` and
+`bleaching-powder`. The priced oleate let the fatty-acid cascade reach a
+stearate and crash the sweep out of the Evans-Polanyi barrier; the builder
+drops that reaction with a notice now, as T1d did the reverse end (T13, T14).
+`./check.ps1` green, 1,304 collected, 34 test files run; full suite NOT run.
+
 ## 2026-09-12 — T9: the shelf makes an aromatic aldehyde, and the work order was wrong
 
 `tools/classify_silent.py` asked what the shelf can make from shelf species plus

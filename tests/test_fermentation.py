@@ -510,13 +510,13 @@ def test_the_class_is_worth_the_TWO_PLAYABLE_ROUTES_section_8b_priced():
         return len(bp.closure(pool=pool)[0])
 
     both = playable(set())
-    assert both == 21                                # C5's baseline
+    assert both == 22                                # T8's baseline
     base = playable({"solventogenic-fermentation"})
-    assert base == 19
+    assert base == 20
     assert both - base == 2
     # homolactic buys no PLAYABILITY at all -- `lactic-acid-pla` needs a
     # polymerisation as well. It was built for the class and the stereo finding.
-    assert playable({"homolactic-fermentation"}) == 21
+    assert playable({"homolactic-fermentation"}) == 22
 
 
 def test_granting_the_top_row_made_the_work_order_LONGER_again():
@@ -537,14 +537,17 @@ def test_granting_the_top_row_made_the_work_order_LONGER_again():
     # ⚠ C5 TOOK ONE ROW OFF IT AGAIN (23 -> 22) AND THE CEILING DID NOT
     # MOVE, because 5-HMF and levulinic acid feed nothing. The four routes C4's
     # solvents fed are what this test is about and they are all still here.
-    assert len(bp.FED_BUT_UNRUNNABLE) == 22
+    # T8 took `hypochlorite-bleach` off it (22 -> 21) and the ceiling DID move,
+    # 45 -> 46: `bleaching-powder` runs on the hypochlorite the first route
+    # makes, so a pKa fed a route the way C4's fermentation fed four.
+    assert len(bp.FED_BUT_UNRUNNABLE) == 21
     assert "abe-fermentation" not in bp.FED_BUT_UNRUNNABLE
     assert "acetic-fermentation" not in bp.FED_BUT_UNRUNNABLE
     for grown in ("white-lead-route", "chloral-route",
                   "acetic-anhydride-ketene", "mercury-fulminate-route"):
         assert grown in bp.FED_BUT_UNRUNNABLE
     ceiling, _ = bp.closure(pool=bp.RUNNABLE | set(bp.FED_BUT_UNRUNNABLE))
-    assert len(ceiling) == 45
+    assert len(ceiling) == 46
 
 
 def test_the_work_order_no_longer_has_a_PLUS_TWO_ROW():

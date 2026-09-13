@@ -132,6 +132,15 @@ _PAIRS: tuple[AcidPair, ...] = (
     AcidPair("[O-]P(=O)([O-])O", "[O-]P(=O)([O-])[O-]", 12.35,
              "phosphoric acid, 3rd"),
     AcidPair("F", "[F-]", 3.17, "hydrofluoric acid"),
+    # Hypochlorous acid: 7.53 at 298 K, from Morris, J. Phys. Chem. 70 (1966)
+    # 3798, the determination from 5 to 35 C that everything since quotes.
+    # Older inorganic tables carry 7.40 and the spread is real, so the source
+    # is named rather than the value left looking like a consensus. Its
+    # neutral is priced by Joback, an estimate on a two-heavy-atom oxoacid;
+    # that error is carried by both members of the pair and cancels out of
+    # the dissociation, which is the whole point of anchoring an ion to its
+    # own acid rather than importing a tabulated aqueous value.
+    AcidPair("OCl", "[O-]Cl", 7.53, "hypochlorous acid"),
     AcidPair("C#N", "[C-]#N", 9.21, "hydrogen cyanide"),
     AcidPair("S", "[SH-]", 7.00, "hydrogen sulfide"),
     # ⚠ BOTH CARBONATE PAIRS ARE PRESENT AND BOTH ARE INERT, and the reason is
@@ -171,6 +180,22 @@ _PAIRS: tuple[AcidPair, ...] = (
     AcidPair("OC=O", "[O-]C=O", 3.75, "formic acid"),
     AcidPair("CC(=O)O", "CC(=O)[O-]", 4.76, "acetic acid", dH_diss=-0.4),
     AcidPair("CCC(=O)O", "CCC(=O)[O-]", 4.87, "propanoic acid"),
+    # Oleic acid, and the number is the molecular one rather than the one most
+    # papers quote. 5.02 in water at 298 K: PubChem CID 445639, from Riddick,
+    # Bunger and Sakano, Organic Solvents (Techniques of Chemistry II), 4th ed.
+    # 1985, p. 379. It continues the series three rows above -- 3.75, 4.76,
+    # 4.87, then octanoic 4.89 and nonanoic 4.96 measured in bulk and an
+    # infinite-dilution limit near 5.0 (Wellen, Lam and Allen, Phys. Chem. Chem.
+    # Phys. 19 (2017) 26551) -- so the C9 double bond, eight bonds from the
+    # carboxyl, is inductively silent and the plateau is flat from C3 up.
+    #
+    # The 8 to 10 the fatty-acid literature reports is the acidity of a micelle
+    # or a bilayer surface, not of the molecule: oleic acid is too insoluble to
+    # titrate as a monomer, so every direct measurement is of an aggregate whose
+    # own charge shifts the next proton. This engine has no aggregate phase, and
+    # a table of molecular constants is the wrong place to smuggle one in.
+    AcidPair(r"CCCCCCCC/C=C\CCCCCCCC(=O)O",
+             r"CCCCCCCC/C=C\CCCCCCCC(=O)[O-]", 5.02, "oleic acid"),
     AcidPair("OC(=O)c1ccccc1", "[O-]C(=O)c1ccccc1", 4.20, "benzoic acid"),
     # Salicylic acid -- chain 1's product, and a full pKa unit stronger than
     # benzoic acid (2.97 against 4.20) because the ortho hydroxyl hydrogen-bonds
@@ -201,6 +226,13 @@ _PAIRS: tuple[AcidPair, ...] = (
     AcidPair("CC(=O)Oc1ccccc1C(=O)O", "CC(=O)Oc1ccccc1C(=O)[O-]", 3.49, "aspirin"),
     # --- weak organic acids / bases ---------------------------------------
     AcidPair("Oc1ccccc1", "[O-]c1ccccc1", 9.95, "phenol"),
+    # Eugenol, the clove-oil row on the shelf: 10.19 at 298 K, from IUPAC's
+    # aqueous compilation (PubChem CID 3314) citing Brauer, Argentar and Durany,
+    # J. Res. Nat. Bur. Stand. 68A (1964) 619 -- a direct spectrophotometric
+    # measurement, not an estimate. A quarter of a unit above phenol's 9.95 in
+    # the row above, which is the ortho methoxy and the para allyl both pushing
+    # electrons into the ring and making the proton harder to take.
+    AcidPair("C=CCc1ccc(O)c(OC)c1", "C=CCc1ccc([O-])c(OC)c1", 10.19, "eugenol"),
     AcidPair("[NH4+]", "N", 9.25, "ammonium", dH_diss=52.2),
     AcidPair("C[NH3+]", "CN", 10.66, "methylammonium"),
     AcidPair("c1ccc[nH+]c1", "c1ccncc1", 5.23, "pyridinium"),

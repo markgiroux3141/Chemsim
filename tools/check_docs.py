@@ -68,7 +68,7 @@ GLYPH_BUDGETS = {
     "README.md": 0,
     "GAME_DESIGN.md": 74,
     "src/chemsim": 1042,
-    "tests": 827,
+    "tests": 826,
     "validation": 336,
     "tools": 145,
     "examples": 38,

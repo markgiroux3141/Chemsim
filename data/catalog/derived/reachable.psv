@@ -8,25 +8,25 @@
 # third starting material is invisible to a sweep over pairs.
 #! natural_rows = 36
 #! pairs = 630
-#! distinct_reactions = 24836
-#! templates_fired = 29
+#! distinct_reactions = 24825
+#! templates_fired = 33
 #! capped_pairs = 264
 #! inert_pairs = 320
 #! crashed_pairs = 0
 #! templates = 57
 #! tier = family
-#! silent_templates = aldofuranose_dehydration, alkene_hydrodimerisation, alkyne_hydration, aromatic_nitration, cannizzaro_disproportionation, carboxylic_acid_dissociation, claus_comproportionation, halogen_disproportionation, hydroformylation_branched, hydroformylation_linear, hydrogen_sulfide_combustion, hydroxymethylfurfural_rehydration, ketofuranose_dehydration, knoevenagel_doebner_condensation, kolbe_electrolysis, kolbe_schmitt_carboxylation, mineral_oxyacid_dissociation, n_acylation, nitric_oxide_reoxidation, nitro_hydrogenation, perkin_condensation, phenol_dissociation, skraup_cyclisation, steam_reforming, sulfur_dioxide_oxidation_by_nitrogen_dioxide, sulfur_trioxide_hydration, wacker_oxidation, williamson_ether_synthesis
+#! silent_templates = aldofuranose_dehydration, alkene_hydrodimerisation, alkyne_hydration, aromatic_nitration, cannizzaro_disproportionation, claus_comproportionation, hydroformylation_branched, hydroformylation_linear, hydrogen_sulfide_combustion, hydroxymethylfurfural_rehydration, ketofuranose_dehydration, knoevenagel_doebner_condensation, kolbe_schmitt_carboxylation, mineral_oxyacid_dissociation, n_acylation, nitric_oxide_reoxidation, nitro_hydrogenation, perkin_condensation, skraup_cyclisation, steam_reforming, sulfur_dioxide_oxidation_by_nitrogen_dioxide, sulfur_trioxide_hydration, wacker_oxidation, williamson_ether_synthesis
 # the ten busiest templates, distinct reactions each
 # (a reverse counts toward its forward, as in templates_fired):
-#    10887  ether_condensation
-#     9318  fischer_esterification
-#     3565  friedel_crafts_hydroxyalkylation
+#    10884  ether_condensation
+#     9294  fischer_esterification
+#     3562  friedel_crafts_hydroxyalkylation
 #      496  transesterification
-#      308  alkene_hydration
+#      312  alkene_hydration
 #       62  alkene_dehydration
 #       54  ester_hydrolysis
 #       38  aerobic_oxidation
-#       31  alkene_hydrogenation
+#       34  alkene_hydrogenation
 #       22  peroxide_over_oxidation
 #
 alpha-pinene | aluminium-oxide | 8 | 0 | fixpoint | 0
@@ -309,7 +309,7 @@ cellulose-unit | triolein | 400 | 664 | capped | 365
 cellulose-unit | water | 400 | 739 | capped | 368
 cellulose-unit | zinc-sulfide | 400 | 738 | capped | 372
 citronellal | copper-sulfide | 8 | 0 | fixpoint | 0
-citronellal | eugenol | 400 | 449 | capped | 149
+citronellal | eugenol | 400 | 450 | capped | 148
 citronellal | glucose | 400 | 738 | capped | 372
 citronellal | gypsum | 400 | 879 | capped | 278
 citronellal | indican | 400 | 481 | capped | 366
@@ -360,16 +360,16 @@ copper-sulfide | triolein | 8 | 0 | fixpoint | 0
 copper-sulfide | water | 12 | 4 | fixpoint | 0
 copper-sulfide | zinc-sulfide | 8 | 0 | fixpoint | 0
 eugenol | glucose | 400 | 738 | capped | 372
-eugenol | gypsum | 400 | 395 | capped | 376
+eugenol | gypsum | 400 | 396 | capped | 374
 eugenol | indican | 400 | 481 | capped | 381
 eugenol | iron-ii-sulfate | 8 | 0 | fixpoint | 0
 eugenol | iron-iii-oxide | 7 | 0 | fixpoint | 0
 eugenol | lead-sulfide | 8 | 0 | fixpoint | 0
-eugenol | lignin-monomer-coniferyl | 400 | 583 | capped | 315
-eugenol | magnesium-carbonate | 400 | 796 | capped | 180
+eugenol | lignin-monomer-coniferyl | 400 | 584 | capped | 313
+eugenol | magnesium-carbonate | 400 | 797 | capped | 179
 eugenol | mercury-sulfide | 8 | 0 | fixpoint | 0
 eugenol | nitrogen | 8 | 0 | fixpoint | 0
-eugenol | oleic-acid | 400 | 571 | capped | 116
+eugenol | oleic-acid | 400 | 571 | capped | 114
 eugenol | oxygen | 8 | 0 | fixpoint | 0
 eugenol | potassium-nitrate | 9 | 0 | fixpoint | 0
 eugenol | salicin | 400 | 631 | capped | 376
@@ -381,7 +381,7 @@ eugenol | sucrose | 400 | 403 | capped | 355
 eugenol | sulfur-s8 | 8 | 0 | fixpoint | 0
 eugenol | tannic-acid-core | 400 | 422 | capped | 350
 eugenol | triolein | 400 | 444 | capped | 379
-eugenol | water | 400 | 397 | capped | 378
+eugenol | water | 400 | 398 | capped | 376
 eugenol | zinc-sulfide | 8 | 0 | fixpoint | 0
 glucose | gypsum | 400 | 737 | capped | 366
 glucose | indican | 400 | 691 | capped | 342
@@ -414,18 +414,18 @@ gypsum | lignin-monomer-coniferyl | 400 | 445 | capped | 354
 gypsum | magnesium-carbonate | 15 | 4 | fixpoint | 0
 gypsum | mercury-sulfide | 14 | 4 | fixpoint | 0
 gypsum | nitrogen | 16 | 8 | fixpoint | 0
-gypsum | oleic-acid | 400 | 1033 | capped | 260
+gypsum | oleic-acid | 400 | 1031 | capped | 250
 gypsum | oxygen | 13 | 4 | fixpoint | 0
 gypsum | potassium-nitrate | 15 | 4 | fixpoint | 0
 gypsum | salicin | 400 | 629 | capped | 369
 gypsum | silver | 14 | 4 | fixpoint | 0
-gypsum | sodium-chloride | 17 | 10 | fixpoint | 0
+gypsum | sodium-chloride | 18 | 12 | fixpoint | 0
 gypsum | sodium-nitrate | 15 | 4 | fixpoint | 0
 gypsum | starch-unit | 400 | 737 | capped | 366
 gypsum | sucrose | 400 | 401 | capped | 348
 gypsum | sulfur-s8 | 15 | 5 | fixpoint | 0
 gypsum | tannic-acid-core | 400 | 528 | capped | 368
-gypsum | triolein | 400 | 885 | capped | 299
+gypsum | triolein | 400 | 887 | capped | 299
 gypsum | water | 13 | 4 | fixpoint | 0
 gypsum | zinc-sulfide | 14 | 4 | fixpoint | 0
 indican | iron-ii-sulfate | 400 | 481 | capped | 381
@@ -514,7 +514,7 @@ lignin-monomer-coniferyl | oxygen | 400 | 634 | capped | 236
 lignin-monomer-coniferyl | potassium-nitrate | 400 | 517 | capped | 333
 lignin-monomer-coniferyl | salicin | 400 | 741 | capped | 370
 lignin-monomer-coniferyl | silver | 400 | 518 | capped | 334
-lignin-monomer-coniferyl | sodium-chloride | 400 | 519 | capped | 331
+lignin-monomer-coniferyl | sodium-chloride | 400 | 520 | capped | 330
 lignin-monomer-coniferyl | sodium-nitrate | 400 | 517 | capped | 333
 lignin-monomer-coniferyl | starch-unit | 400 | 641 | capped | 366
 lignin-monomer-coniferyl | sucrose | 400 | 419 | capped | 346
@@ -579,7 +579,7 @@ oleic-acid | sucrose | 400 | 802 | capped | 347
 oleic-acid | sulfur-s8 | 8 | 0 | fixpoint | 0
 oleic-acid | tannic-acid-core | 400 | 541 | capped | 368
 oleic-acid | triolein | 8 | 0 | fixpoint | 0
-oleic-acid | water | 400 | 1037 | capped | 262
+oleic-acid | water | 400 | 1035 | capped | 252
 oleic-acid | zinc-sulfide | 8 | 0 | fixpoint | 0
 oxygen | potassium-nitrate | 9 | 0 | fixpoint | 0
 oxygen | salicin | 400 | 630 | capped | 374
@@ -629,7 +629,7 @@ sodium-chloride | sucrose | 400 | 402 | capped | 354
 sodium-chloride | sulfur-s8 | 9 | 0 | fixpoint | 0
 sodium-chloride | tannic-acid-core | 400 | 421 | capped | 373
 sodium-chloride | triolein | 9 | 0 | fixpoint | 0
-sodium-chloride | water | 15 | 10 | fixpoint | 0
+sodium-chloride | water | 16 | 12 | fixpoint | 0
 sodium-chloride | zinc-sulfide | 9 | 0 | fixpoint | 0
 sodium-nitrate | starch-unit | 400 | 737 | capped | 371
 sodium-nitrate | sucrose | 400 | 402 | capped | 354
@@ -656,6 +656,6 @@ sulfur-s8 | zinc-sulfide | 8 | 0 | fixpoint | 0
 tannic-acid-core | triolein | 400 | 429 | capped | 363
 tannic-acid-core | water | 400 | 530 | capped | 370
 tannic-acid-core | zinc-sulfide | 400 | 422 | capped | 374
-triolein | water | 400 | 887 | capped | 301
+triolein | water | 400 | 889 | capped | 301
 triolein | zinc-sulfide | 8 | 0 | fixpoint | 0
 water | zinc-sulfide | 12 | 4 | fixpoint | 0

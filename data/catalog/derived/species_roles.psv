@@ -92,8 +92,8 @@ sodium-carbonate | 2 | 0 | 0 | 1 | 1 | ion
 calcium-carbide | 2 | 0 | 2 | 0 | 0 | refused
 copper-ii-oxide | 2 | 0 | 1 | 0 | 1 | mineral
 manganese-dioxide | 2 | 2 | 0 | 0 | 0 | refused
-calcium-hypochlorite | 2 | 1 | 0 | 1 | 0 | refused
-sodium-hypochlorite | 2 | 1 | 0 | 1 | 0 | refused
+calcium-hypochlorite | 2 | 1 | 0 | 1 | 0 | ion
+sodium-hypochlorite | 2 | 1 | 0 | 1 | 0 | ion
 calcium-sulfate | 2 | 0 | 0 | 2 | 0 | ion
 silicon-dioxide | 2 | 2 | 0 | 0 | 0 | refused
 calcium-silicate | 2 | 0 | 0 | 2 | 0 | refused
