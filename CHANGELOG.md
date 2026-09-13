@@ -4,6 +4,21 @@ Newest first. One entry per session, twelve lines at most, enforced by
 `tools/check_docs.py`. When this file passes 400 lines the older half rolls into
 `docs/history/changelog-YYYY-MM.md`.
 
+## 2026-09-13 — T12: the sulfide is priced by subtraction, and [S;H2] leaves the work order
+
+C2 refused a pKa for HS- -> S2- because the compilations span 12.9 to 19; it was
+never a pick. `ion_data` holds [SH-] and [S-2] on one CRC basis, so their
+difference IS the dissociation Gibbs energy: 73.7 kJ/mol, pKa 12.91. Anything else
+prices [S-2] twice, here and in five sulfide Ksp. `_PAIRS` 32 -> 33 rows (34 priced
+ions); `sulfide_protonation` and `hydrosulfide_protonation` go protonation-first,
+the reverse sweep refusing a proposal heavier than its flask. Templates 57 -> 59,
+chargeable 1167 -> 1174, species-ready 88 -> 89, natural rows 36 -> 37, lattices
+with a Ksp that cannot be flasked 5 -> 2 (both now cation-blocked). Work order
+20 -> 19 and its head `[S;H2]` is gone: both Claus templates fire on the closure,
+24 rows / 48 species, still a fixpoint -- which took 16 MINUTES until the Claus SO2
+slot was tightened, `[O]=[S]=[O]` matching a sulfate too and eight such slots being
+6561 rewrites of a 24-molecule template (T16 is the twin). `./check.ps1` green.
+
 ## 2026-09-12 — T8: three pKa rows, and the cannot-fire column is empty
 
 `properties/electrolyte._PAIRS` 30 -> 33: oleic acid 5.02 (PubChem CID 445639,

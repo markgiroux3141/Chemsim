@@ -143,6 +143,21 @@ _PAIRS: tuple[AcidPair, ...] = (
     AcidPair("OCl", "[O-]Cl", 7.53, "hypochlorous acid"),
     AcidPair("C#N", "[C-]#N", 9.21, "hydrogen cyanide"),
     AcidPair("S", "[SH-]", 7.00, "hydrogen sulfide"),
+    # The second sulfide proton, added by T12 -- and C2 refused this same row,
+    # because HS- -> S2- is quoted anywhere between 12.9 and 19 depending on the
+    # compilation and `element_data`'s rule is to report a spread rather than to
+    # pick inside one. What that reading missed is that the number need not come
+    # from a pKa compilation at all: `ion_data` carries [SH-] and [S-2] on one
+    # CRC aqueous basis, and the difference between them IS the dissociation
+    # Gibbs energy -- 85.8 - 12.1 = 73.7 kJ/mol, i.e. pKa 12.91, with those two
+    # rows' own cross-check residuals worth 0.07 of it. Derived by the same
+    # subtraction `solubility_product` makes, not transcribed.
+    #
+    # The modern determinations near 17-19 are unavailable to this table for a
+    # reason that is arithmetic rather than editorial: five sulfide Ksp values
+    # here are computed from that same Gf([S-2]), so a pKa fitted against a
+    # different one would give a single species two standard states.
+    AcidPair("[SH-]", "[S-2]", 12.91, "hydrogen sulfide, 2nd"),
     # ⚠ BOTH CARBONATE PAIRS ARE PRESENT AND BOTH ARE INERT, and the reason is
     # worth reading before anyone "fixes" it with a number.
     #
@@ -490,6 +505,14 @@ def dissociation_templates(A: float | None = None, Ea: float | None = None):
             # X2, not X3, so the pyridinium row now in ``_PAIRS`` is priced and
             # still unreachable.
             "amine_protonation",
+            # T12: the two sulfide protons, also written protonation-forward,
+            # and for a sharper reason than the amine's. The reverse sweep
+            # refuses a proposal heavier than the flask it came from, and a
+            # proton is heavier -- so a dissociation-direction row can be found
+            # from H2S but can never PROTONATE a sulfide, which is the direction
+            # a metal sulfide charged ion by ion needs.
+            "sulfide_protonation",
+            "hydrosulfide_protonation",
         )
     ]
 

@@ -254,13 +254,17 @@ def test_every_chargeable_row_makes_a_real_vessel_state():
 def test_a_refused_row_is_visible_carries_its_reason_and_refuses_to_pour():
     """⚠ 8.3: greyed WITH THE REASON, never absent and never failing late.
 
-    Seven shelf rows and 416 corpus species. The refusal is the element floor
+    Six shelf rows and 409 corpus species. The refusal is the element floor
     working: an estimator outside its domain answers confidently and wrongly.
+
+    T12 took one row OFF this list -- pyrrhotite, once the second sulfide pKa
+    priced the [S-2] it is written as. Pyrite stays, because the SMILES the
+    corpus gives it is [S-]S[S-], a trisulfide, and no pKa reaches that.
     """
     refused = [i for i in inv.shelf() if not i.chargeable]
     assert {i.id for i in refused} == {
         "gold", "silicon-dioxide", "cryolite", "iron-disulfide",
-        "iron-ii-sulfide", "manganese-dioxide", "borax",
+        "manganese-dioxide", "borax",
     }
     for item in refused:
         assert item.refusal.strip(), f"{item.id} is refused and says nothing"
@@ -400,4 +404,4 @@ def test_the_whole_loop_runs_and_the_players_shelf_is_depleted():
 
 def test_a_refused_row_is_skipped_by_open_shelf_rather_than_raising():
     book = inv.open_shelf(inv.shelf(("natural",)))
-    assert len(book) == 43 - 7
+    assert len(book) == 43 - 6

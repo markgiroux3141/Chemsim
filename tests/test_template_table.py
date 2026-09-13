@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import importlib
 import os
+import re
 import sys
 from dataclasses import fields
 
@@ -190,7 +191,7 @@ def test_a_class_covered_by_a_family_names_every_member():
     """
     assert template_classes()["hydroformylation"] == (
         "hydroformylation_linear", "hydroformylation_branched")
-    assert len(template_classes()["proton-transfer"]) == 6
+    assert len(template_classes()["proton-transfer"]) == 8
 
 
 # ---------------------------------------------------------------------------
@@ -219,3 +220,60 @@ def test_a_declared_order_has_one_exponent_per_reactant_slot():
         if rec.orders is None:
             continue
         assert len(rec.orders) == rec.build().n_reactant_slots, rec.name
+
+
+def test_a_slot_written_out_three_times_names_one_species():
+    """T12. A repeated slot MULTIPLIES, so its pattern must be unambiguous.
+
+    `claus_comproportionation` writes its global stoichiometry out in full: 16
+    hydrogen-sulfide slots and 8 sulfur-dioxide slots. The sulfur-dioxide slot
+    was `[O]=[S]=[O]`, which also matches a SULFATE -- so the moment a flask
+    held H2S at all, the builder tried every assignment of the two sulfates on
+    the shelf to eight slots, 2**8 rewrites of a 24-molecule template, and the
+    24-species closure that used to reach a fixpoint in four seconds took
+    sixteen minutes. Nothing was wrong with the chemistry and nothing failed.
+
+    The pool is the SHELF rather than a list written here, because the shelf is
+    what a flask is charged from and a pattern that cannot tell two shelf rows
+    apart is the defect whatever the numbers do.
+    """
+    from rdkit import Chem
+
+    from chemsim.engine.shelf_data import ROSTER, SHELF
+
+    pool = []
+    for entry in SHELF:
+        for smiles, _n in ROSTER[entry.id].charge:
+            mol = Chem.MolFromSmiles(smiles)
+            if mol is not None:
+                pool.append((smiles, mol))
+    assert len(pool) > 60
+
+    for rec in TEMPLATES.values():
+        counts: dict[str, int] = {}
+        for slot in _reactant_slots(rec.smarts):
+            counts[slot] = counts.get(slot, 0) + 1
+        for slot, repeats in counts.items():
+            if repeats < 3:
+                continue
+            query = Chem.MolFromSmarts(slot)
+            assert query is not None, (rec.name, slot)
+            hits = [s for s, m in pool if m.HasSubstructMatch(query)]
+            assert len(hits) <= 1, (rec.name, slot, repeats, hits)
+
+
+def _reactant_slots(smarts: str) -> list[str]:
+    """The dot-separated reactant patterns, map numbers stripped."""
+    out, depth, current = [], 0, ""
+    for ch in smarts.split(">>")[0]:
+        if ch == "(":
+            depth += 1
+        elif ch == ")":
+            depth -= 1
+        if ch == "." and depth == 0:
+            out.append(current)
+            current = ""
+        else:
+            current += ch
+    out.append(current)
+    return [re.sub(r":\d+\]", "]", s) for s in out]

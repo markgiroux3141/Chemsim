@@ -21,7 +21,7 @@ import math
 import pytest
 
 from chemsim.constants import R
-from chemsim.properties.electrolyte import electrolyte_provider
+from chemsim.properties.electrolyte import electrolyte_provider, known_pairs
 from chemsim.properties.ion_data import AQUEOUS_IONS, AqueousIon, worst_crosscheck
 from chemsim.properties.element_data import REFERENCE_STATES
 from chemsim.properties.mineral_data import MINERALS
@@ -340,3 +340,46 @@ def test_a_SPECTATOR_zero_still_destroys_a_Ksp_and_the_engine_still_holds_one():
     # ...and the same lattice on the aqueous basis is inside the stated factor.
     right = solubility_product("rock salt")
     assert 1.0 / MEASURED_FACTOR < right.solubility() / measured < MEASURED_FACTOR
+
+
+def test_the_second_sulfide_pKa_is_a_SUBTRACTION_between_two_rows_of_this_table():
+    """T12. The number C2 refused to pick was never a pick.
+
+    HS- -> S2- is quoted anywhere between 12.9 and 19 across compilations, and
+    `element_data`'s rule is to report a spread rather than choose inside one.
+    But `ion_data` carries both members on ONE basis, so their difference is the
+    dissociation Gibbs energy and the pKa follows by the same subtraction this
+    module makes for a Ksp. Anything else would price [S-2] twice: once through
+    `_PAIRS`, once through the five sulfide lattices.
+    """
+    pair = [p for p in known_pairs() if p.acid == "[SH-]" and p.base == "[S-2]"]
+    assert len(pair) == 1, "the second sulfide proton is one row"
+    dG = (AQUEOUS_IONS["[S-2]"].Gf - AQUEOUS_IONS["[SH-]"].Gf) * 1000.0
+    assert pair[0].pKa == pytest.approx(dG / (R * 298.15 * math.log(10.0)), abs=0.01)
+
+
+def test_no_sulfide_lattice_is_blocked_on_its_ANION_any_more():
+    """The membership gap C2 measured, re-measured from the other side.
+
+    Five lattices had a Ksp and could not be put in a flask, all five on
+    ``[S-2]``. What is left is two cations -- a spectator zero, which is a
+    different repair from a pKa and must not be mistaken for this one.
+    """
+    prov = electrolyte_provider()
+
+    def priced(smiles):
+        try:
+            prov.get(smiles)
+        except Exception:                                       # noqa: BLE001
+            return False
+        return True
+
+    blocked = {}
+    for name, rec in MINERALS.items():
+        if not rec.ions or lattice_verdicts().get(name):
+            continue
+        missing = sorted({i for i in rec.ions if not priced(i)})
+        if missing:
+            blocked[name] = missing
+    assert not [n for n, m in blocked.items() if "[S-2]" in m]
+    assert set(blocked) == {"chalcocite", "cinnabar"}

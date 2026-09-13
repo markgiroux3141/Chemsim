@@ -110,7 +110,12 @@ def test_the_only_cations_in_the_table_are_the_four_plus_the_hydronium(ions):
     # Re-measured as instructed: corpus refusals 416 -> 412, species-ready
     # 85 -> 88, and the intersection to quote 38 -> 40 on `bleaching-powder`
     # and `hypochlorite-bleach`.
-    assert len(ions) == 33
+    # T12 grew it 33 -> 34 with the SECOND sulfide proton, an anion again, so
+    # the cation list above is unchanged for the third time running. Re-measured
+    # as instructed: corpus refusals 412 -> 409, species-ready 88 -> 89, and the
+    # intersection to quote stays 40 -- the row that moved is a lattice's anion,
+    # not a route's missing species.
+    assert len(ions) == 34
 
 
 def test_an_anion_is_still_anchored_on_its_acid_bit_for_bit(ions):

@@ -10,16 +10,11 @@ Order is priority order. Do not start a Tier 2 item while a Tier 0 item is open.
 
 ## Tier 0 — make the repo cheap to enter
 
-### T0.3 — README length (S, decided: deferred into C1)
-The status half is done: the stale paragraph, the false `[done]` on Layer 4.5,
-the untrue RDKit claim and all 32 warning glyphs are gone, and the coverage
-narrative points at the generated reports. 662 -> 561 lines.
-Decision 2026-09-01: the 300-line target was arbitrary and the remaining overage
-is the physics prose, which is the best argument the README makes for why this is
-not a recipe table. It stays until C1 moves the same material into
-`docs/manual/chapters/`, at which point the README keeps a paragraph and a link
-per topic. The budget target is 400, not 300, and this item is not a Tier 0
-blocker any more.
+### T0.3 — README length (S, decided 2026-09-01: deferred into C1)
+The status half is done, 662 -> 561 lines. What is left is the physics prose,
+which is the best argument the README makes for why this is not a recipe table,
+so it stays until C1 moves it into `docs/manual/chapters/` and the README keeps
+a paragraph and a link per topic. Target 400, not 300. Not a Tier 0 blocker.
 
 ### T0.4 — a fast test subset (S)
 There are no pytest markers at all, so the only way to run less than the
@@ -159,18 +154,34 @@ and report how many rows a single plateau value would cover against how many
 genuinely need their own measurement. T5 is the same question one level up.
 **Done when:** the count is in `NEXT.md` with its command, and a follow-up
 item says whether the fix is rows or a rule.
-### T12 — hydrogen sulfide is the new head of the work order (S)
-T9's rewrite of `tools/classify_silent.py` re-ordered the queue by what sourcing
-a substrate would actually UNBLOCK, and `[S;H2]` came out top: two templates
-(`claus_comproportionation`, `hydrogen_sulfide_combustion`), both short of
-nothing else. Hydrogen sulfide is already a `data/catalog/shelf.psv` row at tier
-`intermediate`, and the sweep is over `natural` rows, so the question is whether
-a natural row makes it -- pyrite, galena and pyrrhotite are all on the shelf and
-the closure holds none of it. Find out which template is missing between a metal
-sulfide and an acid, or record that the gap is the shelf tier and not the
-chemistry.
-**Done when:** `[S;H2]` has left the work order, or `BACKLOG.md` says which
-template would put it there and at what cost.
+### T15 — the sulfide half of the shelf is still half-represented (S, found in T12)
+T12 priced `[S-2]`, so pyrrhotite is chargeable and the closure reaches H2S.
+Two things did not come with it, and `tools/build_shelf.py` now prints the
+first one by name rather than asserting nobody can hit it.
+* `iron-ii-sulfide` declares `solid` with ion species and has NO Ksp, because
+  troilite is not in `mineral_data`. Its ions therefore sit in the solid block
+  for ever: DISCOVERY reacts them and the integrator cannot move them, which is
+  panel 5's "the score and the chemistry came out of different tables" arriving
+  from the shelf side. `chemicals` has FeS under CAS 1317-37-9 (Hfs -100.0,
+  S0s 60.3), so the mineral row is a tuple in `tools/build_mineral_data.py`.
+* `iron-disulfide` is written `[Fe+2].[S-]S[S-]`, which is FeS3, not pyrite.
+  Fixing the SMILES to `[S-][S-]` gives the formula `corpus_balance` needs for
+  `pyrite-roasting` and does NOT make the row chargeable: the disulfide is in
+  `ion_data` but its acid (HS-SH) is in no pKa pair. Two separate repairs.
+**Done when:** a flask of pyrrhotite and water makes H2S in the INTEGRATOR, or
+the shelf row says `liquid` and says why; and pyrite's formula is FeS2.
+
+### T16 — the other loose sulfur-dioxide slot (S, found in T12)
+`sulfur_dioxide_oxidation_by_nitrogen_dioxide` still writes SO2 as
+`[O:1]=[S:2]=[O:3]`, the pattern that made `claus_comproportionation` take
+sixteen minutes once H2S existed. It matches a SULFATE too, and two shelf rows
+are sulfates. It is not a bomb -- three slots, not eight -- but the rewrite it
+then attempts makes a five-bonded sulfur that sanitisation throws away, so the
+template does work it cannot use on every flask holding a vitriol. Tighten it to
+`[OX1]=[SX2]=[OX1]` as T12 did for the Claus row. It is chain 2's carrier step,
+so the tolerance audit is owed and the Ea/A must not move.
+**Done when:** the slot matches one shelf species, and
+`tests/test_lead_chamber.py` is green with the same numbers.
 
 ---
 

@@ -38,15 +38,15 @@
 # thermochemistry then refused to price -- an ion with no measured
 # pKa, mostly. They are not in the pool: a flask cannot be CHARGED
 # with one, and nothing can react with what has no standard state.
-#! needs-more-than-a-pair = 6
-#! no-substrate = 18
+#! needs-more-than-a-pair = 8
+#! no-substrate = 16
 #! silent = 24
-#! closure_rows = 23
-#! closure_species = 44
+#! closure_rows = 24
+#! closure_species = 48
 #! closure_frontier = 0
 #! step_rows = 13
 #! step_frontier = 306
-#! pool_species = 285
+#! pool_species = 289
 #! pool_unpriceable = 41
 #
 # THE WORK ORDER: one missing substrate holds several
@@ -54,10 +54,8 @@
 # 'blocked' is how many templates name this slot; 'alone' is how
 # many name it and nothing else, so 'alone' is what sourcing it
 # would unblock.
-#! blocking_substrates = 20
-#! substrates_that_unblock_alone = 16
-#   2 blocked, 2 alone  [S;H2]
-#      claus_comproportionation, hydrogen_sulfide_combustion
+#! blocking_substrates = 19
+#! substrates_that_unblock_alone = 14
 #   1 blocked, 1 alone  [C;H4]
 #      steam_reforming
 #   1 blocked, 1 alone  [CH2]=[CH1][C]#[N]
@@ -101,13 +99,13 @@ aldofuranose_dehydration | no-substrate | 1 | 0 |  | [OX2H][CH2][C;H1;@,@@]1[OX2
 alkene_hydrodimerisation | no-substrate | 3 | 0 |  | [CH2]=[CH1][C]#[N] | nothing the shelf holds or can make matches it
 alkyne_hydration | no-substrate | 2 | 0 |  | [CX2]#[CX2] | nothing the shelf holds or can make matches it
 aromatic_nitration | no-substrate | 2 | 0 |  | [OX2H1][N+](=[O])[O-] | nothing the shelf holds or can make matches it
-cannizzaro_disproportionation | needs-more-than-a-pair | 3 | 2 | lignin-monomer-coniferyl@1 |  | fires on lignin-monomer-coniferyl@1 -- a row expanded one generation against the closure's 23 rows
-claus_comproportionation | no-substrate | 24 | 0 |  | [S;H2] | nothing the shelf holds or can make matches it
-hydroformylation_branched | needs-more-than-a-pair | 3 | 2 | closure+eugenol |  | fires on the closure, which is 23 rows, and 1 row(s) of its own
-hydroformylation_linear | needs-more-than-a-pair | 3 | 2 | closure+eugenol |  | fires on the closure, which is 23 rows, and 1 row(s) of its own
-hydrogen_sulfide_combustion | no-substrate | 5 | 0 |  | [S;H2] | nothing the shelf holds or can make matches it
+cannizzaro_disproportionation | needs-more-than-a-pair | 3 | 2 | lignin-monomer-coniferyl@1 |  | fires on lignin-monomer-coniferyl@1 -- a row expanded one generation against the closure's 24 rows
+claus_comproportionation | needs-more-than-a-pair | 24 | 1 | closure |  | fires on the closure, which is 24 rows, and 0 row(s) of its own
+hydroformylation_branched | needs-more-than-a-pair | 3 | 2 | closure+eugenol |  | fires on the closure, which is 24 rows, and 1 row(s) of its own
+hydroformylation_linear | needs-more-than-a-pair | 3 | 2 | closure+eugenol |  | fires on the closure, which is 24 rows, and 1 row(s) of its own
+hydrogen_sulfide_combustion | needs-more-than-a-pair | 5 | 1 | closure |  | fires on the closure, which is 24 rows, and 0 row(s) of its own
 hydroxymethylfurfural_rehydration | no-substrate | 3 | 0 |  | [OX2H][CH2][c]1[cH][cH][c]([CH]=[O])[o]1 | nothing the shelf holds or can make matches it
-ketofuranose_dehydration | needs-more-than-a-pair | 1 | 2 | sucrose@1 |  | fires on sucrose@1 -- a row expanded one generation against the closure's 23 rows
+ketofuranose_dehydration | needs-more-than-a-pair | 1 | 2 | sucrose@1 |  | fires on sucrose@1 -- a row expanded one generation against the closure's 24 rows
 knoevenagel_doebner_condensation | no-substrate | 2 | 0 |  | [CX4H2]([CX3](=[O])[OX2H1])[CX3](=[O])[OX2H1] | nothing the shelf holds or can make matches it
 kolbe_schmitt_carboxylation | needs-more-than-a-pair | 2 | 2 | eugenol@1 |  | reachable only above a pair (eugenol@1), and then the template applies and the rewrite is discarded: 1 product species cannot be priced
 mineral_oxyacid_dissociation | no-substrate | 2 | 0 |  | [S,N,P;+0,+1](=[O])[OX2H1] | nothing the shelf holds or can make matches it

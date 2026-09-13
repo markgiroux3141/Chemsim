@@ -591,12 +591,21 @@ def main() -> int:
             where = "dissolved"
         print(f"    {cid:<24} {where:<24} {dict(by_id[cid]['charge'])}")
     if stranded:
+        live = [c for c in stranded if not by_id[c]["refusal"]]
         print(f"    ^ {len(stranded)} row(s) declare `solid` with no Ksp behind "
               f"them, so their ions would sit")
-        print("      in the block for ever. Every one is also REFUSED a price, "
-              "so nothing can")
-        print("      charge them today -- but a curation session that prices one "
-              "inherits this.")
+        print(f"      in the block for ever, and {len(live)} of those can be "
+              f"charged today.")
+        if live:
+            print(f"      {', '.join(live)}: a flask holding one has matter the "
+                  f"integrator")
+            print("      cannot move, though DISCOVERY still reacts it. Either a "
+                  "`mineral_data`")
+            print("      row gives the ions a Ksp, or the shelf row says "
+                  "`liquid` and says why.")
+        else:
+            print("      None can be charged today -- but a curation session "
+                  "that prices one inherits this.")
     print()
     print(f"THE COLLISION            {len(collide):5d}"
           f"   rows that react as a crystal AND have a Ksp.")

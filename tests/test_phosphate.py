@@ -200,15 +200,19 @@ def test_the_pKa_row_is_what_moved_the_score():
 # ---------------------------------------------------------------------------
 # the membership gap
 # ---------------------------------------------------------------------------
-def test_five_lattices_have_a_Ksp_and_cannot_be_put_in_a_flask(thermo):
+def test_the_lattices_that_have_a_Ksp_and_cannot_be_put_in_a_flask(thermo):
     """⚠⚠ `ion_data` and `electrolyte` price the same ions on different ZEROS,
     which `solubility_product` warns about at length. Nothing compares which
     ions they HAVE, and that is what blocked `phosphoric-wet`.
 
-    The five that remain are all blocked on the SAME ion, and it is the same
-    shape: `_PAIRS` carries H2S -> [SH-] and stops. That step is a REFUSAL
-    rather than the next one-line fix -- HS- -> S2- is quoted between ~12.9 and
-    19 depending on the compilation."""
+    C2 measured five, all blocked on the SAME ion: `_PAIRS` carried H2S -> [SH-]
+    and stopped, and the next step looked like a refusal rather than a one-line
+    fix, HS- -> S2- being quoted between ~12.9 and 19 across compilations.
+
+    T12 closed it without choosing inside that spread. `ion_data` holds [SH-]
+    and [S-2] on one basis, so the pKa is their DIFFERENCE -- 12.91 -- and any
+    other value would have priced [S-2] twice over. What is left is two CATIONS,
+    which is the spectator zero and a different repair."""
     def priced(smi):
         try:
             thermo.get(smi)
@@ -231,10 +235,10 @@ def test_five_lattices_have_a_Ksp_and_cannot_be_put_in_a_flask(thermo):
         else:
             buildable += 1
 
-    assert set(blocked) == {"sphalerite", "galena", "covellite",
-                            "chalcocite", "cinnabar"}
-    assert all("[S-2]" in m for m in blocked.values())
-    assert buildable == 25
+    assert set(blocked) == {"chalcocite", "cinnabar"}
+    assert not any("[S-2]" in m for m in blocked.values())
+    assert sorted({i for m in blocked.values() for i in m}) == ["[Cu+]", "[Hg+2]"]
+    assert buildable == 28
     assert ROCK_NAME not in blocked
     # the aqueous table is strictly bigger than what a network can reach
     assert not all(priced(i) for i in AQUEOUS_IONS)

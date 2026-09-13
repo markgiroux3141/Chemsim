@@ -167,7 +167,7 @@ cinnamic-acid | 2 | 0 | 0 | 2 | 0 | benson
 phenyl-isocyanate | 2 | 0 | 2 | 0 | 0 | refused
 nitrosylsulfuric-acid | 1 | 0 | 0 | 1 | 0 | refused
 iron-disulfide | 1 | 1 | 0 | 0 | 0 | refused
-calcium-sulfide | 1 | 0 | 1 | 0 | 0 | refused
+calcium-sulfide | 1 | 0 | 1 | 0 | 0 | ion
 ammonium-hydroxide | 1 | 0 | 1 | 0 | 0 | ion
 sodium-bicarbonate | 1 | 0 | 1 | 0 | 0 | ion
 potassium-bisulfate | 1 | 0 | 0 | 1 | 0 | ion
@@ -184,10 +184,10 @@ aluminium-hydroxide | 1 | 0 | 1 | 0 | 0 | refused
 sodium-aluminate | 1 | 0 | 1 | 0 | 0 | refused
 cryolite | 1 | 0 | 0 | 0 | 1 | refused
 iron-ii-oxide | 1 | 0 | 1 | 0 | 0 | refused
-lead-sulfide | 1 | 1 | 0 | 0 | 0 | mineral
+lead-sulfide | 1 | 1 | 0 | 0 | 0 | ion
 lead-ii-oxide | 1 | 0 | 1 | 0 | 0 | mineral
-copper-sulfide | 1 | 1 | 0 | 0 | 0 | mineral
-zinc-sulfide | 1 | 1 | 0 | 0 | 0 | mineral
+copper-sulfide | 1 | 1 | 0 | 0 | 0 | ion
+zinc-sulfide | 1 | 1 | 0 | 0 | 0 | ion
 sodium | 1 | 0 | 0 | 1 | 0 | mineral
 sodium-amalgam-marker | 1 | 0 | 1 | 0 | 0 | marker
 gunpowder-marker | 1 | 0 | 1 | 0 | 0 | refused

@@ -7,7 +7,7 @@ inputs are ``data/catalog/shelf.psv`` (the three tiers, hand-maintained) and
 
 ``SHELF``   the 71 starting rows, in file order.
 ``ROSTER``  every corpus species by id -- the picker's whole content, including
-            the 416 that are REFUSED a price and may never be charged.
+            the 409 that are REFUSED a price and may never be charged.
             A refused row carries its REASON, because GAME_DESIGN.md 8.3 says a
             player who cannot find sodium metal must be told the engine declines
             to price it rather than left to conclude the game is broken.
@@ -15,11 +15,11 @@ inputs are ``data/catalog/shelf.psv`` (the three tiers, hand-maintained) and
 MEASURED AT GENERATION:
 
     corpus species                               1583
-    ... chargeable                               1167
-    ... REFUSED a price                           416
+    ... chargeable                               1174
+    ... REFUSED a price                           409
     shelf rows                                     71
     ... natural / intermediate / bottle            43 /  24 /   4
-    ... refused, and kept anyway                    7
+    ... refused, and kept anyway                    6
     ... charged as a reacting mineral LATTICE      16
     ... charged as IONS                            14
     ... a lattice that CANNOT be dissolved
@@ -27,7 +27,7 @@ MEASURED AT GENERATION:
     ... where the declared phase and the
         engine's own estimate DISAGREE              1
 
-Generated 2026-08-31.
+Generated 2026-09-12.
 """
 
 from __future__ import annotations
@@ -239,9 +239,9 @@ ROSTER: dict[str, RosterEntry] = {
         'deuterium', 'deuterium',
         '[2H][2H]', 'molecule',
         (('[2H][2H]', 1.0),),
-        'solid', "no phase from the engine (ValueError: refusing to price '[2H][2H]': it is an ELEMENTAL species (H) with no curated ent)",
+        'solid', "no phase from the engine (OutsideEstimatorDomain: refusing to price '[2H][2H]': it is an ELEMENTAL species (H) with no curated ent)",
         False, '', 'refused',
-        "ValueError: refusing to price '[2H][2H]': it is an ELEMENTAL species (H) with no curated entry, and a ",
+        "OutsideEstimatorDomain: refusing to price '[2H][2H]': it is an ELEMENTAL species (H) with no curated entry, and a ",
     ),
     'oxygen': RosterEntry(
         'oxygen', 'dioxygen',
@@ -311,17 +311,17 @@ ROSTER: dict[str, RosterEntry] = {
         'sulfur-s2', 'disulfur',
         'S=S', 'molecule',
         (('S=S', 1.0),),
-        'solid', "no phase from the engine (ValueError: refusing to price 'S=S': it is an ELEMENTAL species (S) with no curated entry, a)",
+        'solid', "no phase from the engine (OutsideEstimatorDomain: refusing to price 'S=S': it is an ELEMENTAL species (S) with no curated entry, a)",
         False, '', 'refused',
-        "ValueError: refusing to price 'S=S': it is an ELEMENTAL species (S) with no curated entry, and a group",
+        "OutsideEstimatorDomain: refusing to price 'S=S': it is an ELEMENTAL species (S) with no curated entry, and a group",
     ),
     'phosphorus-white': RosterEntry(
         'phosphorus-white', 'white phosphorus (P4)',
         'p12p3p1p23', 'molecule',
         (('p12p3p1p23', 1.0),),
-        'solid', "no phase from the engine (ValueError: refusing to price 'p12p3p1p23': it is an ELEMENTAL species (P) with no curated e)",
+        'solid', "no phase from the engine (OutsideEstimatorDomain: refusing to price 'p12p3p1p23': it is an ELEMENTAL species (P) with no curated e)",
         False, '', 'refused',
-        "ValueError: refusing to price 'p12p3p1p23': it is an ELEMENTAL species (P) with no curated entry, and ",
+        "OutsideEstimatorDomain: refusing to price 'p12p3p1p23': it is an ELEMENTAL species (P) with no curated entry, and ",
     ),
     'carbon-graphite': RosterEntry(
         'carbon-graphite', 'graphite',
@@ -343,33 +343,33 @@ ROSTER: dict[str, RosterEntry] = {
         'potassium', 'potassium metal',
         '[K]', 'molecule',
         (('[K]', 1.0),),
-        'solid', "no phase from the engine (ValueError: refusing to price '[K]': a bare element symbol is the most ambiguous way to name)",
+        'solid', "no phase from the engine (OutsideEstimatorDomain: refusing to price '[K]': a bare element symbol is the most ambiguous way to name)",
         False, '', 'refused',
-        "ValueError: refusing to price '[K]': a bare element symbol is the most ambiguous way to name an allotr",
+        "OutsideEstimatorDomain: refusing to price '[K]': a bare element symbol is the most ambiguous way to name an allotr",
     ),
     'lithium': RosterEntry(
         'lithium', 'lithium metal',
         '[Li]', 'molecule',
         (('[Li]', 1.0),),
-        'solid', "no phase from the engine (ValueError: refusing to price '[Li]': a bare element symbol is the most ambiguous way to nam)",
+        'solid', "no phase from the engine (OutsideEstimatorDomain: refusing to price '[Li]': a bare element symbol is the most ambiguous way to nam)",
         False, '', 'refused',
-        "ValueError: refusing to price '[Li]': a bare element symbol is the most ambiguous way to name an allot",
+        "OutsideEstimatorDomain: refusing to price '[Li]': a bare element symbol is the most ambiguous way to name an allot",
     ),
     'magnesium': RosterEntry(
         'magnesium', 'magnesium metal',
         '[Mg]', 'molecule',
         (('[Mg]', 1.0),),
-        'solid', "no phase from the engine (ValueError: refusing to price '[Mg]': a bare element symbol is the most ambiguous way to nam)",
+        'solid', "no phase from the engine (OutsideEstimatorDomain: refusing to price '[Mg]': a bare element symbol is the most ambiguous way to nam)",
         False, '', 'refused',
-        "ValueError: refusing to price '[Mg]': a bare element symbol is the most ambiguous way to name an allot",
+        "OutsideEstimatorDomain: refusing to price '[Mg]': a bare element symbol is the most ambiguous way to name an allot",
     ),
     'calcium': RosterEntry(
         'calcium', 'calcium metal',
         '[Ca]', 'molecule',
         (('[Ca]', 1.0),),
-        'solid', "no phase from the engine (ValueError: refusing to price '[Ca]': a bare element symbol is the most ambiguous way to nam)",
+        'solid', "no phase from the engine (OutsideEstimatorDomain: refusing to price '[Ca]': a bare element symbol is the most ambiguous way to nam)",
         False, '', 'refused',
-        "ValueError: refusing to price '[Ca]': a bare element symbol is the most ambiguous way to name an allot",
+        "OutsideEstimatorDomain: refusing to price '[Ca]': a bare element symbol is the most ambiguous way to name an allot",
     ),
     'aluminium': RosterEntry(
         'aluminium', 'aluminium metal',
@@ -407,9 +407,9 @@ ROSTER: dict[str, RosterEntry] = {
         'tin', 'tin metal',
         '[Sn]', 'molecule',
         (('[Sn]', 1.0),),
-        'solid', "no phase from the engine (ValueError: refusing to price '[Sn]': a bare element symbol is the most ambiguous way to nam)",
+        'solid', "no phase from the engine (OutsideEstimatorDomain: refusing to price '[Sn]': a bare element symbol is the most ambiguous way to nam)",
         False, '', 'refused',
-        "ValueError: refusing to price '[Sn]': a bare element symbol is the most ambiguous way to name an allot",
+        "OutsideEstimatorDomain: refusing to price '[Sn]': a bare element symbol is the most ambiguous way to name an allot",
     ),
     'lead': RosterEntry(
         'lead', 'lead metal',
@@ -439,9 +439,9 @@ ROSTER: dict[str, RosterEntry] = {
         'gold', 'gold metal',
         '[Au]', 'molecule',
         (('[Au]', 1.0),),
-        'solid', "no phase from the engine (ValueError: refusing to price '[Au]': a bare element symbol is the most ambiguous way to nam)",
+        'solid', "no phase from the engine (OutsideEstimatorDomain: refusing to price '[Au]': a bare element symbol is the most ambiguous way to nam)",
         False, '', 'refused',
-        "ValueError: refusing to price '[Au]': a bare element symbol is the most ambiguous way to name an allot",
+        "OutsideEstimatorDomain: refusing to price '[Au]': a bare element symbol is the most ambiguous way to name an allot",
     ),
     'platinum': RosterEntry(
         'platinum', 'platinum metal',
@@ -471,17 +471,17 @@ ROSTER: dict[str, RosterEntry] = {
         'chromium', 'chromium metal',
         '[Cr]', 'molecule',
         (('[Cr]', 1.0),),
-        'solid', "no phase from the engine (ValueError: refusing to price '[Cr]': a bare element symbol is the most ambiguous way to nam)",
+        'solid', "no phase from the engine (OutsideEstimatorDomain: refusing to price '[Cr]': a bare element symbol is the most ambiguous way to nam)",
         False, '', 'refused',
-        "ValueError: refusing to price '[Cr]': a bare element symbol is the most ambiguous way to name an allot",
+        "OutsideEstimatorDomain: refusing to price '[Cr]': a bare element symbol is the most ambiguous way to name an allot",
     ),
     'manganese': RosterEntry(
         'manganese', 'manganese metal',
         '[Mn]', 'molecule',
         (('[Mn]', 1.0),),
-        'solid', "no phase from the engine (ValueError: refusing to price '[Mn]': a bare element symbol is the most ambiguous way to nam)",
+        'solid', "no phase from the engine (OutsideEstimatorDomain: refusing to price '[Mn]': a bare element symbol is the most ambiguous way to nam)",
         False, '', 'refused',
-        "ValueError: refusing to price '[Mn]': a bare element symbol is the most ambiguous way to name an allot",
+        "OutsideEstimatorDomain: refusing to price '[Mn]': a bare element symbol is the most ambiguous way to name an allot",
     ),
     'cobalt': RosterEntry(
         'cobalt', 'cobalt metal',
@@ -495,137 +495,137 @@ ROSTER: dict[str, RosterEntry] = {
         'titanium', 'titanium metal',
         '[Ti]', 'molecule',
         (('[Ti]', 1.0),),
-        'solid', "no phase from the engine (ValueError: refusing to price '[Ti]': a bare element symbol is the most ambiguous way to nam)",
+        'solid', "no phase from the engine (OutsideEstimatorDomain: refusing to price '[Ti]': a bare element symbol is the most ambiguous way to nam)",
         False, '', 'refused',
-        "ValueError: refusing to price '[Ti]': a bare element symbol is the most ambiguous way to name an allot",
+        "OutsideEstimatorDomain: refusing to price '[Ti]': a bare element symbol is the most ambiguous way to name an allot",
     ),
     'vanadium': RosterEntry(
         'vanadium', 'vanadium metal',
         '[V]', 'molecule',
         (('[V]', 1.0),),
-        'solid', "no phase from the engine (ValueError: refusing to price '[V]': a bare element symbol is the most ambiguous way to name)",
+        'solid', "no phase from the engine (OutsideEstimatorDomain: refusing to price '[V]': a bare element symbol is the most ambiguous way to name)",
         False, '', 'refused',
-        "ValueError: refusing to price '[V]': a bare element symbol is the most ambiguous way to name an allotr",
+        "OutsideEstimatorDomain: refusing to price '[V]': a bare element symbol is the most ambiguous way to name an allotr",
     ),
     'tungsten': RosterEntry(
         'tungsten', 'tungsten metal',
         '[W]', 'molecule',
         (('[W]', 1.0),),
-        'solid', "no phase from the engine (ValueError: refusing to price '[W]': a bare element symbol is the most ambiguous way to name)",
+        'solid', "no phase from the engine (OutsideEstimatorDomain: refusing to price '[W]': a bare element symbol is the most ambiguous way to name)",
         False, '', 'refused',
-        "ValueError: refusing to price '[W]': a bare element symbol is the most ambiguous way to name an allotr",
+        "OutsideEstimatorDomain: refusing to price '[W]': a bare element symbol is the most ambiguous way to name an allotr",
     ),
     'silicon': RosterEntry(
         'silicon', 'silicon',
         '[Si]', 'molecule',
         (('[Si]', 1.0),),
-        'solid', "no phase from the engine (ValueError: refusing to price '[Si]': a bare element symbol is the most ambiguous way to nam)",
+        'solid', "no phase from the engine (OutsideEstimatorDomain: refusing to price '[Si]': a bare element symbol is the most ambiguous way to nam)",
         False, '', 'refused',
-        "ValueError: refusing to price '[Si]': a bare element symbol is the most ambiguous way to name an allot",
+        "OutsideEstimatorDomain: refusing to price '[Si]': a bare element symbol is the most ambiguous way to name an allot",
     ),
     'boron': RosterEntry(
         'boron', 'boron',
         '[B]', 'molecule',
         (('[B]', 1.0),),
-        'solid', "no phase from the engine (ValueError: refusing to price '[B]': a bare element symbol is the most ambiguous way to name)",
+        'solid', "no phase from the engine (OutsideEstimatorDomain: refusing to price '[B]': a bare element symbol is the most ambiguous way to name)",
         False, '', 'refused',
-        "ValueError: refusing to price '[B]': a bare element symbol is the most ambiguous way to name an allotr",
+        "OutsideEstimatorDomain: refusing to price '[B]': a bare element symbol is the most ambiguous way to name an allotr",
     ),
     'arsenic': RosterEntry(
         'arsenic', 'arsenic',
         '[As]', 'molecule',
         (('[As]', 1.0),),
-        'solid', "no phase from the engine (ValueError: refusing to price '[As]': a bare element symbol is the most ambiguous way to nam)",
+        'solid', "no phase from the engine (OutsideEstimatorDomain: refusing to price '[As]': a bare element symbol is the most ambiguous way to nam)",
         False, '', 'refused',
-        "ValueError: refusing to price '[As]': a bare element symbol is the most ambiguous way to name an allot",
+        "OutsideEstimatorDomain: refusing to price '[As]': a bare element symbol is the most ambiguous way to name an allot",
     ),
     'antimony': RosterEntry(
         'antimony', 'antimony',
         '[Sb]', 'molecule',
         (('[Sb]', 1.0),),
-        'solid', "no phase from the engine (ValueError: refusing to price '[Sb]': a bare element symbol is the most ambiguous way to nam)",
+        'solid', "no phase from the engine (OutsideEstimatorDomain: refusing to price '[Sb]': a bare element symbol is the most ambiguous way to nam)",
         False, '', 'refused',
-        "ValueError: refusing to price '[Sb]': a bare element symbol is the most ambiguous way to name an allot",
+        "OutsideEstimatorDomain: refusing to price '[Sb]': a bare element symbol is the most ambiguous way to name an allot",
     ),
     'bismuth': RosterEntry(
         'bismuth', 'bismuth',
         '[Bi]', 'molecule',
         (('[Bi]', 1.0),),
-        'solid', "no phase from the engine (ValueError: refusing to price '[Bi]': a bare element symbol is the most ambiguous way to nam)",
+        'solid', "no phase from the engine (OutsideEstimatorDomain: refusing to price '[Bi]': a bare element symbol is the most ambiguous way to nam)",
         False, '', 'refused',
-        "ValueError: refusing to price '[Bi]': a bare element symbol is the most ambiguous way to name an allot",
+        "OutsideEstimatorDomain: refusing to price '[Bi]': a bare element symbol is the most ambiguous way to name an allot",
     ),
     'selenium': RosterEntry(
         'selenium', 'selenium',
         '[Se]', 'molecule',
         (('[Se]', 1.0),),
-        'solid', "no phase from the engine (ValueError: refusing to price '[Se]': a bare element symbol is the most ambiguous way to nam)",
+        'solid', "no phase from the engine (OutsideEstimatorDomain: refusing to price '[Se]': a bare element symbol is the most ambiguous way to nam)",
         False, '', 'refused',
-        "ValueError: refusing to price '[Se]': a bare element symbol is the most ambiguous way to name an allot",
+        "OutsideEstimatorDomain: refusing to price '[Se]': a bare element symbol is the most ambiguous way to name an allot",
     ),
     'tellurium': RosterEntry(
         'tellurium', 'tellurium',
         '[Te]', 'molecule',
         (('[Te]', 1.0),),
-        'solid', "no phase from the engine (ValueError: refusing to price '[Te]': a bare element symbol is the most ambiguous way to nam)",
+        'solid', "no phase from the engine (OutsideEstimatorDomain: refusing to price '[Te]': a bare element symbol is the most ambiguous way to nam)",
         False, '', 'refused',
-        "ValueError: refusing to price '[Te]': a bare element symbol is the most ambiguous way to name an allot",
+        "OutsideEstimatorDomain: refusing to price '[Te]': a bare element symbol is the most ambiguous way to name an allot",
     ),
     'helium': RosterEntry(
         'helium', 'helium',
         '[He]', 'molecule',
         (('[He]', 1.0),),
-        'solid', "no phase from the engine (ValueError: refusing to price '[He]': a bare element symbol is the most ambiguous way to nam)",
+        'solid', "no phase from the engine (OutsideEstimatorDomain: refusing to price '[He]': a bare element symbol is the most ambiguous way to nam)",
         False, '', 'refused',
-        "ValueError: refusing to price '[He]': a bare element symbol is the most ambiguous way to name an allot",
+        "OutsideEstimatorDomain: refusing to price '[He]': a bare element symbol is the most ambiguous way to name an allot",
     ),
     'neon': RosterEntry(
         'neon', 'neon',
         '[Ne]', 'molecule',
         (('[Ne]', 1.0),),
-        'solid', "no phase from the engine (ValueError: refusing to price '[Ne]': a bare element symbol is the most ambiguous way to nam)",
+        'solid', "no phase from the engine (OutsideEstimatorDomain: refusing to price '[Ne]': a bare element symbol is the most ambiguous way to nam)",
         False, '', 'refused',
-        "ValueError: refusing to price '[Ne]': a bare element symbol is the most ambiguous way to name an allot",
+        "OutsideEstimatorDomain: refusing to price '[Ne]': a bare element symbol is the most ambiguous way to name an allot",
     ),
     'argon': RosterEntry(
         'argon', 'argon',
         '[Ar]', 'molecule',
         (('[Ar]', 1.0),),
-        'solid', "no phase from the engine (ValueError: refusing to price '[Ar]': a bare element symbol is the most ambiguous way to nam)",
+        'solid', "no phase from the engine (OutsideEstimatorDomain: refusing to price '[Ar]': a bare element symbol is the most ambiguous way to nam)",
         False, '', 'refused',
-        "ValueError: refusing to price '[Ar]': a bare element symbol is the most ambiguous way to name an allot",
+        "OutsideEstimatorDomain: refusing to price '[Ar]': a bare element symbol is the most ambiguous way to name an allot",
     ),
     'krypton': RosterEntry(
         'krypton', 'krypton',
         '[Kr]', 'molecule',
         (('[Kr]', 1.0),),
-        'solid', "no phase from the engine (ValueError: refusing to price '[Kr]': a bare element symbol is the most ambiguous way to nam)",
+        'solid', "no phase from the engine (OutsideEstimatorDomain: refusing to price '[Kr]': a bare element symbol is the most ambiguous way to nam)",
         False, '', 'refused',
-        "ValueError: refusing to price '[Kr]': a bare element symbol is the most ambiguous way to name an allot",
+        "OutsideEstimatorDomain: refusing to price '[Kr]': a bare element symbol is the most ambiguous way to name an allot",
     ),
     'xenon': RosterEntry(
         'xenon', 'xenon',
         '[Xe]', 'molecule',
         (('[Xe]', 1.0),),
-        'solid', "no phase from the engine (ValueError: refusing to price '[Xe]': a bare element symbol is the most ambiguous way to nam)",
+        'solid', "no phase from the engine (OutsideEstimatorDomain: refusing to price '[Xe]': a bare element symbol is the most ambiguous way to nam)",
         False, '', 'refused',
-        "ValueError: refusing to price '[Xe]': a bare element symbol is the most ambiguous way to name an allot",
+        "OutsideEstimatorDomain: refusing to price '[Xe]': a bare element symbol is the most ambiguous way to name an allot",
     ),
     'radon': RosterEntry(
         'radon', 'radon',
         '[Rn]', 'molecule',
         (('[Rn]', 1.0),),
-        'solid', "no phase from the engine (ValueError: refusing to price '[Rn]': a bare element symbol is the most ambiguous way to nam)",
+        'solid', "no phase from the engine (OutsideEstimatorDomain: refusing to price '[Rn]': a bare element symbol is the most ambiguous way to nam)",
         False, '', 'refused',
-        "ValueError: refusing to price '[Rn]': a bare element symbol is the most ambiguous way to name an allot",
+        "OutsideEstimatorDomain: refusing to price '[Rn]': a bare element symbol is the most ambiguous way to name an allot",
     ),
     'uranium': RosterEntry(
         'uranium', 'uranium',
         '[U]', 'molecule',
         (('[U]', 1.0),),
-        'solid', "no phase from the engine (ValueError: refusing to price '[U]': a bare element symbol is the most ambiguous way to name)",
+        'solid', "no phase from the engine (OutsideEstimatorDomain: refusing to price '[U]': a bare element symbol is the most ambiguous way to name)",
         False, '', 'refused',
-        "ValueError: refusing to price '[U]': a bare element symbol is the most ambiguous way to name an allotr",
+        "OutsideEstimatorDomain: refusing to price '[U]': a bare element symbol is the most ambiguous way to name an allotr",
     ),
     'water': RosterEntry(
         'water', 'water',
@@ -1383,9 +1383,9 @@ ROSTER: dict[str, RosterEntry] = {
         'water-gas', 'water gas',
         '[C-]#[O+].[H][H]', 'molecule',
         (('[C-]#[O+].[H][H]', 1.0),),
-        'solid', "no phase from the engine (ValueError: refusing to price '[C-]#[O+].[H][H]' as one species: it is a dot-separated SMILE)",
+        'solid', "no phase from the engine (OutsideEstimatorDomain: refusing to price '[C-]#[O+].[H][H]' as one species: it is a dot-separated SMILE)",
         False, '', 'refused',
-        "ValueError: refusing to price '[C-]#[O+].[H][H]' as one species: it is a dot-separated SMILES with 2 N",
+        "OutsideEstimatorDomain: refusing to price '[C-]#[O+].[H][H]' as one species: it is a dot-separated SMILES with 2 N",
     ),
     'silicon-dioxide': RosterEntry(
         'silicon-dioxide', 'silicon dioxide',
@@ -1593,7 +1593,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[Fe+3]', 2.0), ('O=S(=O)([O-])[O-]', 3.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price '[Fe+3]': it carries a net charge of +3, and Joback and Benson are fitte",
+        "UnpricedIon: refusing to price '[Fe+3]': it carries a net charge of +3 and the ion overlay is ON -- it ",
     ),
     'zinc-sulfate': RosterEntry(
         'zinc-sulfate', 'zinc sulfate',
@@ -1609,7 +1609,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[Al+3]', 2.0), ('O=S(=O)([O-])[O-]', 3.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price '[Al+3]': it carries a net charge of +3, and Joback and Benson are fitte",
+        "UnpricedIon: refusing to price '[Al+3]': it carries a net charge of +3 and the ion overlay is ON -- it ",
     ),
     'potash-alum': RosterEntry(
         'potash-alum', 'potassium aluminium sulfate',
@@ -1617,7 +1617,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[K+]', 1.0), ('[Al+3]', 1.0), ('O=S(=O)([O-])[O-]', 2.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price '[Al+3]': it carries a net charge of +3, and Joback and Benson are fitte",
+        "UnpricedIon: refusing to price '[Al+3]': it carries a net charge of +3 and the ion overlay is ON -- it ",
     ),
     'sodium-sulfite': RosterEntry(
         'sodium-sulfite', 'sodium sulfite',
@@ -1625,7 +1625,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[Na+]', 2.0), ('O=S([O-])[O-]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'O=S([O-])[O-]': it carries a net charge of -2, and Joback and Benson ar",
+        "UnpricedIon: refusing to price 'O=S([O-])[O-]': it carries a net charge of -2 and the ion overlay is ON",
     ),
     'sodium-bisulfite': RosterEntry(
         'sodium-bisulfite', 'sodium bisulfite',
@@ -1633,7 +1633,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[Na+]', 1.0), ('O=S([O-])O', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'O=S([O-])O': it carries a net charge of -1, and Joback and Benson are f",
+        "UnpricedIon: refusing to price 'O=S([O-])O': it carries a net charge of -1 and the ion overlay is ON --",
     ),
     'sodium-metabisulfite': RosterEntry(
         'sodium-metabisulfite', 'sodium metabisulfite',
@@ -1641,7 +1641,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[Na+]', 2.0), ('O=S([O-])S(=O)(=O)[O-]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'O=S([O-])S(=O)(=O)[O-]': it carries a net charge of -2, and Joback and ",
+        "UnpricedIon: refusing to price 'O=S([O-])S(=O)(=O)[O-]': it carries a net charge of -2 and the ion over",
     ),
     'sodium-thiosulfate': RosterEntry(
         'sodium-thiosulfate', 'sodium thiosulfate',
@@ -1649,7 +1649,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[Na+]', 2.0), ('O=S([O-])([O-])=S', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'O=S([O-])([O-])=S': it carries a net charge of -2, and Joback and Benso",
+        "UnpricedIon: refusing to price 'O=S([O-])([O-])=S': it carries a net charge of -2 and the ion overlay i",
     ),
     'sodium-dithionite': RosterEntry(
         'sodium-dithionite', 'sodium dithionite',
@@ -1657,15 +1657,15 @@ ROSTER: dict[str, RosterEntry] = {
         (('[Na+]', 2.0), ('O=S([O-])S(=O)[O-]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'O=S([O-])S(=O)[O-]': it carries a net charge of -2, and Joback and Bens",
+        "UnpricedIon: refusing to price 'O=S([O-])S(=O)[O-]': it carries a net charge of -2 and the ion overlay ",
     ),
     'sodium-sulfide': RosterEntry(
         'sodium-sulfide', 'sodium sulfide',
         '[Na+].[Na+].[S-2]', 'ions',
         (('[Na+]', 2.0), ('[S-2]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
-        True, '', 'refused',
-        "ValueError: refusing to price '[S-2]': it carries a net charge of -2, and Joback and Benson are fitted",
+        True, '', 'ion',
+        '',
     ),
     'sodium-hydrosulfide': RosterEntry(
         'sodium-hydrosulfide', 'sodium hydrosulfide',
@@ -1680,16 +1680,16 @@ ROSTER: dict[str, RosterEntry] = {
         '[Ca+2].[S-2]', 'ions',
         (('[Ca+2]', 1.0), ('[S-2]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
-        True, '', 'refused',
-        "ValueError: refusing to price '[S-2]': it carries a net charge of -2, and Joback and Benson are fitted",
+        True, '', 'ion',
+        '',
     ),
     'iron-ii-sulfide': RosterEntry(
         'iron-ii-sulfide', 'iron(II) sulfide',
         '[Fe+2].[S-2]', 'ions',
         (('[Fe+2]', 1.0), ('[S-2]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
-        True, '', 'refused',
-        "ValueError: refusing to price '[S-2]': it carries a net charge of -2, and Joback and Benson are fitted",
+        True, '', 'ion',
+        '',
     ),
     'iron-disulfide': RosterEntry(
         'iron-disulfide', 'pyrite',
@@ -1697,14 +1697,14 @@ ROSTER: dict[str, RosterEntry] = {
         (('[Fe+2]', 1.0), ('[S-]S[S-]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price '[S-]S[S-]': it carries a net charge of -2, and Joback and Benson are fi",
+        "UnpricedIon: refusing to price '[S-]S[S-]': it carries a net charge of -2 and the ion overlay is ON -- ",
     ),
     'zinc-sulfide': RosterEntry(
         'zinc-sulfide', 'zinc sulfide',
         '[S-2].[Zn+2]', 'lattice',
         (('[S-2].[Zn+2]', 1.0),),
         'solid', "the lattice 'sphalerite', on the solid basis -- a solid-state or surface reaction consumes it",
-        False, 'sphalerite', 'mineral',
+        False, 'sphalerite', 'ion',
         '',
     ),
     'lead-sulfide': RosterEntry(
@@ -1712,7 +1712,7 @@ ROSTER: dict[str, RosterEntry] = {
         '[Pb+2].[S-2]', 'lattice',
         (('[Pb+2].[S-2]', 1.0),),
         'solid', "the lattice 'galena', on the solid basis -- a solid-state or surface reaction consumes it",
-        False, 'galena', 'mineral',
+        False, 'galena', 'ion',
         '',
     ),
     'copper-sulfide': RosterEntry(
@@ -1720,7 +1720,7 @@ ROSTER: dict[str, RosterEntry] = {
         '[Cu+2].[S-2]', 'lattice',
         (('[Cu+2].[S-2]', 1.0),),
         'solid', "the lattice 'covellite', on the solid basis -- a solid-state or surface reaction consumes it",
-        False, 'covellite', 'mineral',
+        False, 'covellite', 'ion',
         '',
     ),
     'mercury-sulfide': RosterEntry(
@@ -1777,7 +1777,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[Na+]', 1.0), ('O=N[O-]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'O=N[O-]': it carries a net charge of -1, and Joback and Benson are fitt",
+        "UnpricedIon: refusing to price 'O=N[O-]': it carries a net charge of -1 and the ion overlay is ON -- it",
     ),
     'potassium-nitrite': RosterEntry(
         'potassium-nitrite', 'potassium nitrite',
@@ -1785,7 +1785,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[K+]', 1.0), ('O=N[O-]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'O=N[O-]': it carries a net charge of -1, and Joback and Benson are fitt",
+        "UnpricedIon: refusing to price 'O=N[O-]': it carries a net charge of -1 and the ion overlay is ON -- it",
     ),
     'sodium-phosphate': RosterEntry(
         'sodium-phosphate', 'trisodium phosphate',
@@ -1833,7 +1833,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[Na+]', 5.0), ('O=P([O-])([O-])OP(=O)([O-])OP(=O)([O-])[O-]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'O=P([O-])([O-])OP(=O)([O-])OP(=O)([O-])[O-]': it carries a net charge o",
+        "UnpricedIon: refusing to price 'O=P([O-])([O-])OP(=O)([O-])OP(=O)([O-])[O-]': it carries a net charge o",
     ),
     'borax': RosterEntry(
         'borax', 'borax (sodium tetraborate)',
@@ -1841,7 +1841,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[Na+]', 2.0), ('[O-]B1OB([O-])OB(O)OB(O)O1', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price '[O-]B1OB([O-])OB(O)OB(O)O1': it carries a net charge of -2, and Joback ",
+        "UnpricedIon: refusing to price '[O-]B1OB([O-])OB(O)OB(O)O1': it carries a net charge of -2 and the ion ",
     ),
     'sodium-silicate': RosterEntry(
         'sodium-silicate', 'sodium metasilicate',
@@ -1849,7 +1849,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[Na+]', 2.0), ('O=[Si]([O-])[O-]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'O=[Si]([O-])[O-]': it carries a net charge of -2, and Joback and Benson",
+        "UnpricedIon: refusing to price 'O=[Si]([O-])[O-]': it carries a net charge of -2 and the ion overlay is",
     ),
     'sodium-aluminate': RosterEntry(
         'sodium-aluminate', 'sodium aluminate',
@@ -1857,23 +1857,23 @@ ROSTER: dict[str, RosterEntry] = {
         (('[Na+]', 1.0), ('[O]=[Al][O-]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price '[O]=[Al][O-]': it carries a net charge of -1, and Joback and Benson are",
+        "UnpricedIon: refusing to price '[O]=[Al][O-]': it carries a net charge of -1 and the ion overlay is ON ",
     ),
     'sodium-hypochlorite': RosterEntry(
         'sodium-hypochlorite', 'sodium hypochlorite',
         '[Na+].[O-]Cl', 'ions',
         (('[Na+]', 1.0), ('[O-]Cl', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
-        True, '', 'refused',
-        "ValueError: refusing to price '[O-]Cl': it carries a net charge of -1, and Joback and Benson are fitte",
+        True, '', 'ion',
+        '',
     ),
     'calcium-hypochlorite': RosterEntry(
         'calcium-hypochlorite', 'calcium hypochlorite',
         '[Ca+2].[O-]Cl.[O-]Cl', 'ions',
         (('[Ca+2]', 1.0), ('[O-]Cl', 2.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
-        True, '', 'refused',
-        "ValueError: refusing to price '[O-]Cl': it carries a net charge of -1, and Joback and Benson are fitte",
+        True, '', 'ion',
+        '',
     ),
     'sodium-chlorate': RosterEntry(
         'sodium-chlorate', 'sodium chlorate',
@@ -1881,7 +1881,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[Na+]', 1.0), ('[O-][Cl+2]([O-])[O-]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price '[O-][Cl+2]([O-])[O-]': it carries a net charge of -1, and Joback and Be",
+        "UnpricedIon: refusing to price '[O-][Cl+2]([O-])[O-]': it carries a net charge of -1 and the ion overla",
     ),
     'potassium-chlorate': RosterEntry(
         'potassium-chlorate', 'potassium chlorate',
@@ -1889,7 +1889,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[K+]', 1.0), ('[O-][Cl+2]([O-])[O-]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price '[O-][Cl+2]([O-])[O-]': it carries a net charge of -1, and Joback and Be",
+        "UnpricedIon: refusing to price '[O-][Cl+2]([O-])[O-]': it carries a net charge of -1 and the ion overla",
     ),
     'potassium-perchlorate': RosterEntry(
         'potassium-perchlorate', 'potassium perchlorate',
@@ -1897,7 +1897,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[K+]', 1.0), ('[O-][Cl+3]([O-])([O-])[O-]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price '[O-][Cl+3]([O-])([O-])[O-]': it carries a net charge of -1, and Joback ",
+        "UnpricedIon: refusing to price '[O-][Cl+3]([O-])([O-])[O-]': it carries a net charge of -1 and the ion ",
     ),
     'ammonium-perchlorate': RosterEntry(
         'ammonium-perchlorate', 'ammonium perchlorate',
@@ -1905,7 +1905,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[NH4+]', 1.0), ('[O-][Cl+3]([O-])([O-])[O-]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price '[O-][Cl+3]([O-])([O-])[O-]': it carries a net charge of -1, and Joback ",
+        "UnpricedIon: refusing to price '[O-][Cl+3]([O-])([O-])[O-]': it carries a net charge of -1 and the ion ",
     ),
     'potassium-permanganate': RosterEntry(
         'potassium-permanganate', 'potassium permanganate',
@@ -1913,7 +1913,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[K+]', 1.0), ('[O]=[Mn](=[O])(=[O])[O-]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price '[O]=[Mn](=[O])(=[O])[O-]': it carries a net charge of -1, and Joback an",
+        "UnpricedIon: refusing to price '[O]=[Mn](=[O])(=[O])[O-]': it carries a net charge of -1 and the ion ov",
     ),
     'potassium-dichromate': RosterEntry(
         'potassium-dichromate', 'potassium dichromate',
@@ -1921,7 +1921,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[K+]', 2.0), ('[O]=[Cr](=[O])([O-])[O][Cr](=[O])(=[O])[O-]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price '[O]=[Cr](=[O])([O-])[O][Cr](=[O])(=[O])[O-]': it carries a net charge o",
+        "UnpricedIon: refusing to price '[O]=[Cr](=[O])([O-])[O][Cr](=[O])(=[O])[O-]': it carries a net charge o",
     ),
     'sodium-dichromate': RosterEntry(
         'sodium-dichromate', 'sodium dichromate',
@@ -1929,7 +1929,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[Na+]', 2.0), ('[O]=[Cr](=[O])([O-])[O][Cr](=[O])(=[O])[O-]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price '[O]=[Cr](=[O])([O-])[O][Cr](=[O])(=[O])[O-]': it carries a net charge o",
+        "UnpricedIon: refusing to price '[O]=[Cr](=[O])([O-])[O][Cr](=[O])(=[O])[O-]': it carries a net charge o",
     ),
     'potassium-chromate': RosterEntry(
         'potassium-chromate', 'potassium chromate',
@@ -1937,7 +1937,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[K+]', 2.0), ('[O]=[Cr](=[O])([O-])[O-]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price '[O]=[Cr](=[O])([O-])[O-]': it carries a net charge of -2, and Joback an",
+        "UnpricedIon: refusing to price '[O]=[Cr](=[O])([O-])[O-]': it carries a net charge of -2 and the ion ov",
     ),
     'sodium-chromate': RosterEntry(
         'sodium-chromate', 'sodium chromate',
@@ -1945,7 +1945,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[Na+]', 2.0), ('[O]=[Cr](=[O])([O-])[O-]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price '[O]=[Cr](=[O])([O-])[O-]': it carries a net charge of -2, and Joback an",
+        "UnpricedIon: refusing to price '[O]=[Cr](=[O])([O-])[O-]': it carries a net charge of -2 and the ion ov",
     ),
     'potassium-ferrocyanide': RosterEntry(
         'potassium-ferrocyanide', 'potassium ferrocyanide',
@@ -1953,7 +1953,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[K+]', 4.0), ('N#[C][Fe-4]([C]#N)([C]#N)([C]#N)([C]#N)[C]#N', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'N#[C][Fe-4]([C]#N)([C]#N)([C]#N)([C]#N)[C]#N': it carries a net charge ",
+        "UnpricedIon: refusing to price 'N#[C][Fe-4]([C]#N)([C]#N)([C]#N)([C]#N)[C]#N': it carries a net charge ",
     ),
     'potassium-ferricyanide': RosterEntry(
         'potassium-ferricyanide', 'potassium ferricyanide',
@@ -1961,7 +1961,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[K+]', 3.0), ('N#[C][Fe-3]([C]#N)([C]#N)([C]#N)([C]#N)[C]#N', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'N#[C][Fe-3]([C]#N)([C]#N)([C]#N)([C]#N)[C]#N': it carries a net charge ",
+        "UnpricedIon: refusing to price 'N#[C][Fe-3]([C]#N)([C]#N)([C]#N)([C]#N)[C]#N': it carries a net charge ",
     ),
     'sodium-cyanide': RosterEntry(
         'sodium-cyanide', 'sodium cyanide',
@@ -1969,7 +1969,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[Na+]', 1.0), ('[C-]#N', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price '[C-]#N': it carries a net charge of -1, and Joback and Benson are fitte",
+        "UnpricedIon: refusing to price '[C-]#N': it carries a net charge of -1 and the ion overlay is ON -- it ",
     ),
     'potassium-cyanide': RosterEntry(
         'potassium-cyanide', 'potassium cyanide',
@@ -1977,7 +1977,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[K+]', 1.0), ('[C-]#N', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price '[C-]#N': it carries a net charge of -1, and Joback and Benson are fitte",
+        "UnpricedIon: refusing to price '[C-]#N': it carries a net charge of -1 and the ion overlay is ON -- it ",
     ),
     'calcium-carbide': RosterEntry(
         'calcium-carbide', 'calcium carbide',
@@ -1985,7 +1985,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[Ca+2]', 1.0), ('[C-]#[C-]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price '[C-]#[C-]': it carries a net charge of -2, and Joback and Benson are fi",
+        "UnpricedIon: refusing to price '[C-]#[C-]': it carries a net charge of -2 and the ion overlay is ON -- ",
     ),
     'calcium-cyanamide': RosterEntry(
         'calcium-cyanamide', 'calcium cyanamide',
@@ -1993,7 +1993,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[Ca+2]', 1.0), ('[N-]=C=[N-]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price '[N-]=C=[N-]': it carries a net charge of -2, and Joback and Benson are ",
+        "UnpricedIon: refusing to price '[N-]=C=[N-]': it carries a net charge of -2 and the ion overlay is ON -",
     ),
     'sodium-acetate': RosterEntry(
         'sodium-acetate', 'sodium acetate',
@@ -2017,7 +2017,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[Na+]', 2.0), ('O=C([O-])C(=O)[O-]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'O=C([O-])C(=O)[O-]': it carries a net charge of -2, and Joback and Bens",
+        "UnpricedIon: refusing to price 'O=C([O-])C(=O)[O-]': it carries a net charge of -2 and the ion overlay ",
     ),
     'calcium-oxalate': RosterEntry(
         'calcium-oxalate', 'calcium oxalate',
@@ -2025,7 +2025,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[Ca+2]', 1.0), ('O=C([O-])C(=O)[O-]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'O=C([O-])C(=O)[O-]': it carries a net charge of -2, and Joback and Bens",
+        "UnpricedIon: refusing to price 'O=C([O-])C(=O)[O-]': it carries a net charge of -2 and the ion overlay ",
     ),
     'sodium-benzoate': RosterEntry(
         'sodium-benzoate', 'sodium benzoate',
@@ -2057,7 +2057,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[Na+]', 1.0), ('CC[O-]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'CC[O-]': it carries a net charge of -1, and Joback and Benson are fitte",
+        "UnpricedIon: refusing to price 'CC[O-]': it carries a net charge of -1 and the ion overlay is ON -- it ",
     ),
     'sodium-methoxide': RosterEntry(
         'sodium-methoxide', 'sodium methoxide',
@@ -2065,7 +2065,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[Na+]', 1.0), ('C[O-]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'C[O-]': it carries a net charge of -1, and Joback and Benson are fitted",
+        "UnpricedIon: refusing to price 'C[O-]': it carries a net charge of -1 and the ion overlay is ON -- it p",
     ),
     'potassium-tert-butoxide': RosterEntry(
         'potassium-tert-butoxide', 'potassium tert-butoxide',
@@ -2073,7 +2073,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[K+]', 1.0), ('CC(C)(C)[O-]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'CC(C)(C)[O-]': it carries a net charge of -1, and Joback and Benson are",
+        "UnpricedIon: refusing to price 'CC(C)(C)[O-]': it carries a net charge of -1 and the ion overlay is ON ",
     ),
     'sodium-amide': RosterEntry(
         'sodium-amide', 'sodium amide',
@@ -2081,7 +2081,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[Na+]', 1.0), ('[NH2-]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price '[NH2-]': it carries a net charge of -1, and Joback and Benson are fitte",
+        "UnpricedIon: refusing to price '[NH2-]': it carries a net charge of -1 and the ion overlay is ON -- it ",
     ),
     'sodium-hydride': RosterEntry(
         'sodium-hydride', 'sodium hydride',
@@ -2089,7 +2089,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[Na+]', 1.0), ('[H-]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price '[H-]': it carries a net charge of -1, and Joback and Benson are fitted ",
+        "UnpricedIon: refusing to price '[H-]': it carries a net charge of -1 and the ion overlay is ON -- it pr",
     ),
     'lithium-aluminium-hydride': RosterEntry(
         'lithium-aluminium-hydride', 'lithium aluminium hydride',
@@ -2097,7 +2097,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[Li+]', 1.0), ('[AlH4-]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price '[Li+]': it carries a net charge of +1, and Joback and Benson are fitted",
+        "UnpricedIon: refusing to price '[Li+]': it carries a net charge of +1 and the ion overlay is ON -- it p",
     ),
     'sodium-borohydride': RosterEntry(
         'sodium-borohydride', 'sodium borohydride',
@@ -2105,7 +2105,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[Na+]', 1.0), ('[BH4-]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price '[BH4-]': it carries a net charge of -1, and Joback and Benson are fitte",
+        "UnpricedIon: refusing to price '[BH4-]': it carries a net charge of -1 and the ion overlay is ON -- it ",
     ),
     'lithium-diisopropylamide': RosterEntry(
         'lithium-diisopropylamide', 'lithium diisopropylamide',
@@ -2113,7 +2113,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[Li+]', 1.0), ('CC(C)[N-]C(C)C', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price '[Li+]': it carries a net charge of +1, and Joback and Benson are fitted",
+        "UnpricedIon: refusing to price '[Li+]': it carries a net charge of +1 and the ion overlay is ON -- it p",
     ),
     'sodium-lauryl-sulfate': RosterEntry(
         'sodium-lauryl-sulfate', 'sodium dodecyl sulfate',
@@ -2121,7 +2121,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[Na+]', 1.0), ('CCCCCCCCCCCCOS(=O)(=O)[O-]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'CCCCCCCCCCCCOS(=O)(=O)[O-]': it carries a net charge of -1, and Joback ",
+        "UnpricedIon: refusing to price 'CCCCCCCCCCCCOS(=O)(=O)[O-]': it carries a net charge of -1 and the ion ",
     ),
     'sodium-stearate': RosterEntry(
         'sodium-stearate', 'sodium stearate',
@@ -2129,15 +2129,15 @@ ROSTER: dict[str, RosterEntry] = {
         (('[Na+]', 1.0), ('CCCCCCCCCCCCCCCCCC(=O)[O-]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'CCCCCCCCCCCCCCCCCC(=O)[O-]': it carries a net charge of -1, and Joback ",
+        "UnpricedIon: refusing to price 'CCCCCCCCCCCCCCCCCC(=O)[O-]': it carries a net charge of -1 and the ion ",
     ),
     'potassium-oleate': RosterEntry(
         'potassium-oleate', 'potassium oleate',
         'CCCCCCCCC=CCCCCCCCC(=O)[O-].[K+]', 'ions',
         (('[K+]', 1.0), ('CCCCCCCCC=CCCCCCCCC(=O)[O-]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
-        True, '', 'refused',
-        "ValueError: refusing to price 'CCCCCCCCC=CCCCCCCCC(=O)[O-]': it carries a net charge of -1, and Joback",
+        True, '', 'ion',
+        '',
     ),
     'calcium-oxide': RosterEntry(
         'calcium-oxide', 'calcium oxide',
@@ -2169,7 +2169,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[Fe+2]', 1.0), ('[O-2]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price '[O-2]': it carries a net charge of -2, and Joback and Benson are fitted",
+        "UnpricedIon: refusing to price '[O-2]': it carries a net charge of -2 and the ion overlay is ON -- it p",
     ),
     'iron-iii-oxide': RosterEntry(
         'iron-iii-oxide', 'iron(III) oxide',
@@ -2233,7 +2233,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[Cu+]', 2.0), ('[O-2]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price '[Cu+]': it carries a net charge of +1, and Joback and Benson are fitted",
+        "UnpricedIon: refusing to price '[Cu+]': it carries a net charge of +1 and the ion overlay is ON -- it p",
     ),
     'chromium-iii-oxide': RosterEntry(
         'chromium-iii-oxide', 'chromium(III) oxide',
@@ -2241,7 +2241,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[Cr+3]', 2.0), ('[O-2]', 3.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price '[Cr+3]': it carries a net charge of +3, and Joback and Benson are fitte",
+        "UnpricedIon: refusing to price '[Cr+3]': it carries a net charge of +3 and the ion overlay is ON -- it ",
     ),
     'vanadium-pentoxide': RosterEntry(
         'vanadium-pentoxide', 'vanadium(V) oxide',
@@ -2255,9 +2255,9 @@ ROSTER: dict[str, RosterEntry] = {
         'sulfur-dioxide-hydrate', 'sulfurous acid solution',
         'O.O=S=O', 'molecule',
         (('O.O=S=O', 1.0),),
-        'solid', "no phase from the engine (ValueError: refusing to price 'O.O=S=O' as one species: it is a dot-separated SMILES with 2 )",
+        'solid', "no phase from the engine (OutsideEstimatorDomain: refusing to price 'O.O=S=O' as one species: it is a dot-separated SMILES with 2 )",
         False, '', 'refused',
-        "ValueError: refusing to price 'O.O=S=O' as one species: it is a dot-separated SMILES with 2 NEUTRAL fr",
+        "OutsideEstimatorDomain: refusing to price 'O.O=S=O' as one species: it is a dot-separated SMILES with 2 NEUTRAL fr",
     ),
     'gypsum': RosterEntry(
         'gypsum', 'gypsum',
@@ -2313,7 +2313,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[Fe+3]', 4.0), ('N#[C][Fe-4]([C]#N)([C]#N)([C]#N)([C]#N)[C]#N', 3.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price '[Fe+3]': it carries a net charge of +3, and Joback and Benson are fitte",
+        "UnpricedIon: refusing to price '[Fe+3]': it carries a net charge of +3 and the ion overlay is ON -- it ",
     ),
     'silver-chloride': RosterEntry(
         'silver-chloride', 'silver chloride',
@@ -2353,7 +2353,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[Sr+2]', 1.0), ('O=[N+]([O-])[O-]', 2.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price '[Sr+2]': it carries a net charge of +2, and Joback and Benson are fitte",
+        "UnpricedIon: refusing to price '[Sr+2]': it carries a net charge of +2 and the ion overlay is ON -- it ",
     ),
     'sodium-fluoride': RosterEntry(
         'sodium-fluoride', 'sodium fluoride',
@@ -2377,7 +2377,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[Na+]', 3.0), ('[F][Al-3]([F])([F])([F])([F])[F]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price '[F][Al-3]([F])([F])([F])([F])[F]': it carries a net charge of -3, and J",
+        "UnpricedIon: refusing to price '[F][Al-3]([F])([F])([F])([F])[F]': it carries a net charge of -3 and th",
     ),
     'sodium-iodide': RosterEntry(
         'sodium-iodide', 'sodium iodide',
@@ -2409,7 +2409,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[NH4+]', 2.0), ('[O]=[Mo](=[O])([O-])[O-]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price '[O]=[Mo](=[O])([O-])[O-]': it carries a net charge of -2, and Joback an",
+        "UnpricedIon: refusing to price '[O]=[Mo](=[O])([O-])[O-]': it carries a net charge of -2 and the ion ov",
     ),
     'sodium-tungstate': RosterEntry(
         'sodium-tungstate', 'sodium tungstate',
@@ -2417,7 +2417,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[Na+]', 2.0), ('[O]=[W](=[O])([O-])[O-]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price '[O]=[W](=[O])([O-])[O-]': it carries a net charge of -2, and Joback and",
+        "UnpricedIon: refusing to price '[O]=[W](=[O])([O-])[O-]': it carries a net charge of -2 and the ion ove",
     ),
     'ferrous-ammonium-sulfate': RosterEntry(
         'ferrous-ammonium-sulfate', 'Mohr salt',
@@ -2433,7 +2433,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[K+]', 1.0), ('O=C([O-])c1ccccc1C(=O)O', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'O=C([O-])c1ccccc1C(=O)O': it carries a net charge of -1, and Joback and",
+        "UnpricedIon: refusing to price 'O=C([O-])c1ccccc1C(=O)O': it carries a net charge of -1 and the ion ove",
     ),
     'sodium-tartrate': RosterEntry(
         'sodium-tartrate', 'sodium potassium tartrate',
@@ -2441,7 +2441,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[Na+]', 1.0), ('[K+]', 1.0), ('O=C([O-])C(O)C(O)C(=O)[O-]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'O=C([O-])C(O)C(O)C(=O)[O-]': it carries a net charge of -2, and Joback ",
+        "UnpricedIon: refusing to price 'O=C([O-])C(O)C(O)C(=O)[O-]': it carries a net charge of -2 and the ion ",
     ),
     'cream-of-tartar': RosterEntry(
         'cream-of-tartar', 'potassium bitartrate',
@@ -2449,7 +2449,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[K+]', 1.0), ('O=C([O-])C(O)C(O)C(=O)O', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'O=C([O-])C(O)C(O)C(=O)O': it carries a net charge of -1, and Joback and",
+        "UnpricedIon: refusing to price 'O=C([O-])C(O)C(O)C(=O)O': it carries a net charge of -1 and the ion ove",
     ),
     'sodium-citrate': RosterEntry(
         'sodium-citrate', 'trisodium citrate',
@@ -2457,7 +2457,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[Na+]', 3.0), ('O=C([O-])CC(O)(CC(=O)[O-])C(=O)[O-]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'O=C([O-])CC(O)(CC(=O)[O-])C(=O)[O-]': it carries a net charge of -3, an",
+        "UnpricedIon: refusing to price 'O=C([O-])CC(O)(CC(=O)[O-])C(=O)[O-]': it carries a net charge of -3 and",
     ),
     'methane': RosterEntry(
         'methane', 'methane',
@@ -6913,7 +6913,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('C[N+](C)(C)CCO', 1.0),),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'C[N+](C)(C)CCO': it carries a net charge of +1, and Joback and Benson a",
+        "UnpricedIon: refusing to price 'C[N+](C)(C)CCO': it carries a net charge of +1 and the ion overlay is O",
     ),
     'tetramethylammonium-chloride': RosterEntry(
         'tetramethylammonium-chloride', 'tetramethylammonium chloride',
@@ -6921,7 +6921,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('C[N+](C)(C)C', 1.0), ('[Cl-]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'C[N+](C)(C)C': it carries a net charge of +1, and Joback and Benson are",
+        "UnpricedIon: refusing to price 'C[N+](C)(C)C': it carries a net charge of +1 and the ion overlay is ON ",
     ),
     'benzalkonium-chloride': RosterEntry(
         'benzalkonium-chloride', 'benzyldimethyldodecylammonium chloride',
@@ -6929,7 +6929,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('CCCCCCCCCCCC[N+](C)(C)Cc1ccccc1', 1.0), ('[Cl-]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'CCCCCCCCCCCC[N+](C)(C)Cc1ccccc1': it carries a net charge of +1, and Jo",
+        "UnpricedIon: refusing to price 'CCCCCCCCCCCC[N+](C)(C)Cc1ccccc1': it carries a net charge of +1 and the",
     ),
     'cetyltrimethylammonium-bromide': RosterEntry(
         'cetyltrimethylammonium-bromide', 'CTAB',
@@ -6937,7 +6937,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('CCCCCCCCCCCCCCCC[N+](C)(C)C', 1.0), ('[Br-]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'CCCCCCCCCCCCCCCC[N+](C)(C)C': it carries a net charge of +1, and Joback",
+        "UnpricedIon: refusing to price 'CCCCCCCCCCCCCCCC[N+](C)(C)C': it carries a net charge of +1 and the ion",
     ),
     'nitromethane': RosterEntry(
         'nitromethane', 'nitromethane',
@@ -7049,7 +7049,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('CN(C)c1ccc(/N=N/c2ccc(S(=O)(=O)[O-])cc2)cc1', 1.0), ('[Na+]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'CN(C)c1ccc(/N=N/c2ccc(S(=O)(=O)[O-])cc2)cc1': it carries a net charge o",
+        "UnpricedIon: refusing to price 'CN(C)c1ccc(/N=N/c2ccc(S(=O)(=O)[O-])cc2)cc1': it carries a net charge o",
     ),
     'methyl-red': RosterEntry(
         'methyl-red', 'methyl red',
@@ -7065,7 +7065,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('Nc1ccc2cc(S(=O)(=O)[O-])cc(/N=N/c3ccc(-c4ccc(/N=N/c5cc(S(=O)(=O)[O-])cc6ccc(N)c(N)c56)cc4)cc3)c2c1', 1.0), ('[Na+]', 2.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'Nc1ccc2cc(S(=O)(=O)[O-])cc(/N=N/c3ccc(-c4ccc(/N=N/c5cc(S(=O)(=O)[O-])cc",
+        "UnpricedIon: refusing to price 'Nc1ccc2cc(S(=O)(=O)[O-])cc(/N=N/c3ccc(-c4ccc(/N=N/c5cc(S(=O)(=O)[O-])cc",
     ),
     'sudan-i': RosterEntry(
         'sudan-i', 'Sudan I',
@@ -7089,7 +7089,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[Cl-]', 1.0), ('N#[N+]c1ccccc1', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'N#[N+]c1ccccc1': it carries a net charge of +1, and Joback and Benson a",
+        "UnpricedIon: refusing to price 'N#[N+]c1ccccc1': it carries a net charge of +1 and the ion overlay is O",
     ),
     'diazomethane': RosterEntry(
         'diazomethane', 'diazomethane',
@@ -7689,7 +7689,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[K+]', 1.0), ('CCOC(=S)[S-]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'CCOC(=S)[S-]': it carries a net charge of -1, and Joback and Benson are",
+        "UnpricedIon: refusing to price 'CCOC(=S)[S-]': it carries a net charge of -1 and the ion overlay is ON ",
     ),
     'thioacetamide': RosterEntry(
         'thioacetamide', 'thioacetamide',
@@ -7913,7 +7913,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[Na+]', 1.0), ('c1ccc([B-](c2ccccc2)(c2ccccc2)c2ccccc2)cc1', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'c1ccc([B-](c2ccccc2)(c2ccccc2)c2ccccc2)cc1': it carries a net charge of",
+        "UnpricedIon: refusing to price 'c1ccc([B-](c2ccccc2)(c2ccccc2)c2ccccc2)cc1': it carries a net charge of",
     ),
     'tetramethylsilane': RosterEntry(
         'tetramethylsilane', 'tetramethylsilane',
@@ -8017,7 +8017,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[Fe]', 1.0), ('c1cc[cH-]c1', 2.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price '[Fe]': a bare element symbol is the most ambiguous way to name an allot",
+        "OutsideEstimatorDomain: refusing to price '[Fe]': a bare element symbol is the most ambiguous way to name an allot",
     ),
     'grignard-phenylmagnesium-bromide': RosterEntry(
         'grignard-phenylmagnesium-bromide', 'phenylmagnesium bromide',
@@ -8087,17 +8087,17 @@ ROSTER: dict[str, RosterEntry] = {
         'tetrakis-triphenylphosphine-palladium', 'Pd(PPh3)4',
         '[Pd].c1ccc(P(c2ccccc2)c2ccccc2)cc1.c1ccc(P(c2ccccc2)c2ccccc2)cc1.c1ccc(P(c2ccccc2)c2ccccc2)cc1.c1ccc(P(c2ccccc2)c2ccccc2)cc1', 'molecule',
         (('[Pd].c1ccc(P(c2ccccc2)c2ccccc2)cc1.c1ccc(P(c2ccccc2)c2ccccc2)cc1.c1ccc(P(c2ccccc2)c2ccccc2)cc1.c1ccc(P(c2ccccc2)c2ccccc2)cc1', 1.0),),
-        'solid', "no phase from the engine (ValueError: refusing to price '[Pd].c1ccc(P(c2ccccc2)c2ccccc2)cc1.c1ccc(P(c2ccccc2)c2ccccc2))",
+        'solid', "no phase from the engine (OutsideEstimatorDomain: refusing to price '[Pd].c1ccc(P(c2ccccc2)c2ccccc2)cc1.c1ccc(P(c2ccccc2)c2ccccc2))",
         False, '', 'refused',
-        "ValueError: refusing to price '[Pd].c1ccc(P(c2ccccc2)c2ccccc2)cc1.c1ccc(P(c2ccccc2)c2ccccc2)cc1.c1ccc(",
+        "OutsideEstimatorDomain: refusing to price '[Pd].c1ccc(P(c2ccccc2)c2ccccc2)cc1.c1ccc(P(c2ccccc2)c2ccccc2)cc1.c1ccc(",
     ),
     'wilkinson-catalyst': RosterEntry(
         'wilkinson-catalyst', 'chlorotris(triphenylphosphine)rhodium',
         '[Cl][Rh].c1ccc(P(c2ccccc2)c2ccccc2)cc1.c1ccc(P(c2ccccc2)c2ccccc2)cc1.c1ccc(P(c2ccccc2)c2ccccc2)cc1', 'molecule',
         (('[Cl][Rh].c1ccc(P(c2ccccc2)c2ccccc2)cc1.c1ccc(P(c2ccccc2)c2ccccc2)cc1.c1ccc(P(c2ccccc2)c2ccccc2)cc1', 1.0),),
-        'solid', "no phase from the engine (ValueError: refusing to price '[Cl][Rh].c1ccc(P(c2ccccc2)c2ccccc2)cc1.c1ccc(P(c2ccccc2)c2ccc)",
+        'solid', "no phase from the engine (OutsideEstimatorDomain: refusing to price '[Cl][Rh].c1ccc(P(c2ccccc2)c2ccccc2)cc1.c1ccc(P(c2ccccc2)c2ccc)",
         False, '', 'refused',
-        "ValueError: refusing to price '[Cl][Rh].c1ccc(P(c2ccccc2)c2ccccc2)cc1.c1ccc(P(c2ccccc2)c2ccccc2)cc1.c1",
+        "OutsideEstimatorDomain: refusing to price '[Cl][Rh].c1ccc(P(c2ccccc2)c2ccccc2)cc1.c1ccc(P(c2ccccc2)c2ccccc2)cc1.c1",
     ),
     'grubbs-i-core': RosterEntry(
         'grubbs-i-core', 'Grubbs first-generation core',
@@ -8865,7 +8865,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[K+]', 1.0), ('O=C1[N-]C(=O)c2ccccc21', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'O=C1[N-]C(=O)c2ccccc21': it carries a net charge of -1, and Joback and ",
+        "UnpricedIon: refusing to price 'O=C1[N-]C(=O)c2ccccc21': it carries a net charge of -1 and the ion over",
     ),
     'porphine': RosterEntry(
         'porphine', 'porphine',
@@ -8881,7 +8881,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('c1ccc2c(c1)-c1nc3nc(nc4[n-]c(nc5[n-]c(nc-2n1)c1ccccc51)c1ccccc41)-c1ccccc1-3', 1.0), ('[H+]', 2.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'c1ccc2c(c1)-c1nc3nc(nc4[n-]c(nc5[n-]c(nc-2n1)c1ccccc51)c1ccccc41)-c1ccc",
+        "UnpricedIon: refusing to price 'c1ccc2c(c1)-c1nc3nc(nc4[n-]c(nc5[n-]c(nc-2n1)c1ccccc51)c1ccccc41)-c1ccc",
     ),
     'copper-phthalocyanine': RosterEntry(
         'copper-phthalocyanine', 'copper phthalocyanine',
@@ -8889,7 +8889,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[Cu+2]', 1.0), ('c1ccc2c(c1)-c1nc-2nc2[n-]c(nc3nc(nc4[n-]c(n1)c1ccccc41)-c1ccccc1-3)c1ccccc21', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'c1ccc2c(c1)-c1nc-2nc2[n-]c(nc3nc(nc4[n-]c(n1)c1ccccc41)-c1ccccc1-3)c1cc",
+        "UnpricedIon: refusing to price 'c1ccc2c(c1)-c1nc-2nc2[n-]c(nc3nc(nc4[n-]c(n1)c1ccccc41)-c1ccccc1-3)c1cc",
     ),
     'formaldehyde-hydrate': RosterEntry(
         'formaldehyde-hydrate', 'methanediol',
@@ -9361,7 +9361,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('Cc1ncc(C[n+]2csc(CCO)c2C)c(N)n1', 1.0),),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'Cc1ncc(C[n+]2csc(CCO)c2C)c(N)n1': it carries a net charge of +1, and Jo",
+        "UnpricedIon: refusing to price 'Cc1ncc(C[n+]2csc(CCO)c2C)c(N)n1': it carries a net charge of +1 and the",
     ),
     'riboflavin': RosterEntry(
         'riboflavin', 'vitamin B2',
@@ -9705,7 +9705,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('Oc1cc(O)c2cc(O)c(-c3ccc(O)c(O)c3)[o+]c2c1', 1.0),),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'Oc1cc(O)c2cc(O)c(-c3ccc(O)c(O)c3)[o+]c2c1': it carries a net charge of ",
+        "UnpricedIon: refusing to price 'Oc1cc(O)c2cc(O)c(-c3ccc(O)c(O)c3)[o+]c2c1': it carries a net charge of ",
     ),
     'curcumin': RosterEntry(
         'curcumin', 'curcumin',
@@ -9889,7 +9889,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('Cc1ccc2nc3ccc(N)cc3[n+](-c3ccccc3)c2c1', 1.0), ('[Cl-]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'Cc1ccc2nc3ccc(N)cc3[n+](-c3ccccc3)c2c1': it carries a net charge of +1,",
+        "UnpricedIon: refusing to price 'Cc1ccc2nc3ccc(N)cc3[n+](-c3ccccc3)c2c1': it carries a net charge of +1 ",
     ),
     'fuchsine': RosterEntry(
         'fuchsine', 'magenta / rosaniline',
@@ -9905,7 +9905,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('CN(C)c1ccc(C(=C2C=CC(=[N+](C)C)C=C2)c2ccccc2)cc1', 1.0), ('[Cl-]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'CN(C)c1ccc(C(=C2C=CC(=[N+](C)C)C=C2)c2ccccc2)cc1': it carries a net cha",
+        "UnpricedIon: refusing to price 'CN(C)c1ccc(C(=C2C=CC(=[N+](C)C)C=C2)c2ccccc2)cc1': it carries a net cha",
     ),
     'crystal-violet': RosterEntry(
         'crystal-violet', 'crystal violet',
@@ -9913,7 +9913,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('CN(C)c1ccc(C(=C2C=CC(=[N+](C)C)C=C2)c2ccc(N(C)C)cc2)cc1', 1.0), ('[Cl-]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'CN(C)c1ccc(C(=C2C=CC(=[N+](C)C)C=C2)c2ccc(N(C)C)cc2)cc1': it carries a ",
+        "UnpricedIon: refusing to price 'CN(C)c1ccc(C(=C2C=CC(=[N+](C)C)C=C2)c2ccc(N(C)C)cc2)cc1': it carries a ",
     ),
     'methylene-blue': RosterEntry(
         'methylene-blue', 'methylene blue',
@@ -9921,7 +9921,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('CN(C)c1ccc2nc3ccc(=[N+](C)C)cc-3sc2c1', 1.0), ('[Cl-]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'CN(C)c1ccc2nc3ccc(=[N+](C)C)cc-3sc2c1': it carries a net charge of +1, ",
+        "UnpricedIon: refusing to price 'CN(C)c1ccc2nc3ccc(=[N+](C)C)cc-3sc2c1': it carries a net charge of +1 a",
     ),
     'thionine': RosterEntry(
         'thionine', 'thionine',
@@ -9937,7 +9937,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('Cc1cc2nc3cc(C)c(N)cc3[n+](-c3ccccc3)c2cc1N', 1.0), ('[Cl-]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'Cc1cc2nc3cc(C)c(N)cc3[n+](-c3ccccc3)c2cc1N': it carries a net charge of",
+        "UnpricedIon: refusing to price 'Cc1cc2nc3cc(C)c(N)cc3[n+](-c3ccccc3)c2cc1N': it carries a net charge of",
     ),
     'fluorescein': RosterEntry(
         'fluorescein', 'fluorescein',
@@ -9961,7 +9961,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('CCN(CC)c1ccc2c(-c3ccccc3C(=O)O)c3ccc(=[N+](CC)CC)cc-3oc2c1', 1.0), ('[Cl-]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'CCN(CC)c1ccc2c(-c3ccccc3C(=O)O)c3ccc(=[N+](CC)CC)cc-3oc2c1': it carries",
+        "UnpricedIon: refusing to price 'CCN(CC)c1ccc2c(-c3ccccc3C(=O)O)c3ccc(=[N+](CC)CC)cc-3oc2c1': it carries",
     ),
     'alizarin-crimson': RosterEntry(
         'alizarin-crimson', 'alizarin (see quinones)',
@@ -9993,7 +9993,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('O=C1Nc2ccc(S(=O)(=O)[O-])cc2/C1=C1\\Nc2ccc(S(=O)(=O)[O-])cc2C1=O', 1.0), ('[Na+]', 2.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'O=C1Nc2ccc(S(=O)(=O)[O-])cc2/C1=C1\\\\Nc2ccc(S(=O)(=O)[O-])cc2C1=O': it c",
+        "UnpricedIon: refusing to price 'O=C1Nc2ccc(S(=O)(=O)[O-])cc2/C1=C1\\\\Nc2ccc(S(=O)(=O)[O-])cc2C1=O': it c",
     ),
     'picric-acid-dye': RosterEntry(
         'picric-acid-dye', 'picric acid (see phenols)',
@@ -10009,7 +10009,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('O=[N+]([O-])c1ccc2ccccc2c1[O-]', 1.0), ('O=[N+]([O-])c1ccc2ccccc2c1O', 1.0), ('[Na+]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'O=[N+]([O-])c1ccc2ccccc2c1[O-]': it carries a net charge of -1, and Job",
+        "UnpricedIon: refusing to price 'O=[N+]([O-])c1ccc2ccccc2c1[O-]': it carries a net charge of -1 and the ",
     ),
     'naphthol-yellow-s': RosterEntry(
         'naphthol-yellow-s', 'naphthol yellow S',
@@ -10089,7 +10089,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('CNc1ccc(C(=C2C=CC(=[N+](C)C)C=C2)c2ccc(N(C)C)cc2)cc1', 1.0), ('[Cl-]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'CNc1ccc(C(=C2C=CC(=[N+](C)C)C=C2)c2ccc(N(C)C)cc2)cc1': it carries a net",
+        "UnpricedIon: refusing to price 'CNc1ccc(C(=C2C=CC(=[N+](C)C)C=C2)c2ccc(N(C)C)cc2)cc1': it carries a net",
     ),
     'aniline-black': RosterEntry(
         'aniline-black', 'aniline black (oxidised polyaniline unit)',
@@ -10169,7 +10169,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[Na+]', 2.0), ('[S-]S[S-]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price '[S-]S[S-]': it carries a net charge of -2, and Joback and Benson are fi",
+        "UnpricedIon: refusing to price '[S-]S[S-]': it carries a net charge of -2 and the ion overlay is ON -- ",
     ),
     'chrome-yellow': RosterEntry(
         'chrome-yellow', 'lead chromate',
@@ -10177,7 +10177,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[Pb+2]', 1.0), ('[O]=[Cr](=[O])([O-])[O-]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price '[O]=[Cr](=[O])([O-])[O-]': it carries a net charge of -2, and Joback an",
+        "UnpricedIon: refusing to price '[O]=[Cr](=[O])([O-])[O-]': it carries a net charge of -2 and the ion ov",
     ),
     'cadmium-yellow': RosterEntry(
         'cadmium-yellow', 'cadmium sulfide',
@@ -10185,7 +10185,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[Cd+2]', 1.0), ('[S-2]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price '[Cd+2]': it carries a net charge of +2, and Joback and Benson are fitte",
+        "UnpricedIon: refusing to price '[Cd+2]': it carries a net charge of +2 and the ion overlay is ON -- it ",
     ),
     'cadmium-red': RosterEntry(
         'cadmium-red', 'cadmium selenide',
@@ -10193,7 +10193,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[Cd+2]', 1.0), ('[Se-2]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price '[Cd+2]': it carries a net charge of +2, and Joback and Benson are fitte",
+        "UnpricedIon: refusing to price '[Cd+2]': it carries a net charge of +2 and the ion overlay is ON -- it ",
     ),
     'cobalt-blue': RosterEntry(
         'cobalt-blue', 'cobalt aluminate',
@@ -10201,7 +10201,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[Co+2]', 1.0), ('[O]=[Al][O-]', 2.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price '[Co+2]': it carries a net charge of +2, and Joback and Benson are fitte",
+        "UnpricedIon: refusing to price '[Co+2]': it carries a net charge of +2 and the ion overlay is ON -- it ",
     ),
     'egyptian-blue-marker': RosterEntry(
         'egyptian-blue-marker', 'calcium copper silicate marker',
@@ -10209,7 +10209,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[Ca+2]', 1.0), ('[Cu+2]', 1.0), ('[O-][Si]([O-])([O-])[O-]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price '[O-][Si]([O-])([O-])[O-]': it carries a net charge of -4, and Joback an",
+        "UnpricedIon: refusing to price '[O-][Si]([O-])([O-])[O-]': it carries a net charge of -4 and the ion ov",
     ),
     'verdigris': RosterEntry(
         'verdigris', 'copper acetate (see salts)',
@@ -10225,7 +10225,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[As+3]', 2.0), ('[S-2]', 3.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price '[As+3]': it carries a net charge of +3, and Joback and Benson are fitte",
+        "UnpricedIon: refusing to price '[As+3]': it carries a net charge of +3 and the ion overlay is ON -- it ",
     ),
     'realgar': RosterEntry(
         'realgar', 'arsenic disulfide',
@@ -10249,7 +10249,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[Fe+3]', 1.0), ('N#[C][Fe-4]([C]#N)([C]#N)([C]#N)([C]#N)[C]#N', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price '[Fe+3]': it carries a net charge of +3, and Joback and Benson are fitte",
+        "UnpricedIon: refusing to price '[Fe+3]': it carries a net charge of +3 and the ion overlay is ON -- it ",
     ),
     'stilbene-brightener': RosterEntry(
         'stilbene-brightener', '4,4-diaminostilbene-2,2-disulfonic acid',
@@ -10281,7 +10281,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('C[n+]1c2ccccc2c(-c2c3ccccc3[n+](C)c3ccccc23)c2ccccc21', 1.0),),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'C[n+]1c2ccccc2c(-c2c3ccccc3[n+](C)c3ccccc23)c2ccccc21': it carries a ne",
+        "UnpricedIon: refusing to price 'C[n+]1c2ccccc2c(-c2c3ccccc3[n+](C)c3ccccc23)c2ccccc21': it carries a ne",
     ),
     'oxalyl-chloride-glowstick': RosterEntry(
         'oxalyl-chloride-glowstick', 'bis(2,4,5-trichlorophenyl) oxalate',
@@ -10313,7 +10313,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[Al+3]', 1.0), ('[O-]c1cccc2cccnc12', 3.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price '[Al+3]': it carries a net charge of +3, and Joback and Benson are fitte",
+        "UnpricedIon: refusing to price '[Al+3]': it carries a net charge of +3 and the ion overlay is ON -- it ",
     ),
     'pedot-unit': RosterEntry(
         'pedot-unit', 'PEDOT repeat unit',
@@ -10769,7 +10769,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('C[n+]1ccc(-c2cc[n+](C)cc2)cc1', 1.0), ('[Cl-]', 2.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'C[n+]1ccc(-c2cc[n+](C)cc2)cc1': it carries a net charge of +2, and Joba",
+        "UnpricedIon: refusing to price 'C[n+]1ccc(-c2cc[n+](C)cc2)cc1': it carries a net charge of +2 and the i",
     ),
     'diquat': RosterEntry(
         'diquat', 'diquat',
@@ -10777,7 +10777,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[Br-]', 2.0), ('c1cc[n+]2c(c1)-c1cccc[n+]1CC2', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'c1cc[n+]2c(c1)-c1cccc[n+]1CC2': it carries a net charge of +2, and Joba",
+        "UnpricedIon: refusing to price 'c1cc[n+]2c(c1)-c1cccc[n+]1CC2': it carries a net charge of +2 and the i",
     ),
     'glufosinate': RosterEntry(
         'glufosinate', 'glufosinate',
@@ -10849,7 +10849,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[Mn+2]', 1.0), ('S=C([S-])NCCNC(=S)[S-]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price '[Mn+2]': it carries a net charge of +2, and Joback and Benson are fitte",
+        "UnpricedIon: refusing to price '[Mn+2]': it carries a net charge of +2 and the ion overlay is ON -- it ",
     ),
     'bordeaux-mixture': RosterEntry(
         'bordeaux-mixture', 'Bordeaux mixture marker',
@@ -10873,7 +10873,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[K+]', 1.0), ('O=[N+]([O-])[O-]', 1.0), ('S1SSSSSSS1', 1.0), ('[C]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price '[C]': a bare element symbol is the most ambiguous way to name an allotr",
+        "OutsideEstimatorDomain: refusing to price '[C]': a bare element symbol is the most ambiguous way to name an allotr",
     ),
     'nitrocellulose-unit': RosterEntry(
         'nitrocellulose-unit', 'nitrocellulose repeat unit',
@@ -10937,7 +10937,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[Hg+2]', 1.0), ('[C-]#[N+][O-]', 2.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price '[Hg+2]': it carries a net charge of +2, and Joback and Benson are fitte",
+        "UnpricedIon: refusing to price '[Hg+2]': it carries a net charge of +2 and the ion overlay is ON -- it ",
     ),
     'lead-azide': RosterEntry(
         'lead-azide', 'lead azide',
@@ -10945,7 +10945,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[Pb+2]', 1.0), ('[N-]=[N+]=[N-]', 2.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price '[N-]=[N+]=[N-]': it carries a net charge of -1, and Joback and Benson a",
+        "UnpricedIon: refusing to price '[N-]=[N+]=[N-]': it carries a net charge of -1 and the ion overlay is O",
     ),
     'lead-styphnate': RosterEntry(
         'lead-styphnate', 'lead styphnate',
@@ -10953,7 +10953,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[Pb+2]', 1.0), ('O=[N+]([O-])c1cc([N+](=O)[O-])c([O-])c([N+](=O)[O-])c1', 1.0), ('O', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'O=[N+]([O-])c1cc([N+](=O)[O-])c([O-])c([N+](=O)[O-])c1': it carries a n",
+        "UnpricedIon: refusing to price 'O=[N+]([O-])c1cc([N+](=O)[O-])c([O-])c([N+](=O)[O-])c1': it carries a n",
     ),
     'nitroguanidine-energetic': RosterEntry(
         'nitroguanidine-energetic', 'nitroguanidine (see nitrogen)',
@@ -10969,7 +10969,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[NH4+]', 1.0), ('O=[N+]([O-])c1cc([N+](=O)[O-])c([O-])c([N+](=O)[O-])c1', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'O=[N+]([O-])c1cc([N+](=O)[O-])c([O-])c([N+](=O)[O-])c1': it carries a n",
+        "UnpricedIon: refusing to price 'O=[N+]([O-])c1cc([N+](=O)[O-])c([O-])c([N+](=O)[O-])c1': it carries a n",
     ),
     'picramic-acid': RosterEntry(
         'picramic-acid', 'picramic acid',
@@ -10999,9 +10999,9 @@ ROSTER: dict[str, RosterEntry] = {
         'hydrazine-nitrate', 'hydrazine nitrate',
         'NN.O=[N+]([O-])O', 'molecule',
         (('NN.O=[N+]([O-])O', 1.0),),
-        'solid', "no phase from the engine (ValueError: refusing to price 'NN.O=[N+]([O-])O' as one species: it is a dot-separated SMILE)",
+        'solid', "no phase from the engine (OutsideEstimatorDomain: refusing to price 'NN.O=[N+]([O-])O' as one species: it is a dot-separated SMILE)",
         False, '', 'refused',
-        "ValueError: refusing to price 'NN.O=[N+]([O-])O' as one species: it is a dot-separated SMILES with 2 N",
+        "OutsideEstimatorDomain: refusing to price 'NN.O=[N+]([O-])O' as one species: it is a dot-separated SMILES with 2 N",
     ),
     'ammonium-dinitramide': RosterEntry(
         'ammonium-dinitramide', 'ammonium dinitramide',
@@ -11009,7 +11009,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[NH4+]', 1.0), ('O=[N+]([O-])[N-][N+](=O)[O-]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'O=[N+]([O-])[N-][N+](=O)[O-]': it carries a net charge of -1, and Jobac",
+        "UnpricedIon: refusing to price 'O=[N+]([O-])[N-][N+](=O)[O-]': it carries a net charge of -1 and the io",
     ),
     'polyethylene-unit': RosterEntry(
         'polyethylene-unit', 'polyethylene repeat unit',
@@ -11143,25 +11143,25 @@ ROSTER: dict[str, RosterEntry] = {
         'sbr-marker', 'styrene-butadiene rubber marker',
         'CC=CC.CCc1ccccc1', 'molecule',
         (('CC=CC.CCc1ccccc1', 1.0),),
-        'solid', "no phase from the engine (ValueError: refusing to price 'CC=CC.CCc1ccccc1' as one species: it is a dot-separated SMILE)",
+        'solid', "no phase from the engine (OutsideEstimatorDomain: refusing to price 'CC=CC.CCc1ccccc1' as one species: it is a dot-separated SMILE)",
         False, '', 'refused',
-        "ValueError: refusing to price 'CC=CC.CCc1ccccc1' as one species: it is a dot-separated SMILES with 2 N",
+        "OutsideEstimatorDomain: refusing to price 'CC=CC.CCc1ccccc1' as one species: it is a dot-separated SMILES with 2 N",
     ),
     'nbr-marker': RosterEntry(
         'nbr-marker', 'nitrile rubber marker',
         'CC=CC.CCC#N', 'molecule',
         (('CC=CC.CCC#N', 1.0),),
-        'solid', "no phase from the engine (ValueError: refusing to price 'CC=CC.CCC#N' as one species: it is a dot-separated SMILES wit)",
+        'solid', "no phase from the engine (OutsideEstimatorDomain: refusing to price 'CC=CC.CCC#N' as one species: it is a dot-separated SMILES wit)",
         False, '', 'refused',
-        "ValueError: refusing to price 'CC=CC.CCC#N' as one species: it is a dot-separated SMILES with 2 NEUTRA",
+        "OutsideEstimatorDomain: refusing to price 'CC=CC.CCC#N' as one species: it is a dot-separated SMILES with 2 NEUTRA",
     ),
     'butyl-rubber-marker': RosterEntry(
         'butyl-rubber-marker', 'butyl rubber marker',
         'CC(C)C.CC=C(C)C', 'molecule',
         (('CC(C)C.CC=C(C)C', 1.0),),
-        'solid', "no phase from the engine (ValueError: refusing to price 'CC(C)C.CC=C(C)C' as one species: it is a dot-separated SMILES)",
+        'solid', "no phase from the engine (OutsideEstimatorDomain: refusing to price 'CC(C)C.CC=C(C)C' as one species: it is a dot-separated SMILES)",
         False, '', 'refused',
-        "ValueError: refusing to price 'CC(C)C.CC=C(C)C' as one species: it is a dot-separated SMILES with 2 NE",
+        "OutsideEstimatorDomain: refusing to price 'CC(C)C.CC=C(C)C' as one species: it is a dot-separated SMILES with 2 NE",
     ),
     'pet-unit': RosterEntry(
         'pet-unit', 'poly(ethylene terephthalate) repeat unit',
@@ -11425,7 +11425,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('OC[C@H]1O[C@@H](O)[C@H](O)[C@@H](OC(=S)[S-])[C@@H]1O', 1.0), ('[Na+]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'OC[C@H]1O[C@@H](O)[C@H](O)[C@@H](OC(=S)[S-])[C@@H]1O': it carries a net",
+        "UnpricedIon: refusing to price 'OC[C@H]1O[C@@H](O)[C@H](O)[C@@H](OC(=S)[S-])[C@@H]1O': it carries a net",
     ),
     'carboxymethylcellulose-unit': RosterEntry(
         'carboxymethylcellulose-unit', 'carboxymethylcellulose repeat unit',
@@ -11455,9 +11455,9 @@ ROSTER: dict[str, RosterEntry] = {
         'vulcanised-rubber-marker', 'vulcanised rubber crosslink marker',
         'CC=C(C)C.S1SSSSSSS1', 'molecule',
         (('CC=C(C)C.S1SSSSSSS1', 1.0),),
-        'solid', "no phase from the engine (ValueError: refusing to price 'CC=C(C)C.S1SSSSSSS1' as one species: it is a dot-separated SM)",
+        'solid', "no phase from the engine (OutsideEstimatorDomain: refusing to price 'CC=C(C)C.S1SSSSSSS1' as one species: it is a dot-separated SM)",
         False, '', 'refused',
-        "ValueError: refusing to price 'CC=C(C)C.S1SSSSSSS1' as one species: it is a dot-separated SMILES with ",
+        "OutsideEstimatorDomain: refusing to price 'CC=C(C)C.S1SSSSSSS1' as one species: it is a dot-separated SMILES with ",
     ),
     'carbon-fibre-marker': RosterEntry(
         'carbon-fibre-marker', 'graphitic carbon (see elements)',
@@ -11479,9 +11479,9 @@ ROSTER: dict[str, RosterEntry] = {
         'buckminsterfullerene', 'C60 fullerene',
         'c12c3c4c5c1c1c6c7c2c2c8c3c3c9c4c4c%10c5c5c1c1c6c6c%11c7c2c2c7c8c3c3c8c9c4c4c9c%10c5c5c1c1c6c6c%11c2c2c7c3c3c8c4c4c9c5c1c1c6c2c3c41', 'molecule',
         (('c12c3c4c5c1c1c6c7c2c2c8c3c3c9c4c4c%10c5c5c1c1c6c6c%11c7c2c2c7c8c3c3c8c9c4c4c9c%10c5c5c1c1c6c6c%11c2c2c7c3c3c8c4c4c9c5c1c1c6c2c3c41', 1.0),),
-        'solid', "no phase from the engine (ValueError: refusing to price 'c12c3c4c5c1c1c6c7c2c2c8c3c3c9c4c4c%10c5c5c1c1c6c6c%11c7c2c2c7)",
+        'solid', "no phase from the engine (OutsideEstimatorDomain: refusing to price 'c12c3c4c5c1c1c6c7c2c2c8c3c3c9c4c4c%10c5c5c1c1c6c6c%11c7c2c2c7)",
         False, '', 'refused',
-        "ValueError: refusing to price 'c12c3c4c5c1c1c6c7c2c2c8c3c3c9c4c4c%10c5c5c1c1c6c6c%11c7c2c2c7c8c3c3c8c9",
+        "OutsideEstimatorDomain: refusing to price 'c12c3c4c5c1c1c6c7c2c2c8c3c3c9c4c4c%10c5c5c1c1c6c6c%11c7c2c2c7c8c3c3c8c9",
     ),
     'hydronium': RosterEntry(
         'hydronium', 'hydronium ion',
@@ -11505,7 +11505,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[O-2]', 1.0),),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price '[O-2]': it carries a net charge of -2, and Joback and Benson are fitted",
+        "UnpricedIon: refusing to price '[O-2]': it carries a net charge of -2 and the ion overlay is ON -- it p",
     ),
     'peroxide-ion': RosterEntry(
         'peroxide-ion', 'peroxide ion',
@@ -11513,7 +11513,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[O-][O-]', 1.0),),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price '[O-][O-]': it carries a net charge of -2, and Joback and Benson are fit",
+        "UnpricedIon: refusing to price '[O-][O-]': it carries a net charge of -2 and the ion overlay is ON -- i",
     ),
     'superoxide-ion': RosterEntry(
         'superoxide-ion', 'superoxide radical anion',
@@ -11521,7 +11521,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[O][O-]', 1.0),),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price '[O][O-]': it carries a net charge of -1, and Joback and Benson are fitt",
+        "UnpricedIon: refusing to price '[O][O-]': it carries a net charge of -1 and the ion overlay is ON -- it",
     ),
     'hydroperoxide-ion': RosterEntry(
         'hydroperoxide-ion', 'hydroperoxide ion',
@@ -11529,7 +11529,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[O-]O', 1.0),),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price '[O-]O': it carries a net charge of -1, and Joback and Benson are fitted",
+        "UnpricedIon: refusing to price '[O-]O': it carries a net charge of -1 and the ion overlay is ON -- it p",
     ),
     'hydroperoxyl': RosterEntry(
         'hydroperoxyl', 'hydroperoxyl radical',
@@ -11551,25 +11551,25 @@ ROSTER: dict[str, RosterEntry] = {
         'hydrogen-atom', 'hydrogen atom',
         '[H]', 'molecule',
         (('[H]', 1.0),),
-        'solid', "no phase from the engine (ValueError: refusing to price '[H]': a bare element symbol is the most ambiguous way to name)",
+        'solid', "no phase from the engine (OutsideEstimatorDomain: refusing to price '[H]': a bare element symbol is the most ambiguous way to name)",
         False, '', 'refused',
-        "ValueError: refusing to price '[H]': a bare element symbol is the most ambiguous way to name an allotr",
+        "OutsideEstimatorDomain: refusing to price '[H]': a bare element symbol is the most ambiguous way to name an allotr",
     ),
     'chlorine-atom': RosterEntry(
         'chlorine-atom', 'chlorine radical',
         '[Cl]', 'molecule',
         (('[Cl]', 1.0),),
-        'solid', "no phase from the engine (ValueError: refusing to price '[Cl]': a bare element symbol is the most ambiguous way to nam)",
+        'solid', "no phase from the engine (OutsideEstimatorDomain: refusing to price '[Cl]': a bare element symbol is the most ambiguous way to nam)",
         False, '', 'refused',
-        "ValueError: refusing to price '[Cl]': a bare element symbol is the most ambiguous way to name an allot",
+        "OutsideEstimatorDomain: refusing to price '[Cl]': a bare element symbol is the most ambiguous way to name an allot",
     ),
     'bromine-atom': RosterEntry(
         'bromine-atom', 'bromine radical',
         '[Br]', 'molecule',
         (('[Br]', 1.0),),
-        'solid', "no phase from the engine (ValueError: refusing to price '[Br]': a bare element symbol is the most ambiguous way to nam)",
+        'solid', "no phase from the engine (OutsideEstimatorDomain: refusing to price '[Br]': a bare element symbol is the most ambiguous way to nam)",
         False, '', 'refused',
-        "ValueError: refusing to price '[Br]': a bare element symbol is the most ambiguous way to name an allot",
+        "OutsideEstimatorDomain: refusing to price '[Br]': a bare element symbol is the most ambiguous way to name an allot",
     ),
     'methyl-radical': RosterEntry(
         'methyl-radical', 'methyl radical',
@@ -11729,7 +11729,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[K+]', 2.0), ('O=S(=O)([O-])OOS(=O)(=O)[O-]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'O=S(=O)([O-])OOS(=O)(=O)[O-]': it carries a net charge of -2, and Jobac",
+        "UnpricedIon: refusing to price 'O=S(=O)([O-])OOS(=O)(=O)[O-]': it carries a net charge of -2 and the io",
     ),
     'methyl-cation': RosterEntry(
         'methyl-cation', 'methyl carbocation',
@@ -11737,7 +11737,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[CH3+]', 1.0),),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price '[CH3+]': it carries a net charge of +1, and Joback and Benson are fitte",
+        "UnpricedIon: refusing to price '[CH3+]': it carries a net charge of +1 and the ion overlay is ON -- it ",
     ),
     'tert-butyl-cation': RosterEntry(
         'tert-butyl-cation', 'tert-butyl carbocation',
@@ -11745,7 +11745,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('C[C+](C)C', 1.0),),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'C[C+](C)C': it carries a net charge of +1, and Joback and Benson are fi",
+        "UnpricedIon: refusing to price 'C[C+](C)C': it carries a net charge of +1 and the ion overlay is ON -- ",
     ),
     'isopropyl-cation': RosterEntry(
         'isopropyl-cation', 'isopropyl carbocation',
@@ -11753,7 +11753,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('C[CH+]C', 1.0),),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'C[CH+]C': it carries a net charge of +1, and Joback and Benson are fitt",
+        "UnpricedIon: refusing to price 'C[CH+]C': it carries a net charge of +1 and the ion overlay is ON -- it",
     ),
     'benzyl-cation': RosterEntry(
         'benzyl-cation', 'benzyl carbocation',
@@ -11761,7 +11761,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[CH2+]c1ccccc1', 1.0),),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price '[CH2+]c1ccccc1': it carries a net charge of +1, and Joback and Benson a",
+        "UnpricedIon: refusing to price '[CH2+]c1ccccc1': it carries a net charge of +1 and the ion overlay is O",
     ),
     'tropylium': RosterEntry(
         'tropylium', 'tropylium cation',
@@ -11769,7 +11769,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('c1ccc[cH+]cc1', 1.0),),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'c1ccc[cH+]cc1': it carries a net charge of +1, and Joback and Benson ar",
+        "UnpricedIon: refusing to price 'c1ccc[cH+]cc1': it carries a net charge of +1 and the ion overlay is ON",
     ),
     'cyclopentadienide': RosterEntry(
         'cyclopentadienide', 'cyclopentadienyl anion',
@@ -11777,7 +11777,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('c1cc[cH-]c1', 1.0),),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'c1cc[cH-]c1': it carries a net charge of -1, and Joback and Benson are ",
+        "UnpricedIon: refusing to price 'c1cc[cH-]c1': it carries a net charge of -1 and the ion overlay is ON -",
     ),
     'nitronium': RosterEntry(
         'nitronium', 'nitronium ion',
@@ -11785,7 +11785,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('O=[N+]=O', 1.0),),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'O=[N+]=O': it carries a net charge of +1, and Joback and Benson are fit",
+        "UnpricedIon: refusing to price 'O=[N+]=O': it carries a net charge of +1 and the ion overlay is ON -- i",
     ),
     'nitrosonium': RosterEntry(
         'nitrosonium', 'nitrosonium ion',
@@ -11793,7 +11793,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('N#[O+]', 1.0),),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'N#[O+]': it carries a net charge of +1, and Joback and Benson are fitte",
+        "UnpricedIon: refusing to price 'N#[O+]': it carries a net charge of +1 and the ion overlay is ON -- it ",
     ),
     'acylium-acetyl': RosterEntry(
         'acylium-acetyl', 'acetylium ion',
@@ -11801,7 +11801,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('C[C+]=O', 1.0),),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'C[C+]=O': it carries a net charge of +1, and Joback and Benson are fitt",
+        "UnpricedIon: refusing to price 'C[C+]=O': it carries a net charge of +1 and the ion overlay is ON -- it",
     ),
     'sulfonium-trimethyl': RosterEntry(
         'sulfonium-trimethyl', 'trimethylsulfonium',
@@ -11809,7 +11809,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('C[S+](C)C', 1.0),),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'C[S+](C)C': it carries a net charge of +1, and Joback and Benson are fi",
+        "UnpricedIon: refusing to price 'C[S+](C)C': it carries a net charge of +1 and the ion overlay is ON -- ",
     ),
     'methyl-anion': RosterEntry(
         'methyl-anion', 'methyl carbanion',
@@ -11817,7 +11817,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[CH3-]', 1.0),),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price '[CH3-]': it carries a net charge of -1, and Joback and Benson are fitte",
+        "UnpricedIon: refusing to price '[CH3-]': it carries a net charge of -1 and the ion overlay is ON -- it ",
     ),
     'acetylide': RosterEntry(
         'acetylide', 'acetylide anion',
@@ -11825,7 +11825,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[C-]#C', 1.0),),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price '[C-]#C': it carries a net charge of -1, and Joback and Benson are fitte",
+        "UnpricedIon: refusing to price '[C-]#C': it carries a net charge of -1 and the ion overlay is ON -- it ",
     ),
     'cyanide-ion': RosterEntry(
         'cyanide-ion', 'cyanide ion',
@@ -11833,7 +11833,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[C-]#N', 1.0),),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price '[C-]#N': it carries a net charge of -1, and Joback and Benson are fitte",
+        "UnpricedIon: refusing to price '[C-]#N': it carries a net charge of -1 and the ion overlay is ON -- it ",
     ),
     'acetate-ion': RosterEntry(
         'acetate-ion', 'acetate ion',
@@ -11873,7 +11873,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('CC[O-]', 1.0),),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'CC[O-]': it carries a net charge of -1, and Joback and Benson are fitte",
+        "UnpricedIon: refusing to price 'CC[O-]': it carries a net charge of -1 and the ion overlay is ON -- it ",
     ),
     'methoxide-ion': RosterEntry(
         'methoxide-ion', 'methoxide ion',
@@ -11881,7 +11881,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('C[O-]', 1.0),),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'C[O-]': it carries a net charge of -1, and Joback and Benson are fitted",
+        "UnpricedIon: refusing to price 'C[O-]': it carries a net charge of -1 and the ion overlay is ON -- it p",
     ),
     'enolate-acetone': RosterEntry(
         'enolate-acetone', 'acetone enolate',
@@ -11889,7 +11889,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('C=C(C)[O-]', 1.0),),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'C=C(C)[O-]': it carries a net charge of -1, and Joback and Benson are f",
+        "UnpricedIon: refusing to price 'C=C(C)[O-]': it carries a net charge of -1 and the ion overlay is ON --",
     ),
     'enolate-acetaldehyde': RosterEntry(
         'enolate-acetaldehyde', 'acetaldehyde enolate',
@@ -11897,7 +11897,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[CH2-]C=O', 1.0),),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price '[CH2-]C=O': it carries a net charge of -1, and Joback and Benson are fi",
+        "UnpricedIon: refusing to price '[CH2-]C=O': it carries a net charge of -1 and the ion overlay is ON -- ",
     ),
     'malonate-anion': RosterEntry(
         'malonate-anion', 'diethyl malonate anion',
@@ -11905,7 +11905,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('CCOC(=O)[CH-]C(=O)OCC', 1.0),),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'CCOC(=O)[CH-]C(=O)OCC': it carries a net charge of -1, and Joback and B",
+        "UnpricedIon: refusing to price 'CCOC(=O)[CH-]C(=O)OCC': it carries a net charge of -1 and the ion overl",
     ),
     'acetoacetate-anion': RosterEntry(
         'acetoacetate-anion', 'ethyl acetoacetate anion',
@@ -11913,7 +11913,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('CCOC(=O)[CH-]C(C)=O', 1.0),),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'CCOC(=O)[CH-]C(C)=O': it carries a net charge of -1, and Joback and Ben",
+        "UnpricedIon: refusing to price 'CCOC(=O)[CH-]C(C)=O': it carries a net charge of -1 and the ion overlay",
     ),
     'ammonium-ion': RosterEntry(
         'ammonium-ion', 'ammonium ion',
@@ -11945,7 +11945,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('c1c[nH][nH+]c1', 1.0),),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'c1c[nH][nH+]c1': it carries a net charge of +1, and Joback and Benson a",
+        "UnpricedIon: refusing to price 'c1c[nH][nH+]c1': it carries a net charge of +1 and the ion overlay is O",
     ),
     'bicarbonate-ion': RosterEntry(
         'bicarbonate-ion', 'bicarbonate ion',
@@ -11985,7 +11985,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('O=S([O-])O', 1.0),),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'O=S([O-])O': it carries a net charge of -1, and Joback and Benson are f",
+        "UnpricedIon: refusing to price 'O=S([O-])O': it carries a net charge of -1 and the ion overlay is ON --",
     ),
     'sulfite-ion': RosterEntry(
         'sulfite-ion', 'sulfite ion',
@@ -11993,7 +11993,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('O=S([O-])[O-]', 1.0),),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'O=S([O-])[O-]': it carries a net charge of -2, and Joback and Benson ar",
+        "UnpricedIon: refusing to price 'O=S([O-])[O-]': it carries a net charge of -2 and the ion overlay is ON",
     ),
     'thiosulfate-ion': RosterEntry(
         'thiosulfate-ion', 'thiosulfate ion',
@@ -12001,7 +12001,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('O=S([O-])([O-])=S', 1.0),),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'O=S([O-])([O-])=S': it carries a net charge of -2, and Joback and Benso",
+        "UnpricedIon: refusing to price 'O=S([O-])([O-])=S': it carries a net charge of -2 and the ion overlay i",
     ),
     'nitrate-ion': RosterEntry(
         'nitrate-ion', 'nitrate ion',
@@ -12017,7 +12017,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('O=N[O-]', 1.0),),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'O=N[O-]': it carries a net charge of -1, and Joback and Benson are fitt",
+        "UnpricedIon: refusing to price 'O=N[O-]': it carries a net charge of -1 and the ion overlay is ON -- it",
     ),
     'phosphate-ion': RosterEntry(
         'phosphate-ion', 'phosphate ion',
@@ -12080,8 +12080,8 @@ ROSTER: dict[str, RosterEntry] = {
         '[O-]Cl', 'ions',
         (('[O-]Cl', 1.0),),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
-        True, '', 'refused',
-        "ValueError: refusing to price '[O-]Cl': it carries a net charge of -1, and Joback and Benson are fitte",
+        True, '', 'ion',
+        '',
     ),
     'permanganate-ion': RosterEntry(
         'permanganate-ion', 'permanganate ion',
@@ -12089,7 +12089,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[O]=[Mn](=[O])(=[O])[O-]', 1.0),),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price '[O]=[Mn](=[O])(=[O])[O-]': it carries a net charge of -1, and Joback an",
+        "UnpricedIon: refusing to price '[O]=[Mn](=[O])(=[O])[O-]': it carries a net charge of -1 and the ion ov",
     ),
     'dichromate-ion': RosterEntry(
         'dichromate-ion', 'dichromate ion',
@@ -12097,7 +12097,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[O]=[Cr](=[O])([O-])[O][Cr](=[O])(=[O])[O-]', 1.0),),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price '[O]=[Cr](=[O])([O-])[O][Cr](=[O])(=[O])[O-]': it carries a net charge o",
+        "UnpricedIon: refusing to price '[O]=[Cr](=[O])([O-])[O][Cr](=[O])(=[O])[O-]': it carries a net charge o",
     ),
     'chromate-ion': RosterEntry(
         'chromate-ion', 'chromate ion',
@@ -12105,7 +12105,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[O]=[Cr](=[O])([O-])[O-]', 1.0),),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price '[O]=[Cr](=[O])([O-])[O-]': it carries a net charge of -2, and Joback an",
+        "UnpricedIon: refusing to price '[O]=[Cr](=[O])([O-])[O-]': it carries a net charge of -2 and the ion ov",
     ),
     'sodium-ion': RosterEntry(
         'sodium-ion', 'sodium ion',
@@ -12153,7 +12153,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[Fe+3]', 1.0),),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price '[Fe+3]': it carries a net charge of +3, and Joback and Benson are fitte",
+        "UnpricedIon: refusing to price '[Fe+3]': it carries a net charge of +3 and the ion overlay is ON -- it ",
     ),
     'copper-ii-ion': RosterEntry(
         'copper-ii-ion', 'copper(II) ion',
@@ -12185,7 +12185,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[Al+3]', 1.0),),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price '[Al+3]': it carries a net charge of +3, and Joback and Benson are fitte",
+        "UnpricedIon: refusing to price '[Al+3]': it carries a net charge of +3 and the ion overlay is ON -- it ",
     ),
     'lead-ion': RosterEntry(
         'lead-ion', 'lead(II) ion',
@@ -12249,7 +12249,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[CH2+]OC', 1.0),),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price '[CH2+]OC': it carries a net charge of +1, and Joback and Benson are fit",
+        "UnpricedIon: refusing to price '[CH2+]OC': it carries a net charge of +1 and the ion overlay is ON -- i",
     ),
     'tetrahedral-intermediate-ester': RosterEntry(
         'tetrahedral-intermediate-ester', 'tetrahedral intermediate (ester hydrolysis)',
@@ -12265,7 +12265,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('COC1([O-])C=CC([N+](=O)[O-])=CC1', 1.0),),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'COC1([O-])C=CC([N+](=O)[O-])=CC1': it carries a net charge of -1, and J",
+        "UnpricedIon: refusing to price 'COC1([O-])C=CC([N+](=O)[O-])=CC1': it carries a net charge of -1 and th",
     ),
     'arenium-benzene': RosterEntry(
         'arenium-benzene', 'benzenium ion (sigma complex)',
@@ -12273,7 +12273,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('C1=C[CH+]CC=C1', 1.0),),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'C1=C[CH+]CC=C1': it carries a net charge of +1, and Joback and Benson a",
+        "UnpricedIon: refusing to price 'C1=C[CH+]CC=C1': it carries a net charge of +1 and the ion overlay is O",
     ),
     'wheland-nitration': RosterEntry(
         'wheland-nitration', 'nitration sigma complex',
@@ -12281,7 +12281,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('O=[N+]([O-])C1C=CC=C[CH+]1', 1.0),),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'O=[N+]([O-])C1C=CC=C[CH+]1': it carries a net charge of +1, and Joback ",
+        "UnpricedIon: refusing to price 'O=[N+]([O-])C1C=CC=C[CH+]1': it carries a net charge of +1 and the ion ",
     ),
     'diazonium-methyl': RosterEntry(
         'diazonium-methyl', 'methanediazonium',
@@ -12289,7 +12289,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('C[N+]#N', 1.0),),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'C[N+]#N': it carries a net charge of +1, and Joback and Benson are fitt",
+        "UnpricedIon: refusing to price 'C[N+]#N': it carries a net charge of +1 and the ion overlay is ON -- it",
     ),
     'carbanion-triphenylmethyl': RosterEntry(
         'carbanion-triphenylmethyl', 'triphenylmethyl anion',
@@ -12297,7 +12297,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('c1ccc([C-](c2ccccc2)c2ccccc2)cc1', 1.0),),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'c1ccc([C-](c2ccccc2)c2ccccc2)cc1': it carries a net charge of -1, and J",
+        "UnpricedIon: refusing to price 'c1ccc([C-](c2ccccc2)c2ccccc2)cc1': it carries a net charge of -1 and th",
     ),
     'radical-triphenylmethyl': RosterEntry(
         'radical-triphenylmethyl', 'triphenylmethyl radical',
@@ -12321,7 +12321,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('O=[N+]([O-])c1cc([N+](=O)[O-])c(N([N-]c2ccccc2)c2ccccc2)c([N+](=O)[O-])c1', 1.0),),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'O=[N+]([O-])c1cc([N+](=O)[O-])c(N([N-]c2ccccc2)c2ccccc2)c([N+](=O)[O-])",
+        "UnpricedIon: refusing to price 'O=[N+]([O-])c1cc([N+](=O)[O-])c(N([N-]c2ccccc2)c2ccccc2)c([N+](=O)[O-])",
     ),
     'singlet-oxygen-marker': RosterEntry(
         'singlet-oxygen-marker', 'singlet oxygen (marker; same graph as O2)',
@@ -12343,25 +12343,25 @@ ROSTER: dict[str, RosterEntry] = {
         'oxygen-atom', 'atomic oxygen',
         '[O]', 'molecule',
         (('[O]', 1.0),),
-        'solid', "no phase from the engine (ValueError: refusing to price '[O]': a bare element symbol is the most ambiguous way to name)",
+        'solid', "no phase from the engine (OutsideEstimatorDomain: refusing to price '[O]': a bare element symbol is the most ambiguous way to name)",
         False, '', 'refused',
-        "ValueError: refusing to price '[O]': a bare element symbol is the most ambiguous way to name an allotr",
+        "OutsideEstimatorDomain: refusing to price '[O]': a bare element symbol is the most ambiguous way to name an allotr",
     ),
     'nitrogen-atom': RosterEntry(
         'nitrogen-atom', 'atomic nitrogen',
         '[N]', 'molecule',
         (('[N]', 1.0),),
-        'solid', "no phase from the engine (ValueError: refusing to price '[N]': a bare element symbol is the most ambiguous way to name)",
+        'solid', "no phase from the engine (OutsideEstimatorDomain: refusing to price '[N]': a bare element symbol is the most ambiguous way to name)",
         False, '', 'refused',
-        "ValueError: refusing to price '[N]': a bare element symbol is the most ambiguous way to name an allotr",
+        "OutsideEstimatorDomain: refusing to price '[N]': a bare element symbol is the most ambiguous way to name an allotr",
     ),
     'sulfur-atom': RosterEntry(
         'sulfur-atom', 'atomic sulfur',
         '[S]', 'molecule',
         (('[S]', 1.0),),
-        'solid', "no phase from the engine (ValueError: refusing to price '[S]': a bare element symbol is the most ambiguous way to name)",
+        'solid', "no phase from the engine (OutsideEstimatorDomain: refusing to price '[S]': a bare element symbol is the most ambiguous way to name)",
         False, '', 'refused',
-        "ValueError: refusing to price '[S]': a bare element symbol is the most ambiguous way to name an allotr",
+        "OutsideEstimatorDomain: refusing to price '[S]': a bare element symbol is the most ambiguous way to name an allotr",
     ),
     '2-nitrobenzaldehyde': RosterEntry(
         '2-nitrobenzaldehyde', '2-nitrobenzaldehyde',
@@ -12417,7 +12417,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[Al+3]', 1.0), ('[OH-]', 3.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price '[Al+3]': it carries a net charge of +3, and Joback and Benson are fitte",
+        "UnpricedIon: refusing to price '[Al+3]': it carries a net charge of +3 and the ion overlay is ON -- it ",
     ),
     '2-aminopropanenitrile': RosterEntry(
         '2-aminopropanenitrile', '2-aminopropanenitrile',
@@ -12441,7 +12441,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[NH4+]', 1.0), ('[O-]B(O)O', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price '[O-]B(O)O': it carries a net charge of -1, and Joback and Benson are fi",
+        "UnpricedIon: refusing to price '[O-]B(O)O': it carries a net charge of -1 and the ion overlay is ON -- ",
     ),
     'ammonium-cyanate': RosterEntry(
         'ammonium-cyanate', 'ammonium cyanate',
@@ -12449,7 +12449,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[NH4+]', 1.0), ('N#C[O-]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'N#C[O-]': it carries a net charge of -1, and Joback and Benson are fitt",
+        "UnpricedIon: refusing to price 'N#C[O-]': it carries a net charge of -1 and the ion overlay is ON -- it",
     ),
     'anthraquinone-2-sulfonic-acid': RosterEntry(
         'anthraquinone-2-sulfonic-acid', 'anthraquinone-2-sulfonic acid',
@@ -12489,7 +12489,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[Ca+2]', 3.0), ('O=C([O-])CC(O)(CC(=O)[O-])C(=O)[O-]', 2.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'O=C([O-])CC(O)(CC(=O)[O-])C(=O)[O-]': it carries a net charge of -3, an",
+        "UnpricedIon: refusing to price 'O=C([O-])CC(O)(CC(=O)[O-])C(=O)[O-]': it carries a net charge of -3 and",
     ),
     'calcium-formate': RosterEntry(
         'calcium-formate', 'calcium formate',
@@ -12505,7 +12505,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[Ca+2]', 1.0), ('O=[Si]([O-])[O-]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'O=[Si]([O-])[O-]': it carries a net charge of -2, and Joback and Benson",
+        "UnpricedIon: refusing to price 'O=[Si]([O-])[O-]': it carries a net charge of -2 and the ion overlay is",
     ),
     'chloroauric-acid': RosterEntry(
         'chloroauric-acid', 'chloroauric acid',
@@ -12513,7 +12513,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[Cl][Au-]([Cl])([Cl])[Cl]', 1.0), ('[H+]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price '[Cl][Au-]([Cl])([Cl])[Cl]': it carries a net charge of -1, and Joback a",
+        "UnpricedIon: refusing to price '[Cl][Au-]([Cl])([Cl])[Cl]': it carries a net charge of -1 and the ion o",
     ),
     'cyanic-acid': RosterEntry(
         'cyanic-acid', 'cyanic acid',
@@ -12577,7 +12577,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[CH2-]C(=O)OCC', 1.0),),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price '[CH2-]C(=O)OCC': it carries a net charge of -1, and Joback and Benson a",
+        "UnpricedIon: refusing to price '[CH2-]C(=O)OCC': it carries a net charge of -1 and the ion overlay is O",
     ),
     'ethyl-2-ethylacetoacetate': RosterEntry(
         'ethyl-2-ethylacetoacetate', 'ethyl 2-ethylacetoacetate',
@@ -12601,7 +12601,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('C=[N+](C)C', 1.0),),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'C=[N+](C)C': it carries a net charge of +1, and Joback and Benson are f",
+        "UnpricedIon: refusing to price 'C=[N+](C)C': it carries a net charge of +1 and the ion overlay is ON --",
     ),
     'indoxyl': RosterEntry(
         'indoxyl', 'indoxyl',
@@ -12649,7 +12649,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('CC([O-])c1ccccc1', 1.0), ('[Mg+2]', 1.0), ('[Br-]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'CC([O-])c1ccccc1': it carries a net charge of -1, and Joback and Benson",
+        "UnpricedIon: refusing to price 'CC([O-])c1ccccc1': it carries a net charge of -1 and the ion overlay is",
     ),
     'magnesium-hydroxide': RosterEntry(
         'magnesium-hydroxide', 'magnesium hydroxide',
@@ -12665,7 +12665,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[Mn+2]', 1.0), ('[Cl-]', 2.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price '[Mn+2]': it carries a net charge of +2, and Joback and Benson are fitte",
+        "UnpricedIon: refusing to price '[Mn+2]': it carries a net charge of +2 and the ion overlay is ON -- it ",
     ),
     '4-dimethylamino-2-butanone': RosterEntry(
         '4-dimethylamino-2-butanone', '4-dimethylamino-2-butanone',
@@ -12679,9 +12679,9 @@ ROSTER: dict[str, RosterEntry] = {
         'methacrylamide-sulfate', 'methacrylamide sulfate',
         'C=C(C)C(N)=O.O=S(=O)(O)O', 'molecule',
         (('C=C(C)C(N)=O.O=S(=O)(O)O', 1.0),),
-        'solid', "no phase from the engine (ValueError: refusing to price 'C=C(C)C(N)=O.O=S(=O)(O)O' as one species: it is a dot-separat)",
+        'solid', "no phase from the engine (OutsideEstimatorDomain: refusing to price 'C=C(C)C(N)=O.O=S(=O)(O)O' as one species: it is a dot-separat)",
         False, '', 'refused',
-        "ValueError: refusing to price 'C=C(C)C(N)=O.O=S(=O)(O)O' as one species: it is a dot-separated SMILES ",
+        "OutsideEstimatorDomain: refusing to price 'C=C(C)C(N)=O.O=S(=O)(O)O' as one species: it is a dot-separated SMILES ",
     ),
     'monomethylolurea': RosterEntry(
         'monomethylolurea', 'monomethylolurea',
@@ -12697,7 +12697,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('C[P+](c1ccccc1)(c1ccccc1)c1ccccc1', 1.0), ('[I-]', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'C[P+](c1ccccc1)(c1ccccc1)c1ccccc1': it carries a net charge of +1, and ",
+        "UnpricedIon: refusing to price 'C[P+](c1ccccc1)(c1ccccc1)c1ccccc1': it carries a net charge of +1 and t",
     ),
     '2,6-heptanedione': RosterEntry(
         '2,6-heptanedione', '2,6-heptanedione',
@@ -12727,9 +12727,9 @@ ROSTER: dict[str, RosterEntry] = {
         'nylon-66-salt', 'nylon 66 salt',
         'NCCCCCCN.O=C(O)CCCCC(=O)O', 'molecule',
         (('NCCCCCCN.O=C(O)CCCCC(=O)O', 1.0),),
-        'solid', "no phase from the engine (ValueError: refusing to price 'NCCCCCCN.O=C(O)CCCCC(=O)O' as one species: it is a dot-separa)",
+        'solid', "no phase from the engine (OutsideEstimatorDomain: refusing to price 'NCCCCCCN.O=C(O)CCCCC(=O)O' as one species: it is a dot-separa)",
         False, '', 'refused',
-        "ValueError: refusing to price 'NCCCCCCN.O=C(O)CCCCC(=O)O' as one species: it is a dot-separated SMILES",
+        "OutsideEstimatorDomain: refusing to price 'NCCCCCCN.O=C(O)CCCCC(=O)O' as one species: it is a dot-separated SMILES",
     ),
     'p-phenetidine': RosterEntry(
         'p-phenetidine', '4-ethoxyaniline',
@@ -12825,7 +12825,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[Ag+]', 1.0), ('O=S([O-])([O-])=S', 2.0), ('[Na+]', 3.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'O=S([O-])([O-])=S': it carries a net charge of -2, and Joback and Benso",
+        "UnpricedIon: refusing to price 'O=S([O-])([O-])=S': it carries a net charge of -2 and the ion overlay i",
     ),
     'monosodium-glutamate': RosterEntry(
         'monosodium-glutamate', 'monosodium glutamate',
@@ -12833,7 +12833,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[Na+]', 1.0), ('N[C@@H](CCC(=O)[O-])C(=O)O', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'N[C@@H](CCC(=O)[O-])C(=O)O': it carries a net charge of -1, and Joback ",
+        "UnpricedIon: refusing to price 'N[C@@H](CCC(=O)[O-])C(=O)O': it carries a net charge of -1 and the ion ",
     ),
     'sorbose': RosterEntry(
         'sorbose', 'L-sorbose',
@@ -12849,7 +12849,7 @@ ROSTER: dict[str, RosterEntry] = {
         (('[Cl-]', 1.0), ('N#[N+]c1ccc(S(N)(=O)=O)cc1', 1.0)),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price 'N#[N+]c1ccc(S(N)(=O)=O)cc1': it carries a net charge of +1, and Joback ",
+        "UnpricedIon: refusing to price 'N#[N+]c1ccc(S(N)(=O)=O)cc1': it carries a net charge of +1 and the ion ",
     ),
     'toluenediamine': RosterEntry(
         'toluenediamine', '2,4-toluenediamine',
@@ -12889,6 +12889,6 @@ ROSTER: dict[str, RosterEntry] = {
         (('[Hg+2]', 1.0),),
         'liquid', 'dissolved ions: charged fragments and no lattice record, so there is no crystal of it in this engine to charge',
         True, '', 'refused',
-        "ValueError: refusing to price '[Hg+2]': it carries a net charge of +2, and Joback and Benson are fitte",
+        "UnpricedIon: refusing to price '[Hg+2]': it carries a net charge of +2 and the ion overlay is ON -- it ",
     ),
 }
