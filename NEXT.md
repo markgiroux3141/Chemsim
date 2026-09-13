@@ -11,7 +11,7 @@ Every number came from a command run on 2026-09-12. The command is named.
 |---|---|---|
 | tests | 1,304 collected; 34 of the 66 test files run today, all green. Last full run 1,301 passed in 28m51s, four commits ago | `python -m pytest --co -q` |
 | fast check | `./check.ps1`, ~105 s, green | ruff + docs + catalog + templates + silent + 62 smoke tests |
-| expensive checks owed | suite and tolerance both go DUE next commit and both are owed by T8, which changed `network/builder.py` | `python tools/cadence.py` |
+| expensive checks owed | `suite` is DUE at 4 commits and was NOT run; `tolerance` is at 4 of 6. Both are owed by T8, which changed `network/builder.py`. `playable` and `reachable` cleared on this commit | `python tools/cadence.py` |
 | tolerance audit | recorded FAIL three commits ago, 11m12s, 3 findings all pre-existing (T10) | `python validation/tolerance_audit.py` |
 | templates | 57 rows, all `tier=family`, covering 46 catalog classes | `python tools/build_templates.py --check` |
 | catalog | 1,583 compounds, 173 routes, 377 steps | `python tools/catalog.py` |
