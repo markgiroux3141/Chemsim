@@ -859,7 +859,7 @@ TEMPLATES: dict[str, TemplateRecord] = {
         tier='family',
         catalog_classes=('proton-transfer', 'acid-displacement', 'acid-displacement-precipitating'),
         source='A and Ea as water_autoionization',
-        notes='written in the PROTONATION direction: discovery runs templates forward only, so a deprotonation-forward template never finds an anilinium',
+        notes='written in the PROTONATION direction because discovery once ran templates forward only; T7 sweeps a reversible template from both sides, so the direction is now a choice rather than a constraint',
         smarts='[NX3;!$([N+]);!$([NX3][CX3]=O);!$([NX3]=*);!$([NX3]#*):1].[OH3+:2]>>[NX4+:1].[OX2H2;+0:2]',
         A=1000000000000.0, Ea=60000.0,
         reversible=True, phase='liquid',

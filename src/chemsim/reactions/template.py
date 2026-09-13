@@ -255,6 +255,11 @@ class ReactionTemplate:
     # and restores the pre-G6 engine exactly.
     hammett_saturation: float = hammett.SATURATION_DECADES
     _rxn: AllChem.ChemicalReaction = field(default=None, repr=False, compare=False)
+    # T7. The same rewrite with its two sides swapped, compiled on first use and
+    # only for a reversible template. See ``run_reverse``.
+    _rxn_rev: AllChem.ChemicalReaction = field(
+        default=None, repr=False, compare=False
+    )
 
     # The phases a CONCRETE reaction may run in. "any" is not one of them: it is
     # a request for both, resolved by ``phases`` at network-build time, so
@@ -557,9 +562,85 @@ class ReactionTemplate:
         too, and the templates C5 added do -- but that is a rule a template author
         has to remember, and this is a property of the type.
         """
-        rd_reactants = tuple(m._mol for m in reactants)
-        outcomes = self._rxn.RunReactants(rd_reactants)
+        return self._collect(self._rxn.RunReactants(tuple(m._mol for m in reactants)))
 
+    @property
+    def n_product_slots(self) -> int:
+        return self._rxn.GetNumProductTemplates()
+
+    def product_pattern(self, i: int) -> Chem.Mol:
+        """Query molecule for product slot i -- used to find matching species.
+
+        The mirror of ``reactant_pattern``, and the entry point to running this
+        template BACKWARDS. See ``run_reverse``.
+        """
+        return self._rxn.GetProductTemplate(i)
+
+    def run_reverse(self, products: tuple[Molecule, ...]) -> list[tuple[Molecule, ...]]:
+        """Apply the rewrite backwards: products in, candidate reactants out.
+
+        The direction problem, and why this is not a second rate. A reversible
+        template already has a reverse reaction -- detailed balance derives it at
+        build time, and it is an ordinary member of the network. What it does not
+        have is a way to be *found* from that side. Network expansion matches the
+        reactant slots and applies the forward rewrite, so the reverse reaction
+        exists only if the forward reactants were already in the flask. Charge
+        carbon dioxide and hydrogen into a hot vessel and the engine made
+        nothing, though its own thermochemistry held the rate of the reverse
+        water-gas shift the whole time: an equilibrium could be approached only
+        from the side its SMARTS happened to be typed on. ``amine_protonation``'s
+        note -- "written in the PROTONATION direction: discovery runs templates
+        forward only" -- is that defect worked around one row at a time.
+
+        This method proposes reactants; it never prices a reaction. The returned
+        tuples are candidates, and ``network.builder`` hands each one back to the
+        forward rewrite as the arbiter before building anything. The reaction
+        that reaches the network is the one forward discovery would have built,
+        with the same detailed-balance reverse -- identical, not merely
+        equivalent. A reversed SMARTS carrying kinetics of its own would be the
+        hand-typed reverse rate this module's docstring forbids, and two declared
+        directions for one elementary step contradict the equilibrium constant
+        between them.
+
+        Refused on an irreversible template, which has no reverse reaction in the
+        network to find: proposing its reactants would invent one.
+
+        The swap is textual -- the two halves of ``smarts`` around ``>>`` -- so
+        the product half becomes a query and the reactant half a construction
+        spec. Both hold for all 57 rows today; a row whose reactant half used a
+        query feature RDKit cannot build from (an atom list, a recursive SMARTS)
+        would compile and then propose nothing, and the forward arbiter is what
+        keeps that from mattering.
+        """
+        if not self.reversible:
+            raise ValueError(
+                f"template {self.name!r} is not reversible, so it has no reverse "
+                f"reaction in the network and nothing to discover from the "
+                f"product side. Running the rewrite backwards here would invent "
+                f"a reaction the kinetics never made"
+            )
+        if self._rxn_rev is None:
+            lhs, rhs = self.smarts.split(">>")
+            rxn = AllChem.ReactionFromSmarts(f"{rhs}>>{lhs}")
+            if rxn is None:
+                raise ValueError(
+                    f"template {self.name!r}: the reversed SMARTS "
+                    f"{rhs}>>{lhs} does not compile"
+                )
+            rxn.Initialize()
+            self._rxn_rev = rxn
+        return self._collect(
+            self._rxn_rev.RunReactants(tuple(m._mol for m in products))
+        )
+
+    def _collect(self, outcomes) -> list[tuple[Molecule, ...]]:
+        """Sanitize, collapse Hs, re-parse and de-duplicate one RunReactants result.
+
+        Shared by ``run`` and ``run_reverse`` so that both directions get the
+        identity contract ``run``'s docstring argues for: a species a rewrite
+        MADE is the same object as the one its SMILES parses to, whichever way
+        round the rewrite was applied.
+        """
         results: list[tuple[Molecule, ...]] = []
         seen: set[tuple[str, ...]] = set()
         for product_set in outcomes:

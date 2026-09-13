@@ -8,14 +8,14 @@
 # third starting material is invisible to a sweep over pairs.
 #! natural_rows = 36
 #! pairs = 630
-#! distinct_reactions = 24828
-#! templates_fired = 25
+#! distinct_reactions = 24836
+#! templates_fired = 29
 #! capped_pairs = 264
 #! inert_pairs = 320
 #! crashed_pairs = 0
 #! templates = 57
 #! tier = family
-#! silent_templates = aldofuranose_dehydration, alkene_hydrodimerisation, alkyne_hydration, aromatic_nitration, cannizzaro_disproportionation, carboxylic_acid_dissociation, claus_comproportionation, deacon_oxidation, halogen_disproportionation, hydroformylation_branched, hydroformylation_linear, hydrogen_halide_dissociation, hydrogen_sulfide_combustion, hydroxymethylfurfural_rehydration, ketofuranose_dehydration, knoevenagel_doebner_condensation, kolbe_electrolysis, kolbe_schmitt_carboxylation, methanol_from_carbon_monoxide, mineral_oxyacid_dissociation, n_acylation, nitric_oxide_reoxidation, nitro_hydrogenation, perkin_condensation, phenol_dissociation, skraup_cyclisation, steam_reforming, sulfur_dioxide_oxidation_by_nitrogen_dioxide, sulfur_trioxide_hydration, wacker_oxidation, water_gas_shift, williamson_ether_synthesis
+#! silent_templates = aldofuranose_dehydration, alkene_hydrodimerisation, alkyne_hydration, aromatic_nitration, cannizzaro_disproportionation, carboxylic_acid_dissociation, claus_comproportionation, halogen_disproportionation, hydroformylation_branched, hydroformylation_linear, hydrogen_sulfide_combustion, hydroxymethylfurfural_rehydration, ketofuranose_dehydration, knoevenagel_doebner_condensation, kolbe_electrolysis, kolbe_schmitt_carboxylation, mineral_oxyacid_dissociation, n_acylation, nitric_oxide_reoxidation, nitro_hydrogenation, perkin_condensation, phenol_dissociation, skraup_cyclisation, steam_reforming, sulfur_dioxide_oxidation_by_nitrogen_dioxide, sulfur_trioxide_hydration, wacker_oxidation, williamson_ether_synthesis
 # the ten busiest templates, distinct reactions each
 # (a reverse counts toward its forward, as in templates_fired):
 #    10887  ether_condensation
@@ -230,12 +230,12 @@ carbon-dioxide | citronellal | 8 | 0 | fixpoint | 0
 carbon-dioxide | copper-sulfide | 8 | 0 | fixpoint | 0
 carbon-dioxide | eugenol | 8 | 0 | fixpoint | 0
 carbon-dioxide | glucose | 400 | 739 | capped | 373
-carbon-dioxide | gypsum | 18 | 8 | fixpoint | 0
+carbon-dioxide | gypsum | 19 | 12 | fixpoint | 0
 carbon-dioxide | indican | 400 | 481 | capped | 381
 carbon-dioxide | iron-ii-sulfate | 8 | 0 | fixpoint | 0
 carbon-dioxide | iron-iii-oxide | 7 | 0 | fixpoint | 0
 carbon-dioxide | lead-sulfide | 8 | 0 | fixpoint | 0
-carbon-dioxide | lignin-monomer-coniferyl | 400 | 518 | capped | 333
+carbon-dioxide | lignin-monomer-coniferyl | 400 | 519 | capped | 332
 carbon-dioxide | magnesium-carbonate | 9 | 0 | fixpoint | 0
 carbon-dioxide | mercury-sulfide | 8 | 0 | fixpoint | 0
 carbon-dioxide | nitrogen | 8 | 0 | fixpoint | 0
@@ -251,7 +251,7 @@ carbon-dioxide | sucrose | 400 | 403 | capped | 355
 carbon-dioxide | sulfur-s8 | 8 | 0 | fixpoint | 0
 carbon-dioxide | tannic-acid-core | 400 | 422 | capped | 374
 carbon-dioxide | triolein | 8 | 0 | fixpoint | 0
-carbon-dioxide | water | 16 | 8 | fixpoint | 0
+carbon-dioxide | water | 17 | 12 | fixpoint | 0
 carbon-dioxide | zinc-sulfide | 8 | 0 | fixpoint | 0
 carbon-graphite | cellulose-unit | 400 | 738 | capped | 372
 carbon-graphite | citronellal | 8 | 0 | fixpoint | 0
@@ -419,7 +419,7 @@ gypsum | oxygen | 13 | 4 | fixpoint | 0
 gypsum | potassium-nitrate | 15 | 4 | fixpoint | 0
 gypsum | salicin | 400 | 629 | capped | 369
 gypsum | silver | 14 | 4 | fixpoint | 0
-gypsum | sodium-chloride | 16 | 6 | fixpoint | 0
+gypsum | sodium-chloride | 17 | 10 | fixpoint | 0
 gypsum | sodium-nitrate | 15 | 4 | fixpoint | 0
 gypsum | starch-unit | 400 | 737 | capped | 366
 gypsum | sucrose | 400 | 401 | capped | 348
@@ -514,7 +514,7 @@ lignin-monomer-coniferyl | oxygen | 400 | 634 | capped | 236
 lignin-monomer-coniferyl | potassium-nitrate | 400 | 517 | capped | 333
 lignin-monomer-coniferyl | salicin | 400 | 741 | capped | 370
 lignin-monomer-coniferyl | silver | 400 | 518 | capped | 334
-lignin-monomer-coniferyl | sodium-chloride | 400 | 518 | capped | 332
+lignin-monomer-coniferyl | sodium-chloride | 400 | 519 | capped | 331
 lignin-monomer-coniferyl | sodium-nitrate | 400 | 517 | capped | 333
 lignin-monomer-coniferyl | starch-unit | 400 | 641 | capped | 366
 lignin-monomer-coniferyl | sucrose | 400 | 419 | capped | 346
@@ -629,7 +629,7 @@ sodium-chloride | sucrose | 400 | 402 | capped | 354
 sodium-chloride | sulfur-s8 | 9 | 0 | fixpoint | 0
 sodium-chloride | tannic-acid-core | 400 | 421 | capped | 373
 sodium-chloride | triolein | 9 | 0 | fixpoint | 0
-sodium-chloride | water | 14 | 6 | fixpoint | 0
+sodium-chloride | water | 15 | 10 | fixpoint | 0
 sodium-chloride | zinc-sulfide | 9 | 0 | fixpoint | 0
 sodium-nitrate | starch-unit | 400 | 737 | capped | 371
 sodium-nitrate | sucrose | 400 | 402 | capped | 354

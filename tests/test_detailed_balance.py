@@ -188,7 +188,14 @@ def test_negative_reverse_barrier_is_clamped_and_K_still_holds(thermo):
 
 
 def test_clamp_is_reported_once_by_the_builder(thermo, capsys):
-    """The notice must fire, and must not repeat per fixpoint generation."""
+    """The notice must fire, and must not repeat per fixpoint generation.
+
+    Counted on the clamp's own wording rather than on the word NOTICE, because
+    this flask legitimately raises a second one: T7's reverse sweep proposes
+    acetic anhydride out of two acetic acids and refuses it for being heavier
+    than what it came from. A test that counts every notice in the stream fails
+    the day the builder learns to report anything else.
+    """
     template = ReactionTemplate(
         name="impossible_hydrolysis",
         smarts="[CX3:1](=[O:2])[OX2:3][CX4:4].[OX2H2:5]"
@@ -198,7 +205,7 @@ def test_clamp_is_reported_once_by_the_builder(thermo, capsys):
     )
     build_network([ESTER, "O"], [template], thermo=thermo)
     out = capsys.readouterr().out
-    assert out.count("NOTICE") == 1, out
+    assert out.count("below its endothermicity") == 1, out
     assert "raised to" in out
 
 

@@ -545,6 +545,11 @@ class _ExpansionState:
     unpriced: dict[str, str] = field(default_factory=dict)
     unpriced_rewrites: int = 0
     tried: set = field(default_factory=set)
+    # T7. Species the reverse sweep proposed and the no-building-up bound
+    # refused, keyed to the template that proposed them and their molar mass.
+    # See ``_expand_reverse``: this is the price of making the reverse search
+    # terminate, and rule 10 says a bound that bit says so.
+    reverse_oversize: dict[str, tuple[str, float]] = field(default_factory=dict)
 
     def reports(self, max_species: int, n_unexpanded: int = 0) -> list[str]:
         """The cap notices, as strings rather than as side effects.
@@ -593,6 +598,24 @@ class _ExpansionState:
                     f"the full set is ReactionNetwork.unpriced)"
                 )
             out.append(_NL.join(lines))
+        if self.reverse_oversize:
+            named = sorted(
+                self.reverse_oversize.items(), key=lambda kv: -kv[1][1]
+            )[:3]
+            out.append(
+                f"[build_network] NOTICE: {len(self.reverse_oversize)} species "
+                f"were proposed by running a reversible template BACKWARDS and "
+                f"refused because they are heavier than what they would be made "
+                f"from. Reverse discovery exists so that an equilibrium can be "
+                f"approached from either side; it is not a retrosynthesis, and "
+                f"without this bound every acid and alcohol in the flask is a "
+                f"precursor of an ester that is not in it. The reaction is real "
+                f"and this flask does not carry it -- charge the species and it "
+                f"runs. Heaviest refused: "
+                + ", ".join(
+                    f"{s} ({m:.0f} g/mol, {t})" for s, (t, m) in named
+                )
+            )
         if self.capped:
             out.append(
                 f"[build_network] NOTICE: hit max_species={max_species}; network "
@@ -622,6 +645,10 @@ def _expand_once(
     considered. Combinations drawn entirely from previously-seen species were
     already tried in an earlier round, so re-running them is pure waste -- and it
     is quadratic waste, which is what made running to a fixpoint intractable.
+
+    A reversible template is then swept a second time from its PRODUCT side --
+    see ``_expand_reverse``, and the argument in ``ReactionTemplate.run_reverse``
+    for why that is a search and not a second rate.
     """
     current = list(molecules.values())
     fresh: set[str] = set(m.smiles for m in frontier)
@@ -647,56 +674,235 @@ def _expand_once(
                 if not _element_charge_balance(combo, products):
                     continue                  # reject malformed / unbalanced rewrites
 
-                # R1. THE FOURTH COVERAGE LIMIT, AND THE ONLY ONE THAT USED TO
-                # HAND THE PLAYER A TRACEBACK. It has to run HERE, ahead of
-                # ``_concrete_reactions``, because pricing is what that call
-                # does: a product with no thermochemistry reaches the
-                # standard-state check, the Evans-Polanyi barrier or detailed
-                # balance and raises out of ``build_network`` -- reachable off
-                # the picker's own roster in two clicks, at ONE generation.
-                #
-                # ⚠ AND IT DROPS THE REWRITE, NOT ONLY THE SPECIES, exactly as
-                # the ``too_big`` branch below does. A reaction whose product has
-                # no thermochemistry is worse than either alternative: it would
-                # consume its reactants into an index the energy balance and the
-                # vapour-liquid split cannot price.
-                unpriced = _unpriceable(products, molecules, thermo, state, tmpl)
-                if unpriced:
-                    state.unpriced.update(unpriced)
-                    state.unpriced_rewrites += 1
-                    continue
-
-                new_rxns = _concrete_reactions(
-                    tmpl, combo, products, thermo, volatility, T_ref, notices,
+                if _register(
+                    tmpl, combo, products, products, molecules, reactions,
+                    thermo, volatility, T_ref, notices, state, added,
                     cell_potential,
-                )
-                if all(r.is_null() for r in new_rxns):
-                    continue
+                ) == "capped":
+                    return added
 
-                too_big = False
-                for pm in products:
-                    if pm.smiles in molecules:
-                        continue
-                    if (
-                        state.max_molar_mass is not None
-                        and pm.molar_mass > state.max_molar_mass
-                    ):
-                        state.oversize[pm.smiles] = pm.molar_mass
-                        too_big = True
-                        continue
-                    if len(molecules) >= state.max_species:
-                        state.capped = True
-                        return added
-                    molecules[pm.smiles] = pm
-                    added.append(pm)
-                if too_big:
-                    continue                  # skip the reaction, not just the species
-
-                for rxn in new_rxns:
-                    if not rxn.is_null() and rxn.key() not in reactions:
-                        reactions[rxn.key()] = rxn
-
+    _expand_reverse(
+        molecules, reactions, templates, thermo, volatility, T_ref, notices,
+        state, current, fresh, added, cell_potential,
+    )
     return added
+
+
+def _register(
+    tmpl: ReactionTemplate,
+    reactants: tuple[Molecule, ...],
+    products: tuple[Molecule, ...],
+    new_side: tuple[Molecule, ...],
+    molecules: dict[str, Molecule],
+    reactions: dict[tuple, ConcreteReaction],
+    thermo: ThermochemistryProvider | None,
+    volatility: VolatilityProvider | None,
+    T_ref: float,
+    notices: dict[tuple, str],
+    state: _ExpansionState,
+    added: list[Molecule],
+    cell_potential: float,
+) -> str:
+    """Price, register and build one accepted rewrite. "capped", "skipped" or "ok".
+
+    The tail both sweeps share. ``new_side`` is the half of the rewrite that may
+    hold species the network has not seen -- the products when the template was
+    applied forward, the REACTANTS when the reverse sweep proposed them -- and it
+    is the half that is screened for a price and counted against the caps. The
+    other half was matched out of ``molecules`` and is already priced.
+    """
+    # R1. THE FOURTH COVERAGE LIMIT, AND THE ONLY ONE THAT USED TO
+    # HAND THE PLAYER A TRACEBACK. It has to run HERE, ahead of
+    # ``_concrete_reactions``, because pricing is what that call
+    # does: a product with no thermochemistry reaches the
+    # standard-state check, the Evans-Polanyi barrier or detailed
+    # balance and raises out of ``build_network`` -- reachable off
+    # the picker's own roster in two clicks, at ONE generation.
+    #
+    # ⚠ AND IT DROPS THE REWRITE, NOT ONLY THE SPECIES, exactly as
+    # the ``too_big`` branch below does. A reaction whose product has
+    # no thermochemistry is worse than either alternative: it would
+    # consume its reactants into an index the energy balance and the
+    # vapour-liquid split cannot price.
+    unpriced = _unpriceable(new_side, molecules, thermo, state, tmpl)
+    if unpriced:
+        state.unpriced.update(unpriced)
+        state.unpriced_rewrites += 1
+        return "skipped"
+
+    new_rxns = _concrete_reactions(
+        tmpl, reactants, products, thermo, volatility, T_ref, notices,
+        cell_potential,
+    )
+    if all(r.is_null() for r in new_rxns):
+        return "skipped"
+
+    too_big = False
+    for pm in new_side:
+        if pm.smiles in molecules:
+            continue
+        if (
+            state.max_molar_mass is not None
+            and pm.molar_mass > state.max_molar_mass
+        ):
+            state.oversize[pm.smiles] = pm.molar_mass
+            too_big = True
+            continue
+        if len(molecules) >= state.max_species:
+            state.capped = True
+            return "capped"
+        molecules[pm.smiles] = pm
+        added.append(pm)
+    if too_big:
+        return "skipped"                  # skip the reaction, not just the species
+
+    for rxn in new_rxns:
+        if not rxn.is_null() and rxn.key() not in reactions:
+            reactions[rxn.key()] = rxn
+    return "ok"
+
+
+def _expand_reverse(
+    molecules: dict[str, Molecule],
+    reactions: dict[tuple, ConcreteReaction],
+    templates: list[ReactionTemplate],
+    thermo: ThermochemistryProvider | None,
+    volatility: VolatilityProvider | None,
+    T_ref: float,
+    notices: dict[tuple, str],
+    state: _ExpansionState,
+    current: list[Molecule],
+    fresh: set[str],
+    added: list[Molecule],
+    cell_potential: float,
+) -> None:
+    """Search every reversible template from its PRODUCT side.
+
+    Stops early if a cap bit; ``state.capped`` is what ``build_network`` reads.
+
+    T7. An equilibrium used to be approachable only from the side its SMARTS was
+    typed on. ``_expand_once`` matches the reactant slots and applies the forward
+    rewrite, so a reversible reaction is instantiated only when its forward
+    reactants are already in the pool -- and its thermodynamically derived
+    reverse, an ordinary reaction in the network, comes along with it or not at
+    all. Charge carbon dioxide and hydrogen into a hot vessel and the engine made
+    nothing, though detailed balance held the rate of the reverse water-gas shift
+    the whole time. Measured: the small-molecule shelf closes on 41 species
+    holding both ``O=C=O`` and ``[H][H]`` and could not make one molecule of
+    carbon monoxide, which left four templates silent.
+
+    The reverse rewrite proposes; the forward rewrite decides. Each candidate
+    reactant tuple is run forward again and kept only if it reproduces the
+    product multiset it was derived from. What then reaches the network is built
+    by ``_concrete_reactions`` in the template's own orientation, so it is the
+    reaction forward discovery would have built -- identical, not merely
+    equivalent -- with the same derived reverse. No rate constant is declared,
+    read or invented here, which is what keeps rule 9 intact: a hand-typed
+    reverse, or a mirror row with kinetics of its own, would put one elementary
+    step in the network twice at two rates whose ratio is not its equilibrium
+    constant.
+
+    It is a search and costs what a search costs. Only reversible templates are
+    swept (28 of 57), only combinations touching the frontier, and ``state.tried``
+    is keyed on the direction so the two sweeps do not shadow each other.
+
+    A REVERSE STEP MAY NOT ASSEMBLE A HEAVIER MOLECULE, AND THAT BOUND IS THE
+    DIFFERENCE BETWEEN A FIX AND A RETROSYNTHESIS
+
+    Forward expansion is bounded by what the flask can become: matter runs
+    downhill into a finite set of products, which is why the small-molecule shelf
+    reaches a fixpoint at all. Running a template backwards asks the opposite
+    question -- what could have made this -- and that question is unbounded by
+    nature, because every acid and alcohol in the pool is a candidate precursor
+    of an ester the flask does not contain. Measured, unbounded: aspirin and
+    water, one reversible template, and the reverse of ester hydrolysis walks
+    salicylic acid up a polyester ladder to the species cap, since each new
+    oligomer is itself an acid and an alcohol. Seventeen named routes went from
+    33 seconds to not finishing.
+
+    So a proposal is refused when a species it introduces is heavier than the
+    heaviest molecule it was derived from. It is a comparison rather than a
+    threshold -- there is no number to tune -- and it keeps exactly the case the
+    direction fix is for: an equilibrium the flask cannot reach because the small
+    partner on the other side was never named. Carbon monoxide out of carbon
+    dioxide, hydrogen chloride out of chloride. What it gives up is a reverse step
+    that genuinely builds up, ammonia decomposing in a flask holding nothing else
+    among them, and that is a coverage limit, so ``state.reverse_oversize``
+    reports it by name.
+    """
+    for tmpl in templates:
+        if not tmpl.reversible:
+            continue
+        slot_matches = [
+            [m for m in current if m._mol.HasSubstructMatch(tmpl.product_pattern(i))]
+            for i in range(tmpl.n_product_slots)
+        ]
+        if any(len(slot) == 0 for slot in slot_matches):
+            continue
+
+        for combo in itertools.product(*slot_matches):
+            if not any(m.smiles in fresh for m in combo):
+                continue
+            combo_key = (tmpl.name, "reverse", tuple(m.smiles for m in combo))
+            if combo_key in state.tried:
+                continue
+            state.tried.add(combo_key)
+
+            heaviest = max(m.molar_mass for m in combo)
+            for proposed in tmpl.run_reverse(combo):
+                if len(proposed) != tmpl.n_reactant_slots:
+                    continue
+                if not _element_charge_balance(proposed, combo):
+                    continue
+                # Only a proposal carrying a species the pool has never seen can
+                # add anything. Every combination drawn entirely from the pool is
+                # tried by the forward sweep in the round its newest member
+                # joined the frontier, so re-deriving one here would rebuild a
+                # reaction that is already in ``reactions`` -- at the cost of the
+                # thermochemistry that prices it.
+                novel = [m for m in proposed if m.smiles not in molecules]
+                if not novel:
+                    continue
+                # See the docstring: backwards is retrosynthesis unless it is
+                # forbidden to build up.
+                grew = [m for m in novel if m.molar_mass > heaviest]
+                if grew:
+                    for m in grew:
+                        state.reverse_oversize[m.smiles] = (tmpl.name, m.molar_mass)
+                    continue
+                confirmed = _forward_confirms(tmpl, proposed, combo)
+                if confirmed is None:
+                    continue
+                if _register(
+                    tmpl, proposed, confirmed, proposed, molecules, reactions,
+                    thermo, volatility, T_ref, notices, state, added,
+                    cell_potential,
+                ) == "capped":
+                    return
+
+
+def _forward_confirms(
+    tmpl: ReactionTemplate,
+    proposed: tuple[Molecule, ...],
+    combo: tuple[Molecule, ...],
+) -> tuple[Molecule, ...] | None:
+    """The forward products of ``proposed``, if they are ``combo``. Else None.
+
+    The arbiter. A reversed SMARTS is a textual swap: the product half becomes a
+    query and the reactant half a construction spec, and neither half was written
+    for the job. It can propose a reactant set the forward rewrite would never
+    make -- a slot matched inside a larger molecule, an H count the product
+    template happened not to spell, a symmetry RDKit resolves differently in the
+    two directions. Rather than trust it, run the template forward on the
+    proposal and require the original product multiset back. This is the rule the
+    shelf analysis already works under: a slot match is a candidate, and the
+    rewrite is the verdict.
+    """
+    want = sorted(m.smiles for m in combo)
+    for products in tmpl.run(proposed):
+        if sorted(m.smiles for m in products) == want:
+            return products
+    return None
 
 
 def _unpriceable(

@@ -204,19 +204,33 @@ def test_pricing_the_unbalanced_row_is_SILENT(thermo):
     [
         ("C=CCc1ccc(O)c(OC)c1", True),     # eugenol
         ("C=CCc1ccc2OCOc2c1", True),       # safrole -- the same motif
-        ("CC=Cc1ccc(O)c(OC)c1", False),    # its own product: NOT self-feeding
+        ("CC=Cc1ccc(O)c(OC)c1", True),     # its own product -- T7, see below
         ("C=Cc1ccccc1", False),            # styrene: no CH2 between ring and C=C
         ("Cc1ccccc1", False),              # toluene
         ("CCC=C", False),                  # 1-butene: no ring
     ],
 )
 def test_the_isomerisation_pattern_is_narrow(substrate, fires, thermo, vol):
-    """⚠ ``[CH2:4]`` is a TERMINAL methylene, so an already-conjugated arene does
-    not match -- which is what stops the template feeding itself."""
+    """``[CH2:4]`` is a terminal methylene, so an already-conjugated arene does
+    not match the reactant side.
+
+    Isoeugenol, the template's own product, used to be pinned here as not firing,
+    and the reason given was that the forward pattern cannot match it. That was
+    two claims in one. The pattern still cannot match it -- and since T7 the
+    network is searched from the product side as well, so a flask holding only
+    isoeugenol reaches the same equilibrium pair a eugenol flask does, which is
+    what a reversible template means. Measured: five species and two reactions
+    from either end, the same two.
+
+    What that pin was really protecting is asserted below where it belongs: the
+    template does not feed itself, meaning the network is FINITE, not that one
+    end of a declared equilibrium is unreachable.
+    """
     n = _net(thermo, vol, [WATER, _c(substrate), NA, OH],
              [alkene_isomerisation()])
     got = any(r.name == "alkene_isomerisation" for r in n.reactions)
     assert got is fires
+    assert len(n.reactions) <= 2     # the pair at most: no ladder either way
 
 
 @pytest.mark.parametrize(

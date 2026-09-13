@@ -296,24 +296,33 @@ def test_hydrogen_itself_survives_the_hydrogen_collapse():
 # ---------------------------------------------------------------------------
 
 
-def test_an_ester_in_water_is_inert_without_a_template_that_starts_there(
+def test_an_ester_in_water_finds_the_same_equilibrium_from_either_side(
     thermo, volatility
 ):
-    """⚠ A REVERSIBLE TEMPLATE IS DISCOVERED IN THE FORWARD DIRECTION ONLY.
+    """T7. A reversible template is discovered from BOTH sides, and to the letter.
 
-    ``build_network`` matches REACTANT patterns, and Fischer esterification's are
-    an acid and an alcohol. So a flask of ester and water finds nothing, however
-    reversible the template is -- which is the measurement that decided
-    ``ester_hydrolysis`` had to be written from the ester side. This is general to
-    every reversible template in the project, and it is not fixed.
+    This used to pin the opposite. ``build_network`` matched reactant patterns
+    only, and Fischer esterification's are an acid and an alcohol, so a flask of
+    ester and water found nothing however reversible the template was -- which is
+    the measurement that decided ``ester_hydrolysis`` had to be written from the
+    ester side, and the reason ``amine_protonation`` is written as a protonation.
+    An ester sitting in water is not inert, and saying so was a defect in
+    discovery rather than a fact about the chemistry.
+
+    The assertion that matters is the last one: seeded from either side, the two
+    networks agree on every reaction AND on both Arrhenius constants of each. The
+    reverse sweep searches for species; it never declares a rate.
     """
     from_ester = net_of([c("CCOC(C)=O"), WATER], [esterification()],
                         thermo, volatility)
-    assert from_ester.reactions == []
-
     from_acid = net_of([c("CC(=O)O"), c("CCO")], [esterification()],
                        thermo, volatility)
     assert len(from_acid.reactions) == 2      # forward and its derived reverse
+
+    def kinetics(net):
+        return sorted((r.key(), r.A, r.Ea, r.phase) for r in net.reactions)
+
+    assert kinetics(from_ester) == kinetics(from_acid)
 
     reachable = net_of([c("CCOC(C)=O"), WATER], [ester_hydrolysis()],
                        thermo, volatility)

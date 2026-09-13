@@ -33,7 +33,10 @@ $SmokeTests = @(
     # Under a second between them, and both guard a committed artefact against
     # the code that writes it rather than against a hand-typed number.
     'tests/test_reachable.py',
-    'tests/test_cadence.py'
+    'tests/test_cadence.py',
+    # One second, and it guards the network builder's newest claim: a template
+    # run backwards finds species and never a rate.
+    'tests/test_reverse_discovery.py'
 )
 
 function Step {

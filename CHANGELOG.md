@@ -4,6 +4,21 @@ Newest first. One entry per session, twelve lines at most, enforced by
 `tools/check_docs.py`. When this file passes 400 lines the older half rolls into
 `docs/history/changelog-YYYY-MM.md`.
 
+## 2026-09-12 — T7: an equilibrium can be approached from either side
+
+`network.builder._expand_reverse` searches every reversible template from its
+PRODUCT side, so a species is found when only the far side of its equilibrium is
+in the flask: discovery matched reactant patterns only, so CO2 and H2 in a hot
+vessel made nothing while detailed balance held the reverse water-gas-shift rate
+the whole time. The reverse rewrite PROPOSES and the forward rewrite DECIDES --
+a candidate is re-run forward, kept only if it reproduces the products it came
+from, then built in the template's own orientation, so no rate is declared, read
+or invented (rule 9). Bounded by "a reverse step may not assemble a heavier
+molecule"; unbounded it is retrosynthesis, and aspirin walked a polyester ladder
+to the cap. `templates_fired` 25 -> 29 of 57, silent 32 -> 28, closure 41 -> 43
+species (frontier still 0), `[C-]#[O+]` off the work order. Suite 1,301 passed
+in 28m51s; tolerance audit red on pre-existing findings (T10). Next: T9.
+
 ## 2026-09-12 — T6: every silent template carries a label, and a ledger for the slow checks
 
 `tools/classify_silent.py` classifies all 32 templates T4 found silent, in 2 s,

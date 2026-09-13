@@ -427,18 +427,22 @@ def dissociation_templates(A: float | None = None, Ea: float | None = None):
             # it could not touch, and no example ever caught it because nothing in
             # the corpus can put a trialkylammonium in a flask.
             #
-            # AND THE DIRECTION IS THE POINT, NOT THE PATTERN. Discovery in
-            # ``network.builder`` runs templates FORWARD ONLY -- a reversible
-            # template's reverse is a concrete reaction in the network, but it is
+            # AND THE DIRECTION WAS THE POINT, NOT THE PATTERN. Discovery in
+            # ``network.builder`` ran templates FORWARD ONLY -- a reversible
+            # template's reverse was a concrete reaction in the network, but was
             # never used to enumerate species. So a deprotonation-forward template
-            # can only find an anilinium in a flask that already contains one, and
-            # a flask of aniline and mixed acid does not. Writing the same
-            # equilibrium protonation-forward finds it from the free base, which is
-            # the ``ester_hydrolysis`` decision again: when only one direction is
-            # discoverable, the direction you need is the direction you declare.
-            # Nothing is lost by the swap -- ``reversible=True`` puts the
+            # could only find an anilinium in a flask that already contained one,
+            # and a flask of aniline and mixed acid does not. Writing the same
+            # equilibrium protonation-forward finds it from the free base, and
+            # nothing is lost by the swap -- ``reversible=True`` puts the
             # deprotonation in the network with its rate fixed by detailed balance
             # from the same pKa.
+            #
+            # T7 lifted the constraint: ``_expand_reverse`` now searches every
+            # reversible template from its product side as well, so either
+            # direction would be found. The row stays as written, because the
+            # direction it is declared in is the one the rate is quoted for and
+            # re-typing it would change nothing but the risk.
             #
             # ``[OX2H2;+0:2]`` and not ``[OX2H2:2]``: a mapped atom keeps its
             # formal charge through a rewrite, so the un-annotated form hands back

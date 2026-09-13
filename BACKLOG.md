@@ -101,26 +101,30 @@ kind of thing `element_data` exists to refuse.
 with the command, and a follow-up item names whichever of the two fixes the
 number argues for.
 
-### T7 — carbon monoxide, and the four templates waiting for it (M)
-T6 measured it. 23 missing substrates hold the 29 `no-substrate` rows of
-`data/catalog/derived/silent_templates.psv`, and the largest single one is
-`[C-]#[O+]`: `water_gas_shift`, `steam_reforming` and both hydroformylations
-plus `methanol_from_carbon_monoxide` want carbon monoxide and the shelf cannot
-make a molecule of it. The closure HAS its ingredients -- `O=C=O` and `[H][H]`
-are both in the 41 species -- and `water_gas_shift` is written CO + H2O -> CO2 +
-H2 with `reversible=yes`, so the reaction that would make CO is derived and
-never DISCOVERED. Discovery runs templates forward only; `amine_protonation`
-carries a note saying it was written backwards for exactly this reason.
+### T9 — an aromatic aldehyde, the substrate three templates wait on (M)
+T7 cleared `[C-]#[O+]` off the work order and the top of
+`data/catalog/derived/silent_templates.psv` is now `[c][CX3H1]=[OX1]` at three
+templates (`cannizzaro_disproportionation`, `knoevenagel_doebner_condensation`,
+`perkin_condensation`) and `[CX3H2]=[CX3]`, a TERMINAL alkene, at two (both
+hydroformylations -- T7 moved them here from carbon monoxide). The shelf holds
+eugenol and coniferyl alcohol, so an aromatic aldehyde is one oxidative cleavage
+away and `vanillin_chemistry` already does it; the question is whether the
+closure reaches it and, if not, which shelf row or template is missing. Read the
+work order block first, then check whether the cleavage template is in the 57.
+**Done when:** either substrate is in the closure and those rows have left
+`silent_templates.psv`, or the file says which shelf row would put it there.
 
-That makes this a direction problem, not a chemistry problem, and the fix is
-NOT simply flipping the row: a flask charged with CO and water would then
-discover nothing, which is the forward use the named routes depend on. So the
-options are a mirror row, a discovery pass that also tries the derived reverse,
-or a solid-carbon term (`C` + `CO2`, which no `family` row can express -- all 57
-are liquid or gas). Decide which, with the reasoning, before writing anything.
-**Done when:** `[C-]#[O+]` is in the closure, `templates_fired` in
-`reachable.psv` has been re-measured, and `silent_templates.psv` has lost the
-four rows or says why it has not.
+### T10 — two examples print a digit that depends on the solver (S)
+`validation/tolerance_audit.py`'s first recorded run came back red on
+`activity` (worst 0.128%) and `multistep_prep` (0.107%): a quotable digit moves
+between the default tolerance and rtol 1e-8. Measured PRE-EXISTING -- both print
+byte-identical output on pre-T7 and post-T7 source -- so this is debt the audit
+found rather than damage. `named_routes` additionally raises at rtol 1e-8, and
+the audit diagnoses that in-run as older than S13. The fix the audit itself
+prescribes: give each example its own tight tolerance, as `lime_cycle.py` and
+`roasting_and_the_catalyst_gate.py` already do.
+**Done when:** `python validation/tolerance_audit.py` exits 0, or the ledger
+note says which of the three is a standing refusal and why.
 
 ### T8 — the two templates a missing pKa switches off (S, T5's first answer)
 T6's third group came back with two members and neither is a bug:
