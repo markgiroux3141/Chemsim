@@ -10,12 +10,6 @@ Order is priority order. Do not start a Tier 2 item while a Tier 0 item is open.
 
 ## Tier 0 — make the repo cheap to enter
 
-### T0.3 — README length (S, decided 2026-09-01: deferred into C1)
-The status half is done, 662 -> 561 lines. What is left is the physics prose,
-which is the best argument the README makes for why this is not a recipe table,
-so it stays until C1 moves it into `docs/manual/chapters/` and the README keeps
-a paragraph and a link per topic. Target 400, not 300. Not a Tier 0 blocker.
-
 ### T0.4 — a fast test subset (S)
 There are no pytest markers at all, so the only way to run less than the
 30-minute suite is to name files. Run `python -m pytest --durations=0 -q` once
@@ -76,25 +70,45 @@ is one or two sessions, not a repeating one.
 **Done when:** the 6 families are written or refused with a reason, and the
 retired row count is in `CHANGELOG.md`.
 
-### T5 — measure what the 30-row pKa table bounds (S, measurement first)
-T1d turned "no pKa for this ion" from a traceback into a reported coverage
-limit, and the reports named five in one session: salicyl alcohol's phenoxide,
-the Kolbe dianion, eugenolate, a nitroanilinium, hypochlorite. A family template
-matches any aromatic hydroxyl or any amine; `_PAIRS` is 33 hand-typed rows.
-T14 did exactly this for ONE acid class and the answer was a rule with a domain,
-not rows — so this sweep now looks for the OTHER classes that argument reaches,
-and `validation/fatty_acid_pka.py` is the shape to copy. Do it before writing any
-pKa: an estimator for pKa is what `element_data` exists to refuse.
-T18 BUILT THE MACHINERY AND LEFT IT WITH ONE CALLER. `ThermochemistryProvider`
-takes an `ion_fallback` consulted after the curated table misses, and
-`properties/carboxylic_pka.py` is the one rule passed into it. A phenoxide is
-the obvious next candidate — T1d's `salicin-hydrolysis` is the route standing
-behind it — and it is also the warning: the carboxylic plateau spans 0.15 pKa
-units and `_PAIRS`'s two phenols are 9.95 and 10.19 with nothing between them
-and nothing either side. A rule needs a measured spread, not a hook.
-**Done when:** the count and its top acid classes are in `NEXT.md`'s state table
-with the command, and a follow-up item names the fix the number argues for —
-including a refusal, if the spread inside a candidate domain is too wide.
+### T23 — the pKa rows the routes are waiting on, shelf first (M, found in T5)
+`python validation/pka_domains.py`. Panel 2 is the startable half: of the 46
+ions the six ion rows reach from the shelf's own species, 39 are unpriceable
+and they come from FOUR compounds. Thirty-five are tannic acid's five phenols
+deprotonating as a powerset and 31 of those have no priced parent either, so no
+row reaches them — T14's lesson again, a table closes a list and never a
+generator, and the honest output there is a bound. The other three are one
+curated pair each, all measured: malonic acid (2.83 / 5.69), 4-nitrophenol
+(7.15) and coniferyl alcohol's phenol: the only ionisation gap a player meets.
+Panel 1 is the rest: 208 amine ions over 176 compounds and 27 routes, 139
+carboxylic over 122 and 20, 104 phenoxide over 79 and 21 — each an ion whose
+neutral parent the engine CAN price, so a curated pair is all that is missing.
+A class-wide rule is refused and panel 4 measures why twice: both curated
+phenols are electron-rich and 39 of 79 gap phenols sit outside their range
+(picric acid +1.102 against phenol's -0.920), and phenol and salicylate's
+second proton share a sigma_sum while sitting 3.45 pKa units apart, so no
+substituent sum on `hammett`'s scale separates them — and sigma-minus, the
+scale a phenol pKa is fitted on, is not in that module. The amine class is
+refused for a simpler reason: three rows spanning 6.04 units, its one plausible
+domain holding a single row against the two `carboxylic_pka.plateau` requires.
+So this is rows, in the order panel 3 ranks them by route demand.
+**Done when:** panel 2's missing count is 35 or lower with tannic acid alone
+behind it and that half written down as a bound; then each further row is in
+`_PAIRS` with a named source, `tools/build_playable.py` is regenerated, and the
+phenol refusal is recorded where the next session reads it rather than
+re-derives it.
+
+### T25 — the mineral-oxyacid gap is not a pKa gap (S, found in T5)
+89 missing ions in that class and ZERO want a pKa: every one has a parent the
+engine cannot price at all, so an `AcidPair` would be skipped by
+`ion_thermochemistry` the day it was written. `ThermochemistryProvider` refuses
+benzenesulfonic, p-toluenesulfonic and sulfanilic acid with "no curated entry,
+and no estimator can price its format", and eleven routes name one — alizarin,
+dop, phenol-sulfonation, picric-acid, sulfa-drug, tnt. The fix is neutral
+thermochemistry for the aryl sulfonic acids, curated or a group the estimator
+lacks.
+**Done when:** the sulfonic acids a catalog route names price as neutrals, or
+the missing estimator group is named in a refusal, and the audit's
+mineral-oxyacid row moves off zero.
 
 ### T11 — an artefact-backed check that changes nothing can never clear (S)
 Found 2026-09-12 while closing T7. `playable` went DUE at 8 commits, was re-run

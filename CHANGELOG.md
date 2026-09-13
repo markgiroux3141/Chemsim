@@ -4,6 +4,21 @@ Newest first. One entry per session, twelve lines at most, enforced by
 `tools/check_docs.py`. When this file passes 400 lines the older half rolls into
 `docs/history/changelog-YYYY-MM.md`.
 
+## 2026-09-13 — T5: the pKa gap is counted, and the phenol rule is refused
+
+`validation/pka_domains.py` (new, ~5 s) sweeps the six ion-producing template
+rows over the corpus and the shelf to a fixpoint, so the classes are the rows
+rather than a re-typed list of groups. Corpus: 1,078 ions reached, 1,030
+unpriceable over 395 compounds, and only 451 of those WANT a pKa -- the other
+579 have no priceable parent, so a row for them would be skipped the day it was
+written. By class, 208 amine / 139 carboxylic / 104 phenoxide want one, behind
+27 / 20 / 21 routes; mineral oxyacid wants ZERO of its 89, which makes it a
+thermochemistry gap (T25). Shelf: 39 unpriceable ions over FOUR compounds, 35 of
+them tannic acid's powerset. A phenol plateau is refused on two measured
+grounds: 39 of 79 gap phenols sit outside the curated substituent range, and two
+curated rows share a sigma_sum 3.45 pKa units apart. `./check.ps1` green, 1,338
+-> 1,342 tests; T5 and T0.3 out of `BACKLOG.md`, T23 and T25 in.
+
 ## 2026-09-13 — T13: an unpriceable species never reaches the integrator
 
 Which half moves was decided by `vessel.build_phase_arrays`: it prices EVERY

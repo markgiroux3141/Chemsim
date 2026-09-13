@@ -8,102 +8,99 @@ Every number came from a command run on 2026-09-13. The command is named.
 
 | fact | value | command |
 |---|---|---|
-| tests | 1,338 collected, unmoved -- T13 restated two rather than adding any | `python -m pytest --co -q` |
+| tests | 1,342 collected, 1,338 -> 1,342: T5's four | `python -m pytest --co -q` |
 | fast check | `./check.ps1`, ~85 s, green | ruff + docs + catalog + templates + silent + 62 smoke tests |
-| expensive checks owed | `suite` and `tolerance` both DUE at 10 commits when measured, 11 after this one, neither run; `routes` re-run today and recorded pass; `playable` and `reachable` ok | `python tools/cadence.py` |
+| expensive checks owed | `suite` and `tolerance` both DUE, 12 commits after this one, neither run; `routes`, `playable`, `reachable` ok | `python tools/cadence.py` |
 | templates | 59 rows, all `tier=family`, covering 46 catalog classes -- unmoved | `python tools/build_templates.py --check` |
 | catalog | 1,583 compounds, 173 routes, 377 steps -- unmoved | `python tools/catalog.py` |
-| routes template-ready / species-ready / both | 46 / 90 / 40 -- unmoved, and the report regenerates byte-identical | `python validation/catalog_coverage.py` |
-| routes runnable / playable | 47 runnable, 23 playable, three tiers deep (10 / 12 / 1); 23 fed but unrunnable, ceiling 50 -- regenerates byte-identical | `python tools/build_playable.py` (44 s) |
+| routes template-ready / species-ready / both | 46 / 90 / 40 -- unmoved, nothing under `src/` changed today | `data/catalog/COVERAGE_REPORT.md` |
+| routes runnable / playable | 47 runnable, 23 playable, ceiling 50 -- unmoved for the same reason | `data/catalog/PLAYABLE.md` |
 | the shelf | 72 rows, 43 natural / 25 intermediate / 4 bottle | `data/catalog/shelf.psv` |
-| pKa table | 33 `AcidPair` rows -- unmoved | `len(electrolyte.known_pairs())` |
-| why templates are silent | 16 no-substrate, 8 needs-more-than-a-pair, 0 cannot-fire -- unmoved. `pool_unpriceable` 41 -> 0 and `step_frontier` 306 -> 265, which is T13 | `python tools/classify_silent.py` (31 s) |
+| pKa table | 33 `AcidPair` rows over 8 classes, 3 of them reachable by no template row | `python validation/pka_domains.py` panel 0 |
+| ions the six ion rows reach from the corpus | 1,078, of which 1,030 unpriceable over 395 compounds; 451 want a pKa, 579 have no priceable parent | `python validation/pka_domains.py` (5 s) |
+| the same sweep over the shelf | 46 ions, 39 unpriceable, and they come from FOUR compounds (35 are tannic acid) | same command, panel 2 |
+| why templates are silent | 16 no-substrate, 8 needs-more-than-a-pair, 0 cannot-fire -- unmoved | `python tools/classify_silent.py` (31 s) |
 | `SAVE_VERSION` | 9 | `src/chemsim/engine/world.py:122` |
-| line endings | mixed: `BACKLOG.md`, `NEXT.md`, `CHANGELOG.md`, the PSVs, `builder.py` and `tests/test_robustness.py` are CRLF; `carboxylic_pka.py`, `validation/` and most tests are LF | `git ls-files --eol <file>` |
+| line endings | mixed: `BACKLOG.md`, `NEXT.md`, `CHANGELOG.md`, the PSVs and `builder.py` are CRLF; `validation/` and most tests are LF | `git ls-files --eol <file>` |
 
 ## Last session, in five lines
 
-T13 closed the gap between a network that reports and a network that runs.
-`vessel.build_phase_arrays` prices every species for heat capacity and molar
-volume before a reaction is looked at, so an unpriceable species makes a flask
-un-integrable whatever its reactions are: `_unpriceable` now drops one
-unconditionally (T1d's `uses_thermochemistry` condition asked the templates, the
-wrong half of the engine) and `_refuse_unpriceable_feed` refuses a CHARGED one at
-`build_network`'s door. No route pays -- playable, coverage and the 17 named
-routes all regenerate byte-identical.
+T5 counted the pKa wall before writing a single pKa, the way T14 did for one
+class. `validation/pka_domains.py` fires the six ion-producing template rows
+themselves -- so the classes are the engine's rows, not a re-typed list of
+functional groups -- and drives the corpus and the shelf to a fixpoint. The
+count that matters is not 1,030 missing ions but the 451 whose neutral parent
+the engine can already price; the other 579 would be skipped by
+`ion_thermochemistry` the day a row was written. A phenol plateau rule is
+refused, measured twice over, and the shelf half is three curated pairs.
 
 ## Do this now
 
-1. **Ask the user to run the suite, then run it.** `python -m pytest -q`, ~29
-   min on their own machine, 11 commits owed, and T13 is exactly the change that
-   makes it worth it: it REVERSED a decision two tests pinned, and one of those
-   two had been red since T18 with `./check.ps1` green over it. 14 modules were
-   run green by hand (371 tests) -- robustness, furans, born, fatty_acid_pka,
-   gas_processes, protonation, solid_state, vanillin, shelf, playable,
-   named_routes, detailed_balance, solids_and_ions, granularity -- so the risk
-   is a module none names. If the user is not there to ask, skip to 2.
-   *Done when:* the run is recorded with `python tools/cadence.py --record suite`,
-   pass or fail, and a failure names its module in `NEXT.md`.
+1. **T23's shelf half -- the three pairs a player can actually reach.** Spec in
+   `BACKLOG.md`. `python validation/pka_domains.py` panel 2 lists them: malonic
+   acid (2.83 / 5.69), 4-nitrophenol (7.15) and coniferyl alcohol's phenol,
+   whose value must be sourced or the row refused with its reason, never
+   estimated. Tannic acid's 35 are a powerset over unpriced parents and are NOT
+   three more rows -- write that half down as a bound. Curation rules are in the
+   comments around `_PAIRS`: never mix two compilations inside one trend.
+   *Done when:* panel 2's missing count is 35 or lower, `tools/build_playable.py`
+   is regenerated and any move is in the CHANGELOG, and `./check.ps1` is green.
 
-2. **T5 - measure what the 33-row pKa table still bounds.** Spec in `BACKLOG.md`.
-   T13 raised its value: an unpriceable ion used to ride along in a network and
-   now takes its rewrite with it, so the pKa table gates what the engine can
-   BUILD and not only what it can integrate -- 41 species and 41 frontier entries
-   went with it today. The phenoxide is candidate and warning both: `_PAIRS`
-   carries two phenols at 9.95 and 10.19, against the carboxylic plateau's
-   measured 0.15-unit spread. Copy `validation/fatty_acid_pka.py`'s shape; do not
-   write a pKa first.
-   *Done when:* the count and its top classes are in this table with the command,
-   and a follow-up names the fix the number argues for, refusal included.
+2. **Ask the user to run the suite, then run it.** `python -m pytest -q`, ~29
+   min on their own machine, 12 commits owed and deferred nine sessions running.
+   T17 and T18 each left a red test that lived through the next session's green
+   `./check.ps1`, so the risk is a module no fast check names. Today's change
+   cannot be the cause -- it adds a validation script and a test file and
+   touches nothing under `src/` -- which makes this a good session to spend the
+   half hour on the backlog rather than on a suspicion.
+   *Done when:* the run is recorded with `python tools/cadence.py --record suite`,
+   pass or fail, and a failure names its module here.
 
 3. **T16 - the other loose sulfur-dioxide slot.** Spec in `BACKLOG.md`.
    `sulfur_dioxide_oxidation_by_nitrogen_dioxide` still writes SO2 as
-   `[O:1]=[S:2]=[O:3]`, which matches a sulfate, and two shelf rows are sulfates.
-   Three slots rather than eight, so it is wasted work per flask and not the
-   16-minute bomb T12 defused. Tighten it to `[OX1]=[SX2]=[OX1]` as T12 did for
-   the Claus row. Chain 2's carrier step, so the audit is owed and Ea/A must not
-   move.
+   `[O:1]=[S:2]=[O:3]`, which matches a sulfate, and two shelf rows are
+   sulfates. Three slots rather than eight, so it is wasted work per flask and
+   not the 16-minute bomb T12 defused. Tighten it to `[OX1]=[SX2]=[OX1]` as T12
+   did for the Claus row. Chain 2's carrier step, so the tolerance audit is owed
+   and Ea/A must not move.
    *Done when:* the slot matches one shelf species and
    `tests/test_lead_chamber.py` is green with the same numbers.
 
-The tolerance audit (~11 min) is owed and was not run. T13 cannot move a
-trajectory, measured rather than argued: every flask it changes is one that
-raised at `to_arrays` before, so no flask that ran runs differently -- the 17
-named routes print byte-identical output on pre-T13 and post-T13 source once the
-stamps are stripped. `reachable.psv` is stale and `templates_fired = 33` a floor.
+The tolerance audit (~11 min) is owed and was not run. Nothing this session can
+move a trajectory: the only files added are `validation/pka_domains.py` and
+`tests/test_pka_domains.py`, and no file under `src/` was touched.
 
 ## Decisions already taken — do not reopen
 
-- **No species `build_network` registers may be unpriceable**, and the two halves
-  of that are opposite on purpose: what the TEMPLATES make is dropped with a
-  notice naming it, what the CALLER charges is a refusal naming it. Dropping a
-  charged species would delete matter the player put in the flask; keeping an
-  unpriceable one builds a flask no integrator can accept. **The half of the
-  engine to ask was the vessel, not the templates** -- `build_phase_arrays` needs
-  a heat capacity and a molar volume for every species, which is why
-  `tmpl.uses_thermochemistry` was the wrong question.
-- **A pKa the engine derived is not a pKa it measured, and the player sees which**
-  (`electrolyte.PLATEAU_RULE`); **the rule is consulted AFTER the curated table
-  and BEFORE the refusal**; **the plateau value is derived from `_PAIRS`, never
-  typed**; **a graph edit belongs to `matter`**.
-- **A route is credited with every step product, never with `route_roles`**, and
-  **an `intermediate` shelf row is deleted the day a reachable route makes it**
-  and ADDED the day a route becomes runnable with nothing to feed it. **A ratio
-  pinned in a test is a guard rail, not a finding**, and **the plateau is a rule,
-  not rows**.
-- **A pKa domain is local and its exclusions are chemistry**; **a carboxylate
-  salt is priced as its ion**; **no pKa is in `chemicals`**; **a rock's Ksp
-  decides whether its shelf row is matter or scenery**, acid shifting that
-  equilibrium and never the rate; **backwards is retrosynthesis**.
-- **The expensive checks are clocked in commits**, **the headline is templates
-  fired, not reactions reached**, **`discovery/refine.py` is deleted, not wired**
-  and **the README stays at 561 lines** until C1.
+- **A class-wide pKa rule for phenols is refused, and the measurement is why.**
+  Both curated phenols are electron-rich; 39 of 79 gap phenols sit outside their
+  substituent range (picric acid at sigma_sum +1.102 against phenol's -0.920);
+  and phenol and salicylate's second proton SHARE a sigma_sum while sitting 3.45
+  pKa units apart, so no substituent sum on the scale `hammett` carries can
+  separate them. Sigma-minus, the scale a phenol pKa is fitted on, is not in
+  that module. The amine class is refused more simply: three rows spanning 6.04
+  units, its one plausible domain holding a single row against the two
+  `carboxylic_pka.plateau` requires.
+- **A missing ion has two gaps and only one is a pKa.** An ion whose neutral
+  parent has no thermochemistry is not unblocked by curating an acidity; that is
+  the whole mineral-oxyacid class (89 ions, 0 wanting a pKa) and it is T25.
+- **No species `build_network` registers may be unpriceable**: what the TEMPLATES
+  make is dropped with a notice, what the CALLER charges is a refusal. The half
+  of the engine to ask was the vessel, not the templates.
+- **A pKa the engine derived is not one it measured, and the player sees which**;
+  **the rule is consulted AFTER the curated table and BEFORE the refusal**; **the
+  plateau value is derived from `_PAIRS`, never typed**; **a graph edit belongs
+  to `matter`**; **a pKa domain is local and its exclusions are chemistry**.
+- **A route is credited with every step product, never with `route_roles`**; **an
+  `intermediate` shelf row is deleted the day a reachable route makes it**; **a
+  ratio pinned in a test is a guard rail, not a finding**; **backwards is
+  retrosynthesis**; **the expensive checks are clocked in commits**; **the
+  headline is templates fired, not reactions reached**.
 
 ## Open questions for the user
 
-- **The suite, the audit and a fresh `reachable.psv`** cost ~75 minutes, and
-  eight sessions have now deferred the first two. T17 and T18 are both evidence:
-  each left a red test that lived through the next session's green `./check.ps1`.
+- **The suite and the audit** cost ~40 minutes together and nine sessions have
+  now deferred the first. Task 2 is the ask.
 - **`rxnmapper` as a curation-time dependency** for T2, build-time only as
   `chemicals` is; without it T2 needs an RDKit-only mapper.
 - **`hydrogen-sulfide` is still a shelf row at tier `intermediate`** while the
@@ -113,8 +110,8 @@ stamps are stripped. `reachable.psv` is stale and `templates_fired = 33` a floor
 
 - Do not hand-edit `COVERAGE_REPORT.md`, `PLAYABLE.md`, `ROUTE_INDEX.md`,
   `*_data.py`, `reachable.psv`, `species_roles.psv` or `silent_templates.psv`.
-- Do not write a reactant slot more than twice without checking what else it
-  matches on the shelf; `test_template_table.py` fails you for it.
+- Do not write a pKa you cannot source, and do not put an estimator in front of
+  one: `pka_domains.py` panel 0 is where a rule has to earn its domain first.
 - Do not read `docs/history/` whole (grep it) and do not add a physics module.
 - Do not stamp a cadence row you did not run, clear a red one, or rewrite a
   mixed-ending file whole -- read and write bytes.
