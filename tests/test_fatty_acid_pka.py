@@ -177,7 +177,7 @@ def test_the_rule_is_consulted_only_where_the_table_misses() -> None:
     "smiles",
     [
         "NCCCC(=O)[O-]",          # GABA: a zwitterion, measured 4.03
-        "[O-]C(=O)CC(=O)O",       # malonic: polyprotic, and 2.83 not 4.9
+        "[O-]C(=O)CCC(=O)O",      # succinate: polyprotic, and 4.21 not 4.9
         "CC(C)C(=O)[O-]",         # isobutyrate: alpha branch
         "[O-]C(=O)CCCCl",         # 4-chlorobutanoate: a gamma heteroatom, 4.5
         "OCCC(=O)[O-]",           # 3-hydroxypropanoate: a beta heteroatom
@@ -191,8 +191,18 @@ def test_an_acid_outside_the_domain_is_still_refused(smiles: str) -> None:
     different acid. A rule that priced them at the plateau would be inventing a
     number, which is worse than the ``UnpricedIon`` the builder already knows
     how to report.
+
+    T23 had to fix the guard below and then the witness it guarded. Malonate
+    was the polyprotic case here, written ``[O-]C(=O)CC(=O)O`` while ``_PAIRS``
+    canonicalises to ``O=C([O-])CC(=O)O`` -- so when T23 curated malonic acid
+    the raw string comparison still said the witness was outside the table
+    while the provider, which canonicalises, priced it. The guard compared two
+    spellings of one molecule; it now compares molecules, and succinate is the
+    polyprotic witness instead.
     """
-    assert smiles not in {q.base for q in electrolyte.known_pairs()}
+    c = Molecule.from_smiles
+    assert c(smiles).smiles not in {c(q.base).smiles
+                                    for q in electrolyte.known_pairs()}
     with pytest.raises(UnpricedIon):
         electrolyte_provider().get(smiles)
 

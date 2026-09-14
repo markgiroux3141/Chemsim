@@ -115,7 +115,18 @@ def test_the_only_cations_in_the_table_are_the_four_plus_the_hydronium(ions):
     # as instructed: corpus refusals 412 -> 409, species-ready 88 -> 89, and the
     # intersection to quote stays 40 -- the row that moved is a lattice's anion,
     # not a route's missing species.
-    assert len(ions) == 34
+    # T23 grew it 34 -> 38 with four anions -- malonic acid's two protons,
+    # 4-nitrophenol and coniferyl alcohol -- so the cation list above is
+    # unchanged for the fourth time running. Re-measured as instructed and the
+    # answer is that NOTHING moved: corpus refusals stay 408, species-ready 90,
+    # intersection 40, and `COVERAGE_REPORT.md` regenerates byte-identical.
+    # That is the honest result rather than a disappointing one. The coverage
+    # audit scores the 1,583 CATALOG compounds, and the catalog names its ions
+    # one row at a time (`16-intermediates-ions-radicals.psv` carries acetate,
+    # benzoate, phenoxide); none of these four is a row in it. What these rows
+    # buy is measured on the other instrument: `validation/pka_domains.py`
+    # panel 2, the ions a SHELF species can actually reach, 39 unpriceable -> 35.
+    assert len(ions) == 38
 
 
 def test_an_anion_is_still_anchored_on_its_acid_bit_for_bit(ions):

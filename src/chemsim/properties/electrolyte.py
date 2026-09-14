@@ -238,6 +238,37 @@ _PAIRS: tuple[AcidPair, ...] = (
     AcidPair("CC(O)C(=O)O", "CC(O)C(=O)[O-]", 3.86, "lactic acid"),
     AcidPair("OC(=O)C(=O)O", "[O-]C(=O)C(=O)O", 1.25, "oxalic acid, 1st"),
     AcidPair("OC(=O)CCCCC(=O)O", "[O-]C(=O)CCCCC(=O)O", 4.43, "adipic acid, 1st"),
+    # Malonic acid, both protons, added by T23 because a player can pour it:
+    # it is a shelf bottle and the Knoevenagel route's own reagent, and until
+    # this row neither of its anions could be priced, so the two ions that
+    # step actually makes were a graph edge nobody reached.
+    #
+    # 2.847 and 5.696 at 298 K, Ives and Prasad, J. Chem. Soc. (B) 1970, 1649:
+    # [H+] from the cell Pt(H2) | solution, Cl- | Ag, which is the EMF method
+    # with no liquid junction and the best determination the IUPAC aqueous
+    # compilation carries for this acid (PubChem CID 867). One paper for BOTH
+    # protons, which is the iodide rule again -- the same compilation quotes
+    # malonic anywhere from 2.3 to 3.37 for the first, so taking the two halves
+    # of one diacid from two determinations would put a made-up separation
+    # between them.
+    #
+    # The separation is the interesting number and it is 2.85 units, against
+    # adipic's row above, whose first proton sits at 4.43 and barely off the
+    # plateau's 4.87. One CH2 between two carboxyls and the second proton is
+    # held two decades harder; four CH2 and the effect is nearly gone. That is
+    # T19's question answered at the short end, and it is why
+    # ``carboxylic_pka.domain`` refuses a diacid rather than applying the
+    # plateau twice.
+    #
+    # dH_diss stays 0.0 for both, and here that is a measurement rather than
+    # the class default: the same paper's 5 to 25 C series (2.882 / 2.869 /
+    # 2.857 / 2.847) gives a van't Hoff dH of +0.6 kJ/mol for the first proton,
+    # a fifteenth of the smallest non-zero entry in this table. The second
+    # proton has no temperature series in that determination and takes the
+    # default.
+    AcidPair("OC(=O)CC(=O)O", "O=C([O-])CC(=O)O", 2.85, "malonic acid, 1st"),
+    AcidPair("O=C([O-])CC(=O)O", "O=C([O-])CC(=O)[O-]", 5.70,
+             "malonic acid, 2nd"),
     AcidPair("CC(=O)Oc1ccccc1C(=O)O", "CC(=O)Oc1ccccc1C(=O)[O-]", 3.49, "aspirin"),
     # --- weak organic acids / bases ---------------------------------------
     AcidPair("Oc1ccccc1", "[O-]c1ccccc1", 9.95, "phenol"),
@@ -248,6 +279,40 @@ _PAIRS: tuple[AcidPair, ...] = (
     # the row above, which is the ortho methoxy and the para allyl both pushing
     # electrons into the ring and making the proton harder to take.
     AcidPair("C=CCc1ccc(O)c(OC)c1", "C=CCc1ccc([O-])c(OC)c1", 10.19, "eugenol"),
+    # 4-Nitrophenol, the other shelf bottle T23 unblocked. 7.156 at 298 K from
+    # Allen, Robinson and Bower, J. Phys. Chem. 66 (1962) 171 -- light
+    # absorption with electrometric measurements, and the reason to prefer it
+    # over the dozen other determinations in the IUPAC compilation (PubChem
+    # CID 980, which spreads 6.89 to 7.72) is that this one is a 5 to 45 C
+    # series, so the same paper prices the enthalpy as well. Its van't Hoff
+    # slope over those nine points gives dH_diss = +19.8 kJ/mol.
+    #
+    # Fickling, Fischer, Mann, Packer and Vaughan, J. Am. Chem. Soc. 81 (1959)
+    # 4226 is the cross-check and it is a better one than an agreeing number:
+    # they measured 7.151 here AND 9.994 for plain phenol in the same work, so
+    # the 2.8-unit nitro effect between this row and the phenol row above is
+    # not an artefact of two rows coming from two places.
+    AcidPair("O=[N+]([O-])c1ccc(O)cc1", "O=[N+]([O-])c1ccc([O-])cc1", 7.16,
+             "4-nitrophenol", dH_diss=19.8),
+    # Coniferyl alcohol -- the lignin monomer on the shelf, the vanillin
+    # route's feedstock, and the only ionisation gap a player met that was not
+    # a bottle. 9.54 at 298 K: Kenttamaa, Raisanen, Auterinen and Lindberg,
+    # Suom. Kemistil. B 43B (1970) 333, light absorption with electrometric
+    # measurements extrapolated to zero ionic strength (PubChem CID 1549095).
+    # Their 10 / 25 / 40 C series (9.75 / 9.54 / 9.32) gives dH_diss = +24.4
+    # kJ/mol.
+    #
+    # It is MORE acidic than plain phenol and eugenol is the control that says
+    # why. Both carry the same ortho methoxy; eugenol's other substituent is an
+    # allyl, whose CH2 insulates the ring, and it lands at 10.19, above phenol.
+    # This one's is (E)-propenyl, conjugated straight into the ring, and it
+    # delocalises the phenoxide. ``hammett`` has no pattern for that and scores
+    # the chain as a donor, so the substituent sum puts this row on the wrong
+    # SIDE of phenol -- which is half of why a class-wide phenol rule is
+    # refused. The argument is in ``docs/design/phenol-pka-rule-refused.md``
+    # and ``validation/pka_domains.py`` panel 4 derives it from this table.
+    AcidPair("COc1cc(/C=C/CO)ccc1O", "COc1cc(/C=C/CO)ccc1[O-]", 9.54,
+             "coniferyl alcohol", dH_diss=24.4),
     AcidPair("[NH4+]", "N", 9.25, "ammonium", dH_diss=52.2),
     AcidPair("C[NH3+]", "CN", 10.66, "methylammonium"),
     AcidPair("c1ccc[nH+]c1", "c1ccncc1", 5.23, "pyridinium"),

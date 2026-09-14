@@ -71,3 +71,66 @@ def test_the_sweep_reaches_a_second_dissociation():
     assert "O=C([O-])C(=O)[O-]" in reached
     assert max(e["round"] for e in edges) >= 2
     assert molecule("O=C([O-])C(=O)[O-]").charge == -2
+
+
+# ---------------------------------------------------------------------------
+# T23 -- the four rows written for the shelf, and what they have to do
+# ---------------------------------------------------------------------------
+def test_every_t23_row_is_actually_priced_and_not_silently_skipped():
+    """``ion_thermochemistry`` swallows an unanchorable pair with ``continue``.
+
+    That is right -- there is nothing to hang the ion off -- but it means a row
+    can be typed, committed and buy nothing, which is what the module docstring
+    records happening to four cation rows for a whole milestone. So each of
+    T23's four ions is asked of the live provider by name.
+    """
+    from chemsim.properties import electrolyte_provider
+
+    provider = electrolyte_provider()
+    for ion in ("O=C([O-])CC(=O)O", "O=C([O-])CC(=O)[O-]",
+                "O=[N+]([O-])c1ccc([O-])cc1", "COc1cc(/C=C/CO)ccc1[O-]"):
+        key = Molecule.from_smiles(ion).smiles
+        assert provider.get(key) is not None, key
+
+
+def test_the_malonate_dianion_is_anchored_on_the_monoanion():
+    """A second proton whose acid is an ION, priced from the row before it.
+
+    Not a restatement of the oxalate test above: that one asks whether the
+    SWEEP reaches a dianion, this asks whether the TABLE can price one. The
+    two malonic rows are ordered in ``_PAIRS`` for exactly this reason, and
+    reversing them would leave the dianion unpriceable with both rows present.
+    """
+    from chemsim.properties import electrolyte
+
+    ions = electrolyte.ion_thermochemistry(
+        electrolyte.ThermochemistryProvider()
+    )
+    mono = ions[Molecule.from_smiles("O=C([O-])CC(=O)O").smiles]
+    di = ions[Molecule.from_smiles("O=C([O-])CC(=O)[O-]").smiles]
+    second = next(p for p in electrolyte.known_pairs()
+                  if p.name == "malonic acid, 2nd")
+    assert di.Gf == (mono.Gf + electrolyte._dG_from_pKa(second.pKa)
+                     + electrolyte._solvent_correction(1))
+
+
+def test_coniferyl_alcohol_is_the_phenol_rule_s_second_refutation():
+    """The engine's substituent sum puts this row on the wrong SIDE of phenol.
+
+    A rule fitted on ``hammett``'s scale is monotone in it, so a curated pair
+    the sum orders backwards is one the rule gets the wrong way round rather
+    than merely off. Pinned because it is the measurement the refusal in
+    ``docs/design/phenol-pka-rule-refused.md`` rests on, and because it is the
+    one of panel 4's three inversions that salicylate's hydrogen bond does not
+    already explain.
+    """
+    from chemsim.reactions import hammett
+
+    from chemsim.properties import electrolyte
+
+    rows = {p.name: p for p in electrolyte.known_pairs()}
+    coniferyl, phenol = rows["coniferyl alcohol"], rows["phenol"]
+    sums = {n: hammett.survey(molecule(p.acid)._mol).sigma_sum
+            for n, p in (("coniferyl", coniferyl), ("phenol", phenol))}
+    assert sums["coniferyl"] < sums["phenol"]     # the scale says less acidic
+    assert coniferyl.pKa < phenol.pKa             # the measurement says more

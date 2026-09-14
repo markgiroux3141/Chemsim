@@ -22,15 +22,12 @@ There are no pytest markers at all, so the only way to run less than the
 ## Tier 1 — change the slope of coverage
 
 The measurement behind this tier: 240 reaction classes over 377 catalog steps,
-169 used by exactly one step, best single template unlocks 3 routes and after 7
-the curve is flat at +1. The bottleneck is that a template is a hand-written
-Python function. Full argument: `fable analysis/05-COVERAGE-STRATEGY.md`.
-T1.0 measured the gate on 2026-09-02 (`python validation/extraction_yield.py`,
-argued in `docs/design/extraction-yield.md`): 174 of 377 rows resolve, balance
-and sit in an uncovered class, over 132 classes of which 102 hold one row. Upper
-bound if all became templates: intersection 38 -> 66, template-ready 46 -> 110,
-with 36 of the 64 gained routes then held by an unpriceable species. The LP
-passes rows atom-mapping will refuse, so 174 is a ceiling.
+169 used by exactly one step, and the bottleneck is that a template is a
+hand-written Python function. T1.0 measured the gate on 2026-09-02: 174 of 377
+rows resolve, balance and sit in an uncovered class, over 132 classes of which
+102 hold one row; ceiling if all became templates is intersection 38 -> 66. The
+argument is `docs/design/extraction-yield.md` and
+`fable analysis/05-COVERAGE-STRATEGY.md`; do not re-narrate it here.
 
 ### T1b — the row-level product check (M, was T1's fourth bullet)
 The switch-over landed without it. `tools/build_templates.py` now checks the
@@ -70,56 +67,58 @@ is one or two sessions, not a repeating one.
 **Done when:** the 6 families are written or refused with a reason, and the
 retired row count is in `CHANGELOG.md`.
 
-### T23 — the pKa rows the routes are waiting on, shelf first (M, found in T5)
-`python validation/pka_domains.py`. Panel 2 is the startable half: of the 46
-ions the six ion rows reach from the shelf's own species, 39 are unpriceable
-and they come from FOUR compounds. Thirty-five are tannic acid's five phenols
-deprotonating as a powerset and 31 of those have no priced parent either, so no
-row reaches them — T14's lesson again, a table closes a list and never a
-generator, and the honest output there is a bound. The other three are one
-curated pair each, all measured: malonic acid (2.83 / 5.69), 4-nitrophenol
-(7.15) and coniferyl alcohol's phenol: the only ionisation gap a player meets.
-Panel 1 is the rest: 208 amine ions over 176 compounds and 27 routes, 139
-carboxylic over 122 and 20, 104 phenoxide over 79 and 21 — each an ion whose
-neutral parent the engine CAN price, so a curated pair is all that is missing.
-A class-wide rule is refused and panel 4 measures why twice: both curated
-phenols are electron-rich and 39 of 79 gap phenols sit outside their range
-(picric acid +1.102 against phenol's -0.920), and phenol and salicylate's
-second proton share a sigma_sum while sitting 3.45 pKa units apart, so no
-substituent sum on `hammett`'s scale separates them — and sigma-minus, the
-scale a phenol pKa is fitted on, is not in that module. The amine class is
-refused for a simpler reason: three rows spanning 6.04 units, its one plausible
-domain holding a single row against the two `carboxylic_pka.plateau` requires.
-So this is rows, in the order panel 3 ranks them by route demand.
-**Done when:** panel 2's missing count is 35 or lower with tannic acid alone
-behind it and that half written down as a bound; then each further row is in
-`_PAIRS` with a named source, `tools/build_playable.py` is regenerated, and the
-phenol refusal is recorded where the next session reads it rather than
-re-derives it.
+### T23 — the corpus half of the pKa gap, one row at a time (M, shelf half done)
+The shelf half landed 2026-09-13: malonic acid's two protons, 4-nitrophenol and
+coniferyl alcohol, and `python validation/pka_domains.py` panel 2 now reads 35
+unpriceable over ONE compound. Tannic acid's 35 are a bound and the panel
+derives it — 4 of them hang off a parent the table can price and 31 off an
+unpriced microspecies, so writing the 4 does not close the 35. Do not reopen it.
+What is left is panel 3's ranking, each row a curated pair with a named source:
+208 amine ions over 176 compounds and 27 routes, 138 carboxylic over 121 and 20,
+102 phenoxide over 77 and 20. Salicylic acid (4 routes) and vanillin (3) head
+the phenol list. Take them in route-demand order; `_PAIRS`' own comments carry
+the curation rules and `docs/design/phenol-pka-rule-refused.md` says why no rule
+substitutes for them. PubChem's `iupacpka` collection is the source that worked:
+it carries the determination AND its temperature series, so one paper gives both
+the pKa and a van't Hoff `dH_diss`.
+**Done when:** each new row is in `_PAIRS` with a named source, the count panel
+3 ranks has moved, and `tests/test_protonation.py`'s `len(ions)` prompt has been
+answered with a re-measured coverage number rather than only bumped.
+
+### T26 — three phenol rows claim `dH_diss = 0` and it is not zero (S, found in T23)
+T23 derived +19.8 kJ/mol for 4-nitrophenol and +24.4 for coniferyl alcohol from
+their own sources' temperature series, and phenol's own is about the same size.
+`_PAIRS` carries phenol at 10.19/9.95 with `dH_diss` left at its default, which
+in that field is indistinguishable from a measured zero — and a zero there is a
+claim the dissociation is athermal, which for a phenol it is not. The field
+conflates "measured small" from "never looked up": the malonic rows are the
+honest case (+0.6 kJ/mol, derived and below the table's resolution) and the
+phenols are not. Either source the two enthalpies or give `AcidPair` a way to
+say the enthalpy is unknown.
+**Done when:** no row in `_PAIRS` carries a `dH_diss` of 0.0 that stands for an
+unmeasured quantity, and the tolerance audit is run because equilibria above
+298 K move.
 
 ### T25 — the mineral-oxyacid gap is not a pKa gap (S, found in T5)
 89 missing ions in that class and ZERO want a pKa: every one has a parent the
 engine cannot price at all, so an `AcidPair` would be skipped by
 `ion_thermochemistry` the day it was written. `ThermochemistryProvider` refuses
-benzenesulfonic, p-toluenesulfonic and sulfanilic acid with "no curated entry,
-and no estimator can price its format", and eleven routes name one — alizarin,
-dop, phenol-sulfonation, picric-acid, sulfa-drug, tnt. The fix is neutral
-thermochemistry for the aryl sulfonic acids, curated or a group the estimator
-lacks.
+benzenesulfonic, p-toluenesulfonic and sulfanilic acid, and eleven routes name
+one. The fix is neutral thermochemistry for the aryl sulfonic acids, curated or
+a group the estimator lacks.
 **Done when:** the sulfonic acids a catalog route names price as neutrals, or
 the missing estimator group is named in a refusal, and the audit's
 mineral-oxyacid row moves off zero.
 
 ### T11 — an artefact-backed check that changes nothing can never clear (S)
-Found 2026-09-12 while closing T7. `playable` went DUE at 8 commits, was re-run
-(45 s, `--check` green), and produced BYTE-IDENTICAL output -- so there is no
-commit touching `data/catalog/PLAYABLE.md` to derive a last-run from, and
-`--record` refuses an artefact-backed row by design. The row therefore reads DUE
-for ever until the artefact's CONTENT happens to move, which is the one thing a
-passing check does not do. Deriving the date from git is still right -- it is
-what stops a row being stamped green by hand -- so the fix is a third state: a
-run that confirms no change is recorded as such, distinct from both a stamp and
-a commit. Note the same trap waits for `reachable`.
+Found 2026-09-12 while closing T7 and seen again in T23: `playable` re-ran in
+45 s and produced BYTE-IDENTICAL output, so there is no commit touching
+`data/catalog/PLAYABLE.md` to derive a last-run from, and `--record` refuses an
+artefact-backed row by design. The row reads DUE until the artefact's CONTENT
+happens to move, which is the one thing a passing check does not do. Deriving
+the date from git is still right — it stops a row being stamped by hand — so the
+fix is a third state: a run confirming no change, distinct from a stamp and from
+a commit. The same trap waits for `reachable`.
 **Done when:** re-running an artefact-backed check whose output is unchanged
 clears its DUE, and `python tools/cadence.py` explains which of the two happened.
 
@@ -129,53 +128,54 @@ clears its DUE, and `python tools/cadence.py` explains which of the two happened
 between the default tolerance and rtol 1e-8. Measured PRE-EXISTING -- both print
 byte-identical output on pre-T7 and post-T7 source -- so this is debt the audit
 found rather than damage. `named_routes` additionally raises at rtol 1e-8, and
-the audit diagnoses that in-run as older than S13. The fix the audit itself
+the audit diagnoses that in-run as older than S13. Re-run 2026-09-13 after
+T23's four ion rows and it reproduced to the quoted digits — 0.1277% and
+0.1073% — which is the useful part: the debt is stable, so a future run that
+moves is a real finding. The fix the audit itself
 prescribes: give each example its own tight tolerance, as `lime_cycle.py` and
 `roasting_and_the_catalyst_gate.py` already do.
 **Done when:** `python validation/tolerance_audit.py` exits 0, or the ledger
 note says which of the three is a standing refusal and why.
 
 ### T21 — the manual quotes the scoreboard by hand and nothing checks it (S, found in T17)
-`docs/manual/chapters/30-playable.md` carried "21 of 173 playable" and a tier
-table of 10/10/1 while `PLAYABLE.md` said 22 and 10/11/1 — stale by a session
-before T17 moved it again, and nothing failed. T17 re-typed six numbers there by
-hand, which is the same debt one session older. The chapter is prose and should
-stay prose, so the fix is a check rather than a generator: parse the numbers the
-chapter states against `PLAYABLE.md`'s footer and §1 table, and fail when they
+`docs/manual/chapters/30-playable.md` carried "21 of 173 playable" against
+`PLAYABLE.md`'s 22 — stale by a session, and nothing failed. T17 re-typed six
+numbers there by hand, the same debt one session older. The chapter is prose and
+should stay prose, so the fix is a check, not a generator: parse the numbers the
+chapter states against `PLAYABLE.md`'s footer and §1 table and fail when they
 disagree. Chapters 29 and 30 are the two that quote generated counts.
 **Done when:** a command in `check.ps1` fails on a manual chapter whose quoted
 playable counts do not match the artefact, and it is green today.
 
 ### T22 — two guards T13 made unreachable, and an instrument that now reports 0 (S, found in T13)
-T13's invariant is that no species `build_network` registers is unpriceable:
-what the templates make is dropped, what the caller charges is refused. That
-makes the two `UnpricedIon` catches inside `_concrete_reactions` -- the
-Evans-Polanyi barrier (T8) and detailed balance (T1d) -- unreachable through
-`build_network`, and T13 deleted the two tests that pinned them because their
-witnesses could no longer be built. Same shape in `tools/classify_silent.py`:
-its `priceable()` post-filter dropped 41 species and now drops 0 every time.
-Neither is wrong, and both are now untested claims about a path nobody takes.
-Decide per site: delete, or keep as defence against a hand-built
-`ReactionNetwork` and say in one line that the builder is what makes it dead.
-A unit test reaching into a private function to pin an unreachable branch is
-not the answer.
+T13's invariant is that no species `build_network` registers is unpriceable, so
+the two `UnpricedIon` catches inside `_concrete_reactions` — the Evans-Polanyi
+barrier (T8) and detailed balance (T1d) — are unreachable through
+`build_network`, and T13 deleted the two tests that pinned them. Same shape in
+`tools/classify_silent.py`: its `priceable()` post-filter dropped 41 species and
+now drops 0 every time. Neither is wrong, and both are untested claims about a
+path nobody takes. Decide per site: delete, or keep as defence against a
+hand-built `ReactionNetwork` with one line saying the builder is what makes it
+dead. A unit test reaching into a private function is not the answer.
 **Done when:** each of the three sites is deleted or carries the one line, and
 no test pins a branch `build_network` cannot reach.
 
-### T19 — the diacid is the bigger half (S, found in T14)
+### T19 — the diacid is the bigger half (S, found in T14, one more point in)
 230 of the 342 pairs needing their own measurement are polyprotic. A diacid is
-not the plateau twice: adipic is already in `_PAIRS` at 4.43 against propanoic's
-4.87 because the second carboxyl withdraws. `carboxylic_pka.domain` refuses them,
-rightly; the open question is whether a long-chain diacid converges on it from
-both ends, and it is measured off the rows that exist before anything is written.
+not the plateau twice, and T23 added the short end of the evidence: malonic acid
+is 2.85 / 5.70, one CH2 between the carboxyls and 2.85 units of separation,
+against adipic's 4.43 first proton with four CH2 and barely a shoulder off the
+plateau's 4.87. Two points on a curve `carboxylic_pka.domain` rightly refuses;
+the open question is where it flattens, and a third row (succinic or glutaric,
+one determination for both protons) settles it. Measured off the rows that
+exist before anything is written.
 **Done when:** a second domain or a refusal with its reasoning is written down.
 
 ### T20 — one template makes an unbounded oligoester series (S, found in T14)
 Not a pKa item. Oleic acid hydrates and esterifies onto itself: T14's sweep
 reached 243 distinct oligoesters six condensations deep and 11 of its 36 flasks
-hit the cap — P0's "31500 reactions per 9 credited steps" in a second place.
-Self-condensation is real, so this is a bound question: molar mass, condensation
-depth, or the cap naming the template that filled it.
+hit the cap — P0's "31500 reactions per 9 credited steps" again. This is a bound
+question: molar mass, condensation depth, or the cap naming the template.
 **Done when:** most of the 36 flasks reach a fixpoint, or `Snapshot.notices`
 names the template filling the cap.
 
@@ -183,11 +183,11 @@ names the template filling the cap.
 `sulfur_dioxide_oxidation_by_nitrogen_dioxide` still writes SO2 as
 `[O:1]=[S:2]=[O:3]`, the pattern that made `claus_comproportionation` take
 sixteen minutes once H2S existed. It matches a SULFATE too, and two shelf rows
-are sulfates. It is not a bomb -- three slots, not eight -- but the rewrite it
-then attempts makes a five-bonded sulfur that sanitisation throws away, so the
-template does work it cannot use on every flask holding a vitriol. Tighten it to
-`[OX1]=[SX2]=[OX1]` as T12 did for the Claus row. It is chain 2's carrier step,
-so the tolerance audit is owed and the Ea/A must not move.
+are sulfates. Not a bomb -- three slots, not eight -- but the rewrite it then
+attempts makes a five-bonded sulfur that sanitisation throws away, so it does
+work it cannot use on every flask holding a vitriol. Tighten it to
+`[OX1]=[SX2]=[OX1]` as T12 did for the Claus row. Chain 2's carrier step, so the
+tolerance audit is owed and the Ea/A must not move.
 **Done when:** the slot matches one shelf species, and
 `tests/test_lead_chamber.py` is green with the same numbers.
 

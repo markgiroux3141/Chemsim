@@ -29,6 +29,12 @@ the molecule does. 12-hydroxystearic acid is inside it, with its hydroxyl nine
 bonds away; ``strict`` is the narrower statement that the whole molecule is a
 plain C/H chain, reported separately because the audit wanted both.
 
+THE OTHER CLASSES WERE ASKED THE SAME QUESTION AND REFUSED
+----------------------------------------------------------
+This is the only rule, and T23 wrote down why rather than leaving the next
+session to re-derive it: ``docs/design/phenol-pka-rule-refused.md``, measured by
+``validation/pka_domains.py`` panels 0 and 4.
+
 The one exclusion that is not local is the basic nitrogen, and it is chemistry
 rather than caution: at any pH that titrates the carboxyl an amine four bonds
 away is already protonated, so what the carboxyl feels is a FULL POSITIVE

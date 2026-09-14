@@ -4,6 +4,21 @@ Newest first. One entry per session, twelve lines at most, enforced by
 `tools/check_docs.py`. When this file passes 400 lines the older half rolls into
 `docs/history/changelog-YYYY-MM.md`.
 
+## 2026-09-13 — T23: four pKa rows a player can reach, and both slow checks run
+
+`electrolyte._PAIRS` gains malonic acid's two protons (2.85 / 5.70, Ives and
+Prasad 1970, one determination for both), 4-nitrophenol (7.16) and coniferyl
+alcohol (9.54), from PubChem's `iupacpka`, each with a `dH_diss` derived from
+its own source's temperature series. `python validation/pka_domains.py` panel 2:
+shelf ions unpriceable 39 -> 35 over FOUR compounds -> ONE, and it now derives
+tannic acid's 35 as a bound rather than rows to write. Coverage does NOT move
+and that is the finding: the catalog names its ions one row at a time and none
+of these four is one, so `COVERAGE_REPORT.md` (408 refused, 46/90/40) and
+`PLAYABLE.md` (23 playable) regenerate byte-identical. Panel 4 now counts the
+pairs the scale orders BACKWARDS, 3 of 10 -- a second refutation of a phenol
+rule (`docs/design/phenol-pka-rule-refused.md`). 1,342 -> 1,345 tests, check
+green, suite twice (28m39s / 30m09s, exit 0), tolerance to the same T10 three.
+
 ## 2026-09-13 — T5: the pKa gap is counted, and the phenol rule is refused
 
 `validation/pka_domains.py` (new, ~5 s) sweeps the six ion-producing template

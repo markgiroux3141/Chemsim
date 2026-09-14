@@ -45,8 +45,8 @@
 #! closure_species = 48
 #! closure_frontier = 0
 #! step_rows = 13
-#! step_frontier = 265
-#! pool_species = 289
+#! step_frontier = 266
+#! pool_species = 290
 #! pool_unpriceable = 0
 #
 # THE WORK ORDER: one missing substrate holds several

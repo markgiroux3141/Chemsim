@@ -332,6 +332,30 @@ def report(edges: list[dict], tier, provider) -> dict[str, list[dict]]:
         print("  so they are alternative protonation orders and not "
               "un-ionisable compounds.")
 
+    # THE BOUND ONE COMPOUND PUTS ON THIS PANEL, derived rather than stated.
+    # T14's lesson in a second place: a table closes a LIST and never a
+    # GENERATOR. A species with k acidic sites deprotonates to 2**k - 1 ions,
+    # every one of them a distinct graph, and no number of curated pairs closes
+    # that set -- writing the k single-site pKas prices k of the 2**k - 1 and
+    # leaves the rest wanting a parent that is itself an unmeasured
+    # microspecies. So when one compound dominates the remainder, the honest
+    # output is the arithmetic and not a count of rows still to write.
+    if flat and sources:
+        label, n = max(sources.items(), key=lambda kv: (kv[1], kv[0]))
+        if n > len(flat) // 2:
+            own = [g for g in flat if label in g["labels"]]
+            curable = sum(1 for g in own
+                          if any(anchored(provider, p) for p in g["parents"]))
+            print()
+            print(f"  {n} of the {len(flat)} are ONE compound, {label}, and "
+                  "they are a bound, not rows:")
+            print(f"  {curable} of them deprotonate a parent this table can "
+                  "price, so a curator could write")
+            print(f"  {curable} pairs; the other {n - curable} hang off a "
+                  "parent that is itself an unpriced")
+            print("  microspecies, and no pKa reaches those. Writing the "
+                  f"{curable} does not close the {n}.")
+
     print()
     print("  the missing ions, split by which gap they actually are:")
     for name in order:
@@ -380,17 +404,22 @@ def phenol_electronics(missing: dict[str, list[dict]],
 
     Phenol is the only remaining rule CANDIDATE: the carboxylic class already
     has one, the amine class's three rows span six pKa units, and the mineral
-    oxyacid class wants no pKa at all. Its own three rows span 3.45, but the
-    13.40 is salicylate's second proton -- an intramolecular hydrogen bond to
-    the ortho carboxylate, already argued in ``_PAIRS`` -- so the plain-phenol
-    sample is two rows 0.24 apart, which is exactly the shape the carboxylic
-    plateau was built on.
+    oxyacid class wants no pKa at all. T5 found the sample two rows 0.24 apart
+    once salicylate's second proton was set aside as the hydrogen-bonded case
+    ``_PAIRS`` argues it is -- which is exactly the shape the carboxylic
+    plateau was built on, so the question stayed open.
 
-    What decides it is not the width of the sample but where the gap sits
-    relative to it. Both curated phenols carry electron donors; the gap holds
-    nitrophenols, whose measured pKa is nearly three units lower. So this panel
-    sums the ring substituents of each side with ``hammett.survey`` and reports
-    how far outside the curated range the gap reaches.
+    T23 closed it, and with rows written for a player rather than for this
+    panel. What decides a rule is not the width of the sample but whether the
+    scale ORDERS it, so this panel reports two things off the curated rows
+    themselves: the largest pKa difference between two rows the substituent sum
+    cannot tell apart, and the worst pair the sum orders BACKWARDS. Both are
+    derived here rather than argued, so each stops being true the day a row
+    makes it untrue. The full argument, and what a rule would need first, is
+    ``docs/design/phenol-pka-rule-refused.md``.
+
+    It then sums the ring substituents of the gap with ``hammett.survey`` and
+    reports how far outside the curated range it reaches.
 
     And the scale is the wrong one for a pKa, which is the point rather than
     a caveat. ``hammett`` carries sigma-plus (with two labelled aqueous
@@ -435,6 +464,26 @@ def phenol_electronics(missing: dict[str, list[dict]],
         gap, one, two = max(ties)
         print(f"  {one} and {two} share a sigma_sum and are "
               f"{gap:.2f} pKa units apart.")
+
+    # The second refutation, and it is a stronger one than the width: a rule
+    # fitted on this scale is monotone in it, so any curated pair the scale
+    # orders BACKWARDS is a pair the rule gets the wrong way round, not merely
+    # off by some amount. Counted over the sample rather than asserted -- T23
+    # added three rows for a player's flask and one of them, coniferyl alcohol,
+    # turned out to be such a pair against phenol.
+    inverted = [(a, b) for a in curated for b in curated
+                if a[0] < b[0] - 1e-9 and a[1] < b[1] - 1e-9]
+    if inverted:
+        print(f"  {len(inverted)} of the "
+              f"{len(curated) * (len(curated) - 1) // 2} curated pairs are "
+              "ordered BACKWARDS by the scale -- the lower")
+        print("  sum is the STRONGER acid, where a rule monotone in the sum "
+              "says it must be weaker:")
+        for lo_s, hi_s in sorted(inverted, key=lambda ab: ab[1][1] - ab[0][1]):
+            print(f"      {lo_s[2]} ({lo_s[0]:+.3f}, pKa {lo_s[1]:.2f})  "
+                  f"under  {hi_s[2]} ({hi_s[0]:+.3f}, pKa {hi_s[1]:.2f})")
+        print("  so the rule would get those pairs the wrong way round, not "
+              "merely off by an amount.")
 
     seen: dict[str, tuple[float, int]] = {}
     for g in missing.get("phenol_dissociation", ()):
