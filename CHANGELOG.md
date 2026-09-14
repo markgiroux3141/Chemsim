@@ -4,6 +4,21 @@ Newest first. One entry per session, twelve lines at most, enforced by
 `tools/check_docs.py`. When this file passes 400 lines the older half rolls into
 `docs/history/changelog-YYYY-MM.md`.
 
+## 2026-09-14 — T30: the nitration template, and two scoreboards move on two routes
+
+`nitrate_esterification` into `data/templates/templates.psv` at `tier=family`:
+A 1e8 the liquid bimolecular choice, Ea 50000 a band midpoint BELOW
+`fischer_esterification`'s 55000, nitric acid being the stronger electrophile
+and the steps declaring 283-295 K; reversible for spent-acid denitration. 126
+rows, 68 family, 103 classes (`tools/build_templates.py --check`). ONE grant,
+two +1s, two DIFFERENT routes, neither moving on both: template-ready 65 -> 66
+on `guncotton` (`validation/catalog_coverage.py`), runnable 50 -> 51 on
+`nitroglycerin-route` (`tools/build_playable.py`), whose uncovered `formulation`
+step the DAG walk never needs. Priced +1, +0 and +2 in three places, the +2 a
+queue conditional on its own row 8. All three steps `partial`, the step being a
+lump. A `rate_ceiling.py` bench: the derived hydrolysis A 8.6e13 crosses at
+1895 K, reported not capped. Three pins re-pinned, same 7 as HEAD. T31 next.
+
 ## 2026-09-14 — T28: HCN and the alkyl nitrates get a price, 408 refusals -> 401
 
 HCN into `thermochemistry._CURATED_RAW` (CRC 135.10/124.68, dGf derived, Cp

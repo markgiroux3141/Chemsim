@@ -117,13 +117,22 @@ def test_the_headline_and_the_tiers_are_what_the_report_says(bp):
     -- nothing on the shelf supplies the platinum gauze -- which is T18's shape
     again, and why the two counts are asserted separately. The same entry moved
     RUNNABLE_WITH_LITERAL 59 -> 60.
+
+    T30 moved RUNNABLE 50 -> 51 with the nitration template, and the route it
+    bought is NOT the one the work order priced. `nitroglycerin-route` runs,
+    because its two classes are now both covered; `guncotton` does not, because
+    its `nitrocellulose-unit` has no price. §8 had scored the class +1 on
+    guncotton and §8b had scored the same class +0, and §8's own footnote named
+    guncotton among the rows a template cannot buy -- the disagreement was
+    printed in the file before the work started. See the third test below,
+    which is where guncotton now shows up.
     """
     assert len(bp.routes) == 173
     assert len(bp.PLAYABLE) == 23
     assert max(bp.PLAYABLE.values()) == 3
-    assert len(bp.RUNNABLE) == 50
+    assert len(bp.RUNNABLE) == 51
     assert bp.TC is cc.FAMILY_TEMPLATE_CLASSES
-    assert len(bp.RUNNABLE_WITH_LITERAL) == 60
+    assert len(bp.RUNNABLE_WITH_LITERAL) == 61
     assert len(bp.PLAYABLE_WITH_LITERAL) == 25
     assert set(bp.PLAYABLE) < set(bp.PLAYABLE_WITH_LITERAL)
     assert bp.PLAYABLE["hmf-route"] == 2
@@ -440,9 +449,18 @@ def test_a_catalyst_is_a_feedstock_and_that_rule_makes_the_third_tier(bp):
     # the only thing left between it and the shelf is tristearin -- which a
     # tier-2 route makes. That is what puts the third tier back into this
     # counterfactual and why the assertion above is about methanol.
+    #
+    # T30 added `nitroglycerin-route` the same way C5 added `furfural-route`,
+    # and it is the same artefact rather than a second one: step 2 is written
+    # `nitroglycerin -> nitroglycerin` (absorption into kieselguhr), a species
+    # on BOTH sides of a step, which is what `route_roles` calls a CATALYST --
+    # so `with_catalysts=False` hands over the route's own PRODUCT. The
+    # headline is immune for rule 2's reason again, which is why this set and
+    # PLAYABLE are asserted separately.
     assert set(free_catalysts) - set(bp.PLAYABLE) == {
         "furfural-route", "haber-bosch", "hydrogenation-margarine",
-        "soap-saponification"}
+        "nitroglycerin-route", "soap-saponification"}
+    assert "nitroglycerin" in cat_roles(bp, "nitroglycerin-route").catalysts
     assert "xylose" in cat_roles(bp, "furfural-route").catalysts
     assert "xylose" in bp.needs("furfural-route")
 
@@ -571,10 +589,23 @@ def test_the_work_order_rows_that_need_no_template_at_all(bp):
     prices hypochlorous acid happily. *A species missing from every database a
     session thought to ask can still be reachable through a table of a
     different shape.*
+
+    T30 put `guncotton` in this bucket, and that is the finding of writing the
+    nitration template rather than a side effect of it. §8 priced the class at
+    +1 ON GUNCOTTON; the route it actually bought was `nitroglycerin-route`,
+    and guncotton merely moved from template-blocked to species-blocked. The
+    file had said so twice already -- §8b scored the same class +0, and §8's
+    own footnote listed guncotton among the rows a template cannot buy -- so
+    *a "worth" column that prices a joint grant as a single one is refuted by
+    the footnote printed under it.* The remaining blocker is the nitrocellulose
+    repeat unit, which is the stereo-spelled glucose trinitrate no provider
+    prices.
     """
     species_only = [r for r in bp.FED_BUT_UNRUNNABLE
                     if not {s.cls for s in bp.route_steps(r)} - set(bp.TC)]
-    assert sorted(species_only) == ["pyrite-roasting"]
+    assert sorted(species_only) == ["guncotton", "pyrite-roasting"]
+    # T30's row: the class is covered and the species is not
+    assert not bp.priced("nitrocellulose-unit")
     # pyrite is the engine queue's own source-blocked entry
     assert not bp.priced("iron-disulfide")
     # ⚠ and the row C2 took is priced now, which is what moved the headline

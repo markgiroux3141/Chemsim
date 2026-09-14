@@ -36,15 +36,12 @@ castner-kellner | 1 | amalgam-electrolysis | no-graph | a species has no molecul
 castner-kellner | 2 | amalgam-decomposition | no-graph | a species has no molecular graph
 gunpowder | 1 | formulation | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
 gunpowder | 2 | deflagration | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
-nitroglycerin-route | 1 | esterification-nitration | coefficients | a coefficient of 3 is more slots than a rewrite can carry: {'glycerol': 1, 'nitric-acid': 3, 'nitroglycerin': 1, 'water': 3}
 nitroglycerin-route | 2 | formulation | closed-cycle | every product is also a reactant
-guncotton | 1 | esterification-nitration | stereo | the step declares a stereoisomer and a rewrite emits the flat species
 picric-acid-route | 1 | electrophilic-aromatic-sulfonation | stoichiometry | no coefficient vector: the elements do not balance
 picric-acid-route | 2 | ipso-nitrodesulfonation | stoichiometry | no coefficient vector: the elements do not balance
 rdx-route | 1 | condensation | coefficients | a coefficient of 6 is more slots than a rewrite can carry: {'formaldehyde': 6, 'ammonia': 4, 'hexamethylenetetramine': 1, 'water': 6}
 rdx-route | 2 | nitrolysis | coefficients | a coefficient of 12 is more slots than a rewrite can carry: {'hexamethylenetetramine': 3, 'nitric-acid': 12, 'rdx': 4, 'formaldehyde': 6, 'water': 6}
 petn-route | 1 | aldol-cannizzaro | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
-petn-route | 2 | esterification-nitration | coefficients | a coefficient of 4 is more slots than a rewrite can carry: {'pentaerythritol': 1, 'nitric-acid': 4, 'petn': 1, 'water': 4}
 mercury-fulminate-route | 1 | oxidative-nitrosation | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
 coal-tar-distillation | 1 | separation | no-graph | a species has no molecular graph
 coal-gas | 1 | pyrolysis | no-graph | a species has no molecular graph
@@ -191,11 +188,11 @@ kjeldahl | 1 | oxidative-digestion | salt | the step spells a salt as one specie
 
 #! centre = 4
 #! closed-cycle = 5
-#! coefficients = 22
+#! coefficients = 20
 #! duplicate = 3
 #! no-graph = 10
 #! salt = 75
-#! stereo = 24
+#! stereo = 23
 #! stoichiometry = 35
-#! refused = 178
-#! classes_refused = 134
+#! refused = 175
+#! classes_refused = 133

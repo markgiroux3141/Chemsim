@@ -13,13 +13,13 @@ The GOAL in `docs/history/MILESTONES.md` § THE G-SERIES is stated as **~10 natu
 | **1 — from the ground** | 10 | every feedstock and every catalyst is a natural material |
 | **2 — 1 step up** | 12 | needs the output of a tier-1 route |
 | **3 — 2 steps up** | 1 | needs the output of a tier-2 route |
-| *runnable but unfed* | 27 | the engine can run it; nothing can supply it |
-| *not runnable* | 123 | see `COVERAGE_REPORT.md` |
+| *runnable but unfed* | 28 | the engine can run it; nothing can supply it |
+| *not runnable* | 122 | see `COVERAGE_REPORT.md` |
 | | **173** | |
 
 **23 of 173 named routes are playable from natural materials**, against a goal of ~40 targets. The deepest chain in the corpus is **3 tiers**.
 
-> **Every number in this file is scored on hand-typed `family` rows**, because that is the tier `load_templates` loads and a route the bench cannot build is not playable. Granting the 10 routes that `tools/extract_templates.py` extracted a `literal` row for would make **60 runnable and 2 more playable** (`acetic-anhydride-ketene`, `wood-distillation`). Promoting one of those rows is a cheaper session than writing a template from nothing, and it costs the row an argued barrier and a checked atom mapping — which is what the tier is for.
+> **Every number in this file is scored on hand-typed `family` rows**, because that is the tier `load_templates` loads and a route the bench cannot build is not playable. Granting the 10 routes that `tools/extract_templates.py` extracted a `literal` row for would make **61 runnable and 2 more playable** (`acetic-anhydride-ketene`, `wood-distillation`). Promoting one of those rows is a cheaper session than writing a template from nothing, and it costs the row an argued barrier and a checked atom mapping — which is what the tier is for.
 
 ⚠ **THE TECH TREE IS A SHALLOW BUSH, NOT A TREE.** 10 of the 23 playable routes are tier 1 — they touch nothing another route made. The corpus is not a connected progression that happens to be short; it is a fan of one-step routes off the ground with one thin chain hanging off it, and §5 is that chain.
 
@@ -125,7 +125,7 @@ Rules 2 and 3 are two axes and they had to be measured as a grid, because **they
 
 ⚠⚠ **AND THE FIX MOVED THE HEADLINE DOWN, FROM 24 TO 23.** That is the fourth time in this project that correcting a coverage instrument lowered its own number — M1, G4, and now twice inside one file. **A scoreboard that only ever goes up is not measuring anything.**
 
-⚠ **AND THE CATALYST RULE IS WHAT MAKES THE TREE THREE DEEP AT ALL.** Without it 27 routes are playable and the tree is 3 tiers; with it 23 are, and there is a third tier holding exactly one route. Dropping the rule frees `haber-bosch` (iron) and `hydrogenation-margarine` (nickel) — two metals nothing in 173 industrial routes makes.
+⚠ **AND THE CATALYST RULE IS WHAT MAKES THE TREE THREE DEEP AT ALL.** Without it 28 routes are playable and the tree is 4 tiers; with it 23 are, and there is a third tier holding exactly one route. Dropping the rule frees `haber-bosch` (iron) and `hydrogenation-margarine` (nickel) — two metals nothing in 173 industrial routes makes.
 
 ## 4. The tiers, route by route
 
@@ -226,7 +226,7 @@ The other tier-1 routes are exercised elsewhere — `zinc-smelting`, `copper-sme
 
 ## 6. What blocks the rest
 
-### Blocked on something the corpus MAKES but cannot RUN (23)
+### Blocked on something the corpus MAKES but cannot RUN (24)
 
 These are the routes a player can see the shape of and not reach. Each one is runnable today and waiting on a route that is not.
 
@@ -247,6 +247,7 @@ These are the routes a player can see the shape of and not reach. Each one is ru
 | `hydrogenation-margarine` | glyceryl tristearate | nickel |
 | `kolbe-electrolysis` | ethane | sodium-acetate |
 | `lead-chamber` | sulfuric acid | nitrogen-dioxide |
+| `nitroglycerin-route` | glyceryl trinitrate | glycerol, nitroglycerin |
 | `oxo-process` | butanal | cobalt, propylene |
 | `salicylic-kolbe` | 2-hydroxybenzoic acid | phenol |
 | `skraup-route` | quinoline | aniline, glycerol, nitrobenzene |
@@ -292,7 +293,7 @@ Grant a player one species free and re-run the fixed point. Base is 23.
 
 ## 8. The work order this file exists to produce
 
-**23 of the 123 routes the engine cannot run are ALREADY FED from the shelf above.** A template built for one of these lights up the tech tree the moment it lands. A template built for the other 100 moves a coverage number and no player can reach it.
+**23 of the 122 routes the engine cannot run are ALREADY FED from the shelf above.** A template built for one of these lights up the tech tree the moment it lands. A template built for the other 99 moves a coverage number and no player can reach it.
 
 ⚠ **THIS IS THE ONLY RANKING IN THE REPO THAT IS ABOUT PLAYABILITY RATHER THAN COVERAGE**, and it is what the C-series should take its order from. `COVERAGE_REPORT.md`'s greedy set-cover curve maximises classes covered per template; this maximises routes a player can actually walk to. They are not the same list.
 
@@ -304,12 +305,12 @@ Grant a player one species free and re-run the fixed point. Base is 23.
 | **+2** | `blast-furnace` | iron metal | `slagging` | calcium-silicate, iron-ii-oxide, silicon-dioxide |
 | **+2** | `birkeland-eyde` | nitric acid | `disproportionation-hydrolysis`, `thermal-fixation` | — |
 | **+2** | `chloral-route` | chloral hydrate | `carbonyl-hydration`, `radical-halogenation` | — |
+| **+1** | `guncotton` | nitrocellulose repeat unit | — *none* | nitrocellulose-unit |
 | **+1** | `pyrite-roasting` | sulfur dioxide | — *none* | iron-disulfide |
 | **+1** | `acetic-anhydride-ketene` | acetic anhydride | `pyrolysis-dehydration` | — |
 | **+1** | `chloroform-route` | trichloromethane | `haloform` | — |
 | **+1** | `coal-gas` | coal-tar-marker (no molecular graph) | `pyrolysis` | — |
 | **+1** | `downs-cell` | sodium metal | `molten-salt-electrolysis` | — |
-| **+1** | `guncotton` | nitrocellulose repeat unit | `esterification-nitration` | nitrocellulose-unit |
 | **+1** | `iron-gall-ink` | iron-gallate-marker (no molecular graph) | `oxidative-complexation` | — |
 | **+1** | `mercury-fulminate-route` | mercury fulminate | `oxidative-nitrosation` | mercury-fulminate |
 | **+1** | `tyrian-purple-route` | 6,6-dibromoindigo | `biological-transformation` | — |
@@ -326,7 +327,7 @@ Grant a player one species free and re-run the fixed point. Base is 23.
 
 ⚠⚠ **THE TOP ROW IS `hall-heroult` AT +3 FOR ONE CLASS**, and the chain it opens is the deepest one available: aluminium unblocks `thermite`, thermite's iron unblocks `haber-bosch`. ⚠ Its class (`molten-salt-electrolysis`) is the one the coverage queue already records as **engine** work — *"a MELT is not a phase this project has"* — and its cryolite is refused a price, so the cheapest row in the table is not the top one.
 
-⚠⚠ **1 OF THEM NEED NO TEMPLATE AT ALL** — every class they use is already covered and they are blocked purely on a species the engine refuses to price: `pyrite-roasting`. **That is a data job, not a chemistry job**, and `pyrite-roasting` in particular is blocked on exactly the entry the engine queue already records as source-blocked — pyrite has an enthalpy in WEBBOOK and an entropy in nothing. **A data refusal is now measurably a playability blocker and not just a coverage one.**
+⚠⚠ **2 OF THEM NEED NO TEMPLATE AT ALL** — every class they use is already covered and they are blocked purely on a species the engine refuses to price: `guncotton`, `pyrite-roasting`. **That is a data job, not a chemistry job**, and `pyrite-roasting` in particular is blocked on exactly the entry the engine queue already records as source-blocked — pyrite has an enthalpy in WEBBOOK and an entropy in nothing. **A data refusal is now measurably a playability blocker and not just a coverage one.**
 
 ### ⚠⚠ 8b. The same table asked the way a SESSION spends it: per CLASS
 
@@ -342,8 +343,6 @@ Grant a player one species free and re-run the fixed point. Base is 23.
 | **+1** | +1 | `oxidative-complexation` | — | `iron-gall-ink` |
 | **+1** | +1 | `pyrolysis` | **row exists** | `coal-gas`, `wood-distillation` |
 | **+1** | +1 | `pyrolysis-dehydration` | **row exists** | `acetic-anhydride-ketene` |
-| **+0** | +1 | `esterification-nitration` | — | `guncotton` |
-| **+0** | +1 | `formulation` | — | `gunpowder` |
 | **+0** | +0 | `amalgam-decomposition` | — | `castner-kellner` |
 | **+0** | +0 | `amalgam-electrolysis` | — | `castner-kellner` |
 | **+0** | +0 | `amphoteric-dissolution` | — | `bayer-process` |
@@ -355,6 +354,7 @@ Grant a player one species free and re-run the fixed point. Base is 23.
 | **+0** | +0 | `cyanamide-hydrolysis` | — | `frank-caro` |
 | **+0** | +0 | `deflagration` | — | `gunpowder` |
 | **+0** | +0 | `disproportionation-hydrolysis` | — | `birkeland-eyde` |
+| **+0** | +0 | `formulation` | — | `gunpowder` |
 | **+0** | +0 | `gas-solid-fixation` | — | `frank-caro` |
 | **+0** | +0 | `oxidative-dissolution` | — | `white-lead-route` |
 | **+0** | +0 | `oxidative-nitrosation` | — | `mercury-fulminate-route` |
@@ -363,11 +363,11 @@ Grant a player one species free and re-run the fixed point. Base is 23.
 | **+0** | +0 | `slagging` | — | `blast-furnace` |
 | **+0** | +0 | `thermal-fixation` | **row exists** | `birkeland-eyde` |
 
-**4 of the 28 classes already have an extracted `literal` row** that reproduces its catalog step — `pyrolysis`, `pyrolysis-dehydration`, `carbonyl-hydration`, `thermal-fixation`. For those the session is not *write a template*: it is check the atom mapping by hand, argue a barrier for it, and move the row into `templates.psv` at tier `family`. The other 24 still need a mechanism written from nothing.
+**4 of the 27 classes already have an extracted `literal` row** that reproduces its catalog step — `pyrolysis`, `pyrolysis-dehydration`, `carbonyl-hydration`, `thermal-fixation`. For those the session is not *write a template*: it is check the atom mapping by hand, argue a barrier for it, and move the row into `templates.psv` at tier `family`. The other 23 still need a mechanism written from nothing.
 
 ⚠⚠⚠ **THE BIGGEST SINGLE CLASS IS +1** (`aerobic-overflow-fermentation`, `biological-transformation`, `direct-combination`, `haloform`, `molten-salt-electrolysis`, `oxidative-complexation`, `pyrolysis`, `pyrolysis-dehydration`) — and §8's `+3` top row is **not** at the top here. Granting `molten-salt-electrolysis` leaves `hall-heroult` unrunnable, because its cryolite is refused a price as well; the class lands its point on `downs-cell` instead. **A row's worth assumes every OTHER blocker away, and a template only removes one of them.**
 
-⚠⚠ **AND 10 OF THE ROWS ABOVE CANNOT BE BOUGHT BY TEMPLATES AT ALL.** Grant every class each one is missing and it is still not runnable, because a refused species is blocking it too: `bayer-process`, `blast-furnace`, `calcium-carbide`, `coal-gas`, `frank-caro`, `guncotton`, `gunpowder`, `hall-heroult`, `mercury-fulminate-route`, `white-phosphorus`. **They are joint grants priced as though they were single ones.**
+⚠⚠ **AND 9 OF THE ROWS ABOVE CANNOT BE BOUGHT BY TEMPLATES AT ALL.** Grant every class each one is missing and it is still not runnable, because a refused species is blocking it too: `bayer-process`, `blast-furnace`, `calcium-carbide`, `coal-gas`, `frank-caro`, `gunpowder`, `hall-heroult`, `mercury-fulminate-route`, `white-phosphorus`. **They are joint grants priced as though they were single ones.**
 
 ⚠⚠⚠ **AND THE `refused species` COLUMN IS BLANK FOR 3 ROWS THAT NAME A SPECIES THE CORPUS DOES NOT HAVE.** It is derived by filtering on *is this compound refused a price*, which drops anything that is not a compound here at all — and these are not oversights: `17-route-intermediates.psv` carries them as COMMENTED-OUT rows with the reason (*"a rock: a macromolecular kerogen mixture"*, *"a metal solution, not a compound"*). `castner-kellner` wants sodium-amalgam-marker — but the route MAKES it; `coal-gas` wants coal-marker, coal-tar-marker (must be CHARGED: coal-marker); `iron-gall-ink` wants iron-gallate-marker — but the route MAKES it.
 
@@ -388,6 +388,6 @@ Grant **all 23** of them and the fixed point reaches **50 playable routes** at d
 - **A yield is not a corpus property.** §5's numbers move whenever a declared constant moves. Read them with their conditions or not at all.
 - **`RUNNABLE` cannot ask whether a number is RIGHT** (S7). Every route in §4 produces its target; none of it says the amount is what a real process gives.
 - **The tiers rest on §2's hand judgement.** Argue with that list and every number here moves. That is why it is printed.
-- **`COVERAGE_REPORT.md`'s BOTH column is not re-scored here**, and this file's 50 runnable routes include G4's five. See MILESTONES §G4 §6 for why a hand judgement does not go into a mechanical column.
+- **`COVERAGE_REPORT.md`'s BOTH column is not re-scored here**, and this file's 51 runnable routes include G4's five. See MILESTONES §G4 §6 for why a hand judgement does not go into a mechanical column.
 
-*173 routes, 1583 compounds, 45 declared natural, 50 runnable, 23 playable, 3 tiers deep, 23 fed but unrunnable.*
+*173 routes, 1583 compounds, 45 declared natural, 51 runnable, 23 playable, 3 tiers deep, 23 fed but unrunnable.*

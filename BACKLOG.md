@@ -10,42 +10,51 @@ item while a Tier 0 item is open.
 ## Tier 0 — make the repo cheap to enter
 
 ### T0.4 — a fast test subset (S)
-There are no pytest markers at all, so the only way to run less than the
-30-minute suite is to name files. Run `pytest --durations=0 -q` once (ask
-first), mark everything over 2 s `slow`, register the marker, and put
-`pytest -m "not slow"` into `check.ps1`.
+No pytest markers exist, so running less than the 30-minute suite means naming
+files. `pytest --durations=0 -q` once (ask first), mark everything over 2 s
+`slow`, register the marker, put `pytest -m "not slow"` in `check.ps1`.
 **Done when:** `pytest -m "not slow"` is green in under three minutes.
 
 ---
 
 ## Tier 1 — change the slope of coverage
 
-240 reaction classes over 377 catalog steps, 169 used by exactly one step; 115
-have a template, 63 of them hand-typed. Ceiling 110 template-ready / ~66
-runnable. What is left of the slope is promoting rows (T2c), one unblocked
-template (T30) and the two walls (T2). The argument is already written:
-`docs/design/route-coverage-ceiling.md`, `docs/design/extraction-yield.md`,
+240 reaction classes over 377 catalog steps, 169 used by exactly one step; 116
+have a template, 64 of them hand-typed. Ceiling 110 template-ready / ~66
+runnable. What is left of the slope is promoting rows (T2c). Argued in
+`docs/design/route-coverage-ceiling.md`, `docs/design/extraction-yield.md` and
 `fable analysis/05-COVERAGE-STRATEGY.md`.
 
-### T30 — the nitration template, now that its intermediate has a price (S, from T28)
-T3 refused `esterification-nitration` because nitroglycerin was "not one step
-further away; it is unreachable" — the mononitrate had no price. T28 closed
-that, and `PLAYABLE.md` re-scored the class from +0 routes to **+1**
-(`guncotton`). The SMARTS is written out and run in
-`docs/design/two-refused-template-classes.md`; it scores `partial` on its three
-steps because each declares an exhaustively nitrated polyol, which is a fact
-about the step being a lump of three applications rather than about the row.
-**Done when:** the row is in `templates.psv` at `tier=family`, `guncotton` is
-runnable, and the `partial` verdict is recorded with that reason.
+### DECIDED and closed — the argument is in the file named, do not reopen
+- **T30, the nitration row** (`docs/design/two-refused-template-classes.md`).
+  In at `tier=family`. One class grant moved two scoreboards by one on two
+  DIFFERENT routes — template-ready 65 → 66 on `guncotton`, runnable 50 → 51 on
+  `nitroglycerin-route` — after being priced +1, +0 and +2 in three places.
+- **T28, the air-oxidation split** (same file). Refused on arithmetic: `judge`
+  scores ONE application of ONE row and three of the four stages already have
+  templates. Still worth a bench: a `family` `autoxidation` row for a primary
+  benzylic methyl, worth nothing to the scoreboard.
+- **T2, the extractor's two walls** (`tools/extract_templates.py` docstring).
+  `salt` (75 steps, a claim about the MEDIUM the corpus never makes) and
+  `stereo` (24, a configuration the mechanism does not fix) are refusals, each
+  wanting the per-class judgement a `family` row IS.
 
-### T28 — DECIDED: the air-oxidation split is refused on arithmetic (2026-09-14)
-Not four `pass` rows, and it cannot be: `judge` scores ONE application of ONE
-row and wants every declared product, so a two-slot mechanism on p-xylene and O2
-makes a hydroperoxide, never terephthalic acid. Three of the four stages are
-already classes WITH templates, so the split buys no new chemistry either. The
-argument and the one thing still worth building — a `family` `autoxidation` row
-for a PRIMARY benzylic methyl, worth a bench and nothing to the scoreboard — are
-in `docs/design/two-refused-template-classes.md`.
+### T32 — `needs()` hands a route its own TARGET as a starting charge (S, from T30)
+`needs` unions the route's CATALYSTS in and `route_roles` calls a species on
+both sides of a step a catalyst — so `nitroglycerin-route`'s no-op kieselguhr
+step asks the shelf for the thing the route exists to make, which
+`route_reachable`'s *the target may not be charged* rule forbids. Hence
+`test_playable_levers` wanting `nitroglycerin` in `shelf.psv`, and why it must
+NOT be given. Rule to try: a catalyst MADE before it is first needed is not a
+charge (`first_made < first_used`), which keeps `lead-chamber`'s NO2 a charge
+and `lime-cycle`'s limestone external. T17's mirror fix moved nine pins.
+**Done when:** `nitroglycerin` leaves that work order without a shelf row and
+every pin it moves is re-pinned with its reason.
+
+### T33 — `CHANGELOG.md` is past the 400 lines its own header rolls at (S, from T30)
+Nothing enforces it (`check_docs.py` caps an ENTRY, not the file), so it is a
+convention going stale rather than a red check. A whole-file move, CRLF.
+**Done when:** under 400 lines, the rolled half one new `docs/history/` file.
 
 ### T31 — six scoreboard pins are red, and not from this session (S, from T28)
 `test_fermentation`, `test_vanillin` and `test_vitriol` fail two apiece on a
@@ -55,14 +64,6 @@ updating; the last green suite (2026-09-13) predates both, and none is in the
 smoke set, which is why five commits passed. T29 is the seventh failure.
 **Done when:** each of the six is green or re-pinned with the reason its number
 moved, and `python -m pytest -q` is green.
-
-### T2 — DECIDED: the extractor's two walls are refusals, not gaps (2026-09-14)
-58 rows over 52 classes, 178 steps refused, counted in
-`data/templates/needs_review.psv`. The two systematic refusals -- `salt` (75
-steps, a claim about the MEDIUM the corpus never makes) and `stereo` (24, a
-configuration the mechanism does not fix) -- are decisions, argued in
-`tools/extract_templates.py`'s docstring. Both want a per-class judgement, which
-is what a `family` row is. Do not reopen either.
 
 ### T2c — promote a literal row, the cheap way to buy a playable route (M)
 `PLAYABLE.md` scores the `family` tier alone, because that is what
@@ -87,10 +88,10 @@ is measured, or the idea is refused in writing.
 ### T29 — species stranded by a template, and the shelf was not updated (S, from T2)
 `test_playable_levers.py::test_the_shelf_file_holds_exactly_what_this_audit_measured`
 is RED and was already red at `5964f16`. READ THE FAILURE, NOT THIS ITEM: the
-set it asks for changes with every template session -- it named five species at
-T3 and asks for `ammonia` and `platinum` after T28 made `andrussow` runnable.
-`shelf.psv` is hand-maintained game design, so adding a row is a decision about
-what a player is GIVEN and was left alone.
+set changes with every template session — five species at T3, `ammonia` and
+`platinum` after T28, plus `nitroglycerin` after T30, which is T32's bug and
+not a design call. `shelf.psv` is hand-maintained game design, so a row is a
+decision about what a player is GIVEN. Do T32 first.
 **Done when:** each species the test names is a shelf row with a note, or is
 argued down in `shelf.psv`'s header, and the test is green.
 
@@ -127,21 +128,20 @@ because equilibria above 298 K move.
 
 ### T25 — the mineral-oxyacid gap is not a pKa gap (S, found in T5)
 89 missing ions in that class and ZERO want a pKa: every one has a parent the
-engine cannot price at all, so an `AcidPair` would be skipped by
-`ion_thermochemistry` the day it was written. `ThermochemistryProvider` refuses
-benzenesulfonic, p-toluenesulfonic and sulfanilic acid and eleven routes name one;
-the fix is neutral thermochemistry for them, curated or the estimator group.
-**Done when:** the sulfonic acids a catalog route names price as neutrals, or
-the missing estimator group is named in a refusal, and the audit's
-mineral-oxyacid row moves off zero.
+engine cannot price, so an `AcidPair` would be skipped by `ion_thermochemistry`
+the day it was written. `ThermochemistryProvider` refuses benzenesulfonic,
+p-toluenesulfonic and sulfanilic acid and eleven routes name one; the fix is
+neutral thermochemistry for them, curated or the estimator group.
+**Done when:** those sulfonic acids price as neutrals, or the missing estimator
+group is named in a refusal, and the audit's mineral-oxyacid row leaves zero.
 
 ### T11 — an artefact-backed check that changes nothing can never clear (S)
 Found 2026-09-12 and seen again in T23: `playable` re-ran with BYTE-IDENTICAL
 output, so no commit touches `PLAYABLE.md` to derive a last-run from, and
 `--record` refuses an artefact-backed row by design. The row reads DUE until the
 artefact's CONTENT moves, which is the one thing a passing check does not do.
-The fix is a third state — a run confirming no change. (T28 ran `reachable` and
-its content DID move, so that row clears; the trap is unchanged.)
+The fix is a third state — a run confirming no change. Unchanged by T28 or T30,
+each of which happened to move the content it re-ran.
 **Done when:** re-running an artefact-backed check whose output is unchanged
 clears its DUE, and `python tools/cadence.py` explains which of the two happened.
 

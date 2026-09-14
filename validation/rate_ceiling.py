@@ -59,6 +59,7 @@ from chemsim.properties import (                                # noqa: E402
 )
 from chemsim.reactions import synthesis as S                    # noqa: E402
 from chemsim.reactions.library import SOLID_CATALYST_REFERENCE  # noqa: E402
+from chemsim.reactions.template_data import load_templates     # noqa: E402
 from chemsim.reactions.thermo import COLLISION_LIMIT            # noqa: E402
 from chemsim.recipes import BENZOIC_ACID_PREP as PREP           # noqa: E402
 
@@ -241,6 +242,19 @@ def networks() -> dict:
     out["nitration, deactivated"] = build_network(
         ["Cc1ccccc1", "O[N+](=O)[O-]", "O"], [S.aromatic_nitration()],
         thermo=THERMO, max_species=40, max_molar_mass=300.0,
+    )
+    # T30. The only reversible row whose derived reverse leaves the ceiling
+    # behind, and it does so at 1895 K -- nitroglycerin's own hydrolysis, whose
+    # A is 8.6e13 against a k(298) of 1.9e-5 L/(mol s). The forward direction is
+    # the whole point of the row and it is flat at 1.0e8; the reverse carries
+    # the trinitrate's formation entropy, and a polyol three nitrate esters up
+    # from glycerol is a long way downhill. The steps declare 283-295 K and the
+    # molecule detonates decades of temperature below the crossing, so the row
+    # is REPORTED here rather than capped.
+    out["nitrate esterification"] = build_network(
+        ["OCC(O)CO", "O[N+](=O)[O-]"],
+        [t for t in load_templates() if t.name == "nitrate_esterification"],
+        thermo=THERMO, max_species=40,
     )
     out["Skraup"] = build_network(
         ["Nc1ccccc1", "C=CC=O", "O=[N+]([O-])c1ccccc1", "[OH3+]",

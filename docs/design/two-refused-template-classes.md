@@ -165,6 +165,97 @@ nitrate (CAS 621-65-8), which no consulted source gives a boiling or melting
 point; the path runs 1-mono -> 1,3-di -> trinitrate around it, and the drop is
 reported. **The refusal in this section is lifted and the template job is open.**
 
+### Written, 2026-09-14 (T30), and the route it bought is not the route it was priced on
+
+`nitrate_esterification` is a `family` row in `data/templates/templates.psv`:
+the SMARTS above verbatim, `A=1e8` as the liquid bimolecular
+order-of-magnitude choice, `Ea=50000` as a band midpoint deliberately BELOW
+`fischer_esterification`'s 55000 — nitric acid is a far stronger electrophile
+than a carboxylic acid, and all three steps declare 283–295 K, where a Fischer
+esterification does nothing. It is reversible, because the reverse is
+nitrate-ester hydrolysis, which is what spent-acid denitration runs and why the
+process needs sulfuric acid as a water sink rather than nitric acid alone.
+
+What it moved, each number from a command run that day: classes with a template
+115 → 116 and family classes 63 → 64 (`validation/catalog_coverage.py`);
+template-ready routes 65 → 66 and 49 → 50 on family rows alone; runnable routes
+50 → 51 and 60 → 61 with the literal rows granted (`tools/build_playable.py`).
+The intersection column held at 53. All three steps score `partial`, as
+predicted above and for the reason predicted: `nitroglycerin-route:1` declares
+the trinitrate and one rewrite makes a mononitrate.
+
+### Each scoreboard moved by one, and NOT on the same route
+
+This is the part worth keeping. One class grant, two +1s, two different routes,
+and neither route moved on both scoreboards:
+
+| scoreboard | its rule | the route it gained | why the other one did not |
+|---|---|---|---|
+| `COVERAGE_REPORT.md` template-ready 65 → 66 | every ROW of the route has a template | `guncotton` | `nitroglycerin-route` step 2 is `formulation`, still an uncovered class |
+| `PLAYABLE.md` runnable 50 → 51 | `route_reachable`'s DAG walk to the TARGET | `nitroglycerin-route` | `guncotton`'s `nitrocellulose-unit` has no price |
+
+Both answers are right for the question each asks, and `route_reachable`'s own
+docstring says why: *"A route is not a list of rows; it is a DAG with
+alternatives, declared byproducts and workup in it."* Step 1 of
+`nitroglycerin-route` makes nitroglycerin outright, so the walk never needs the
+kieselguhr step at all; the row scorer counts that step and blocks. In the
+other direction the row scorer does not look at prices, which is the same
+report's *13 template-ready routes have a refused species*.
+
+**So the class was priced at +1, at +0 and at +2 in three places, and all three
+numbers were about different things.** `PLAYABLE.md` §8 priced it **+1 on
+guncotton** — wrong route; §8b priced it **+0** — right, for playability;
+`COVERAGE_REPORT.md`'s greedy queue priced it **+2**, and that one is
+conditional: the queue is a SEQUENCE, its row 8 grants `formulation` first, and
+only with `formulation` already in does this class reach two routes. *A greedy
+set-cover queue's per-row gain is conditional on every row above it, so reading
+one row as what a session buys double-counts.* §8's own footnote had already
+listed guncotton among the ten rows "that cannot be bought by templates at
+all", so *a "worth" column that prices a joint grant as a single one is refuted
+by the footnote printed under it.* Granting the class moved guncotton from
+template-blocked to species-blocked and nothing else — it is now one of the two
+rows in §8's *need no template at all* bucket, with `pyrite-roasting`.
+
+`petn-route` is untouched: its step 1 is `aldol-cannizzaro`, a separate
+uncovered class.
+
+### One thing the row exposed that must NOT be fixed where it shows up
+
+`tests/test_playable_levers.py::test_the_shelf_file_holds_exactly_what_this_audit_measured`
+was already red before this session (T29 left it asking for `ammonia` and
+`platinum`, both design calls). T30 added a third name to its work order,
+**`nitroglycerin`**, and that one is not a design call and must not be added to
+`shelf.psv`: *it is the route's own target.*
+
+The path it arrives by is `build_playable.needs`, which unions the route's
+CATALYSTS into what a player must already hold. `route_roles` calls a species
+that appears on both sides of a step a catalyst, and step 2 of
+`nitroglycerin-route` is `nitroglycerin -> nitroglycerin` — absorption into
+kieselguhr, a physical operation the corpus spells as a no-op row. So the
+catalyst union hands the player the thing the route exists to make, which is
+exactly what `route_reachable`'s **the target may not be charged** rule was
+installed to stop. The same artefact is already documented one test above for
+`furfural-route`'s xylose; this is its second instance, and the first where the
+species is the target itself.
+
+The fix belongs in `needs`, not in the shelf: a catalyst the route MAKES before
+it first needs it is not a starting charge. `first_made < first_used` separates
+the two cases cleanly on the documented counterexamples — `lead-chamber`'s NO2
+is wanted in row 2 and made in row 3, so it stays a charge, and
+`lime-cycle`'s limestone is used in row 1, so it stays external. It is a
+mirror-rule change and T17's mirror-rule fix moved nine pins, so it is a task
+of its own rather than a line in this one.
+
+Two things the row reports rather than hides. The derived reverse of
+nitroglycerin's own hydrolysis has `A = 8.6e13`, above the 1e11 bimolecular
+ceiling, crossing it at **1895 K** — `k(298)` is 1.9e-5 L/(mol s), the steps
+declare 283 K, and the molecule detonates decades of temperature below the
+crossing, so it is reported in `validation/rate_ceiling.py` (which gained a
+bench for this row) rather than capped. The panel's coldest crossing is still
+the 417 K one. And the glycerol 1,2-dinitrate is still dropped for want of a
+boiling or melting point in any consulted source; the path runs
+1-mono → 1,3-di → trinitrate around it, with a notice.
+
 ## What the pair has in common
 
 Both are classes whose catalog step is a LUMP of several applications of one

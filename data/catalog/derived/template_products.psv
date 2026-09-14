@@ -87,6 +87,7 @@ carbanion_alkylation | pass | 4 | no | nucleophilic-substitution | malonic-ester
 amide_methylolation | pass | 2 | no | nucleophilic-addition | urea-formaldehyde-route:1 | 
 ketene_acid_addition | pass | 1 | no | nucleophilic-addition | acetic-anhydride-ketene:2 | 
 cyanide_imine_addition | pass | 3 | no | nucleophilic-addition | strecker-amino-acid:2 | 
+nitrate_esterification | partial | 3 | no | esterification-nitration | nitroglycerin-route:1 | O=[N+]([O-])OCC(CO[N+](=O)[O-])O[N+](=O)[O-]
 catalytic_sulfur_dioxide_oxidation_contact_process_2 | pass | 1 | no | catalytic-sulfur-dioxide-oxidation | contact-process:2 | 
 acid_anhydride_absorption_contact_process_3 | pass | 1 | no | acid-anhydride-absorption | contact-process:3 | 
 oleum_hydrolysis_contact_process_4 | pass | 1 | no | oleum-hydrolysis | contact-process:4 | 
@@ -147,14 +148,14 @@ hydrazone_formation_fischer_indole_1 | pass | 1 | no | hydrazone-formation | fis
 michael_addition_michael_robinson_1 | pass | 1 | no | michael-addition | michael-robinson:1 | 
 
 #! pass = 96
-#! partial = 15
+#! partial = 16
 #! wrong-product = 9
 #! no-fire = 0
 #! no-substrate = 3
 #! no-runnable-step = 0
 #! no-class = 2
-#! steps_tried = 279
+#! steps_tried = 282
 #! through_the_medium = 4
 #! missing_because_salt = 9
 #! missing_because_stereo = 5
-#! missing_because_other = 10
+#! missing_because_other = 11
