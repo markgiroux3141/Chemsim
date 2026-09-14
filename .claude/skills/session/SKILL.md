@@ -15,7 +15,44 @@ relaxes the ten rules in `CLAUDE.md` or the caps that `handoff` enforces.
 Anything the user typed after the invocation outranks `NEXT.md`'s ordering.
 If it names a task, that is the task. If it names a constraint ("no engine
 work", "only docs"), filter the list by it and take the first survivor. If it
-is empty, task 1 in `NEXT.md` is the task.
+is empty, task 1 in `NEXT.md` is the task, subject to Step 0b.
+
+A request to "increase coverage", "get more routes", "add breadth" or anything
+else aimed at the 173 is NOT a free choice of task. It resolves to the standing
+priority below, because that priority IS the measured answer to it.
+
+## Step 0b — The standing priority: change the rate, do not grind the queue
+
+Decided 2026-09-13 from `docs/design/route-coverage-ceiling.md`, which carries
+the derivation and the script. Do not re-derive it and do not relitigate it
+inside a session; if a measurement contradicts it, that is a finding for the
+report and the backlog.
+
+**173 is not reachable and is not the target.** 7 routes name a species with no
+molecular graph, 14 reaction classes are credited to integrator terms where no
+SMARTS can exist, and the rest of the gap is steps that will not balance. If
+every extractable step in the corpus became a template the ceiling is **110
+template-ready and about 66 runnable**. The box stands at 46 / 47. The gap is
+roughly twenty routes, it is bounded, and it is worth finishing.
+
+So when the choice is yours, rank the open work this way:
+
+1. **Work that changes the rate** at which content arrives — T2's extractor
+   above all, then T3. One extractor writes ~132 classes mechanically; the
+   historical hand-written rate is three to five a session, which is thirty
+   sessions for the same content.
+2. **Work that unblocks a named route or template**, where the item says which.
+3. **A measurement that could cancel expensive work**, as before.
+4. **Queue-grinding curation** — the per-row pKa work of T23 and T26, one
+   sourced paper at a time — comes LAST while T2 is open. It is not worthless:
+   T18's rule took stearic acid from 4 reactions to 21. It is mis-scored, and
+   it must not be task 1. T23 and T27 each spent a whole session and wrote
+   "coverage does not move" as their own result, with 444 ions still queued at
+   two to four a session.
+
+If `NEXT.md`'s task 1 is queue-grinding curation while a rate-changing item is
+open, take the rate-changing item instead and say so in one line of the report.
+That is the one case where you may reorder `NEXT.md` without being told to.
 
 ## Step 1 — Take the task
 

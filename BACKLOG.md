@@ -29,6 +29,21 @@ rows resolve, balance and sit in an uncovered class, over 132 classes of which
 argument is `docs/design/extraction-yield.md` and
 `fable analysis/05-COVERAGE-STRATEGY.md`; do not re-narrate it here.
 
+### T3 — the six family candidates (M, bounded, and writable before T2)
+The six uncovered classes holding three or more extractable steps do not need
+the extractor to be identified, only to be written at scale -- so write them by
+hand first. Six rows cover 24 steps over 21 routes, which is more than
+`template-ready` has moved in 43 commits: `nucleophilic-substitution` (6 steps,
+6 routes), `nucleophilic-addition` (4/4), `catalytic-air-oxidation` (4/3),
+`ammoxidation` (4/2), `esterification-nitration` (3/3),
+`intramolecular-williamson` (3/3). Derivation and the list:
+`docs/design/route-coverage-ceiling.md`. Doing these first also de-risks T2 --
+you learn what these SMARTS look like before automating 132 of them. Afterwards,
+the same clustering over T2's literal rows, retiring the members it subsumes.
+**Done when:** each of the six is a row reaching `pass` in
+`template_products.psv` or refused in writing, and `template-ready` in
+`COVERAGE_REPORT.md` has moved off 46.
+
 ### T2 — extract literal templates from the catalog (L, unblocked: T1.0 and T1 are in)
 `tools/extract_templates.py`: resolve each step's reactants and products to
 SMILES, infer stoichiometry, atom-map, extract a reaction SMARTS with one bond of
@@ -49,14 +64,6 @@ writing an extractor, not after; the counts are the `#!` keys at the foot of
 `data/catalog/derived/template_products.psv`.
 **Done when:** the extracted rows reach `pass` in `template_products.psv` and
 the report distinguishes template-ready-via-family from via-literal.
-
-### T3 — generalise the literal rows that cluster (M, bounded)
-Cluster literal rows by reacting centre; where three or more share one, write a
-family row, confirm it covers every member, retire the members. T1.0 found only
-6 uncovered classes with three or more extractable rows (24 rows in all), so this
-is one or two sessions, not a repeating one.
-**Done when:** the 6 families are written or refused with a reason, and the
-retired row count is in `CHANGELOG.md`.
 
 ### T23 — the corpus half of the pKa gap, one row at a time (M, running)
 T27 wrote four rows in route-demand order and `validation/pka_domains.py` panel
