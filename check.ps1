@@ -3,10 +3,12 @@
     The check to run after every change. Fast by default.
 
 .DESCRIPTION
-    Seven steps: lint, the documentation caps, the catalog's structural
-    validation, the template table against the constructors it copies, each
-    template row against the catalog step it claims, the classification of the
-    templates the shelf cannot reach, and a smoke subset of the test suite.
+    Eight steps: lint, the documentation caps, the catalog's structural
+    validation, the extracted half of the template table against the catalog
+    steps it was written from, the whole table against the constructors it
+    copies, each template row against the catalog step it claims, the
+    classification of the templates the shelf cannot reach, and a smoke subset
+    of the test suite.
 
     The smoke subset is a hand-named list because the suite has no markers yet.
     T0.4 in BACKLOG.md replaces it with `pytest -m "not slow"`; when that lands,
@@ -58,6 +60,11 @@ function Step {
 Step 'ruff' { ruff check src tests tools validation examples }
 Step 'docs' { python tools/check_docs.py }
 Step 'catalog' { python tools/catalog.py }
+# T2, ~2 s. `literal.psv` is generated from the catalog steps, so a corpus edit
+# that changes what an extracted row rewrites fails here instead of leaving the
+# table describing a step that no longer exists. `needs_review.psv` is checked
+# with it, because the refusals are the other half of the same measurement.
+Step 'extracted templates' { python tools/extract_templates.py --check }
 # Fast (~5 s) and it guards a transcription: --check refuses a stale
 # template_data.py AND any row that has drifted from the constructor it copies.
 Step 'templates' { python tools/build_templates.py --check }

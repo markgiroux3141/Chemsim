@@ -174,7 +174,21 @@ _tier = {
     cid: cc.audit_compound(rec, _thermo, _vol, _ionic, _unifac)["tier"]
     for cid, rec in compounds.items()
 }
-TC = cc.TEMPLATE_CLASSES
+# THE SCOREBOARD SCORES WHAT THE GAME LOADS, which is the `family` tier.
+#
+# T2's extractor writes a `literal` row from one catalog step with kinetics from
+# a policy, and `load_templates` defaults to `family` -- so a route that is
+# template-ready only through one of those is a route no flask the bench builds
+# can run, and calling it *playable* would be this file's own landmine in a new
+# place. `COVERAGE_REPORT.md` counts every tier because it is measuring the
+# CORPUS; this file is measuring the GAME, and the two are different questions.
+#
+# What the literal rows ARE worth here is the counterfactual beside the
+# headline: how many routes a session would buy by promoting one, which is a
+# much cheaper job than writing a template from nothing. That is `_WITH_LITERAL`
+# below and the marked column in the work order.
+TC = cc.FAMILY_TEMPLATE_CLASSES
+TC_ANY = cc.TEMPLATE_CLASSES
 
 
 def priced(x: str) -> bool:
@@ -255,6 +269,14 @@ def reachable(rid: str) -> bool:
 
 RUNNABLE = {rid for rid in routes if reachable(rid)}
 
+# The same question with the extracted rows granted, so the counterfactual has a
+# number rather than a shrug. Not the headline: see TC above.
+RUNNABLE_WITH_LITERAL = {
+    rid for rid in routes
+    if cat.route_reachable(steps, rid, routes[rid].target, priced,
+                           TC_ANY, compounds)
+}
+
 
 def closure(pool=None, extra=frozenset(), with_catalysts=True, shelf_rule="both",
             needs_rule=None):
@@ -290,6 +312,7 @@ def closure(pool=None, extra=frozenset(), with_catalysts=True, shelf_rule="both"
 
 
 PLAYABLE, SHELF = closure()
+PLAYABLE_WITH_LITERAL, _SHELF_WITH_LITERAL = closure(pool=RUNNABLE_WITH_LITERAL)
 MADE_SOMEWHERE = {p for s in steps for p in s.products} | {
     r.target for r in routes.values()
 }
@@ -479,6 +502,19 @@ def main(argv: list[str] | None = None) -> int:
     w(f"**{len(PLAYABLE)} of {len(routes)} named routes are playable from natural "
       f"materials**, against a goal of ~{n_goal} targets. The deepest chain in "
       f"the corpus is **{max(PLAYABLE.values())} tiers**.")
+    w("")
+    n_lit = len(PLAYABLE_WITH_LITERAL) - len(PLAYABLE)
+    gained = sorted(set(PLAYABLE_WITH_LITERAL) - set(PLAYABLE))
+    w(f"> **Every number in this file is scored on hand-typed `family` rows**, "
+      f"because that is the tier `load_templates` loads and a route the bench "
+      f"cannot build is not playable. Granting the "
+      f"{len(RUNNABLE_WITH_LITERAL) - len(RUNNABLE)} routes that "
+      "`tools/extract_templates.py` extracted a `literal` row for would make "
+      f"**{len(RUNNABLE_WITH_LITERAL)} runnable and {n_lit} more playable** ("
+      + (", ".join(f"`{r}`" for r in gained) or "none")
+      + "). Promoting one of those rows is a cheaper session than writing a "
+      "template from nothing, and it costs the row an argued barrier and a "
+      "checked atom mapping — which is what the tier is for.")
     w("")
     w("⚠ **THE TECH TREE IS A SHALLOW BUSH, NOT A TREE.** "
       f"{len(GROUND)} of the {len(PLAYABLE)} playable routes are tier 1 — they "
@@ -895,11 +931,21 @@ def main(argv: list[str] | None = None) -> int:
       "**class**. C3 measured the two disagreeing at the top of the table, so "
       "both are printed now.")
     w("")
-    w("| worth | runnable | class to build | fed rows waiting on it |")
-    w("|---:|---:|---|---|")
+    w("| worth | runnable | class to build | extracted | fed rows waiting on it |")
+    w("|---:|---:|---|---|---|")
     for g, r, cls, rids in crows:
         w(f"| **{g:+d}** | {r:+d} | `{cls}` | "
+          f"{'**row exists**' if cls in TC_ANY else '—'} | "
           f"{', '.join(f'`{x}`' for x in rids)} |")
+    w("")
+    have = [c for _g, _r, c, _ in crows if c in TC_ANY]
+    w(f"**{len(have)} of the {len(crows)} classes already have an extracted "
+      "`literal` row** that reproduces its catalog step"
+      + (" — " + ", ".join(f"`{c}`" for c in have) if have else "")
+      + f". For those the session is not *write a template*: it is check the "
+      "atom mapping by hand, argue a barrier for it, and move the row into "
+      f"`templates.psv` at tier `family`. The other {len(crows) - len(have)} "
+      "still need a mechanism written from nothing.")
     w("")
     top_cls = [c for g, _, c, _ in crows if g == crows[0][0]]
     w(f"⚠⚠⚠ **THE BIGGEST SINGLE CLASS IS {crows[0][0]:+d}** "

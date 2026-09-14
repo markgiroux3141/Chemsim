@@ -1104,20 +1104,31 @@ INTEGRATOR_TERM_CLASSES = {
 }
 
 
-def _template_classes() -> dict[str, str]:
+def _template_classes(tier: str = "any") -> dict[str, str]:
     """catalog reaction class -> what covers it, rows first and terms second.
 
     Several templates may carry one class: that is a class covered by a FAMILY,
     and the credit belongs to the family rather than to a member. A class in
     both maps is carried by both and reads that way.
     """
-    out = {c: " + ".join(n) for c, n in template_classes(tier="any").items()}
+    out = {c: " + ".join(n) for c, n in template_classes(tier=tier).items()}
     for cls, term in INTEGRATOR_TERM_CLASSES.items():
         out[cls] = f"{out[cls]} + {term}" if cls in out else term
     return dict(sorted(out.items()))
 
 
 TEMPLATE_CLASSES = _template_classes()
+
+# The same map over the HAND-TYPED rows alone, and the two are not the same
+# claim. T2's extractor writes a `literal` row from one catalog step with
+# kinetics from a policy -- an order-of-magnitude A for the molecularity and an
+# Ea solved for the temperature the step declares -- and `load_templates`
+# defaults to `family`, so a literal row covers a class without entering any
+# flask that did not ask for it. A route that is template-ready only through
+# literal rows is a route whose chemistry has been WRITTEN DOWN and not yet
+# played; reporting one number for both would be the outcome-label mistake in a
+# new place, so every readiness row below is split.
+FAMILY_TEMPLATE_CLASSES = _template_classes(tier="family")
 
 # How many templates that is -- COUNTED, not asserted. Five hand-maintained
 # constants used to live here, each needing an increment from every session that
@@ -1491,12 +1502,23 @@ def main(argv: list[str] | None = None) -> int:
         f"**{sum(step_classes[c] for c in covered)}** of the {len(steps)} steps."
     )
     w("")
+    covered_family = {c for c in step_classes if c in FAMILY_TEMPLATE_CLASSES}
     w(
-        "> The count is the number of rows in `data/templates/templates.psv`, "
-        "counted. Precipitation, calcination, roasting and the surface "
-        "reactions are TERMS in the integrator and have no row -- a lattice is "
-        "not a graph, so there is no SMARTS to write -- so they appear in the "
-        "table below as covered classes with no row behind them."
+        "> The count is the number of rows in `data/templates/templates.psv` "
+        "and `data/templates/literal.psv`, counted. Precipitation, calcination, "
+        "roasting and the surface reactions are TERMS in the integrator and "
+        "have no row -- a lattice is not a graph, so there is no SMARTS to "
+        "write -- so they appear in the table below as covered classes with no "
+        "row behind them."
+    )
+    w("")
+    w(
+        f"> **{len(covered_family)} of the {len(covered)} classes are covered by "
+        f"a hand-typed `family` row**; the other "
+        f"{len(covered) - len(covered_family)} are covered by a `literal` row "
+        "extracted from one catalog step by `tools/extract_templates.py`, which "
+        "the default library does not load. The `template` column names the row, "
+        "so which kind carries a class is readable off the table below."
     )
     w("")
     w("| covered class | template | steps using it |")
@@ -1602,7 +1624,7 @@ def main(argv: list[str] | None = None) -> int:
         "the intersection, which is smaller than any of them."
     )
     w("")
-    species_ready = sourced_routes = template_ready = 0
+    species_ready = sourced_routes = template_ready = family_ready = 0
     route_rows = []
     mineral_carried: list[tuple[str, list[str]]] = []
     for rid, route in routes.items():
@@ -1651,9 +1673,11 @@ def main(argv: list[str] | None = None) -> int:
         ok = all(by_id[s]["tier"] != "refused" for s in real)
         src = ok and all(by_id[s]["tier"] != "joback" for s in real)
         tmpl = all(s.cls in TEMPLATE_CLASSES for s in mine)
+        fam = all(s.cls in FAMILY_TEMPLATE_CLASSES for s in mine)
         species_ready += ok
         sourced_routes += src
         template_ready += tmpl
+        family_ready += fam
         # Which routes does the ``mineral`` tier actually carry? A credit that
         # cannot be pointed at the species it rests on is not auditable, and
         # this column has already been mis-stated once by a note that named a
@@ -1662,14 +1686,17 @@ def main(argv: list[str] | None = None) -> int:
             mins = sorted(s for s in real if by_id[s]["tier"] == "mineral")
             if mins:
                 mineral_carried.append((rid, mins))
-        route_rows.append((rid, route.era, len(mine), markers, ok, src, tmpl))
+        route_rows.append((rid, route.era, len(mine), markers, ok, src, tmpl, fam))
     total_r = len(routes)
     w(f"| | routes | of {total_r} |")
     w("|---|---:|---:|")
     w(f"| species-ready | {species_ready} | {100*species_ready/total_r:.1f}% |")
     w(f"| fully sourced (no Joback anywhere) | {sourced_routes} | "
       f"{100*sourced_routes/total_r:.1f}% |")
-    w(f"| template-ready | {template_ready} | {100*template_ready/total_r:.1f}% |")
+    w(f"| template-ready, hand-typed `family` rows only | {family_ready} | "
+      f"{100*family_ready/total_r:.1f}% |")
+    w(f"| template-ready, counting extracted `literal` rows | {template_ready} | "
+      f"{100*template_ready/total_r:.1f}% |")
     # ⚠⚠ THE INTERSECTION IS THE ONLY ONE OF THESE A ROUTE CAN BE JUDGED ON, AND
     # UNTIL S6 NOTHING COMPUTED IT. The three columns above are independent
     # questions and were reported as though the smallest bounded the others. It
@@ -1677,11 +1704,29 @@ def main(argv: list[str] | None = None) -> int:
     # species, and **11 of the 28 template-ready routes have a refused species**.
     # Quoting 28 as "what could run" overstates it by a factor of 1.6.
     both_ready = sum(1 for r in route_rows if r[4] and r[6])
-    w(f"| **BOTH — template-ready AND species-ready** | **{both_ready}** | "
-      f"**{100*both_ready/total_r:.1f}%** |")
+    both_family = sum(1 for r in route_rows if r[4] and r[7])
+    w(f"| **BOTH — species-ready AND template-ready on `family` rows** | "
+      f"**{both_family}** | **{100*both_family/total_r:.1f}%** |")
+    w(f"| **BOTH — species-ready AND template-ready counting `literal`** | "
+      f"**{both_ready}** | **{100*both_ready/total_r:.1f}%** |")
     w("")
     ready = [r for r in route_rows if r[6]]
     w("Template-ready routes: " + (", ".join(f"`{r[0]}`" for r in ready) or "none"))
+    w("")
+    via_literal = sorted(r[0] for r in route_rows if r[4] and r[6] and not r[7])
+    w(
+        f"> **{both_family} of those {both_ready} reach it on hand-typed rows.** "
+        f"The other {len(via_literal)} are template-ready only through rows "
+        "`tools/extract_templates.py` extracted from the catalog steps "
+        "themselves, and `load_templates` defaults to `family`, so none of them "
+        "is in a flask by default: an extracted row carries a pre-exponential "
+        "chosen for its molecularity and a barrier solved for the temperature "
+        "its step declares, which is the right band and not a measurement. "
+        "Template-ready through a literal row means the chemistry is written "
+        "down and checked against the step it came from — `pass` in "
+        "`derived/template_products.psv` — and nothing more than that: "
+        + (", ".join(f"`{r}`" for r in via_literal) or "none") + "."
+    )
     w("")
     blocked = sorted(r[0] for r in route_rows if r[6] and not r[4])
     w(
@@ -2008,11 +2053,14 @@ def main(argv: list[str] | None = None) -> int:
     print(f"  formation on a lattice    {th_c['mineral']}/{n}  (solid basis)")
     print(f"  refused                   {tiers['refused']}/{n}")
     print(f"  UNIFAC groups      {unifac_ok}/{n}  ({100*unifac_ok/n:.1f}%)")
-    print(f"  reaction classes   {len(covered)}/{len(step_classes)} have a template")
+    print(f"  reaction classes   {len(covered)}/{len(step_classes)} have a template "
+          f"({len(covered_family)} of them a hand-typed family row)")
     print(f"  routes species-ready  {species_ready}/{total_r} "
           f"({len(mineral_carried)} of them carried by a lattice)")
-    print(f"  routes template-ready {template_ready}/{total_r}")
+    print(f"  routes template-ready {template_ready}/{total_r} "
+          f"({family_ready} on family rows alone)")
     print(f"  routes BOTH (the one to quote) {both_ready}/{total_r} "
+          f"({both_family} on family rows alone) "
           f"-- {template_ready - both_ready} template-ready routes have a "
           f"refused species")
     return 0 if ok else 1

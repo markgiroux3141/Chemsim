@@ -4,6 +4,20 @@ Newest first. One entry per session, twelve lines at most, enforced by
 `tools/check_docs.py`. When this file passes 400 lines the older half rolls into
 `docs/history/changelog-YYYY-MM.md`.
 
+## 2026-09-14 — T2: a program writes 58 templates off the catalog steps
+
+`tools/extract_templates.py` (1.8 s) balances each uncovered step, maps its
+atoms by iterated MCS, writes a SMARTS with one bond of context and RUNS it
+against the step before keeping it. 58 rows over 52 classes into a generated
+`data/templates/literal.psv`; 178 steps refused and counted in
+`needs_review.psv` (75 salt, 35 stoichiometry, 24 stereo, 22 coefficients).
+`check_template_products.py` 38 -> 96 pass, every extracted row among them, and
+all 58 build a reaction in `build_network`. `COVERAGE_REPORT.md` classes 63 ->
+115 and template-ready 49 -> 65 (49 on family rows), BOTH 41 -> 51 (41); both
+reports split family from literal, and `PLAYABLE.md` scores `family` alone so
+its 23/49 headline is unmoved. Red, pre-existing at 5964f16: the shelf audit
+test, now T29. `check.ps1` green, 1,357 tests. Next: T28.
+
 ## 2026-09-14 — T3: four of six classes become rows, two are refused
 
 Eight family rows in `data/templates/templates.psv` (59 -> 67, 46 -> 50 catalog

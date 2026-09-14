@@ -87,15 +87,73 @@ carbanion_alkylation | pass | 4 | no | nucleophilic-substitution | malonic-ester
 amide_methylolation | pass | 2 | no | nucleophilic-addition | urea-formaldehyde-route:1 | 
 ketene_acid_addition | pass | 1 | no | nucleophilic-addition | acetic-anhydride-ketene:2 | 
 cyanide_imine_addition | pass | 3 | no | nucleophilic-addition | strecker-amino-acid:2 | 
+catalytic_sulfur_dioxide_oxidation_contact_process_2 | pass | 1 | no | catalytic-sulfur-dioxide-oxidation | contact-process:2 | 
+acid_anhydride_absorption_contact_process_3 | pass | 1 | no | acid-anhydride-absorption | contact-process:3 | 
+oleum_hydrolysis_contact_process_4 | pass | 1 | no | oleum-hydrolysis | contact-process:4 | 
+thermal_fixation_birkeland_eyde_1 | pass | 1 | no | thermal-fixation | birkeland-eyde:1 | 
+nitronium_generation_benzene_nitration_1 | pass | 1 | no | nitronium-generation | benzene-nitration:1 | 
+electrophilic_aromatic_sulfonation_alizarin_route_2 | pass | 2 | no | electrophilic-aromatic-sulfonation | alizarin-route:2 | 
+n_alkylation_indigo_heumann_1 | pass | 1 | no | n-alkylation | indigo-heumann:1 | 
+friedel_crafts_alkylation_phenol_cumene_1 | pass | 1 | no | friedel-crafts-alkylation | phenol-cumene:1 | 
+autoxidation_phenol_cumene_2 | pass | 1 | no | autoxidation | phenol-cumene:2 | 
+hock_rearrangement_phenol_cumene_3 | pass | 1 | no | hock-rearrangement | phenol-cumene:3 | 
+electrophilic_aromatic_halogenation_phenol_dow_1 | pass | 1 | no | electrophilic-aromatic-halogenation | phenol-dow:1 | 
+electrophilic_aromatic_sulfonation_phenol_sulfonation_1 | pass | 3 | no | electrophilic-aromatic-sulfonation | phenol-sulfonation:1 | 
+electrophilic_hydroxymethylation_bakelite_route_1 | pass | 1 | no | electrophilic-hydroxymethylation | bakelite-route:1 | 
+nitro_partial_hydrogenation_paracetamol_route_1 | pass | 1 | no | nitro-partial-hydrogenation | paracetamol-route:1 | 
+carbonyl_hydration_chloral_route_2 | pass | 1 | no | carbonyl-hydration | chloral-route:2 | 
+swarts_halogen_exchange_freon_route_1 | pass | 1 | no | swarts-halogen-exchange | freon-route:1 | 
+swarts_halogen_exchange_ptfe_route_1 | pass | 2 | no | swarts-halogen-exchange | ptfe-route:1 | 
+pyrolysis_ptfe_route_2 | pass | 1 | no | pyrolysis | ptfe-route:2 | 
+carbonylation_monsanto_acetic_2 | pass | 1 | no | carbonylation | monsanto-acetic:2 | 
+pyrolysis_dehydration_acetic_anhydride_ketene_1 | pass | 1 | no | pyrolysis-dehydration | acetic-anhydride-ketene:1 | 
+catalytic_epoxidation_ethylene_oxide_route_1 | pass | 1 | no | catalytic-epoxidation | ethylene-oxide-route:1 | 
+halohydrin_formation_chlorohydrin_route_1 | pass | 1 | no | halohydrin-formation | chlorohydrin-route:1 | 
+epoxide_hydrolysis_ethylene_glycol_route_1 | pass | 1 | no | epoxide-hydrolysis | ethylene-glycol-route:1 | 
+epoxide_alkoxylation_ethylene_glycol_route_2 | pass | 1 | no | epoxide-alkoxylation | ethylene-glycol-route:2 | 
+oxime_formation_nylon6_route_1 | pass | 1 | no | oxime-formation | nylon6-route:1 | 
+halogen_addition_vinyl_chloride_route_1 | pass | 1 | no | halogen-addition | vinyl-chloride-route:1 | 
+dehydrohalogenation_vinyl_chloride_route_3 | pass | 1 | no | dehydrohalogenation | vinyl-chloride-route:3 | 
+friedel_crafts_alkylation_styrene_route_1 | pass | 2 | no | friedel-crafts-alkylation | styrene-route:1 | 
+catalytic_dehydrogenation_styrene_route_2 | pass | 1 | no | catalytic-dehydrogenation | styrene-route:2 | 
+cyanohydrin_formation_mma_ach_1 | pass | 1 | no | cyanohydrin-formation | mma-ach:1 | 
+allylic_chlorination_epoxy_route_1 | pass | 1 | no | allylic-chlorination | epoxy-route:1 | 
+halohydrin_formation_epoxy_route_2 | pass | 2 | no | halohydrin-formation | epoxy-route:2 | 
+condensation_mdi_route_1 | pass | 2 | no | condensation | mdi-route:1 | 
+urea_deammoniation_melamine_route_1 | pass | 1 | no | urea-deammoniation | melamine-route:1 | 
+direct_process_silicone_route_1 | pass | 1 | no | direct-process | silicone-route:1 | 
+hydrolysis_condensation_silicone_route_2 | pass | 1 | no | hydrolysis-condensation | silicone-route:2 | 
+alkyne_dimerisation_neoprene_route_1 | pass | 1 | no | alkyne-dimerisation | neoprene-route:1 | 
+hydrohalogenation_neoprene_route_2 | pass | 1 | no | hydrohalogenation | neoprene-route:2 | 
+dehydration_dehydrogenation_buna_rubber_1 | pass | 1 | no | dehydration-dehydrogenation | buna-rubber:1 | 
+decarboxylation_ethanol_fermentation_3 | pass | 1 | no | decarboxylation | ethanol-fermentation:3 | 
+decarbonylation_furfural_route_3 | pass | 1 | no | decarbonylation | furfural-route:3 | 
+arene_hydrogenation_furfural_route_4 | pass | 1 | no | arene-hydrogenation | furfural-route:4 | 
+electrophilic_hydroxyalkylation_vanillin_guaiacol_1 | pass | 1 | no | electrophilic-hydroxyalkylation | vanillin-guaiacol:1 | 
+imine_formation_strecker_amino_acid_1 | pass | 1 | no | imine-formation | strecker-amino-acid:1 | 
+hydrazinolysis_gabriel_synthesis_3 | pass | 1 | no | hydrazinolysis | gabriel-synthesis:3 | 
+decarboxylation_malonic_ester_synthesis_4 | pass | 2 | no | decarboxylation | malonic-ester-synthesis:4 | 
+oxidative_insertion_grignard_route_1 | pass | 1 | no | oxidative-insertion | grignard-route:1 | 
+wittig_olefination_wittig_route_3 | pass | 1 | no | wittig-olefination | wittig-route:3 | 
+diels_alder_cycloaddition_diels_alder_route_1 | pass | 1 | no | diels-alder-cycloaddition | diels-alder-route:1 | 
+diels_alder_cycloaddition_diels_alder_route_2 | pass | 2 | no | diels-alder-cycloaddition | diels-alder-route:2 | 
+carbanion_generation_aldol_route_1 | pass | 4 | no | carbanion-generation | aldol-route:1 | 
+claisen_condensation_claisen_route_2 | pass | 1 | no | claisen-condensation | claisen-route:2 | 
+beckmann_rearrangement_beckmann_route_2 | pass | 2 | no | beckmann-rearrangement | beckmann-route:2 | 
+isocyanate_hydrolysis_hofmann_route_3 | pass | 1 | no | isocyanate-hydrolysis | hofmann-route:3 | 
+nucleophilic_acyl_substitution_curtius_route_1 | pass | 1 | no | nucleophilic-acyl-substitution | curtius-route:1 | 
+curtius_rearrangement_curtius_route_2 | pass | 1 | no | curtius-rearrangement | curtius-route:2 | 
+hydrazone_formation_fischer_indole_1 | pass | 1 | no | hydrazone-formation | fischer-indole:1 | 
+michael_addition_michael_robinson_1 | pass | 1 | no | michael-addition | michael-robinson:1 | 
 
-#! pass = 38
+#! pass = 96
 #! partial = 15
 #! wrong-product = 9
 #! no-fire = 0
 #! no-substrate = 3
 #! no-runnable-step = 0
 #! no-class = 2
-#! steps_tried = 208
+#! steps_tried = 279
 #! through_the_medium = 4
 #! missing_because_salt = 9
 #! missing_because_stereo = 5

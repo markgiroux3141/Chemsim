@@ -19,6 +19,8 @@ The GOAL in `docs/history/MILESTONES.md` § THE G-SERIES is stated as **~10 natu
 
 **23 of 173 named routes are playable from natural materials**, against a goal of ~40 targets. The deepest chain in the corpus is **3 tiers**.
 
+> **Every number in this file is scored on hand-typed `family` rows**, because that is the tier `load_templates` loads and a route the bench cannot build is not playable. Granting the 10 routes that `tools/extract_templates.py` extracted a `literal` row for would make **59 runnable and 2 more playable** (`acetic-anhydride-ketene`, `wood-distillation`). Promoting one of those rows is a cheaper session than writing a template from nothing, and it costs the row an argued barrier and a checked atom mapping — which is what the tier is for.
+
 ⚠ **THE TECH TREE IS A SHALLOW BUSH, NOT A TREE.** 10 of the 23 playable routes are tier 1 — they touch nothing another route made. The corpus is not a connected progression that happens to be short; it is a fan of one-step routes off the ground with one thin chain hanging off it, and §5 is that chain.
 
 ## 2. The one hand judgement, printed so it can be argued with
@@ -329,36 +331,38 @@ Grant a player one species free and re-run the fixed point. Base is 23.
 
 §8 grants a **route**; a session builds a **template**, which grants a **class**. C3 measured the two disagreeing at the top of the table, so both are printed now.
 
-| worth | runnable | class to build | fed rows waiting on it |
-|---:|---:|---|---|
-| **+1** | +1 | `aerobic-overflow-fermentation` | `citric-acid-fermentation` |
-| **+1** | +1 | `biological-transformation` | `tyrian-purple-route` |
-| **+1** | +1 | `direct-combination` | `vermilion-route` |
-| **+1** | +1 | `haloform` | `chloroform-route` |
-| **+1** | +1 | `molten-salt-electrolysis` | `downs-cell`, `hall-heroult` |
-| **+1** | +1 | `oxidative-complexation` | `iron-gall-ink` |
-| **+1** | +1 | `pyrolysis` | `coal-gas`, `wood-distillation` |
-| **+1** | +1 | `pyrolysis-dehydration` | `acetic-anhydride-ketene` |
-| **+0** | +0 | `amalgam-decomposition` | `castner-kellner` |
-| **+0** | +0 | `amalgam-electrolysis` | `castner-kellner` |
-| **+0** | +0 | `amphoteric-dissolution` | `bayer-process` |
-| **+0** | +0 | `basic-carbonate-precipitation` | `white-lead-route` |
-| **+0** | +0 | `carbide-formation` | `calcium-carbide`, `frank-caro` |
-| **+0** | +0 | `carbide-hydrolysis` | `calcium-carbide` |
-| **+0** | +0 | `carbonyl-hydration` | `chloral-route` |
-| **+0** | +0 | `carbothermic-phosphate-reduction` | `white-phosphorus` |
-| **+0** | +0 | `cyanamide-hydrolysis` | `frank-caro` |
-| **+0** | +0 | `deflagration` | `gunpowder` |
-| **+0** | +0 | `disproportionation-hydrolysis` | `birkeland-eyde` |
-| **+0** | +0 | `esterification-nitration` | `guncotton` |
-| **+0** | +0 | `formulation` | `gunpowder` |
-| **+0** | +0 | `gas-solid-fixation` | `frank-caro` |
-| **+0** | +0 | `oxidative-dissolution` | `white-lead-route` |
-| **+0** | +0 | `oxidative-nitrosation` | `mercury-fulminate-route` |
-| **+0** | +0 | `precipitation` | `bayer-process`, `citric-acid-fermentation` |
-| **+0** | +0 | `radical-halogenation` | `chloral-route` |
-| **+0** | +0 | `slagging` | `blast-furnace` |
-| **+0** | +0 | `thermal-fixation` | `birkeland-eyde` |
+| worth | runnable | class to build | extracted | fed rows waiting on it |
+|---:|---:|---|---|---|
+| **+1** | +1 | `aerobic-overflow-fermentation` | — | `citric-acid-fermentation` |
+| **+1** | +1 | `biological-transformation` | — | `tyrian-purple-route` |
+| **+1** | +1 | `direct-combination` | — | `vermilion-route` |
+| **+1** | +1 | `haloform` | — | `chloroform-route` |
+| **+1** | +1 | `molten-salt-electrolysis` | — | `downs-cell`, `hall-heroult` |
+| **+1** | +1 | `oxidative-complexation` | — | `iron-gall-ink` |
+| **+1** | +1 | `pyrolysis` | **row exists** | `coal-gas`, `wood-distillation` |
+| **+1** | +1 | `pyrolysis-dehydration` | **row exists** | `acetic-anhydride-ketene` |
+| **+0** | +0 | `amalgam-decomposition` | — | `castner-kellner` |
+| **+0** | +0 | `amalgam-electrolysis` | — | `castner-kellner` |
+| **+0** | +0 | `amphoteric-dissolution` | — | `bayer-process` |
+| **+0** | +0 | `basic-carbonate-precipitation` | — | `white-lead-route` |
+| **+0** | +0 | `carbide-formation` | — | `calcium-carbide`, `frank-caro` |
+| **+0** | +0 | `carbide-hydrolysis` | — | `calcium-carbide` |
+| **+0** | +0 | `carbonyl-hydration` | **row exists** | `chloral-route` |
+| **+0** | +0 | `carbothermic-phosphate-reduction` | — | `white-phosphorus` |
+| **+0** | +0 | `cyanamide-hydrolysis` | — | `frank-caro` |
+| **+0** | +0 | `deflagration` | — | `gunpowder` |
+| **+0** | +0 | `disproportionation-hydrolysis` | — | `birkeland-eyde` |
+| **+0** | +0 | `esterification-nitration` | — | `guncotton` |
+| **+0** | +0 | `formulation` | — | `gunpowder` |
+| **+0** | +0 | `gas-solid-fixation` | — | `frank-caro` |
+| **+0** | +0 | `oxidative-dissolution` | — | `white-lead-route` |
+| **+0** | +0 | `oxidative-nitrosation` | — | `mercury-fulminate-route` |
+| **+0** | +0 | `precipitation` | — | `bayer-process`, `citric-acid-fermentation` |
+| **+0** | +0 | `radical-halogenation` | — | `chloral-route` |
+| **+0** | +0 | `slagging` | — | `blast-furnace` |
+| **+0** | +0 | `thermal-fixation` | **row exists** | `birkeland-eyde` |
+
+**4 of the 28 classes already have an extracted `literal` row** that reproduces its catalog step — `pyrolysis`, `pyrolysis-dehydration`, `carbonyl-hydration`, `thermal-fixation`. For those the session is not *write a template*: it is check the atom mapping by hand, argue a barrier for it, and move the row into `templates.psv` at tier `family`. The other 24 still need a mechanism written from nothing.
 
 ⚠⚠⚠ **THE BIGGEST SINGLE CLASS IS +1** (`aerobic-overflow-fermentation`, `biological-transformation`, `direct-combination`, `haloform`, `molten-salt-electrolysis`, `oxidative-complexation`, `pyrolysis`, `pyrolysis-dehydration`) — and §8's `+3` top row is **not** at the top here. Granting `molten-salt-electrolysis` leaves `hall-heroult` unrunnable, because its cryolite is refused a price as well; the class lands its point on `downs-cell` instead. **A row's worth assumes every OTHER blocker away, and a template only removes one of them.**
 

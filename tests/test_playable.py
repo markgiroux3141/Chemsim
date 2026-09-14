@@ -30,6 +30,8 @@ for _p in ("src", "tools", "validation"):
     if _full not in sys.path:
         sys.path.insert(0, _full)
 
+import catalog_coverage as cc  # noqa: E402
+
 
 @pytest.fixture(scope="module")
 def bp():
@@ -100,11 +102,23 @@ def test_the_headline_and_the_tiers_are_what_the_report_says(bp):
     46 runnable becomes 47. It is not playable, because nothing on the shelf
     supplies its tristearin -- which is the ordinary shape of an unblock here,
     and why the two counts are asserted separately.
+
+    T3's eight family rows moved RUNNABLE 47 -> 49 and this line was left at 47,
+    which nothing caught: the suite is the only thing that reads this file and it
+    was five commits overdue. Measured again on 2026-09-14, and BOTH counts are
+    pinned now, because T2's other half is that `build_playable` scores the
+    `family` tier ALONE -- see its `TC`. The scoreboard is the game, the game
+    loads `family`, and a route runnable only through an extracted `literal` row
+    is counted in `_WITH_LITERAL` and nowhere else.
     """
     assert len(bp.routes) == 173
     assert len(bp.PLAYABLE) == 23
     assert max(bp.PLAYABLE.values()) == 3
-    assert len(bp.RUNNABLE) == 47
+    assert len(bp.RUNNABLE) == 49
+    assert bp.TC is cc.FAMILY_TEMPLATE_CLASSES
+    assert len(bp.RUNNABLE_WITH_LITERAL) == 59
+    assert len(bp.PLAYABLE_WITH_LITERAL) == 25
+    assert set(bp.PLAYABLE) < set(bp.PLAYABLE_WITH_LITERAL)
     assert bp.PLAYABLE["hmf-route"] == 2
     assert bp.PLAYABLE["invert-sugar"] == 1
     assert bp.PLAYABLE["abe-fermentation"] == 1
