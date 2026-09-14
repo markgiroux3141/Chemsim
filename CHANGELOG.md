@@ -4,6 +4,19 @@ Newest first. One entry per session, twelve lines at most, enforced by
 `tools/check_docs.py`. When this file passes 400 lines the older half rolls into
 `docs/history/changelog-YYYY-MM.md`.
 
+## 2026-09-13 — T1b: every template row against the catalog step it claims
+
+`tools/check_template_products.py` (2.2 s) fires each of the 59 rows over the
+`route_steps.psv` steps its class names and compares the product set. 191 steps
+tried: 31 pass, 14 partial, 9 wrong-product, 3 no-substrate, 0 no-fire, 2
+no-class. Committed as `data/catalog/derived/template_products.psv`, counts
+derived as `#!` keys; `--check` is a new `check.ps1` step and eight tests went
+into `tests/test_template_table.py`, not a new file (1,345 -> 1,353). Offered
+only what a step names it refused `skraup_cyclisation` and a fermentation, so a
+slot may draw on a declared three-species medium and the row says when it did.
+Retiring the per-template tests is refused: 132 of their 208 build a network or
+run a vessel (`docs/design/per-template-tests-not-retired.md`). Chemistry
+unmoved. Next: T2, whose two walls are now counted — 8 rows miss only a salt.
 ## 2026-09-13 — T27: four pKa rows in route-demand order, and three routes come clear
 
 `electrolyte._PAIRS` 37 -> 41 rows, ions 38 -> 42: vanillin 7.40, `dH_diss`

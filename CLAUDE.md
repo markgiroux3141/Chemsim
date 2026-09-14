@@ -31,6 +31,7 @@ python tools/catalog.py                         # structural validation of the P
 python validation/catalog_coverage.py           # regenerates data/catalog/COVERAGE_REPORT.md
 python tools/build_playable.py                  # regenerates data/catalog/PLAYABLE.md (~50 s)
 python tools/build_route_index.py               # regenerates data/catalog/ROUTE_INDEX.md
+python tools/check_template_products.py         # each row against the step it claims, ~2 s
 python tools/classify_silent.py                 # why each silent template is silent, ~2 s
 python tools/cadence.py                         # which expensive checks are owed
 python tools/build_reachable.py                 # regenerates derived/reachable.psv, ~35 min

@@ -29,22 +29,6 @@ rows resolve, balance and sit in an uncovered class, over 132 classes of which
 argument is `docs/design/extraction-yield.md` and
 `fable analysis/05-COVERAGE-STRATEGY.md`; do not re-narrate it here.
 
-### T1b — the row-level product check (M, was T1's fourth bullet)
-The switch-over landed without it. `tools/build_templates.py` now checks the
-column SET against `ReactionTemplate`'s fields and the SET of construction sites
-under `src/chemsim`; what neither can ask is whether a row's SMARTS still makes
-the products the catalog step says it makes. That is what the per-template test
-files do, one file per template, and it is why they cannot be retired yet.
-Build the instrument the M1 row check already implies: for each row, for each
-`route_steps.psv` step of its `class`, resolve the step's reactants, fire the
-template, and compare the product set. A row whose class has no runnable step is
-reported, not skipped silently.
-Then, and only then, retire the per-template test files — which needs a
-full-suite run, so it is the same session or the one after.
-**Done when:** one command reports pass/refused/no-runnable-step per row, its
-count is in `NEXT.md`'s state table, and the file count under `tests/` has
-dropped by the number of per-template files it replaced.
-
 ### T2 — extract literal templates from the catalog (L, unblocked: T1.0 and T1 are in)
 `tools/extract_templates.py`: resolve each step's reactants and products to
 SMILES, infer stoichiometry, atom-map, extract a reaction SMARTS with one bond of
@@ -56,8 +40,15 @@ unique when the element matrix has a 2-D nullspace (`phthalic-anhydride-route`
 step 2 comes back fractional) — so a smallest-integer-vector step is needed after
 `corpus_balance.coefficients()`. Rows that fail go to `needs_stoichiometry.psv`
 or `needs_review.psv`, never silently.
-**Done when:** the extracted rows pass T1b's row-level product check and the
-report distinguishes template-ready-via-family from via-literal.
+`tools/check_template_products.py` is the check the rows must pass (T1b, in),
+and its 2026-09-13 run over the 59 family rows names the two walls an extractor
+meets on this same corpus: **8 of the 23 non-passing rows are missing only a
+salt** the catalog spells as one species where the engine holds its ions, and
+**5 are missing only a stereoisomer** a template emits flat. Decide both before
+writing an extractor, not after; the counts are the `#!` keys at the foot of
+`data/catalog/derived/template_products.psv`.
+**Done when:** the extracted rows reach `pass` in `template_products.psv` and
+the report distinguishes template-ready-via-family from via-literal.
 
 ### T3 — generalise the literal rows that cluster (M, bounded)
 Cluster literal rows by reacting centre; where three or more share one, write a

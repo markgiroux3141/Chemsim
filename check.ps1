@@ -3,10 +3,10 @@
     The check to run after every change. Fast by default.
 
 .DESCRIPTION
-    Six steps: lint, the documentation caps, the catalog's structural
-    validation, the template table against the constructors it copies, the
-    classification of the templates the shelf cannot reach, and a smoke subset
-    of the test suite.
+    Seven steps: lint, the documentation caps, the catalog's structural
+    validation, the template table against the constructors it copies, each
+    template row against the catalog step it claims, the classification of the
+    templates the shelf cannot reach, and a smoke subset of the test suite.
 
     The smoke subset is a hand-named list because the suite has no markers yet.
     T0.4 in BACKLOG.md replaces it with `pytest -m "not slow"`; when that lands,
@@ -36,7 +36,12 @@ $SmokeTests = @(
     'tests/test_cadence.py',
     # One second, and it guards the network builder's newest claim: a template
     # run backwards finds species and never a rate.
-    'tests/test_reverse_discovery.py'
+    'tests/test_reverse_discovery.py',
+    # Three seconds. The tool step below pins the artefact; these pin what the
+    # artefact MEANS -- no row dies in its own rewrite, the five demonstrated
+    # chains still make what their step declares, and the medium pool is three
+    # species that report themselves.
+    'tests/test_template_table.py'
 )
 
 function Step {
@@ -56,6 +61,11 @@ Step 'catalog' { python tools/catalog.py }
 # Fast (~5 s) and it guards a transcription: --check refuses a stale
 # template_data.py AND any row that has drifted from the constructor it copies.
 Step 'templates' { python tools/build_templates.py --check }
+# T1b, ~2 s. The column set and the construction sites say nothing about
+# chemistry: this fires every row over the catalog steps its class claims and
+# compares the product set. --check refuses a stale artefact, so a SMARTS edit
+# that changes which species a row makes fails here rather than drifting.
+Step 'template products' { python tools/check_template_products.py --check }
 # T6's classifier over T4's silent list. ~23 s, and it re-derives rather than
 # re-reading: a template that stops being silent, or a shelf row that changes
 # what the closure can make, fails here instead of drifting in a committed file.

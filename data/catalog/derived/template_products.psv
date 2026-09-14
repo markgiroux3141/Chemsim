@@ -1,0 +1,94 @@
+# TEMPLATE ROWS AGAINST THE CATALOG STEPS THEY CLAIM -- GENERATED, do not edit.
+#
+#   python tools/check_template_products.py
+#
+# Columns: template | verdict | steps_tried | medium | class | step | missing
+#
+# verdict      pass | partial | wrong-product | no-fire | no-substrate |
+#              no-runnable-step | no-class, at the row's best step. The tool's
+#              docstring says what each means, and what this cannot say.
+# steps_tried  how many catalog steps of the row's classes resolved to molecules.
+# medium       yes when the verdict needed water, hydronium or hydroxide, which
+#              no step lists. A concession, reported rather than assumed.
+# step         the route and index the verdict was reached on.
+# missing      declared products of that step the row did not make, canonical
+#              SMILES, comma-joined. Empty on a pass.
+#
+# The `#!` keys at the foot are derived from the rows above, never typed.
+# `missing_because_salt` and `missing_because_stereo` are the two systematic
+# walls: the catalog spells a precipitated salt as one species where the engine
+# holds its ions, and it declares a stereoisomer where a template emits the flat
+# species. An extractor writing literal rows off this corpus meets both.
+
+fischer_esterification | partial | 3 | no | esterification | pet-route:1 | O=C(OCCO)c1ccc(C(=O)OCCO)cc1
+ether_condensation | pass | 1 | no | ether-condensation | ethanol-hydration:2 | 
+alkene_dehydration | partial | 2 | no | dehydration | aldol-route:3 | C/C=C/C=O
+aerobic_oxidation | pass | 1 | no | alcohol-oxidation | salicin-hydrolysis:2 | 
+peroxide_over_oxidation | pass | 1 | no | aldehyde-oxidation | salicin-hydrolysis:3 | 
+sulfur_dioxide_oxidation_by_nitrogen_dioxide | pass | 1 | no | redox-oxygen-transfer | lead-chamber:2 | 
+nitric_oxide_reoxidation | pass | 1 | no | gas-phase-oxidation | lead-chamber:3 | 
+sulfur_combustion | pass | 1 | no | sulfur-combustion | lead-chamber:1 | 
+sulfur_trioxide_hydration | pass | 1 | no | sulfur-trioxide-hydration | vitriol-distillation:2 | 
+glycoside_hydrolysis | pass | 1 | no | glycoside-hydrolysis | salicin-hydrolysis:1 | 
+aromatic_nitration | pass | 1 | no | electrophilic-aromatic-nitration | tnt-route:1 | 
+williamson_ether_synthesis | partial | 3 | no | williamson-ether-synthesis | williamson-ether:2 | [I-].[Na+]
+friedel_crafts_hydroxyalkylation | pass | 1 | no | friedel-crafts-hydroxyalkylation | triarylmethane-dyes:1 | 
+kolbe_schmitt_carboxylation | wrong-product | 1 | no | kolbe-schmitt-carboxylation | salicylic-kolbe:2 | O=C([O-])c1ccccc1O.[Na+]
+saponification | partial | 6 | yes | ester-hydrolysis | aspirin-impurity:1 | CC(=O)O
+ester_hydrolysis | pass | 1 | no | ester-hydrolysis | aspirin-impurity:1 | 
+transesterification | partial | 2 | no | transesterification | pet-route:3 | O=C(OCCO)c1ccc(C(=O)OCCO)cc1
+n_acylation | pass | 1 | no | n-acylation | paracetamol-route:3 | 
+cannizzaro_disproportionation | partial | 1 | no | cannizzaro-disproportionation | cannizzaro-route:1 | O=C([O-])c1ccccc1.[Na+]
+perkin_condensation | partial | 1 | no | perkin-condensation | perkin-route:1 | O=C(O)/C=C/c1ccccc1
+knoevenagel_doebner_condensation | partial | 1 | no | knoevenagel-doebner-condensation | knoevenagel-route:1 | O=C(O)/C=C/c1ccccc1
+alkene_hydration | pass | 1 | no | alkene-hydration | ethanol-hydration:1 | 
+alkyne_hydration | pass | 1 | no | alkyne-hydration | acetylene-acetaldehyde:1 | 
+alkene_hydrogenation | wrong-product | 3 | no | alkene-hydrogenation | hydrogenation-margarine:1 | CCCCCCCCCCCCCCCCCC(=O)OCC(COC(=O)CCCCCCCCCCCCCCCCC)OC(=O)CCCCCCCCCCCCCCCCC
+nitro_hydrogenation | pass | 1 | no | nitro-hydrogenation | aniline-route:2 | 
+halogen_disproportionation | partial | 2 | no | disproportionation | bleaching-powder:1 | [Ca+2].[Cl-].[Cl-],[Ca+2].[O-]Cl.[O-]Cl
+ammonia_synthesis | pass | 1 | no | catalytic-gas-synthesis | haber-bosch:1 | 
+methanol_from_carbon_monoxide | pass | 2 | no | catalytic-gas-synthesis | methanol-synthesis:1 | 
+methanol_from_carbon_dioxide | pass | 3 | no | catalytic-gas-synthesis | methanol-synthesis:2 | 
+water_gas_shift | pass | 1 | no | water-gas-shift | water-gas-shift:1 | 
+steam_reforming | pass | 1 | no | steam-reforming | steam-reforming:1 | 
+deacon_oxidation | pass | 1 | no | catalytic-hydrogen-chloride-oxidation | deacon-process:1 | 
+hydrogen_sulfide_combustion | pass | 1 | no | hydrogen-sulfide-combustion | claus-process:1 | 
+claus_comproportionation | pass | 1 | no | comproportionation | claus-process:2 | 
+hydroformylation_linear | pass | 1 | no | hydroformylation | oxo-process:1 | 
+hydroformylation_branched | pass | 2 | no | hydroformylation | oxo-process:2 | 
+wacker_oxidation | pass | 1 | no | wacker-oxidation | wacker-process:1 | 
+skraup_cyclisation | pass | 1 | yes | skraup-cyclisation | skraup-route:2 | 
+alkene_isomerisation | wrong-product | 1 | no | alkene-isomerisation | vanillin-eugenol:1 | C/C=C/c1ccc(O)c(OC)c1
+oxidative_cleavage | pass | 1 | no | oxidative-cleavage | vanillin-eugenol:2 | 
+ethanolic_fermentation | no-class | 0 |  |  |  | 
+butanolic_fermentation | no-class | 0 |  |  |  | 
+acetonic_fermentation | partial | 1 | yes | solventogenic-fermentation | abe-fermentation:1 | CCCCO,CCO
+homolactic_fermentation | wrong-product | 1 | no | homolactic-fermentation | lactic-acid-pla:1 | C[C@H](O)C(=O)O
+ketofuranose_dehydration | pass | 2 | no | dehydration-cyclisation | hmf-route:1 | 
+aldofuranose_dehydration | pass | 1 | no | dehydration-cyclisation | furfural-route:2 | 
+hydroxymethylfurfural_rehydration | pass | 1 | no | hydration-ring-opening | hmf-route:2 | 
+water_electrolysis | partial | 2 | no | electro-organic-coupling | adiponitrile-route:1 | N#CCCCCC#N
+halide_electrolysis | partial | 1 | no | aqueous-electrolysis | chloralkali:1 | [Na+].[OH-]
+kolbe_electrolysis | partial | 2 | no | electro-organic-coupling | kolbe-electrolysis:1 | [Na+].[OH-]
+alkene_hydrodimerisation | no-substrate | 2 | no | electro-organic-coupling | adiponitrile-route:1 | 
+water_autoionization | wrong-product | 15 | no | proton-transfer | solvay-process:4 | N,O,[Ca+2].[Cl-].[Cl-]
+carboxylic_acid_dissociation | wrong-product | 15 | no | proton-transfer | nylon66-route:2 | NCCCCCCN.O=C(O)CCCCC(=O)O
+phenol_dissociation | wrong-product | 15 | no | proton-transfer | salicylic-kolbe:1 | O,[Na+].[O-]c1ccccc1
+hydrogen_halide_dissociation | wrong-product | 15 | no | proton-transfer | phenol-dow:3 | Oc1ccccc1,[Cl-].[Na+]
+mineral_oxyacid_dissociation | wrong-product | 15 | no | proton-transfer | phenol-sulfonation:3 | O=S(=O)([O-])O.[Na+],Oc1ccccc1
+amine_protonation | partial | 15 | yes | proton-transfer | msg-route:2 | N[C@@H](CCC(=O)[O-])C(=O)O.[Na+]
+sulfide_protonation | no-substrate | 15 | no | proton-transfer | solvay-process:4 | 
+hydrosulfide_protonation | no-substrate | 15 | no | proton-transfer | solvay-process:4 | 
+
+#! pass = 31
+#! partial = 14
+#! wrong-product = 9
+#! no-fire = 0
+#! no-substrate = 3
+#! no-runnable-step = 0
+#! no-class = 2
+#! steps_tried = 191
+#! through_the_medium = 4
+#! missing_because_salt = 8
+#! missing_because_stereo = 5
+#! missing_because_other = 10

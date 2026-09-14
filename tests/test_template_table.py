@@ -277,3 +277,129 @@ def _reactant_slots(smarts: str) -> list[str]:
             current += ch
     out.append(current)
     return [re.sub(r":\d+\]", "]", s) for s in out]
+
+
+# ---------------------------------------------------------------------------
+# T1b -- the row against the catalog step it claims.
+# ---------------------------------------------------------------------------
+# The two structural tests above ask about sets -- of fields, of construction
+# sites -- and neither can ask whether a row's SMARTS still makes the products
+# the catalog says it makes. That is what the per-template test files do, one
+# file per template. `tools/check_template_products.py` asks it for every row at
+# once, and these are the claims that make its committed artefact mean something
+# rather than record whenever somebody last ran the generator.
+
+import check_template_products as ctp                           # noqa: E402
+
+
+@pytest.fixture(scope="module")
+def product_report():
+    return ctp.rows_report()[0]
+
+
+def _on_disk() -> str:
+    with open(ctp.OUT, encoding="utf-8", newline="") as fh:
+        return fh.read().replace("\r\n", "\n")
+
+
+def test_the_product_report_on_disk_is_what_the_current_code_writes(product_report):
+    """The ratchet. A SMARTS edit that changes which species a row makes moves a
+    verdict here and fails, which is the property the per-template test files
+    hold one template at a time."""
+    if not os.path.exists(ctp.OUT):
+        pytest.skip("the artefact has not been generated in this checkout")
+    assert _on_disk() == ctp.render(product_report), (
+        "run python tools/check_template_products.py"
+    )
+
+
+def test_every_verdict_is_one_the_tool_defines(product_report):
+    assert {v for _, v, *_ in product_report} <= set(ctp.RANK) | {"no-class"}
+    assert len(product_report) == len(bt.read_table())
+
+
+def test_no_row_fires_on_a_step_and_dies_in_the_rewrite(product_report):
+    """`no-fire` is the verdict that means a defect: every slot found a
+    candidate and no assignment survived, so the SMARTS matched a substructure
+    rather than a substrate, or wrote a product that will not sanitise. It is
+    zero today and this is what keeps it there. `no-substrate` is a different
+    claim -- the class has no step exercising the row -- and is allowed."""
+    bad = [name for name, verdict, *_ in product_report if verdict == "no-fire"]
+    assert bad == [], bad
+
+
+def test_the_load_bearing_rows_still_make_what_their_step_declares(product_report):
+    """Named rather than counted: a count moves when the catalog gains a step,
+    and these five are chains the engine is demonstrated on."""
+    verdict = {name: v for name, v, *_ in product_report}
+    for name in ("sulfur_combustion", "ammonia_synthesis", "water_gas_shift",
+                 "wacker_oxidation", "oxidative_cleavage"):
+        assert verdict[name] == "pass", (name, verdict[name])
+
+
+def test_the_medium_is_three_species_and_it_reports_when_it_was_used(product_report):
+    """The instrument's own trap, and the reason that column exists. The first
+    version offered a row only what its step named, so `skraup_cyclisation` --
+    whose homogeneous catalyst is spelled `[OH3+:99]` while the step names
+    sulfuric acid -- came back refused, and so did a fermentation whose step
+    does not list water. Both work in the engine. The pool is now those three
+    and nothing else, and a row that needed them says so."""
+    assert ctp.MEDIUM == ("O", "[OH3+]", "[OH-]")
+    used = {name for name, _, _, med, *_ in product_report if med == "yes"}
+    assert "skraup_cyclisation" in used
+    assert used < {name for name, *_ in product_report}, (
+        "if every row needs the medium, the pool has stopped discriminating"
+    )
+
+
+def test_a_slot_nothing_in_the_step_matches_is_no_substrate_and_not_a_defect():
+    """The split that keeps `no-fire` meaningful. `assignments` returns None
+    rather than an empty list, because "there was nothing to try" and "I tried
+    and everything failed" are different findings about a row."""
+    from chemsim.matter.molecule import Molecule
+
+    table = {r["name"]: r for r in bt.read_table()}
+    water = Molecule.from_smiles("O")
+    assert ctp.assignments(bt.build(table["hydrosulfide_protonation"]), [water]) is None
+    autoionization = bt.build(table["water_autoionization"])
+    combos = ctp.assignments(autoionization, [water])
+    assert combos and all(len(c) == autoionization.n_reactant_slots for c in combos)
+
+
+def test_the_footer_keys_are_counted_from_the_rows_above_them(product_report):
+    """T0.5's lesson, applied to a new report before it can drift: a generated
+    file that ASSERTS a number stops agreeing with the rows it sits under, and a
+    test pinning the number would pass forever. So count them here."""
+    if not os.path.exists(ctp.OUT):
+        pytest.skip("the artefact has not been generated in this checkout")
+    keys = {}
+    for line in _on_disk().splitlines():
+        if line.startswith("#! "):
+            key, _, value = line[3:].partition(" = ")
+            keys[key.strip()] = int(value)
+    assert sum(keys[v] for v in ("pass", "partial", "wrong-product", "no-fire",
+                                 "no-substrate", "no-runnable-step",
+                                 "no-class")) == len(product_report)
+    for verdict in ("pass", "partial", "no-substrate"):
+        assert keys[verdict] == sum(1 for _, v, *_ in product_report if v == verdict)
+    assert keys["through_the_medium"] == sum(
+        1 for r in product_report if r[3] == "yes")
+    # Every row that did not pass is in exactly one cause bucket.
+    unexplained = sum(1 for _, v, *_ in product_report
+                      if v not in ("pass", "no-class", "no-substrate",
+                                   "no-runnable-step"))
+    assert (keys["missing_because_salt"] + keys["missing_because_stereo"]
+            + keys["missing_because_other"]) == unexplained
+    assert keys["missing_because_salt"] > 0 and keys["missing_because_stereo"] > 0
+
+
+def test_the_two_systematic_causes_are_read_off_the_smiles_and_not_a_list():
+    """`cause` is a rule over the missing SMILES, so a new row lands in the
+    right bucket without anybody adding its name anywhere."""
+    assert ctp.cause("[Na+].[O-]c1ccccc1") == "salt"
+    assert ctp.cause("C[C@H](O)C(=O)O") == "stereo"
+    assert ctp.cause("O=C(O)/C=C/c1ccccc1") == "stereo"
+    assert ctp.cause("CCO") == "other"
+    assert ctp.cause("") == ""
+    # A salt AND a flat species missing is not a salt-only explanation.
+    assert ctp.cause("[Na+].[O-]c1ccccc1,CCO") == "other"
