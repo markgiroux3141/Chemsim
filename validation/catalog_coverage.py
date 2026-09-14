@@ -1272,7 +1272,10 @@ def main(argv: list[str] | None = None) -> int:
     # three routes whose species are refused is not worth what a class that
     # unlocks one runnable route is. Reporting the unlock count alone sends work
     # at routes that cannot run either way -- measured: `catalytic-air-oxidation`
-    # unlocks 3 and NONE of them is species-ready.
+    # unlocks 3 and NONE of them is species-ready. T3 then refused to write it
+    # at all, on a second and independent ground: `docs/design/
+    # two-refused-template-classes.md`, which also refuses
+    # `esterification-nitration`.
     species_ok: dict[str, bool] = {}
     for rid in routes:
         mine = [s for s in steps if s.route == rid]

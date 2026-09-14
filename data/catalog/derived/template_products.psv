@@ -79,16 +79,24 @@ mineral_oxyacid_dissociation | wrong-product | 15 | no | proton-transfer | pheno
 amine_protonation | partial | 15 | yes | proton-transfer | msg-route:2 | N[C@@H](CCC(=O)[O-])C(=O)O.[Na+]
 sulfide_protonation | no-substrate | 15 | no | proton-transfer | solvay-process:4 | 
 hydrosulfide_protonation | no-substrate | 15 | no | proton-transfer | solvay-process:4 | 
+methane_ammoxidation | pass | 1 | no | ammoxidation | andrussow:1 | 
+allylic_ammoxidation | pass | 2 | no | ammoxidation | acrylonitrile-sohio:1 | 
+intramolecular_williamson | partial | 3 | no | intramolecular-williamson | chlorohydrin-route:2 | [Ca+2].[Cl-].[Cl-]
+alcohol_halide_substitution | pass | 1 | no | nucleophilic-substitution | monsanto-acetic:1 | 
+carbanion_alkylation | pass | 4 | no | nucleophilic-substitution | malonic-ester-synthesis:2 | 
+amide_methylolation | pass | 2 | no | nucleophilic-addition | urea-formaldehyde-route:1 | 
+ketene_acid_addition | pass | 1 | no | nucleophilic-addition | acetic-anhydride-ketene:2 | 
+cyanide_imine_addition | pass | 3 | no | nucleophilic-addition | strecker-amino-acid:2 | 
 
-#! pass = 31
-#! partial = 14
+#! pass = 38
+#! partial = 15
 #! wrong-product = 9
 #! no-fire = 0
 #! no-substrate = 3
 #! no-runnable-step = 0
 #! no-class = 2
-#! steps_tried = 191
+#! steps_tried = 208
 #! through_the_medium = 4
-#! missing_because_salt = 8
+#! missing_because_salt = 9
 #! missing_because_stereo = 5
 #! missing_because_other = 10

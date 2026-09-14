@@ -4,6 +4,20 @@ Newest first. One entry per session, twelve lines at most, enforced by
 `tools/check_docs.py`. When this file passes 400 lines the older half rolls into
 `docs/history/changelog-YYYY-MM.md`.
 
+## 2026-09-14 — T3: four of six classes become rows, two are refused
+
+Eight family rows in `data/templates/templates.psv` (59 -> 67, 46 -> 50 catalog
+classes): two ammoxidations, two nucleophilic substitutions, three nucleophilic
+additions, one intramolecular Williamson. `check_template_products.py` 31 -> 38
+pass; `COVERAGE_REPORT.md` template-ready 46 -> 49 and BOTH 40 -> 41;
+`PLAYABLE.md` runnable 47 -> 49, playable unmoved at 23; `silent_templates.psv`
+pool 290 -> 325 and the shelf closure 48 -> 50. Two classes refused with the
+measurement in `docs/design/two-refused-template-classes.md`: air oxidation
+needs three O2 slots per rewrite, and nitration's polynitrate is unreachable
+because `build_network` cannot price the mononitrate it runs through. Two tests
+pinned counts a new row must move and now derive the split instead. `check.ps1`
+green, 1,353 tests collected, suite and `reachable` still due. Next: T2.
+
 ## 2026-09-13 — T1b: every template row against the catalog step it claims
 
 `tools/check_template_products.py` (2.2 s) fires each of the 59 rows over the

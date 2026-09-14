@@ -29,20 +29,21 @@ rows resolve, balance and sit in an uncovered class, over 132 classes of which
 argument is `docs/design/extraction-yield.md` and
 `fable analysis/05-COVERAGE-STRATEGY.md`; do not re-narrate it here.
 
-### T3 — the six family candidates (M, bounded, and writable before T2)
-The six uncovered classes holding three or more extractable steps do not need
-the extractor to be identified, only to be written at scale -- so write them by
-hand first. Six rows cover 24 steps over 21 routes, which is more than
-`template-ready` has moved in 43 commits: `nucleophilic-substitution` (6 steps,
-6 routes), `nucleophilic-addition` (4/4), `catalytic-air-oxidation` (4/3),
-`ammoxidation` (4/2), `esterification-nitration` (3/3),
-`intramolecular-williamson` (3/3). Derivation and the list:
-`docs/design/route-coverage-ceiling.md`. Doing these first also de-risks T2 --
-you learn what these SMARTS look like before automating 132 of them. Afterwards,
-the same clustering over T2's literal rows, retiring the members it subsumes.
-**Done when:** each of the six is a row reaching `pass` in
-`template_products.psv` or refused in writing, and `template-ready` in
-`COVERAGE_REPORT.md` has moved off 46.
+### T3 — DECIDED: four classes are rows, two are refused (2026-09-14)
+Eight family rows cover `ammoxidation`, `nucleophilic-substitution`,
+`nucleophilic-addition` and `intramolecular-williamson`; the other two are
+refused as template work in `docs/design/two-refused-template-classes.md`.
+`catalytic-air-oxidation` needs three or more O2 in one rewrite on every step,
+a repeated slot and four nested loops in `_concrete_reactions`;
+`esterification-nitration`'s polynitrates are unreachable in any run because no
+provider prices the MONOnitrate the path runs through. What is left of the six
+is not template work, and each part unblocks a row already written: (a) a
+formation value for an alkyl nitrate lights all three nitration steps; (b) HCN
+has none either, so `methane_ammoxidation` and `cyanide_imine_addition` pass
+against their catalog steps and build ZERO reactions; (c) the air-oxidation
+class splits into four mechanism classes, each a two-slot family row.
+**Done when:** (a) and (b) are curated entries and the two rows build
+reactions; (c) is four rows reaching `pass`, or a refusal in writing.
 
 ### T2 — extract literal templates from the catalog (L, unblocked: T1.0 and T1 are in)
 `tools/extract_templates.py`: resolve each step's reactants and products to
@@ -56,8 +57,8 @@ step 2 comes back fractional) — so a smallest-integer-vector step is needed af
 `corpus_balance.coefficients()`. Rows that fail go to `needs_stoichiometry.psv`
 or `needs_review.psv`, never silently.
 `tools/check_template_products.py` is the check the rows must pass (T1b, in),
-and its 2026-09-13 run over the 59 family rows names the two walls an extractor
-meets on this same corpus: **8 of the 23 non-passing rows are missing only a
+and its 2026-09-14 run over the 67 family rows names the two walls an extractor
+meets on this same corpus: **9 of the 29 non-passing rows are missing only a
 salt** the catalog spells as one species where the engine holds its ions, and
 **5 are missing only a stereoisomer** a template emits flat. Decide both before
 writing an extractor, not after; the counts are the `#!` keys at the foot of

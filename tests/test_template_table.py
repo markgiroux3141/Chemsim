@@ -72,11 +72,21 @@ def test_the_only_construction_sites_are_the_loaders():
 
 
 def test_every_public_constructor_returns_its_row(rows):
-    """The 57 constructors are wrappers now: same name, same fields.
+    """The constructors are wrappers now: same name, same fields.
 
     They still exist and are still the public API -- `catalyst=`, `eta_a=`, `A=`
     are keyword arguments a caller can move and a row cannot be -- but called
     with their defaults they hand back exactly the row they are named for.
+
+    The sweep compares the two sets where they MEET, and neither direction is
+    total. A row with no constructor is the point of the table -- T3 added eight
+    of them as data alone, and demanding a constructor per row would have made
+    "adding a template is adding a row" false for every one of them. A
+    constructor with no row of its own name is the other end of the same thing:
+    `fischer_esterification` called with `catalyst=` hands back a template named
+    `fischer_esterification_acid`, a variant a row cannot spell. What is left is
+    the drift that matters: a wrapper that no longer hands back the row it is
+    named for.
     """
     # NOTE: ``import_module`` and not ``from chemsim.reactions import
     # electrochemistry`` -- the package re-exports a BUNDLE FUNCTION of that
@@ -108,10 +118,11 @@ def test_every_public_constructor_returns_its_row(rows):
 
     data_fields = [f.name for f in fields(ReactionTemplate)
                    if not f.name.startswith("_")]
-    for name, rec in TEMPLATES.items():
-        assert name in made, f"{name} is a row no constructor hands back"
+    shared = sorted(set(made) & set(TEMPLATES))
+    assert shared, "no constructor name matched a row: the sweep found nothing"
+    for name in shared:
         for f in data_fields:
-            assert getattr(made[name], f) == getattr(rec, f), (name, f)
+            assert getattr(made[name], f) == getattr(TEMPLATES[name], f), (name, f)
 
 
 def test_the_columns_cover_every_field():
@@ -168,17 +179,22 @@ def test_every_row_today_is_a_family_row(rows):
 
 
 def test_the_class_column_reproduces_the_template_backed_half_of_the_map():
-    """`TEMPLATE_CLASSES` has 59 keys; 13 of them are integrator TERMS.
+    """`TEMPLATE_CLASSES` is the `class` column plus the integrator TERMS.
 
     A term -- precipitation, calcination, roasting -- has no SMARTS and cannot
-    have a row here, because a lattice is not a graph. The other 46 are what the
-    `class` column carries, and the switch-over deletes them from that file.
+    have a row here, because a lattice is not a graph. Everything else in the
+    map is what the `class` column carries, and the switch-over deletes them
+    from that file.
+
+    The partition is DERIVED, not pinned. This test asserted `len(from_table)
+    == 46` until T3 added four classes, and a pinned count is a number a session
+    has to be told to increment: it says nothing about the split it is standing
+    in for, and it fails on exactly the change it should be indifferent to.
     """
     from_table = set(template_classes())
     from_map = set(cc.TEMPLATE_CLASSES)
     assert from_table <= from_map
     terms = sorted(from_map - from_table)
-    assert len(from_table) == 46
     assert all("TERM" in cc.TEMPLATE_CLASSES[c] for c in terms), terms
 
 

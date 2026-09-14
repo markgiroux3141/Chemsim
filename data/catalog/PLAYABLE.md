@@ -13,8 +13,8 @@ The GOAL in `docs/history/MILESTONES.md` § THE G-SERIES is stated as **~10 natu
 | **1 — from the ground** | 10 | every feedstock and every catalyst is a natural material |
 | **2 — 1 step up** | 12 | needs the output of a tier-1 route |
 | **3 — 2 steps up** | 1 | needs the output of a tier-2 route |
-| *runnable but unfed* | 24 | the engine can run it; nothing can supply it |
-| *not runnable* | 126 | see `COVERAGE_REPORT.md` |
+| *runnable but unfed* | 26 | the engine can run it; nothing can supply it |
+| *not runnable* | 124 | see `COVERAGE_REPORT.md` |
 | | **173** | |
 
 **23 of 173 named routes are playable from natural materials**, against a goal of ~40 targets. The deepest chain in the corpus is **3 tiers**.
@@ -224,12 +224,13 @@ The other tier-1 routes are exercised elsewhere — `zinc-smelting`, `copper-sme
 
 ## 6. What blocks the rest
 
-### Blocked on something the corpus MAKES but cannot RUN (20)
+### Blocked on something the corpus MAKES but cannot RUN (22)
 
 These are the routes a player can see the shape of and not reach. Each one is runnable today and waiting on a route that is not.
 
 | route | target | missing |
 |---|---|---|
+| `acrylonitrile-sohio` | 2-propenenitrile | ammonia, propylene |
 | `adiponitrile-route` | hexanedinitrile | acrylonitrile |
 | `aniline-route` | phenylamine | hydrogen-chloride, iron, nitrobenzene |
 | `aspirin-impurity` | 2-hydroxybenzoic acid | aspirin |
@@ -238,6 +239,7 @@ These are the routes a player can see the shape of and not reach. Each one is ru
 | `deacon-process` | dichlorine | hydrogen-chloride |
 | `ethanol-hydration` | ethanol | ethylene |
 | `furfural-route` | 2-furaldehyde | nickel, palladium, xylose |
+| `glycerol-epichlorohydrin` | epichlorohydrin | glycerol, hydrogen-chloride |
 | `haber-bosch` | ammonia | iron |
 | `hydrogenation-margarine` | glyceryl tristearate | nickel |
 | `kolbe-electrolysis` | ethane | sodium-acetate |
@@ -272,11 +274,11 @@ Grant a player one species free and re-run the fixed point. Base is 23.
 |---|---:|---:|---:|
 | aluminium | 25 | +2 | 1 |
 | nickel | 24 | +1 | 4 |
+| hydrogen-chloride | 24 | +1 | 3 |
 | benzaldehyde | 24 | +1 | 3 |
 | sodium-acetate | 24 | +1 | 2 |
 | phenol | 24 | +1 | 2 |
 | iron | 24 | +1 | 2 |
-| hydrogen-chloride | 24 | +1 | 2 |
 | ethylene | 24 | +1 | 2 |
 | nitrogen-dioxide | 24 | +1 | 1 |
 | hydrogen-sulfide | 24 | +1 | 1 |
@@ -287,7 +289,7 @@ Grant a player one species free and re-run the fixed point. Base is 23.
 
 ## 8. The work order this file exists to produce
 
-**23 of the 126 routes the engine cannot run are ALREADY FED from the shelf above.** A template built for one of these lights up the tech tree the moment it lands. A template built for the other 103 moves a coverage number and no player can reach it.
+**23 of the 124 routes the engine cannot run are ALREADY FED from the shelf above.** A template built for one of these lights up the tech tree the moment it lands. A template built for the other 101 moves a coverage number and no player can reach it.
 
 ⚠ **THIS IS THE ONLY RANKING IN THE REPO THAT IS ABOUT PLAYABILITY RATHER THAN COVERAGE**, and it is what the C-series should take its order from. `COVERAGE_REPORT.md`'s greedy set-cover curve maximises classes covered per template; this maximises routes a player can actually walk to. They are not the same list.
 
@@ -300,6 +302,7 @@ Grant a player one species free and re-run the fixed point. Base is 23.
 | **+2** | `birkeland-eyde` | nitric acid | `disproportionation-hydrolysis`, `thermal-fixation` | — |
 | **+2** | `chloral-route` | chloral hydrate | `carbonyl-hydration`, `radical-halogenation` | — |
 | **+1** | `pyrite-roasting` | sulfur dioxide | — *none* | iron-disulfide |
+| **+1** | `acetic-anhydride-ketene` | acetic anhydride | `pyrolysis-dehydration` | — |
 | **+1** | `chloroform-route` | trichloromethane | `haloform` | — |
 | **+1** | `coal-gas` | coal-tar-marker (no molecular graph) | `pyrolysis` | — |
 | **+1** | `downs-cell` | sodium metal | `molten-salt-electrolysis` | — |
@@ -310,7 +313,6 @@ Grant a player one species free and re-run the fixed point. Base is 23.
 | **+1** | `vermilion-route` | mercury(II) sulfide | `direct-combination` | — |
 | **+1** | `white-phosphorus` | white phosphorus (P4) | `carbothermic-phosphate-reduction` | calcium-silicate, phosphorus-white, silicon-dioxide |
 | **+1** | `wood-distillation` | methanol | `pyrolysis` | — |
-| **+1** | `acetic-anhydride-ketene` | acetic anhydride | `nucleophilic-addition`, `pyrolysis-dehydration` | — |
 | **+1** | `bayer-process` | aluminium oxide | `amphoteric-dissolution`, `precipitation` | aluminium-hydroxide, sodium-aluminate |
 | **+1** | `calcium-carbide` | ethyne | `carbide-formation`, `carbide-hydrolysis` | calcium-carbide |
 | **+1** | `castner-kellner` | sodium hydroxide | `amalgam-decomposition`, `amalgam-electrolysis` | — |
@@ -336,6 +338,7 @@ Grant a player one species free and re-run the fixed point. Base is 23.
 | **+1** | +1 | `molten-salt-electrolysis` | `downs-cell`, `hall-heroult` |
 | **+1** | +1 | `oxidative-complexation` | `iron-gall-ink` |
 | **+1** | +1 | `pyrolysis` | `coal-gas`, `wood-distillation` |
+| **+1** | +1 | `pyrolysis-dehydration` | `acetic-anhydride-ketene` |
 | **+0** | +0 | `amalgam-decomposition` | `castner-kellner` |
 | **+0** | +0 | `amalgam-electrolysis` | `castner-kellner` |
 | **+0** | +0 | `amphoteric-dissolution` | `bayer-process` |
@@ -350,16 +353,14 @@ Grant a player one species free and re-run the fixed point. Base is 23.
 | **+0** | +0 | `esterification-nitration` | `guncotton` |
 | **+0** | +0 | `formulation` | `gunpowder` |
 | **+0** | +0 | `gas-solid-fixation` | `frank-caro` |
-| **+0** | +0 | `nucleophilic-addition` | `acetic-anhydride-ketene` |
 | **+0** | +0 | `oxidative-dissolution` | `white-lead-route` |
 | **+0** | +0 | `oxidative-nitrosation` | `mercury-fulminate-route` |
 | **+0** | +0 | `precipitation` | `bayer-process`, `citric-acid-fermentation` |
-| **+0** | +0 | `pyrolysis-dehydration` | `acetic-anhydride-ketene` |
 | **+0** | +0 | `radical-halogenation` | `chloral-route` |
 | **+0** | +0 | `slagging` | `blast-furnace` |
 | **+0** | +0 | `thermal-fixation` | `birkeland-eyde` |
 
-⚠⚠⚠ **THE BIGGEST SINGLE CLASS IS +1** (`aerobic-overflow-fermentation`, `biological-transformation`, `direct-combination`, `haloform`, `molten-salt-electrolysis`, `oxidative-complexation`, `pyrolysis`) — and §8's `+3` top row is **not** at the top here. Granting `molten-salt-electrolysis` leaves `hall-heroult` unrunnable, because its cryolite is refused a price as well; the class lands its point on `downs-cell` instead. **A row's worth assumes every OTHER blocker away, and a template only removes one of them.**
+⚠⚠⚠ **THE BIGGEST SINGLE CLASS IS +1** (`aerobic-overflow-fermentation`, `biological-transformation`, `direct-combination`, `haloform`, `molten-salt-electrolysis`, `oxidative-complexation`, `pyrolysis`, `pyrolysis-dehydration`) — and §8's `+3` top row is **not** at the top here. Granting `molten-salt-electrolysis` leaves `hall-heroult` unrunnable, because its cryolite is refused a price as well; the class lands its point on `downs-cell` instead. **A row's worth assumes every OTHER blocker away, and a template only removes one of them.**
 
 ⚠⚠ **AND 10 OF THE ROWS ABOVE CANNOT BE BOUGHT BY TEMPLATES AT ALL.** Grant every class each one is missing and it is still not runnable, because a refused species is blocking it too: `bayer-process`, `blast-furnace`, `calcium-carbide`, `coal-gas`, `frank-caro`, `guncotton`, `gunpowder`, `hall-heroult`, `mercury-fulminate-route`, `white-phosphorus`. **They are joint grants priced as though they were single ones.**
 
@@ -382,6 +383,6 @@ Grant **all 23** of them and the fixed point reaches **50 playable routes** at d
 - **A yield is not a corpus property.** §5's numbers move whenever a declared constant moves. Read them with their conditions or not at all.
 - **`RUNNABLE` cannot ask whether a number is RIGHT** (S7). Every route in §4 produces its target; none of it says the amount is what a real process gives.
 - **The tiers rest on §2's hand judgement.** Argue with that list and every number here moves. That is why it is printed.
-- **`COVERAGE_REPORT.md`'s BOTH column is not re-scored here**, and this file's 47 runnable routes include G4's five. See MILESTONES §G4 §6 for why a hand judgement does not go into a mechanical column.
+- **`COVERAGE_REPORT.md`'s BOTH column is not re-scored here**, and this file's 49 runnable routes include G4's five. See MILESTONES §G4 §6 for why a hand judgement does not go into a mechanical column.
 
-*173 routes, 1583 compounds, 45 declared natural, 47 runnable, 23 playable, 3 tiers deep, 23 fed but unrunnable.*
+*173 routes, 1583 compounds, 45 declared natural, 49 runnable, 23 playable, 3 tiers deep, 23 fed but unrunnable.*
