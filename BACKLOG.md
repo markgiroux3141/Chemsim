@@ -28,8 +28,8 @@ runnable. What is left of the slope is promoting rows (T2c). Argued in
 ### DECIDED and closed — the argument is in the file named, do not reopen
 - **T30, the nitration row** (`docs/design/two-refused-template-classes.md`).
   In at `tier=family`. One class grant moved two scoreboards by one on two
-  DIFFERENT routes — template-ready 65 → 66 on `guncotton`, runnable 50 → 51 on
-  `nitroglycerin-route` — after being priced +1, +0 and +2 in three places.
+  DIFFERENT routes: template-ready 65 → 66 on `guncotton`, runnable 50 → 51 on
+  `nitroglycerin-route`.
 - **T28, the air-oxidation split** (same file). Refused on arithmetic: `judge`
   scores ONE application of ONE row and three of the four stages already have
   templates. Still worth a bench: a `family` `autoxidation` row for a primary
@@ -38,6 +38,15 @@ runnable. What is left of the slope is promoting rows (T2c). Argued in
   `salt` (75 steps, a claim about the MEDIUM the corpus never makes) and
   `stereo` (24, a configuration the mechanism does not fix) are refusals, each
   wanting the per-class judgement a `family` row IS.
+- **T31, the six scoreboard pins.** Green. Four were one defect: T2 split
+  `cc.TEMPLATE_CLASSES` into every-tier and `FAMILY_`, the helpers kept the
+  all-tier dict, and `bp.RUNNABLE`/`bp.PLAYABLE` are family — a level on one
+  measurement path against a set on the other, and every DIFFERENCE they pin
+  held on both. Two were real moves, re-pinned with their reasons in the tests.
+  A green `pytest -q` is the half owed, and it belongs to T32.
+- **The furfural false credit cannot pay, for a structural reason** — 29b's
+  spelling makes xylose chargeable, so the class need never be covered for the
+  route to reach its target. Argued in `test_vitriol.py`'s pentosan test.
 
 ### T32 — `needs()` hands a route its own TARGET as a starting charge (S, from T30)
 `needs` unions the route's CATALYSTS in and `route_roles` calls a species on
@@ -55,15 +64,6 @@ every pin it moves is re-pinned with its reason.
 Nothing enforces it (`check_docs.py` caps an ENTRY, not the file), so it is a
 convention going stale rather than a red check. A whole-file move, CRLF.
 **Done when:** under 400 lines, the rolled half one new `docs/history/` file.
-
-### T31 — six scoreboard pins are red, and not from this session (S, from T28)
-`test_fermentation`, `test_vanillin` and `test_vitriol` fail two apiece on a
-CLEAN tree — measured by stashing T28's work and re-running them at `e5dc47d`.
-They pin `PLAYABLE.md` §8b counts that T3's eight rows and T2's 58 moved without
-updating; the last green suite (2026-09-13) predates both, and none is in the
-smoke set, which is why five commits passed. T29 is the seventh failure.
-**Done when:** each of the six is green or re-pinned with the reason its number
-moved, and `python -m pytest -q` is green.
 
 ### T2c — promote a literal row, the cheap way to buy a playable route (M)
 `PLAYABLE.md` scores the `family` tier alone, because that is what

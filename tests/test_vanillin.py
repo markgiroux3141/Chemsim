@@ -483,8 +483,19 @@ def test_the_PAIR_is_worth_more_than_the_sum_of_its_parts():
     import catalog as cat
     import catalog_coverage as cc
 
+    # The baselines below are read on the `family` path, which is the one
+    # `bp.PLAYABLE` and `bp.RUNNABLE` are built on. T2's extractor split
+    # `cc.TEMPLATE_CLASSES` into two dicts: every tier, which is what
+    # `COVERAGE_REPORT.md` counts, and `FAMILY_TEMPLATE_CLASSES`, which is what
+    # `load_templates` loads and therefore what this file's levels come from.
+    # Before T2 the two dicts were equal and this helper could not tell them
+    # apart; mixing them puts the levels on the all-tier path (25/23/23) and
+    # the comparisons on the family path. The differences below are the same on
+    # either path, which is the point of reading it as a difference.
+
     def playable(classes):
-        tc = {k: v for k, v in cc.TEMPLATE_CLASSES.items() if k not in classes}
+        tc = {k: v for k, v in cc.FAMILY_TEMPLATE_CLASSES.items()
+              if k not in classes}
         pool = {rid for rid in bp.routes
                 if cat.route_reachable(bp.steps, rid, bp.routes[rid].target,
                                        bp.priced, tc, bp.compounds)}
@@ -581,8 +592,13 @@ def test_section_8b_says_a_template_cannot_buy_the_top_two_rows():
     import catalog as cat
     import catalog_coverage as cc
 
+    # `bp.RUNNABLE` is the `family` path (see the note in the pair test
+    # above), so the base dict here has to be the same one or the comparison
+    # is across two measurement paths and fails on the extracted rows rather
+    # than on anything `slagging` does.
     def granted(extra):
-        tc = dict(cc.TEMPLATE_CLASSES) | {k: "<hypothetical>" for k in extra}
+        tc = dict(cc.FAMILY_TEMPLATE_CLASSES) | {
+            k: "<hypothetical>" for k in extra}
         return {rid for rid in bp.routes
                 if cat.route_reachable(bp.steps, rid, bp.routes[rid].target,
                                        bp.priced, tc, bp.compounds)}

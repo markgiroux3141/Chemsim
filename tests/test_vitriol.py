@@ -319,20 +319,35 @@ def test_the_hydrolysis_bucket_is_gone_and_named(steps):
         assert c in classes, c
 
 
-def test_only_one_of_the_eight_is_covered(steps):
-    """The split moves the DENOMINATOR by seven and the numerator by one.
+def test_the_eight_are_covered_one_row_at_a_time(steps):
+    """The split moves the DENOMINATOR by seven and the numerator one row at a
+    time.
 
     S7's shape: a split that lowers the headline is a split working. Crediting
-    all eight off one template is the false credit S1, S9 and G4 each measured.
+    all eight off one template is the false credit S1, S9 and G4 each measured,
+    and the thing that would show it is the numerator moving by more than the
+    rows actually written.
+
+    Renamed at T31, because the old name carried a level and T2 moved it: the
+    extractor wrote a `literal` row for `oleum-hydrolysis` off the contact
+    process step, so two of the eight are covered at some tier and one at the
+    tier the game loads. Both halves are asserted, so neither tier can drift
+    without saying which one moved.
     """
     import catalog_coverage as cc
 
-    covered = [c for c in ("oleum-hydrolysis", "sulfur-trioxide-hydration",
-                           "sulfide-carbonation", "cyanamide-hydrolysis",
-                           "amalgam-decomposition", "carbide-hydrolysis",
-                           "pentosan-hydrolysis", "organometallic-protonolysis")
-               if c in cc.TEMPLATE_CLASSES]
-    assert covered == ["sulfur-trioxide-hydration"]
+    eight = ("oleum-hydrolysis", "sulfur-trioxide-hydration",
+             "sulfide-carbonation", "cyanamide-hydrolysis",
+             "amalgam-decomposition", "carbide-hydrolysis",
+             "pentosan-hydrolysis", "organometallic-protonolysis")
+    assert [c for c in eight if c in cc.FAMILY_TEMPLATE_CLASSES] == [
+        "sulfur-trioxide-hydration"]
+    assert [c for c in eight if c in cc.TEMPLATE_CLASSES] == [
+        "oleum-hydrolysis", "sulfur-trioxide-hydration"]
+    # one row per class, which is the whole point of the split: two covered
+    # classes here mean two templates written, not one template credited twice.
+    assert len({cc.TEMPLATE_CLASSES[c] for c in eight
+                if c in cc.TEMPLATE_CLASSES}) == 2
 
 
 def test_the_vitriol_row_names_what_the_engine_actually_makes(steps):
@@ -370,12 +385,19 @@ def test_the_pentosan_row_keeps_an_uncovered_class_and_it_is_free_today(steps):
 
     gaps = {s.cls for s in steps if s.route == "furfural-route"} - set(
         cc.TEMPLATE_CLASSES)
-    # ⚠⚠ C5 TOOK ONE OF THE FOUR (`dehydration-cyclisation`), so this
-    # row's warning is one class NEARER to firing rather than further: the
-    # route needs three more classes now, not four. **The measurement this
-    # test exists for is the one below -- that filing the row under the
-    # covered class would cost nothing TODAY -- and it is still zero.**
-    assert len(gaps) == 3
+    # C5 took one of the four (`dehydration-cyclisation`) and T2's extractor
+    # took two more, so the gap set is now this row's own class alone -- the
+    # moment the docstring above says the wrong answer stops being invisible.
+    # It has not stopped, and it cannot: 29b spells the row `xylose + water ->
+    # xylose`, so xylose is first USED at the same step that first MAKES it and
+    # `route_reachable.chargeable` charges it as a feedstock without ever
+    # asking whether step 1 has a template. The spelling that stops a template
+    # matching the row is the same spelling that keeps the false credit off the
+    # scoreboard, so the refusal is free structurally rather than by luck of
+    # coverage. The equality below is still the measurement this test exists
+    # for; `route_reachable` is asserted directly on the route so a future
+    # session sees which of the two claims moved.
+    assert gaps == {"pentosan-hydrolysis"}
 
     routes = cat.load_routes()
     compounds = cat.load_compounds()
@@ -389,6 +411,13 @@ def test_the_pentosan_row_keeps_an_uncovered_class_and_it_is_free_today(steps):
     counterfactual = dict(cc.TEMPLATE_CLASSES)
     counterfactual["pentosan-hydrolysis"] = "glycoside_hydrolysis (WRONG)"
     assert runnable(cc.TEMPLATE_CLASSES) == runnable(counterfactual)
+
+    def furfural(tc):
+        return cat.route_reachable(
+            steps, "furfural-route", routes["furfural-route"].target,
+            lambda x: x in compounds and x not in _REFUSED, tc, compounds)
+
+    assert furfural(cc.TEMPLATE_CLASSES) == furfural(counterfactual)
 
 
 # The species the engine refuses a price for, among the ones ``furfural-route``

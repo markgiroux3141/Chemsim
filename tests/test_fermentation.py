@@ -502,8 +502,19 @@ def test_the_class_is_worth_the_TWO_PLAYABLE_ROUTES_section_8b_priced():
     import catalog as cat
     import catalog_coverage as cc
 
+    # The baselines below are read on the `family` path, which is the one
+    # `bp.PLAYABLE` and `bp.RUNNABLE` are built on. T2's extractor split
+    # `cc.TEMPLATE_CLASSES` into two dicts: every tier, which is what
+    # `COVERAGE_REPORT.md` counts, and `FAMILY_TEMPLATE_CLASSES`, which is what
+    # `load_templates` loads and therefore what this file's levels come from.
+    # Before T2 the two dicts were equal and this helper could not tell them
+    # apart; mixing them puts the levels on the all-tier path (25/23/23) and
+    # the comparisons on the family path. The differences below are the same on
+    # either path, which is the point of reading it as a difference.
+
     def playable(drop):
-        tc = {k: v for k, v in cc.TEMPLATE_CLASSES.items() if k not in drop}
+        tc = {k: v for k, v in cc.FAMILY_TEMPLATE_CLASSES.items()
+              if k not in drop}
         pool = {rid for rid in bp.routes
                 if cat.route_reachable(bp.steps, rid, bp.routes[rid].target,
                                        bp.priced, tc, bp.compounds)}
@@ -571,6 +582,16 @@ def test_the_work_order_no_longer_has_a_PLUS_TWO_ROW():
     # this test is about, and it is the `max` line that carries it.
     # T17 re-priced the whole table by correcting the shelf rule rather than by
     # building anything, and it is SEVEN at +1 and 22 at +0. Still no +2.
+    # T3 re-priced it again, to EIGHT at +1 and 19 at +0 over 27 rows, and the
+    # newcomer is the greedy-queue rule rather than a new lever:
+    # `acetic-anhydride-ketene` has two steps and T3's `ketene_acid_addition`
+    # covered the second, so step 1's `pyrolysis-dehydration` became the route's
+    # only remaining gap and granting it alone now buys the route. A row's worth
+    # is conditional on every row above it, and a session that builds one class
+    # can move the price of a class it never touched. The table also lost two
+    # rows to T3 and T30 covering them outright, which is why 22 at +0 became
+    # 19. The claim is still the `max` line: no +2 row, the cheap end is over.
     worths = {c: g for g, _r, c, _ in bp.CLASS_WORTH}
     assert max(worths.values()) == 1
-    assert sum(1 for w in worths.values() if w == 1) == 7
+    assert sum(1 for w in worths.values() if w == 1) == 8
+    assert sum(1 for w in worths.values() if w == 0) == 19

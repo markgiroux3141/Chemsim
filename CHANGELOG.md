@@ -4,6 +4,20 @@ Newest first. One entry per session, twelve lines at most, enforced by
 `tools/check_docs.py`. When this file passes 400 lines the older half rolls into
 `docs/history/changelog-YYYY-MM.md`.
 
+## 2026-09-14 — T31: six red scoreboard pins, and four of them were one defect
+
+The six in `test_fermentation`, `test_vanillin` and `test_vitriol` are green;
+the pin files go 7 failed -> 1, the survivor `test_playable_levers` being T32's
+`needs()` bug. Four were a crossed measurement path rather than four drifts: T2
+split `cc.TEMPLATE_CLASSES` into every-tier and `FAMILY_TEMPLATE_CLASSES`, the
+helpers kept the all-tier dict while `bp.RUNNABLE`/`bp.PLAYABLE` are family, so
+each compared a level on one path (25) with a set on the other (23). Every
+difference they pin is identical on both. Two were real: `CLASS_WORTH` 7 -> 8 at
++1 and 22 -> 19 at +0, because T3's `ketene_acid_addition` left
+`pyrolysis-dehydration` as `acetic-anhydride-ketene`'s only gap; and 2 of the 8
+hydrolysis classes covered, T2 having written an `oleum-hydrolysis` literal row.
+Glyph budget `tests` 826 -> 824. Suite still unrun, owed with T32. T32 next.
+
 ## 2026-09-14 — T30: the nitration template, and two scoreboards move on two routes
 
 `nitrate_esterification` into `data/templates/templates.psv` at `tier=family`:
