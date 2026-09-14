@@ -13,13 +13,13 @@ The GOAL in `docs/history/MILESTONES.md` § THE G-SERIES is stated as **~10 natu
 | **1 — from the ground** | 10 | every feedstock and every catalyst is a natural material |
 | **2 — 1 step up** | 12 | needs the output of a tier-1 route |
 | **3 — 2 steps up** | 1 | needs the output of a tier-2 route |
-| *runnable but unfed* | 26 | the engine can run it; nothing can supply it |
-| *not runnable* | 124 | see `COVERAGE_REPORT.md` |
+| *runnable but unfed* | 27 | the engine can run it; nothing can supply it |
+| *not runnable* | 123 | see `COVERAGE_REPORT.md` |
 | | **173** | |
 
 **23 of 173 named routes are playable from natural materials**, against a goal of ~40 targets. The deepest chain in the corpus is **3 tiers**.
 
-> **Every number in this file is scored on hand-typed `family` rows**, because that is the tier `load_templates` loads and a route the bench cannot build is not playable. Granting the 10 routes that `tools/extract_templates.py` extracted a `literal` row for would make **59 runnable and 2 more playable** (`acetic-anhydride-ketene`, `wood-distillation`). Promoting one of those rows is a cheaper session than writing a template from nothing, and it costs the row an argued barrier and a checked atom mapping — which is what the tier is for.
+> **Every number in this file is scored on hand-typed `family` rows**, because that is the tier `load_templates` loads and a route the bench cannot build is not playable. Granting the 10 routes that `tools/extract_templates.py` extracted a `literal` row for would make **60 runnable and 2 more playable** (`acetic-anhydride-ketene`, `wood-distillation`). Promoting one of those rows is a cheaper session than writing a template from nothing, and it costs the row an argued barrier and a checked atom mapping — which is what the tier is for.
 
 ⚠ **THE TECH TREE IS A SHALLOW BUSH, NOT A TREE.** 10 of the 23 playable routes are tier 1 — they touch nothing another route made. The corpus is not a connected progression that happens to be short; it is a fan of one-step routes off the ground with one thin chain hanging off it, and §5 is that chain.
 
@@ -226,7 +226,7 @@ The other tier-1 routes are exercised elsewhere — `zinc-smelting`, `copper-sme
 
 ## 6. What blocks the rest
 
-### Blocked on something the corpus MAKES but cannot RUN (22)
+### Blocked on something the corpus MAKES but cannot RUN (23)
 
 These are the routes a player can see the shape of and not reach. Each one is runnable today and waiting on a route that is not.
 
@@ -234,6 +234,7 @@ These are the routes a player can see the shape of and not reach. Each one is ru
 |---|---|---|
 | `acrylonitrile-sohio` | 2-propenenitrile | ammonia, propylene |
 | `adiponitrile-route` | hexanedinitrile | acrylonitrile |
+| `andrussow` | hydrogen cyanide | ammonia, methane, platinum |
 | `aniline-route` | phenylamine | hydrogen-chloride, iron, nitrobenzene |
 | `aspirin-impurity` | 2-hydroxybenzoic acid | aspirin |
 | `claus-process` | sulfur (S8 crown) | hydrogen-sulfide |
@@ -291,7 +292,7 @@ Grant a player one species free and re-run the fixed point. Base is 23.
 
 ## 8. The work order this file exists to produce
 
-**23 of the 124 routes the engine cannot run are ALREADY FED from the shelf above.** A template built for one of these lights up the tech tree the moment it lands. A template built for the other 101 moves a coverage number and no player can reach it.
+**23 of the 123 routes the engine cannot run are ALREADY FED from the shelf above.** A template built for one of these lights up the tech tree the moment it lands. A template built for the other 100 moves a coverage number and no player can reach it.
 
 ⚠ **THIS IS THE ONLY RANKING IN THE REPO THAT IS ABOUT PLAYABILITY RATHER THAN COVERAGE**, and it is what the C-series should take its order from. `COVERAGE_REPORT.md`'s greedy set-cover curve maximises classes covered per template; this maximises routes a player can actually walk to. They are not the same list.
 
@@ -341,6 +342,8 @@ Grant a player one species free and re-run the fixed point. Base is 23.
 | **+1** | +1 | `oxidative-complexation` | — | `iron-gall-ink` |
 | **+1** | +1 | `pyrolysis` | **row exists** | `coal-gas`, `wood-distillation` |
 | **+1** | +1 | `pyrolysis-dehydration` | **row exists** | `acetic-anhydride-ketene` |
+| **+0** | +1 | `esterification-nitration` | — | `guncotton` |
+| **+0** | +1 | `formulation` | — | `gunpowder` |
 | **+0** | +0 | `amalgam-decomposition` | — | `castner-kellner` |
 | **+0** | +0 | `amalgam-electrolysis` | — | `castner-kellner` |
 | **+0** | +0 | `amphoteric-dissolution` | — | `bayer-process` |
@@ -352,8 +355,6 @@ Grant a player one species free and re-run the fixed point. Base is 23.
 | **+0** | +0 | `cyanamide-hydrolysis` | — | `frank-caro` |
 | **+0** | +0 | `deflagration` | — | `gunpowder` |
 | **+0** | +0 | `disproportionation-hydrolysis` | — | `birkeland-eyde` |
-| **+0** | +0 | `esterification-nitration` | — | `guncotton` |
-| **+0** | +0 | `formulation` | — | `gunpowder` |
 | **+0** | +0 | `gas-solid-fixation` | — | `frank-caro` |
 | **+0** | +0 | `oxidative-dissolution` | — | `white-lead-route` |
 | **+0** | +0 | `oxidative-nitrosation` | — | `mercury-fulminate-route` |
@@ -387,6 +388,6 @@ Grant **all 23** of them and the fixed point reaches **50 playable routes** at d
 - **A yield is not a corpus property.** §5's numbers move whenever a declared constant moves. Read them with their conditions or not at all.
 - **`RUNNABLE` cannot ask whether a number is RIGHT** (S7). Every route in §4 produces its target; none of it says the amount is what a real process gives.
 - **The tiers rest on §2's hand judgement.** Argue with that list and every number here moves. That is why it is printed.
-- **`COVERAGE_REPORT.md`'s BOTH column is not re-scored here**, and this file's 49 runnable routes include G4's five. See MILESTONES §G4 §6 for why a hand judgement does not go into a mechanical column.
+- **`COVERAGE_REPORT.md`'s BOTH column is not re-scored here**, and this file's 50 runnable routes include G4's five. See MILESTONES §G4 §6 for why a hand judgement does not go into a mechanical column.
 
-*173 routes, 1583 compounds, 45 declared natural, 49 runnable, 23 playable, 3 tiers deep, 23 fed but unrunnable.*
+*173 routes, 1583 compounds, 45 declared natural, 50 runnable, 23 playable, 3 tiers deep, 23 fed but unrunnable.*

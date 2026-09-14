@@ -323,6 +323,11 @@ BOILS_LOOSELY = {
     "O=S(=O)=O":                   (0.03, "sulfur trioxide, curated pre-S13; 2.10%"),
     "O=S=O":                       (0.03, "sulfur dioxide, curated pre-S13; 2.03%"),
     "F":                           (0.03, "hydrogen fluoride, curated pre-S13; 1.98%"),
+    # T28b. Invisible to this check until it had a formation half: a species
+    # this test cannot PRICE is a species it skips, so curating HCN's Hf/Gf is
+    # what put its long-standing Antoine residual on the page. Its Tb/Tc/Pc
+    # have been in `physical_data` since S13 and have not moved.
+    "C#N":                         (0.03, "hydrogen cyanide, 1.99%"),
     "[O-][I+2]([O-])O":            (0.03, "iodic acid, 1.91%"),
     "CCN":                         (0.03, "ethylamine, 1.78%"),
     "C#CCC":                       (0.03, "1-butyne, 1.77%"),

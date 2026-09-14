@@ -110,13 +110,20 @@ def test_the_headline_and_the_tiers_are_what_the_report_says(bp):
     `family` tier ALONE -- see its `TC`. The scoreboard is the game, the game
     loads `family`, and a route runnable only through an extracted `literal` row
     is counted in `_WITH_LITERAL` and nowhere else.
+
+    T28b moved RUNNABLE 49 -> 50 with no template at all, and the route is the
+    one `methane_ammoxidation` was written for: `andrussow` was blocked on its
+    own PRODUCT, hydrogen cyanide, which no provider priced. It is not playable
+    -- nothing on the shelf supplies the platinum gauze -- which is T18's shape
+    again, and why the two counts are asserted separately. The same entry moved
+    RUNNABLE_WITH_LITERAL 59 -> 60.
     """
     assert len(bp.routes) == 173
     assert len(bp.PLAYABLE) == 23
     assert max(bp.PLAYABLE.values()) == 3
-    assert len(bp.RUNNABLE) == 49
+    assert len(bp.RUNNABLE) == 50
     assert bp.TC is cc.FAMILY_TEMPLATE_CLASSES
-    assert len(bp.RUNNABLE_WITH_LITERAL) == 59
+    assert len(bp.RUNNABLE_WITH_LITERAL) == 60
     assert len(bp.PLAYABLE_WITH_LITERAL) == 25
     assert set(bp.PLAYABLE) < set(bp.PLAYABLE_WITH_LITERAL)
     assert bp.PLAYABLE["hmf-route"] == 2

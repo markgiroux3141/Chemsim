@@ -44,7 +44,7 @@ ammonium-chloride | 4 | 1 | 1 | 2 | 0 | ion
 calcium-chloride | 4 | 0 | 0 | 4 | 0 | ion
 potassium-nitrate | 4 | 3 | 0 | 1 | 0 | ion
 methane | 4 | 2 | 0 | 2 | 0 | measured
-hydrogen-cyanide | 4 | 2 | 0 | 2 | 0 | refused
+hydrogen-cyanide | 4 | 2 | 0 | 2 | 0 | measured
 mercury | 4 | 2 | 1 | 1 | 0 | measured
 toluene | 4 | 3 | 0 | 1 | 0 | measured
 nitrobenzene | 4 | 3 | 0 | 1 | 0 | measured
@@ -191,14 +191,14 @@ zinc-sulfide | 1 | 1 | 0 | 0 | 0 | ion
 sodium | 1 | 0 | 0 | 1 | 0 | mineral
 sodium-amalgam-marker | 1 | 0 | 1 | 0 | 0 | marker
 gunpowder-marker | 1 | 0 | 1 | 0 | 0 | refused
-nitroglycerin | 1 | 0 | 0 | 0 | 1 | refused
+nitroglycerin | 1 | 0 | 0 | 0 | 1 | benson
 tnt | 1 | 0 | 0 | 1 | 0 | joback
 picric-acid | 1 | 0 | 0 | 1 | 0 | joback
 hexamethylenetetramine | 1 | 0 | 1 | 0 | 0 | joback
 rdx | 1 | 0 | 0 | 1 | 0 | joback
 pentaerythritol | 1 | 0 | 1 | 0 | 0 | benson
 calcium-formate | 1 | 0 | 0 | 1 | 0 | ion
-petn | 1 | 0 | 0 | 1 | 0 | refused
+petn | 1 | 0 | 0 | 1 | 0 | benson
 mercury-fulminate | 1 | 0 | 0 | 1 | 0 | refused
 carbazole | 1 | 0 | 0 | 1 | 0 | joback
 coal-marker | 1 | 1 | 0 | 0 | 0 | marker

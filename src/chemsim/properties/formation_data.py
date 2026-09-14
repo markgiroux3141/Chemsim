@@ -46,8 +46,9 @@ touched the formation tables:
     Gibbs:     dGf(l) - dGf(g)  ==  R T ln(Psat(298) / P_std)
 
 Agreement means three independent measurements line up; the tolerance is
-3 kJ/mol on both. Of 102 candidate species, 83 gas and 59 liquid entries pass.
-The checks are not decoration -- they caught two tabulated ideal-gas entropies
+3 kJ/mol on both. The tables hold 82 gas and 59 liquid entries today, out of a
+sweep over 102 candidates plus what has been sourced one species at a time
+since. The checks are not decoration -- they caught two tabulated ideal-gas entropies
 that are ~100 J/(mol K) below what atom-count additivity predicts (dimethyl
 sulfoxide, morpholine), which would have been ~30 kJ/mol of silent error.
 
@@ -145,6 +146,10 @@ IDEAL_GAS_FORMATION: dict[str, tuple[float, float]] = {
     "CCc1ccccc1": (29.90, 130.89),            # ethylbenzene
     "C=Cc1ccccc1": (147.90, 214.55),          # styrene
     # -- nitrogen
+    # NOTE: hydrogen cyanide's GAS half is not here. It is a fully curated
+    # record in ``thermochemistry._CURATED_RAW``, with the small hydrogen-bonded
+    # molecules whose vapour-pressure correlations misfire; the liquid entry
+    # below still stands alone and still makes its standard-state shift exact.
     "CC#N": (74.00, 91.86),                   # acetonitrile
     "Nc1ccccc1": (87.50, 167.92),             # aniline
     "c1ccncc1": (140.40, 190.70),             # pyridine
@@ -227,6 +232,11 @@ LIQUID_FORMATION: dict[str, tuple[float, float]] = {
     "CCc1ccccc1": (-12.30, 120.10),           # ethylbenzene
     "C=Cc1ccccc1": (103.80, 201.73),          # styrene
     # -- nitrogen
+    # hydrogen cyanide, and it is a liquid at 298 K by 1.5 kPa: Psat is 98.84
+    # kPa (DIPPR), so the Gibbs check's R T ln(Psat/P_std) is -0.06 kJ/mol and
+    # the pair agrees to 0.40. Acetaldehyde and chloroethane are excluded below
+    # for failing exactly this test at 1.21 and 1.60 bar.
+    "C#N": (108.90, 125.02),                  # hydrogen cyanide
     "CC#N": (40.60, 86.43),                   # acetonitrile
     "Nc1ccccc1": (31.60, 149.76),             # aniline
     "c1ccncc1": (100.20, 181.13),             # pyridine

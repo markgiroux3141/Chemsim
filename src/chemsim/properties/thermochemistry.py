@@ -130,6 +130,11 @@ class ThermoData:
 # and Liquids" (5th ed), Appendix A. Cp is a + bT + cT^2 + dT^3 in J/(mol K) --
 # the same functional form Joback emits, so downstream code needs no special case.
 _EXPERIMENTAL = "experimental (NIST/CODATA, ideal gas 298 K)"
+_EXPERIMENTAL_CRC = (
+    "experimental (CRC via chemicals 1.5.2, ideal gas 298 K); dGf derived "
+    "from dHf and S0 against the CRC element reference states; Cp fitted "
+    "to JANAF over 273-600 K; criticals IUPAC"
+)
 _ELEMENT = "element reference state"
 _SPECTATOR = "spectator ion (zero reference; cancels from every equilibrium)"
 _CURATED_RAW: dict[str, ThermoData] = {
@@ -160,6 +165,38 @@ _CURATED_RAW: dict[str, ThermoData] = {
     "N": ThermoData(-45.94, -16.41, _EXPERIMENTAL,
                     Cp_coeffs=(27.31, 2.383e-2, 1.707e-5, -1.185e-8),
                     Tb=239.82, Tc=405.40, Pc=113.33, Vc=72.5, Hvap=23.33, Tm=195.42, Hfus=5.66),
+
+    # ---------------------------------------------------------------------
+    # Hydrogen cyanide (T28b). Joback cannot fragment it and Benson refuses
+    # anything under three heavy atoms, so it had NO formation half at all, and
+    # `methane_ammoxidation` and `cyanide_imine_addition` both reproduced their
+    # catalog step and built zero reactions -- `build_network` prices every
+    # discovered species before constructing anything, so an unpriceable
+    # product takes the whole rewrite with it.
+    #
+    # The pair is CRC's, and the experimental tier disagrees by 5.8 kJ/mol:
+    # CRC 135.10, API_TDB_G 135.17, WEBBOOK 135.14 and JANAF 135.14 against
+    # ATCT_G 129.29 and TRC 130.50. `formation_data`'s enthalpy cross-check
+    # ARBITRATES that rather than a preference order settling it silently --
+    # CRC's gas and liquid entries differ by 26.20 kJ/mol against a measured
+    # dHvap(298) of 26.93 (DIPPR) / 26.98 (VDI), while ATCT's gas value against
+    # the same liquid entry gives 20.39, a 6.5 kJ/mol miss. The liquid half is
+    # in `formation_data.LIQUID_FORMATION`, so the standard-state shift is the
+    # difference of two measurements.
+    #
+    # NOTE: it is HERE rather than in `formation_data.PHYSICAL_PROPERTIES`, and
+    # the reason is a measurement. That tier's members are ordinary condensable
+    # organics, and `tests/test_critical.py` bounds them at 8% between a
+    # measured Hvap and the one their criticals predict; HCN misses by 12.6%,
+    # and its Antoine fit lands 1.99% off 1 atm at its own Tb. Both are the
+    # corresponding-states correlations misfiring on a small, strongly
+    # hydrogen-bonded molecule -- which is what every neighbour in this block
+    # is: HF is 1.98% off and water 2.57%, and CO2 is out by a factor of 22
+    # because it sublimes. `BOILS_LOOSELY` carries the residual by name.
+    "C#N": ThermoData(135.10, 124.68, _EXPERIMENTAL_CRC,
+                      Cp_coeffs=(16.21, 0.09887, -1.336e-4, 7.589e-8),
+                      Tb=298.78, Tc=457.00, Pc=54.00, Vc=135.0, Hvap=26.93,
+                      Tm=259.87, Hfus=8.41),
 
     # ---------------------------------------------------------------------
     # Hydrogen halides. Joback has no group for them at all (the halogen group

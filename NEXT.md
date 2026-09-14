@@ -9,76 +9,77 @@ Every number came from a command run on 2026-09-14. The command is named.
 | fact | value | command |
 |---|---|---|
 | **route coverage ceiling** | **110 template-ready, ~66 intersection. 173 is NOT the target** | the script in `docs/design/route-coverage-ceiling.md` |
-| routes template-ready / species-ready / both | 65 / 90 / 51, and **49 / 90 / 41 on hand-typed rows alone** | `data/catalog/COVERAGE_REPORT.md` |
-| routes runnable / playable | 49 / 23 -- `PLAYABLE.md` scores the `family` tier ALONE, on purpose | `data/catalog/PLAYABLE.md` footer |
-| the same two granting the extracted rows | 59 / 25 | same file, the note under §1 |
+| routes template-ready / species-ready / both | 65 / 95 / 53, and **49 / 95 / 43 on hand-typed rows alone** | `data/catalog/COVERAGE_REPORT.md` |
+| routes runnable / playable | 50 / 23 -- `PLAYABLE.md` scores the `family` tier ALONE, on purpose | `data/catalog/PLAYABLE.md` footer |
+| the same two granting the extracted rows | 60 / 25 | same file, the note under §1 |
+| corpus species no provider prices | 401 of 1,583 (was 408 before T28) | `python validation/catalog_coverage.py` |
 | templates | 125 rows: 67 `family` hand-typed, 58 `literal` extracted; 102 catalog classes | `python tools/build_templates.py --check` |
 | reaction classes with a template | 115 of 240, 63 of them a family row | `python validation/catalog_coverage.py` |
 | template rows against their catalog step | 96 pass, 15 partial, 9 wrong-product, 3 no-substrate, 2 no-class over 279 steps | `python tools/check_template_products.py` (3.8 s) |
-| why the 24 non-passing rows miss | 9 salt, 5 stereo, 10 other -- all of them `family` rows | same, or the `#!` keys in `derived/template_products.psv` |
 | steps the extractor refused | 178 of 236: 75 salt, 35 stoichiometry, 24 stereo, 22 coefficients, 10 no-graph, 5 closed-cycle, 4 centre, 3 duplicate | `data/templates/needs_review.psv` footer |
-| tests | 1,357 collected | `python -m pytest --co -q` |
-| fast check | `./check.ps1`, ~95 s, green | ruff + docs + catalog + extracted + templates + template products + silent + 87 smoke |
+| tests | 1,360 collected; **1,353 pass and 7 FAIL** -- all 7 pre-existing, see T31 | `python -m pytest -q` (29m48s) |
+| fast check | `./check.ps1`, ~95 s, green, 88 smoke tests | ruff + docs + catalog + extracted + templates + template products + silent + smoke |
 | catalog | 1,583 compounds, 173 routes, 377 steps | `python tools/catalog.py` |
-| why templates are silent | 15 no-substrate, 9 needs-more-than-a-pair, 0 cannot-fire; `pool_species` 325, shelf closure 50 | `classify_silent.py --check`, current |
-| pKa table / corpus ions | 41 `AcidPair` rows; 444 corpus ions still want one | `python validation/pka_domains.py` panel 3 |
+| why templates are silent | 30: 20 no-substrate, 10 needs-more-than-a-pair, 0 cannot-fire; `pool_species` 325, shelf closure 50 at frontier 0 | `python tools/classify_silent.py` |
+| the shelf sweep | 666 pairs, 23,140 distinct reactions, **37 of 67 templates fire**, 0 crashed, 1,254 s | `data/catalog/derived/reachable.psv` footer |
+| pKa table / ions derived | 41 `AcidPair` rows; **43** ions priced (cyanide is new, off a row that already existed) | `python validation/pka_domains.py` |
 | the shelf | 71 rows | `data/catalog/shelf.psv` |
 | `SAVE_VERSION` | 9 | `src/chemsim/engine/world.py:122` |
-| expensive checks owed | `suite` DUE (5 commits), `reachable` DUE (13), both before this commit; `routes` recorded pass today | `python tools/cadence.py` |
-| line endings | mixed: `BACKLOG.md`, `NEXT.md`, `CHANGELOG.md`, `CLAUDE.md`, the catalog PSVs, `catalog_coverage.py` and `electrolyte.py` are CRLF; `check.ps1`, `tools/`, `data/templates/literal.psv` and most tests are LF | `git ls-files --eol <file>` |
+| expensive checks | all four clocked rows recorded today; `suite` and `tolerance` recorded RED with their reasons | `python tools/cadence.py` |
+| line endings | mixed: `BACKLOG.md`, `NEXT.md`, `CHANGELOG.md`, `CLAUDE.md`, `thermochemistry.py`, the catalog PSVs and `physical_data.py` are CRLF; `check.ps1`, `tools/`, `tests/` and `formation_data.py` are LF | `git ls-files --eol <file>` |
 
 ## Last session, in five lines
 
-T2 landed: `tools/extract_templates.py` turns a catalog step into a template row
-in 1.8 s for the whole corpus. It balances the step (refusing a 2-D nullspace
-rather than picking one of two balances), maps atoms by iterated MCS, writes a
-SMARTS with one bond of context, and **runs it against the step before keeping
-it** -- which is what lets an approximate mapper be safe. 58 rows, 52 classes,
-all 96-pass and all building a reaction in `build_network`. Two bugs it wrote
-and this session caught: a product context atom written tight makes hydrogen out
-of nothing, and gating on `TEMPLATE_CLASSES` makes the second run read its own
-output as coverage. `PLAYABLE.md` deliberately still scores `family` alone.
+T28 priced hydrogen cyanide and the alkyl nitrates, and every step of it found a
+second wall behind the first. HCN's entry is in `_CURATED_RAW` and not in
+`formation_data.PHYSICAL_PROPERTIES`, because that tier's members are ordinary
+condensable organics while HCN's Antoine residual (1.99%) and Hvap gap (12.6%)
+put it with HF and water. Benson's missing nitrate group was a missing KEY, not
+a missing number. The mononitrates then needed a PHYSICAL half nobody had looked
+up, because `physical_data.py` is generated from the corpus and a catalog step
+names its endpoints. Net: 7 fewer refused species, +5 species-ready routes, +1
+runnable route (`andrussow`), and `esterification-nitration` went from worth
+nothing to worth a route.
 
 ## Do this now
 
-1. **T28 — two formation entries light three rows already written.** Spec in
-   `BACKLOG.md`. `methane_ammoxidation` and `cyanide_imine_addition` reach
-   `pass` against their catalog steps and build ZERO reactions, because HCN has
-   no curated entry and neither Joback nor Benson prices it. An alkyl nitrate is
-   the same shape and is what `esterification-nitration` was refused on. Source
-   both the way `docs/design/` records it, never from recall.
-   *Done when:* `build_network(['CC=N','C#N'], ...)` returns a reaction and the
-   two rows stop appearing in `unpriced`.
+1. **T30 — write the nitration template; its blocker is gone and it is worth a
+   route.** Spec in `BACKLOG.md`; the SMARTS is written out and already run in
+   `docs/design/two-refused-template-classes.md`. T3 refused this class because
+   nitroglycerin was unreachable, and it is not any more: glycerol + nitric acid
+   now builds 7 species and 4 reactions and makes the trinitrate. Expect
+   `partial` on its three steps -- each declares an exhaustively nitrated
+   polyol, so one rewrite cannot reach it -- and record that as the step being a
+   lump rather than the row being wrong.
+   *Done when:* the row is in `templates.psv` at `tier=family`, `guncotton` is
+   runnable, and `PLAYABLE.md` moves with it.
 
-2. **T2c — promote one literal row to `family`, which is the cheap playable
-   route.** `PLAYABLE.md` §8b marks the four work-order classes that already
-   have an extracted row: `pyrolysis`, `pyrolysis-dehydration`,
-   `carbonyl-hydration`, `thermal-fixation`. A promotion is not a copy -- T2d
-   says why: the gate compares canonical SMILES, so it cannot see a mapping that
-   is wrong on a symmetric product. Check the mapping by hand, argue the
-   barrier, move the row into `templates.psv`.
+2. **T31 — six red scoreboard pins, none of them from T28.** `test_fermentation`,
+   `test_vanillin` and `test_vitriol` fail two apiece on a CLEAN tree; measured
+   by stashing and re-running at `e5dc47d`. They pin §8b counts that T3 and T2
+   moved. Cheap, and it is what makes the next suite run mean something.
+   *Done when:* each is green or re-pinned with the reason its number moved.
+
+3. **T2c — promote one literal row to `family`.** Unchanged and still the cheap
+   playable route; granting all 58 extracted rows would take runnable 50 -> 60.
+   T2d gates it: the gate compares canonical SMILES, so it cannot see a mapping
+   that is wrong on a symmetric product. Check the mapping by hand, argue the
+   barrier, move the row.
    *Done when:* one class moves tier and `PLAYABLE.md`'s headline moves with it.
-
-3. **Two expensive checks are due and both are the user's call.** `suite` is 30
-   minutes and `reachable` 35; `python tools/cadence.py` says how overdue. Neither could have been broken
-   by this session -- every engine path goes through `ui.examples.full_library()`,
-   which loads `family`, so the library `build_reachable` sweeps is the same 67
-   rows as on 2026-09-12. `python -m pytest -q`; `python tools/build_reachable.py`;
-   then `python tools/cadence.py --record <check> --result pass|fail --note "..."`.
-   *Done when:* both ledger rows are recorded with what they said.
 
 ## Decisions already taken — do not reopen
 
-- **The extractor's two walls are refusals, not gaps.** 75 salt steps and 24
-  stereo steps, argued in `tools/extract_templates.py`'s docstring and T2 in
-  `BACKLOG.md`. Do not make the extractor split a salt into ions.
-- **`PLAYABLE.md` scores the `family` tier and `COVERAGE_REPORT.md` scores every
-  tier.** One measures the game, the other the corpus. Both print the split.
-- **The extractor gates on `FAMILY_TEMPLATE_CLASSES`.** Reading the whole map
-  makes the second run refuse everything the first wrote, and the first run of a
-  fresh checkout is correct either way. `test_the_extractor_does_not_read_its_own_output_as_coverage`.
-- **A literal row is irreversible, declares no orders, no alpha, no rho.** A
-  policy cannot argue for any of them; that is what `tier=family` is for.
+- **A curated record's TIER is decided by a measurement, not by its
+  description.** HCN fits `PHYSICAL_PROPERTIES`'s stated rule and fails that
+  tier's measured band, so it lives in `_CURATED_RAW`. The argument is in the
+  entry's own comment.
+- **`catalytic-air-oxidation` does not become four `pass` rows**, on arithmetic:
+  `judge` scores ONE application of ONE row. See T28 in `BACKLOG.md`.
+- **The extractor's two walls are refusals** (75 salt, 24 stereo), argued in
+  `tools/extract_templates.py`'s docstring.
+- **`PLAYABLE.md` scores the `family` tier and `COVERAGE_REPORT.md` every tier.**
+  Both print the split.
+- **A literal row is irreversible and declares no orders, no alpha, no rho.**
 - **173 is not the target.** Quote 66. **Change the rate, not the queue** --
   per-row pKa curation is real work and is not task 1.
 - **A pinned count is not a guard**; **no species `build_network` registers may
@@ -87,15 +88,15 @@ output as coverage. `PLAYABLE.md` deliberately still scores `family` alone.
 
 ## Open questions for the user
 
-- **`suite` and `reachable` are 65 minutes between them and both are due.** Task
-  3. Say whether to spend it.
-- **Five species are newly stranded and `shelf.psv` is hand-maintained** (T29,
-  a red test since T3): `ammonia`, `benzene`, `bisphenol-a`, `ethylene-oxide`,
-  `hydrogen-iodide`. Giving a player benzene is a game-design call, not a
-  regeneration.
-- **`tests/test_playable.py` is not in the smoke set**, which is why T3's
-  scoreboard drift went five commits unseen. Adding it costs `./check.ps1`
-  another 47 s.
+- **The suite has been red for three commits and nobody was told.** Seven tests,
+  all scoreboard pins, none in the smoke set. T31 fixes six and T29 the seventh;
+  both are cheap. Worth deciding whether `test_playable.py` joins `check.ps1`
+  at +47 s, which would have caught all of them.
+- **`shelf.psv` is hand-maintained game design** (T29). The audit now asks for
+  `ammonia` and `platinum`; giving a player either is a design call.
+- **`docs/design/two-refused-template-classes.md` names one thing worth building
+  for the bench and nothing for the scoreboard**: a `family` `autoxidation` row
+  for a primary benzylic methyl, so a player can oxidise a xylene.
 
 ## Do not
 
@@ -103,7 +104,7 @@ output as coverage. `PLAYABLE.md` deliberately still scores `family` alone.
   `PLAYABLE.md`, `ROUTE_INDEX.md`, `*_data.py`, `reachable.psv`,
   `species_roles.psv`, `silent_templates.psv` or `template_products.psv`.
 - Do not chase 173, re-derive the ceiling, make per-row pKa curation task 1,
-  write a pKa you cannot source, or reopen the T2 or T3 refusals.
+  write a pKa you cannot source, or reopen the T2, T3 or T28c refusals.
 - Do not put a `literal` row in `templates.psv` or a `family` row in
   `literal.psv` -- the tier and the file are the same fact twice.
 - Do not read `docs/history/` whole (grep it), add a physics module, stamp a

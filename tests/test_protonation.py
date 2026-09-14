@@ -138,7 +138,14 @@ def test_the_only_cations_in_the_table_are_the_five_plus_the_hydronium(ions):
     # that counts ions: `validation/pka_domains.py` panel 3, 448 corpus ions
     # wanting a pKa -> 444, over 51 routes -> 48. Three routes now have no
     # pKa-shaped hole at all: adipic-acid-route, perkin-route, vanillin-lignin.
-    assert len(ions) == 42
+    # T28b: 43, and NOT from a new pKa row. `AcidPair("C#N", "[C-]#N", 9.21)`
+    # has been in `_PAIRS` since the table was written and could never be used,
+    # because an ion is anchored on its ACID and hydrogen cyanide had no
+    # thermochemistry to anchor on. Curating HCN's formation pair made the
+    # existing row work -- cyanide is the 43rd ion, at Hf 108.90 (the LIQUID
+    # value, which is the basis an ion is derived against). Still an anion, so
+    # the cation list above is unchanged for the sixth time running.
+    assert len(ions) == 43
 
 
 def test_an_anion_is_still_anchored_on_its_acid_bit_for_bit(ions):

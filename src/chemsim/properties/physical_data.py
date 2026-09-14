@@ -82,14 +82,14 @@ exists so ``tests/test_critical.py`` can tell a batch-costed entry from a
 hand-costed one -- see ``DELIBERATE_OVERRIDES`` there, and the batch cost
 recorded in docs/history/MILESTONES.md §S13.
 
-MEASURED AT GENERATION: 37 hand-typed candidates and 1502 corpus species with a
+MEASURED AT GENERATION: 41 hand-typed candidates and 1502 corpus species with a
 molecular graph. Of the corpus pass:
 
     resolved to a CAS by GRAPH ('smiles=')      432
-    resolved to a CAS by NAME                   877   <- see the two-key note above
-    name matched a DIFFERENT formula, refused    72
-    no CAS from either key                      193
-    CAS, but no non-estimated Tb anywhere       478
+    resolved to a CAS by NAME                   878   <- see the two-key note above
+    name matched a DIFFERENT formula, refused    70
+    no CAS from either key                      192
+    CAS, but no non-estimated Tb anywhere       479
     entered the table                          1202
 
 WHAT WAS LOOKED UP AND REJECTED, with the reason (HAND-LIST CANDIDATES ONLY --
@@ -101,6 +101,7 @@ comment block nobody reads):
 #   * formic acid: Tc/Pc SPLIT -- one measured and one not (Tc=(588.0, 'IUPAC', 'experimental'), Pc=None); taking neither, because they combine into the acentric factor and must share a basis
 #   * thiourea: Tb REJECTED -- no source at all. Wilson-Jasperson takes Tb as an input, so this species gets no Tc/Pc from that route and cannot reach a Benson formation half. Its Tm is still kept below where one exists: a solid that never boils still crystallises.
 #   * p-toluenesulfonic acid: Tb REJECTED -- no source at all. Wilson-Jasperson takes Tb as an input, so this species gets no Tc/Pc from that route and cannot reach a Benson formation half. Its Tm is still kept below where one exists: a solid that never boils still crystallises.
+#   * 621-65-8: Tb REJECTED -- no source at all. Wilson-Jasperson takes Tb as an input, so this species gets no Tc/Pc from that route and cannot reach a Benson formation half. Its Tm is still kept below where one exists: a solid that never boils still crystallises.
 """
 
 from __future__ import annotations
@@ -3707,6 +3708,36 @@ MEASURED_PHYSICAL: dict[str, MeasuredPhysical] = {
     'O=C1C=CC(=O)c2c(O)cccc21': MeasuredPhysical(
         Tb=None,
         Tm=Measured(431.65, 'OPEN_NTBKM', 'experimental'),
+        Hfus=None,
+        Tc=None,
+        Pc=None,
+        Vc=None,
+        omega_reference=None,
+    ),
+    # 620-12-2  (CAS 620-12-2; Joback: unfragmentable)
+    'O=[N+]([O-])OC(CO)CO': MeasuredPhysical(
+        Tb=Measured(430.65, 'COMMON_CHEMISTRY', 'experimental'),
+        Tm=Measured(327.15, 'OPEN_NTBKM', 'experimental'),
+        Hfus=None,
+        Tc=None,
+        Pc=None,
+        Vc=None,
+        omega_reference=None,
+    ),
+    # 623-87-0  (CAS 623-87-0; Joback: unfragmentable)
+    'O=[N+]([O-])OCC(O)CO[N+](=O)[O-]': MeasuredPhysical(
+        Tb=Measured(421.15, 'COMMON_CHEMISTRY', 'experimental'),
+        Tm=Measured(299.15, 'OPEN_NTBKM', 'experimental'),
+        Hfus=None,
+        Tc=None,
+        Pc=None,
+        Vc=None,
+        omega_reference=None,
+    ),
+    # 624-43-1  (CAS 624-43-1; Joback: unfragmentable)
+    'O=[N+]([O-])OCC(O)CO': MeasuredPhysical(
+        Tb=Measured(430.65, 'COMMON_CHEMISTRY', 'experimental'),
+        Tm=Measured(334.15, 'OPEN_NTBKM', 'experimental'),
         Hfus=None,
         Tc=None,
         Pc=None,

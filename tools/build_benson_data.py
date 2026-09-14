@@ -444,6 +444,22 @@ def analyse(text):
             oxo += 1
             folded.add(nbr)
             continue
+        # A nitro or nitrate group's SECOND oxygen is single-bonded and anionic,
+        # and that is the whole reason this table had no NO2 group at all: the
+        # fold above counts bond order 2, so RMG's ``N5dc-OdO0scO`` (the nitrate
+        # ester's nitrogen) came out at oxo=1, ``_central_type`` refused it, and
+        # every alkyl nitrate refused for a missing ``NO2-(O)``. ``benson``'s own
+        # ``_is_terminal_oxo`` has always counted the anionic oxygen -- it folds
+        # ``[O-]`` attached to N/C/S exactly as it folds ``=O`` -- so the two
+        # halves of the pipeline disagreed about one atom. The concrete token
+        # only: ``[O2s,O0sc]`` is a generic alternative that also covers an
+        # ordinary ether oxygen, and reading it as an oxo would turn a
+        # hydroxylamine's two single-bonded oxygens into a nitro group.
+        if (el == "O" and order == 1.0 and len(nbonds) <= 1
+                and _members(ntype) == ["O0sc"]):
+            oxo += 1
+            folded.add(nbr)
+            continue
         if el == "N" and order == 3.0 and len(nbonds) <= 1:
             nitrile = True
             folded.add(nbr)
@@ -509,6 +525,19 @@ def analyse(text):
             else:
                 lig = _S_STATE[lig][0]
                 generic += 1
+        elif lig in {"N5dc", "N5ddc"}:
+            # The ligand half of the same fix. Our assigner types a nitrogen
+            # carrying two terminal oxo oxygens as ``NO2``, so a nitrate ester's
+            # oxygen wants ``O-(C)(NO2)``; RMG names that ligand by its ATOM
+            # TYPE and leaves the oxygens out of the node, so there is nothing to
+            # count. ``N5dc``/``N5ddc`` are RMG's charge-separated hypervalent
+            # nitrogens -- the nitro and nitrate nitrogen, written ``[N+](=O)[O-]``
+            # -- and they are the only nitrogen types our scheme can reach as an
+            # NO2 ligand, because a one-oxo nitrogen types as ``Nd`` (a nitrite
+            # ester is ``O-(C)(Nd)``, from RMG's ``O2s-CsN3d``) and a bare one as
+            # ``N``. The mapping is judged on a MEASUREMENT rather than on this
+            # argument: see ``validation/benson_accuracy.py``'s nitrate block.
+            lig = "NO2"
         ligands[lig] += 1
 
     ligands.pop("Od", None)

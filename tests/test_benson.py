@@ -396,3 +396,67 @@ def test_the_estimate_reports_the_provenance_of_every_group_it_used():
     e = benson.estimate("CCOC(C)=O")
     assert len(e.sources) == len([k for k in e.groups if not k.startswith("ring")])
     assert any("BENSON" in s.upper() for s in e.sources)
+
+
+# ---------------------------------------------------------------------------
+# T28a: the nitrate esters, and the one atom the two halves disagreed about
+# ---------------------------------------------------------------------------
+# CRC ideal-gas formation enthalpies, kJ/mol, via ``chemicals`` 1.5.2. Only the
+# six nitrate esters CRC tabulates -- the mono- and dinitrates a glycerol
+# nitration actually passes through have no measured value, which is why the
+# group pair had to be sourced rather than the species.
+MEASURED_NITRATES = {
+    "CO[N+](=O)[O-]": -122.0,                                   # methyl nitrate
+    "CCO[N+](=O)[O-]": -154.1,                                  # ethyl nitrate
+    "CCCO[N+](=O)[O-]": -174.1,                                 # n-propyl nitrate
+    "CC(C)O[N+](=O)[O-]": -191.0,                               # isopropyl nitrate
+    "C(C(CO[N+](=O)[O-])O[N+](=O)[O-])O[N+](=O)[O-]": -279.1,   # nitroglycerin
+    "C(C(CO[N+](=O)[O-])(CO[N+](=O)[O-])CO[N+](=O)[O-])O[N+](=O)[O-]": -387.0,  # PETN
+}
+
+
+def test_a_nitro_group_is_one_group_and_not_a_nitrogen_plus_two_oxygens():
+    """The assignment that decides whether the table can be read at all.
+
+    A nitro or nitrate group's second oxygen is single-bonded and anionic, and
+    ``_is_terminal_oxo`` folds it into the nitrogen exactly as it folds a
+    carbonyl's. So an alkyl nitrate is three groups, not five, and the nitrogen
+    is ``NO2`` rather than ``N``. ``tools/build_benson_data.py`` folded by bond
+    order alone and so wrote no ``NO2`` key at all -- the two halves of one
+    pipeline disagreeing about one atom, which is invisible to any test that
+    only asks whether a value is plausible.
+    """
+    assert g("CCO[N+](=O)[O-]") == {
+        "C-(C)(H)3": 1, "C-(C)(H)2(O)": 1, "O-(C)(NO2)": 1, "NO2-(O)": 1,
+    }
+    # A ONE-oxo nitrogen is not an NO2, and the distinction is what keeps a
+    # nitrite ester off the nitrate's groups.
+    assert g("CCON=O") == {
+        "C-(C)(H)3": 1, "C-(C)(H)2(O)": 1, "O-(C)(Nd)": 1, "Nd-(O)": 1,
+    }
+
+
+def test_the_nitrate_esters_price_against_their_measured_values():
+    """Judged on a measurement, because the mapping behind these two groups is
+    an argument otherwise: RMG names the nitrogen of ``O-(C)(NO2)`` by its atom
+    type and leaves the oxygens out of the node, so nothing in the node itself
+    says it is a nitro group.
+
+    Both values are Ridge fits over a handful of DFT species rather than
+    Benson's own tabulation, and the error says so: this family sits at Benson's
+    worst case, not its median (1.56 kJ/mol over the curated set). The bound is
+    recorded so a better source can be measured against it.
+    """
+    errors = []
+    for smi, measured in MEASURED_NITRATES.items():
+        errors.append(benson.estimate(smi).Hf - measured)
+    worst = max(abs(e) for e in errors)
+    mean = sum(abs(e) for e in errors) / len(errors)
+    assert worst < 20.0, dict(zip(MEASURED_NITRATES, errors))
+    assert mean < 13.0, mean
+    # And the intermediates that have no measurement at all must resolve, since
+    # they are the reason this was sourced: a glycerol nitration runs through
+    # them and `build_network` drops any rewrite whose product has no price.
+    for smi in ("O=[N+]([O-])OCC(O)CO", "O=[N+]([O-])OC(CO)CO",
+                "O=[N+]([O-])OCC(O)CO[N+](=O)[O-]"):
+        assert benson.estimate(smi).Hf < 0.0

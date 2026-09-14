@@ -4,6 +4,21 @@ Newest first. One entry per session, twelve lines at most, enforced by
 `tools/check_docs.py`. When this file passes 400 lines the older half rolls into
 `docs/history/changelog-YYYY-MM.md`.
 
+## 2026-09-14 — T28: HCN and the alkyl nitrates get a price, 408 refusals -> 401
+
+HCN into `thermochemistry._CURATED_RAW` (CRC 135.10/124.68, dGf derived, Cp
+fitted to JANAF) plus a liquid entry, so its shift is two measurements;
+`build_network(['CC=N','C#N'])` returns 2 reactions and `methane_ammoxidation` 1
+where both built ZERO. Benson had no nitrate-ester KEY at all -- the builder
+folds oxo by bond order and a nitro's second oxygen is anionic -- so two lines
+took it 698 -> 700 groups and every alkyl nitrate prices (6 measured esters,
+mean |err| 10.5). The mononitrates then dropped on a PHYSICAL half they have
+measured, that table being generated from the corpus while a step names its
+ENDPOINTS: four CAS rows fixed it and nitroglycerin is reachable. Species-ready
+90 -> 95, BOTH 51 -> 53, runnable 49 -> 50 (`andrussow`),
+`esterification-nitration` 0 -> +1 route. T28c refused. Suite twice, 11 -> 7
+failures, all 7 red at HEAD too (T31); tolerance unmoved, `reachable` re-run.
+
 ## 2026-09-14 — T2: a program writes 58 templates off the catalog steps
 
 `tools/extract_templates.py` (1.8 s) balances each uncovered step, maps its

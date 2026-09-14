@@ -192,6 +192,25 @@ CANDIDATES: list[tuple[str, str]] = [
     ("triethyl phosphate", "CCOP(=O)(OCC)OCC"),
     ("thiourea", "NC(N)=S"),
     ("p-toluenesulfonic acid", "Cc1ccc(cc1)S(=O)(=O)O"),
+    # --- T28: the four species a glycerol nitration passes THROUGH ---------
+    # Same shape as the S11 block above -- a species job following the template
+    # that needs it -- and the same reason these were missing: the corpus sweep
+    # below resolves the CATALOG's species, and a catalog step names its
+    # ENDPOINTS. `nitroglycerin-route` step 1 lists glycerol and nitroglycerin,
+    # so nothing ever asked a database about the mono- and dinitrates the
+    # rewrite has to build on the way, and they came out of `build_network` as
+    # an unpriceable drop. Three of the four are measured and the fourth is not,
+    # which is the whole reason all four are listed: the rejection is then
+    # recorded in the generated file rather than being invisible.
+    #
+    # Resolved BY CAS, not by name: `search_chemical("smiles=O=[N+]([O-])OCC(O)CO")`
+    # raises for every one of them, so the corpus sweep's graph key could not
+    # have found them even if they were in the corpus. The formula cross-check
+    # is what makes a CAS safe to type here.
+    ("624-43-1", "O=[N+]([O-])OCC(O)CO"),               # 1-mononitroglycerin
+    ("620-12-2", "O=[N+]([O-])OC(CO)CO"),               # 2-mononitroglycerol
+    ("623-87-0", "O=[N+]([O-])OCC(O)CO[N+](=O)[O-]"),   # 1,3-dinitroglycerin
+    ("621-65-8", "O=[N+]([O-])OCC(CO)O[N+](=O)[O-]"),   # 1,2-dinitroglycerol
 ]
 
 # ---------------------------------------------------------------------------

@@ -501,12 +501,14 @@ def test_an_extracted_row_declares_nothing_detailed_balance_would_derive(rows):
 def test_every_extracted_row_builds_a_reaction_and_not_only_a_credit(rows):
     """`pass` in the product report is a rewrite; this is a REACTION.
 
-    T28 is the standing proof that the two are different: `methane_ammoxidation`
-    and `cyanide_imine_addition` both reproduce their catalog step and build
-    zero reactions, because HCN has no thermochemistry and `build_network`
-    discards a rewrite it cannot price. An extracted row that scored a class and
-    could never run would be that hole arriving 58 at a time, so it is measured
-    rather than assumed -- 58 of 58 today, about two seconds.
+    T28 was the standing proof that the two are different: `methane_ammoxidation`
+    and `cyanide_imine_addition` both reproduced their catalog step and built
+    zero reactions, because HCN had no thermochemistry and `build_network`
+    discards a rewrite it cannot price. Both build a reaction now (T28b, and
+    the test below is what holds it), but the hole is a property of the
+    PIPELINE rather than of those two rows -- an extracted row that scored a
+    class and could never run would be it arriving 58 at a time -- so it is
+    measured rather than assumed: 58 of 58 today, about two seconds.
     """
     import contextlib
     import io as _io
@@ -544,3 +546,34 @@ def test_every_extracted_row_builds_a_reaction_and_not_only_a_credit(rows):
         if not best:
             dead.append(row["name"])
     assert dead == [], dead
+
+
+def test_the_two_rows_hcn_used_to_kill_build_a_reaction(rows):
+    """T28b. The test above measures the extracted tier; these two are FAMILY
+    rows, and they are how the hole was found in the first place.
+
+    `methane_ammoxidation` and `cyanide_imine_addition` reach `pass` against
+    their catalog steps and, until hydrogen cyanide had a formation entry,
+    built zero reactions between them: `build_network` prices every discovered
+    species before it constructs anything, so an unpriceable PRODUCT takes the
+    whole rewrite with it. The assertion is on the reaction and on the empty
+    `unpriced`, not on a count -- the point is that the product resolves.
+    """
+    import contextlib
+    import io as _io
+
+    from chemsim.network import build_network
+    from chemsim.properties.thermochemistry import ThermochemistryProvider
+
+    charges = {
+        "methane_ammoxidation": ["C", "N", "O=O"],
+        "cyanide_imine_addition": ["CC=N", "C#N"],
+    }
+    by_name = {row["name"]: row for row in rows}
+    for name, smiles in charges.items():
+        template = bt.build(by_name[name])
+        with contextlib.redirect_stdout(_io.StringIO()):
+            net = build_network(smiles, [template], max_species=60,
+                                thermo=ThermochemistryProvider())
+        assert net.reactions, name
+        assert net.unpriced == {}, (name, net.unpriced)
