@@ -68,9 +68,10 @@ def test_every_cation_neutral_pair_is_priced_and_they_used_not_to_be(ions):
     """
     cationic = [p for p in electrolyte.known_pairs()
                 if Molecule.from_smiles(p.acid).charge > 0]
-    assert len(cationic) == 4
+    assert len(cationic) == 5
     assert {p.name for p in cationic} == {
         "ammonium", "methylammonium", "pyridinium", "anilinium",
+        "dimethylammonium",
     }
     for pair in cationic:
         key = Molecule.from_smiles(pair.acid).smiles
@@ -78,7 +79,7 @@ def test_every_cation_neutral_pair_is_priced_and_they_used_not_to_be(ions):
         assert "pKa" in ions[key].source
 
 
-def test_the_only_cations_in_the_table_are_the_four_plus_the_hydronium(ions):
+def test_the_only_cations_in_the_table_are_the_five_plus_the_hydronium(ions):
     """⚠ THE COUNTS ARE PINNED, AND A FAILURE HERE IS A PROMPT AND NOT A BUG.
 
     Adding a pair to `_PAIRS` moves both numbers, and it should: 24 -> 28 is the
@@ -96,8 +97,8 @@ def test_the_only_cations_in_the_table_are_the_four_plus_the_hydronium(ions):
     `tests/test_phosphate.py` and MILESTONES §C2.
     """
     got = sorted(k for k in ions if Molecule.from_smiles(k).charge > 0)
-    assert got == ["C[NH3+]", "[NH3+]c1ccccc1", "[NH4+]", "[OH3+]",
-                   "c1cc[nH+]cc1"]
+    assert got == ["C[NH2+]C", "C[NH3+]", "[NH3+]c1ccccc1", "[NH4+]",
+                   "[OH3+]", "c1cc[nH+]cc1"]
     # ⚠⚠ C5 GREW IT AGAIN, 29 -> 30, AND THE PROMPT WORKED A SECOND
     # TIME. The new row is salicylic acid's SECOND dissociation -- the
     # PHENOL proton, pKa 13.4 -- so the addition is an ANION again and the
@@ -126,7 +127,18 @@ def test_the_only_cations_in_the_table_are_the_four_plus_the_hydronium(ions):
     # benzoate, phenoxide); none of these four is a row in it. What these rows
     # buy is measured on the other instrument: `validation/pka_domains.py`
     # panel 2, the ions a SHELF species can actually reach, 39 unpriceable -> 35.
-    assert len(ions) == 38
+    # T27 grew it 38 -> 42 with four more, and this is the first time in five
+    # that the cation list above moved: dimethylammonium is the fifth cation,
+    # which is why the assertion and the test's own name both changed. The
+    # other three are vanillin's phenoxide, adipate and cinnamate. Re-measured
+    # as instructed and the answer is the T23 answer again -- corpus refusals
+    # stay 408, species-ready 90, intersection 40, COVERAGE_REPORT.md
+    # byte-identical -- for the T23 reason: the audit scores catalog COMPOUNDS
+    # and all four neutrals were already priced. What moved is the instrument
+    # that counts ions: `validation/pka_domains.py` panel 3, 448 corpus ions
+    # wanting a pKa -> 444, over 51 routes -> 48. Three routes now have no
+    # pKa-shaped hole at all: adipic-acid-route, perkin-route, vanillin-lignin.
+    assert len(ions) == 42
 
 
 def test_an_anion_is_still_anchored_on_its_acid_bit_for_bit(ions):

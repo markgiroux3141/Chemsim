@@ -67,45 +67,49 @@ is one or two sessions, not a repeating one.
 **Done when:** the 6 families are written or refused with a reason, and the
 retired row count is in `CHANGELOG.md`.
 
-### T23 — the corpus half of the pKa gap, one row at a time (M, shelf half done)
-The shelf half landed 2026-09-13: malonic acid's two protons, 4-nitrophenol and
-coniferyl alcohol, and `python validation/pka_domains.py` panel 2 now reads 35
-unpriceable over ONE compound. Tannic acid's 35 are a bound and the panel
-derives it — 4 of them hang off a parent the table can price and 31 off an
-unpriced microspecies, so writing the 4 does not close the 35. Do not reopen it.
-What is left is panel 3's ranking, each row a curated pair with a named source:
-208 amine ions over 176 compounds and 27 routes, 138 carboxylic over 121 and 20,
-102 phenoxide over 77 and 20. Salicylic acid (4 routes) and vanillin (3) head
-the phenol list. Take them in route-demand order; `_PAIRS`' own comments carry
-the curation rules and `docs/design/phenol-pka-rule-refused.md` says why no rule
-substitutes for them. PubChem's `iupacpka` collection is the source that worked:
-it carries the determination AND its temperature series, so one paper gives both
-the pKa and a van't Hoff `dH_diss`.
-**Done when:** each new row is in `_PAIRS` with a named source, the count panel
-3 ranks has moved, and `tests/test_protonation.py`'s `len(ions)` prompt has been
-answered with a re-measured coverage number rather than only bumped.
+### T23 — the corpus half of the pKa gap, one row at a time (M, running)
+T27 wrote four rows in route-demand order and `validation/pka_domains.py` panel
+3 now reads 444 corpus ions wanting a pKa (207 amine / 136 carboxylic / 101
+phenoxide) over 27 / 17 / 19 routes. Keep going down it: query PubChem
+`iupacpka` by CID, prefer a determination carrying a temperature series so one
+paper gives both the pKa and a van't Hoff `dH_diss`, and take both protons of a
+diacid from one.
+**The top of the ranking is decided, not pending:** salicylic acid (4 routes)
+wants the phenol-first MICROSPECIES, and CID 338 has pKa1, pKa2 and a Hammett
+pKaH but nothing microscopic; both macroscopic constants are already in. Gallic
+acid (2) spans 3.13 to 4.46 on pKa1 at the SAME ionic strength, so report the
+spread. Indigo (3), bisphenol-a (2), hydroxylamine (2) and indoxyl (2, CID
+50591) have no rows; salicylaldehyde and n,n-dimethylaniline wait on T26.
+**Done when:** each new row is in `_PAIRS` with a named source, panel 3's count
+has moved, and the `len(ions)` prompt in `tests/test_protonation.py` is answered
+with a re-measured coverage number, not only bumped.
 
-### T26 — three phenol rows claim `dH_diss = 0` and it is not zero (S, found in T23)
-T23 derived +19.8 kJ/mol for 4-nitrophenol and +24.4 for coniferyl alcohol from
-their own sources' temperature series, and phenol's own is about the same size.
-`_PAIRS` carries phenol at 10.19/9.95 with `dH_diss` left at its default, which
-in that field is indistinguishable from a measured zero — and a zero there is a
-claim the dissociation is athermal, which for a phenol it is not. The field
-conflates "measured small" from "never looked up": the malonic rows are the
-honest case (+0.6 kJ/mol, derived and below the table's resolution) and the
-phenols are not. Either source the two enthalpies or give `AcidPair` a way to
-say the enthalpy is unknown.
+### T26 — a `dH_diss` of 0.0 cannot say "unmeasured", and it is blocking rows (S)
+`AcidPair.dH_diss` defaults to 0.0, which in that field is indistinguishable
+from a measured zero — a claim the dissociation is athermal. For a carboxylic
+acid that is nearly true and the module docstring says so; for a phenol or an
+amine it is badly false. Phenol and eugenol carry a default zero against
+4-nitrophenol's +19.8 and coniferyl alcohol's +24.4; methylammonium and
+anilinium carry one against ammonium's +52.2 and T27's dimethylammonium at
++50.0. Give `AcidPair` a way to say the enthalpy is unknown, then the providers
+a way to report it — a coverage limit, so rule 10 applies.
+**It blocks two ready rows**, both worth 2 routes and both next in T23's
+ranking: salicylaldehyde 8.37 (Green and Alexander, Aust. J. Chem. 18 (1965)
+329, whose pK = 8.37 − 0.78 sqrt(I) makes it the I = 0 value) and
+n,n-dimethylaniline 5.15 (Bacarella, Grunwald, Marshall and Purlee, J. Org.
+Chem. 20 (1955) 747, extrapolated to I = 0). Neither carries a temperature
+series, so writing them today mints two new false zeros.
 **Done when:** no row in `_PAIRS` carries a `dH_diss` of 0.0 that stands for an
-unmeasured quantity, and the tolerance audit is run because equilibria above
-298 K move.
+unmeasured quantity, those two rows are in, and the tolerance audit is re-run
+because equilibria above 298 K move.
 
 ### T25 — the mineral-oxyacid gap is not a pKa gap (S, found in T5)
 89 missing ions in that class and ZERO want a pKa: every one has a parent the
 engine cannot price at all, so an `AcidPair` would be skipped by
 `ion_thermochemistry` the day it was written. `ThermochemistryProvider` refuses
-benzenesulfonic, p-toluenesulfonic and sulfanilic acid, and eleven routes name
-one. The fix is neutral thermochemistry for the aryl sulfonic acids, curated or
-a group the estimator lacks.
+benzenesulfonic, p-toluenesulfonic and sulfanilic acid and eleven routes name
+one; the fix is neutral thermochemistry for the aryl sulfonic acids, curated or
+the estimator group it lacks.
 **Done when:** the sulfonic acids a catalog route names price as neutrals, or
 the missing estimator group is named in a refusal, and the audit's
 mineral-oxyacid row moves off zero.
@@ -123,16 +127,15 @@ a commit. The same trap waits for `reachable`.
 clears its DUE, and `python tools/cadence.py` explains which of the two happened.
 
 ### T10 — two examples print a digit that depends on the solver (S)
-`validation/tolerance_audit.py`'s first recorded run came back red on
-`activity` (worst 0.128%) and `multistep_prep` (0.107%): a quotable digit moves
-between the default tolerance and rtol 1e-8. Measured PRE-EXISTING -- both print
-byte-identical output on pre-T7 and post-T7 source -- so this is debt the audit
-found rather than damage. `named_routes` additionally raises at rtol 1e-8, and
-the audit diagnoses that in-run as older than S13. Re-run 2026-09-13 after
-T23's four ion rows and it reproduced to the quoted digits — 0.1277% and
-0.1073% — which is the useful part: the debt is stable, so a future run that
-moves is a real finding. The fix the audit itself
-prescribes: give each example its own tight tolerance, as `lime_cycle.py` and
+`validation/tolerance_audit.py` comes back red on `activity` (worst 0.1277%)
+and `multistep_prep` (0.1073%): a quotable digit moves between the default
+tolerance and rtol 1e-8. Measured PRE-EXISTING -- both print byte-identical
+output on pre-T7 and post-T7 source -- so this is debt the audit found rather
+than damage. `named_routes` additionally raises at rtol 1e-8, which the audit
+diagnoses in-run as older than S13. Two runs on 2026-09-13, either side of
+T23's ion rows, reproduced all three to those digits: the debt is stable, so a
+future run that moves is a real finding. The fix the audit prescribes is to
+give each example its own tight tolerance, as `lime_cycle.py` and
 `roasting_and_the_catalyst_gate.py` already do.
 **Done when:** `python validation/tolerance_audit.py` exits 0, or the ledger
 note says which of the three is a standing refusal and why.
@@ -153,22 +156,19 @@ the two `UnpricedIon` catches inside `_concrete_reactions` — the Evans-Polanyi
 barrier (T8) and detailed balance (T1d) — are unreachable through
 `build_network`, and T13 deleted the two tests that pinned them. Same shape in
 `tools/classify_silent.py`: its `priceable()` post-filter dropped 41 species and
-now drops 0 every time. Neither is wrong, and both are untested claims about a
-path nobody takes. Decide per site: delete, or keep as defence against a
-hand-built `ReactionNetwork` with one line saying the builder is what makes it
-dead. A unit test reaching into a private function is not the answer.
+now drops 0 every time. Neither is wrong; both are untested claims about a path
+nobody takes. Decide per site: delete, or keep as defence against a hand-built
+`ReactionNetwork` with one line saying the builder is what makes it dead.
 **Done when:** each of the three sites is deleted or carries the one line, and
 no test pins a branch `build_network` cannot reach.
 
-### T19 — the diacid is the bigger half (S, found in T14, one more point in)
-230 of the 342 pairs needing their own measurement are polyprotic. A diacid is
-not the plateau twice, and T23 added the short end of the evidence: malonic acid
-is 2.85 / 5.70, one CH2 between the carboxyls and 2.85 units of separation,
-against adipic's 4.43 first proton with four CH2 and barely a shoulder off the
-plateau's 4.87. Two points on a curve `carboxylic_pka.domain` rightly refuses;
-the open question is where it flattens, and a third row (succinic or glutaric,
-one determination for both protons) settles it. Measured off the rows that
-exist before anything is written.
+### T19 — the diacid is the bigger half (S, both ends now measured)
+230 of the 342 pairs needing their own measurement are polyprotic, and a diacid
+is not the plateau twice. Both ends of the curve are now in `_PAIRS`, each from
+one determination: malonic 2.85 / 5.70, one CH2 and 2.85 units of separation
+(T23); adipic 4.42 / 5.41, four CH2 and 0.99 (T27). `carboxylic_pka.domain`
+rightly refuses both. Where it flattens between them is the open question and
+succinic or glutaric, one paper for both protons, settles it.
 **Done when:** a second domain or a refusal with its reasoning is written down.
 
 ### T20 — one template makes an unbounded oligoester series (S, found in T14)

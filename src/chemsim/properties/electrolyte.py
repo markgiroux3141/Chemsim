@@ -235,9 +235,44 @@ _PAIRS: tuple[AcidPair, ...] = (
     # both directions, and this table now carries both ends of it.
     AcidPair("[O-]C(=O)c1ccccc1O", "[O-]C(=O)c1ccccc1[O-]", 13.4,
              "salicylic acid, 2nd"),
+    # Cinnamic acid, made by both the Perkin and the Knoevenagel route: 4.42
+    # at 298 K from Nordstrom and Lindberg, Suom. Kemistil. B 38 (1965) 291,
+    # light absorption with electrometric measurements extrapolated to zero
+    # ionic strength (PubChem CID 444539). The compilation's only other
+    # determination is McCoy and McCoy, J. Org. Chem. 33 (1968) 2354 at 4.5 by
+    # glass-electrode titration, which carries no ionic-strength extrapolation;
+    # the value taken is the one that does, and the two agree to 0.08.
+    #
+    # It needs a row because the plateau rule cannot reach it:
+    # ``carboxylic_pka.domain`` refuses the alpha unsaturation by name. The
+    # value says why that refusal is right. Propanoic acid's insulating CH2
+    # puts it at 4.87 and the ring attached directly puts benzoic acid at 4.20;
+    # a vinyl between the two does neither, and lands 0.22 above benzoic
+    # rather than anywhere near the plateau.
+    AcidPair("O=C(O)/C=C/c1ccccc1", "O=C([O-])/C=C/c1ccccc1", 4.42,
+             "cinnamic acid"),
     AcidPair("CC(O)C(=O)O", "CC(O)C(=O)[O-]", 3.86, "lactic acid"),
     AcidPair("OC(=O)C(=O)O", "[O-]C(=O)C(=O)O", 1.25, "oxalic acid, 1st"),
-    AcidPair("OC(=O)CCCCC(=O)O", "[O-]C(=O)CCCCC(=O)O", 4.43, "adipic acid, 1st"),
+    # Adipic acid, both protons and one determination: Howell and Fisher,
+    # J. Am. Chem. Soc. 80 (1958) 6316, glass-electrode titration at C = 0.0005
+    # read by Speakman's method, 4.42 and 5.41 at 298 K (PubChem CID 196). The
+    # first proton was already here at 4.43 with no source named; moving it to
+    # 4.42 puts both halves of the diacid on one paper, which is the rule the
+    # malonic rows below are written under, and the 0.01 it costs is 0.06
+    # kJ/mol. Two more rows of the same compilation agree on the pair rather
+    # than only on the value: Dondon 4.42/5.41 at 20 C, Ninomiya and Toei
+    # 4.44/5.45 at I = 0.1.
+    #
+    # The separation is 0.99 units against malonic acid's 2.85, which is the
+    # long end of the question that comment answers at the short end: four CH2
+    # between the carboxyls and the second proton is barely held harder than
+    # the first, one CH2 and it is held two decades harder. Neither diacid is
+    # reachable by the plateau rule -- ``carboxylic_pka.domain`` refuses both
+    # for "polyprotic (2 carboxyls)" -- so both need their rows.
+    AcidPair("OC(=O)CCCCC(=O)O", "O=C([O-])CCCCC(=O)O", 4.42,
+             "adipic acid, 1st"),
+    AcidPair("O=C([O-])CCCCC(=O)O", "O=C([O-])CCCCC(=O)[O-]", 5.41,
+             "adipic acid, 2nd"),
     # Malonic acid, both protons, added by T23 because a player can pour it:
     # it is a shelf bottle and the Knoevenagel route's own reagent, and until
     # this row neither of its anions could be priced, so the two ions that
@@ -313,8 +348,50 @@ _PAIRS: tuple[AcidPair, ...] = (
     # and ``validation/pka_domains.py`` panel 4 derives it from this table.
     AcidPair("COc1cc(/C=C/CO)ccc1O", "COc1cc(/C=C/CO)ccc1[O-]", 9.54,
              "coniferyl alcohol", dH_diss=24.4),
+    # Vanillin, and it is the same determination as the row above: Kenttamaa,
+    # Raisanen, Auterinen and Lindberg, Suom. Kemistil. B 43B (1970) 333, the
+    # same light absorption with electrometric measurements extrapolated to
+    # zero ionic strength (PubChem CID 1183), which is the whole of what that
+    # collection holds for this compound. 7.40 at 298 K, and their 10 / 25 /
+    # 40 / 55 C series (7.54 / 7.40 / 7.27 / 7.18) gives dH_diss = +14.4
+    # kJ/mol, with a maximum residual of 0.011 on the van't Hoff line and its
+    # 298 K reading landing on the quoted 7.40.
+    #
+    # One paper for a feedstock and its oxidation product is the iodide rule
+    # applied along a route instead of along a series, and it is worth more
+    # here than agreement would be: the 2.14 units between this row and
+    # coniferyl alcohol are what the vanillin routes actually turn into, and
+    # nothing but the substituent changed between the two measurements. The
+    # para aldehyde conjugates into the ring and takes the phenoxide charge,
+    # which is why this sits 2.55 below plain phenol while eugenol's allyl,
+    # insulated by its CH2, sits a quarter unit above it.
+    AcidPair("COc1cc(C=O)ccc1O", "COc1cc(C=O)ccc1[O-]", 7.40, "vanillin",
+             dH_diss=14.4),
     AcidPair("[NH4+]", "N", 9.25, "ammonium", dH_diss=52.2),
     AcidPair("C[NH3+]", "CN", 10.66, "methylammonium"),
+    # Dimethylammonium, the Mannich route's amine, and the first row in this
+    # class to carry a dissociation enthalpy taken from its own source.
+    # Everett and Wynne-Jones, Proc. Roy. Soc. A177 (1941) 499 (PubChem CID
+    # 674) measured it by Larsson and Adell's method at 10 / 20 / 30 / 40 / 50
+    # C: 11.229 / 10.922 / 10.630 / 10.352 / 10.088. The van't Hoff line
+    # through those five points has a maximum residual of 0.005 and gives
+    # dH_diss = +50.0 kJ/mol; 10.77 is that line read at 298 K, which is
+    # inside the paper's own range, rather than a 25 C value transcribed from
+    # a second determination. Somerville, J. Phys. Chem. 35 (1931) 2412
+    # measured 10.81 directly and is the cross-check.
+    #
+    # The collection carries a sixth value from the same paper, 11.553, whose
+    # temperature field is blank. The series' spacing says it is 0 C and the
+    # fit barely moves if it is assumed (+49.5, and the same 10.77), but an
+    # assumed abscissa is not a measured one, so it is dropped rather than
+    # read in.
+    #
+    # +50.0 beside ammonium's +52.2 is the shape of this class: an amine
+    # protonation is enthalpy-driven where a carboxylic dissociation is
+    # entropic, so the zero this field defaults to is a far larger claim here
+    # than it is in the block above -- and the methylammonium row directly
+    # above and the anilinium row below both still carry one.
+    AcidPair("C[NH2+]C", "CNC", 10.77, "dimethylammonium", dH_diss=50.0),
     AcidPair("c1ccc[nH+]c1", "c1ccncc1", 5.23, "pyridinium"),
     AcidPair("[NH3+]c1ccccc1", "Nc1ccccc1", 4.62, "anilinium"),
 )

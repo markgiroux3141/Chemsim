@@ -4,6 +4,20 @@ Newest first. One entry per session, twelve lines at most, enforced by
 `tools/check_docs.py`. When this file passes 400 lines the older half rolls into
 `docs/history/changelog-YYYY-MM.md`.
 
+## 2026-09-13 — T27: four pKa rows in route-demand order, and three routes come clear
+
+`electrolyte._PAIRS` 37 -> 41 rows, ions 38 -> 42: vanillin 7.40, `dH_diss`
++14.4 off its own 10/25/40/55 C series (Kenttamaa 1970, the determination the
+coniferyl alcohol row already used); adipic acid 5.41 with its first proton
+re-sourced 4.43 -> 4.42 so both are Howell and Fisher 1958; cinnamic acid 4.42
+(Nordstrom and Lindberg 1965); dimethylammonium 10.77, `dH_diss` +50.0 off five
+stated temperatures (Everett and Wynne-Jones 1941). `pka_domains.py` panel 3:
+corpus ions wanting a pKa 448 -> 444, the routes behind them 51 -> 48, and
+`adipic-acid-route`, `perkin-route` and `vanillin-lignin` now have no pKa-shaped
+hole. Coverage does not move, for the T23 reason (`COVERAGE_REPORT.md`,
+`PLAYABLE.md`, `ROUTE_INDEX.md`, `silent_templates.psv` byte-identical);
+`named_routes` diffs only to the refusal notice's ion count and the clock, so no
+tolerance run is owed. 1,345 tests, check green. Next: T23's ranking, then T26.
 ## 2026-09-13 — T23: four pKa rows a player can reach, and both slow checks run
 
 `electrolyte._PAIRS` gains malonic acid's two protons (2.85 / 5.70, Ives and
