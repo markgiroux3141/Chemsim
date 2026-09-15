@@ -79,7 +79,17 @@ def test_the_three_tiers_are_the_measured_ones():
     # is short of -- tristearin and the stearate itself -- are newly STRANDED
     # rather than newly unreachable. `tests/test_playable_levers.py` is what
     # reported it, and a route that cannot run at all strands nothing.
-    assert got["intermediate"] == 25
+    #
+    # T32 TOOK ONE OF THOSE TWO BACK OFF, and it should never have been on:
+    # `soap-saponification` MAKES sodium stearate, and the only reason the
+    # audit called it short of it was `needs` unioning the route's derived
+    # catalysts in -- which made a route that makes its target in row 1 and
+    # consumes it in row 2 ask the player to already hold it. Nothing became
+    # reachable to earn this deletion. A demand was withdrawn.
+    assert got["intermediate"] == 24
+    assert "sodium-stearate" not in {e.id for e in SHELF}, (
+        "T32: soap-saponification makes it; it is earnable and not a gift"
+    )
     assert got["bottle"] == 4
     assert got["intermediate"] > 0, (
         "an empty intermediate tier means every stranded route became "

@@ -259,6 +259,21 @@ def route_reachable(
         for s in mine:
             if x not in s.products or s.cls not in covered_classes:
                 continue
+            # A STEP THAT CONSUMES x DOES NOT MAKE x, and the recursion below
+            # would say it does: it skips `r != x`, so a row with x on both
+            # sides claims to produce x out of its OTHER reactants alone. That
+            # is fine for a catalyst and false for a formulation or a workup,
+            # which is what the corpus actually spells this way --
+            # `leblanc-process` row 3 is `sodium-carbonate + water ->
+            # sodium-carbonate + water` and `nitroglycerin-route` row 2 is the
+            # kieselguhr no-op. Without this line, granting `dissolution`
+            # scores leblanc as REACHING ITS TARGET through a row that moves
+            # nothing, which is the same false credit T32 found in
+            # `build_playable.needs`, and the same one `chargeable` above
+            # forbids at the top level. Some other row has to make x, or nothing does; measured
+            # 2026-09-14, the guard leaves all 173 routes' verdicts unchanged.
+            if x in s.reactants:
+                continue
             if not all(priced(p) for p in s.products
                        if not is_marker(p, compounds)):
                 continue

@@ -247,11 +247,11 @@ These are the routes a player can see the shape of and not reach. Each one is ru
 | `hydrogenation-margarine` | glyceryl tristearate | nickel |
 | `kolbe-electrolysis` | ethane | sodium-acetate |
 | `lead-chamber` | sulfuric acid | nitrogen-dioxide |
-| `nitroglycerin-route` | glyceryl trinitrate | glycerol, nitroglycerin |
+| `nitroglycerin-route` | glyceryl trinitrate | glycerol |
 | `oxo-process` | butanal | cobalt, propylene |
 | `salicylic-kolbe` | 2-hydroxybenzoic acid | phenol |
 | `skraup-route` | quinoline | aniline, glycerol, nitrobenzene |
-| `soap-saponification` | sodium stearate | sodium-stearate, tristearin |
+| `soap-saponification` | sodium stearate | tristearin |
 | `steam-reforming` | hydrogen | methane, nickel |
 | `thermite` | iron metal | aluminium |
 | `wacker-process` | ethanal | copper-ii-ion, ethylene |
@@ -276,24 +276,24 @@ Grant a player one species free and re-run the fixed point. Base is 23.
 
 | grant | playable | gain | routes it blocks |
 |---|---:|---:|---:|
+| nickel | 26 | +3 | 4 |
+| tristearin | 25 | +2 | 1 |
 | aluminium | 25 | +2 | 1 |
-| nickel | 24 | +1 | 4 |
 | hydrogen-chloride | 24 | +1 | 3 |
+| glycerol | 24 | +1 | 3 |
 | benzaldehyde | 24 | +1 | 3 |
 | sodium-acetate | 24 | +1 | 2 |
 | phenol | 24 | +1 | 2 |
 | iron | 24 | +1 | 2 |
 | ethylene | 24 | +1 | 2 |
-| nitrogen-dioxide | 24 | +1 | 1 |
-| hydrogen-sulfide | 24 | +1 | 1 |
 
-⚠ **THE BIGGEST SINGLE GRANT IS +2** (`aluminium`), which is the same shape as the coverage report's finding that there is no lever — 47 routes one class away from 37 different classes. **Playability has no lever either**, and that is worth having measured rather than assumed: the two scoreboards disagree about almost everything else.
+⚠ **THE BIGGEST SINGLE GRANT IS +3** (`nickel`), which is the same shape as the coverage report's finding that there is no lever — 47 routes one class away from 37 different classes. **Playability has no lever either**, and that is worth having measured rather than assumed: the two scoreboards disagree about almost everything else.
 
-⚠⚠ **AND THE MOST FREQUENT BLOCKER IS NOT THE MOST VALUABLE ONE.** `nickel` blocks 4 routes and granting it is worth +1, because every route it blocks is blocked by something else as well. **A histogram of blockers is not a work order** — the fixed point is, and they disagree.
+**AND THE MOST FREQUENT BLOCKER IS ALSO THE MOST VALUABLE ONE, WHICH IT WAS NOT BEFORE T32.** `nickel` blocks 4 routes and granting it is worth +3. It is not that a histogram became a work order: two of the routes standing between them were demanding their own target as a starting charge, so the chain was cut in two places that no template or price could ever have repaired. **A histogram of blockers is still not a work order** — the fixed point is, and here they happen to agree.
 
 ## 8. The work order this file exists to produce
 
-**23 of the 122 routes the engine cannot run are ALREADY FED from the shelf above.** A template built for one of these lights up the tech tree the moment it lands. A template built for the other 99 moves a coverage number and no player can reach it.
+**24 of the 122 routes the engine cannot run are ALREADY FED from the shelf above.** A template built for one of these lights up the tech tree the moment it lands. A template built for the other 98 moves a coverage number and no player can reach it.
 
 ⚠ **THIS IS THE ONLY RANKING IN THE REPO THAT IS ABOUT PLAYABILITY RATHER THAN COVERAGE**, and it is what the C-series should take its order from. `COVERAGE_REPORT.md`'s greedy set-cover curve maximises classes covered per template; this maximises routes a player can actually walk to. They are not the same list.
 
@@ -302,6 +302,7 @@ Grant a player one species free and re-run the fixed point. Base is 23.
 | worth | route | target | classes needed | refused species |
 |---:|---|---|---|---|
 | **+3** | `hall-heroult` | aluminium metal | `molten-salt-electrolysis` | cryolite |
+| **+3** | `leblanc-process` | sodium carbonate | `carbothermic-sulfate-reduction`, `dissolution`, `salt-metathesis`, `sulfide-carbonation` | — |
 | **+2** | `blast-furnace` | iron metal | `slagging` | calcium-silicate, iron-ii-oxide, silicon-dioxide |
 | **+2** | `birkeland-eyde` | nitric acid | `disproportionation-hydrolysis`, `thermal-fixation` | — |
 | **+2** | `chloral-route` | chloral hydrate | `carbonyl-hydration`, `radical-halogenation` | — |
@@ -351,19 +352,23 @@ Grant a player one species free and re-run the fixed point. Base is 23.
 | **+0** | +0 | `carbide-hydrolysis` | — | `calcium-carbide` |
 | **+0** | +0 | `carbonyl-hydration` | **row exists** | `chloral-route` |
 | **+0** | +0 | `carbothermic-phosphate-reduction` | — | `white-phosphorus` |
+| **+0** | +0 | `carbothermic-sulfate-reduction` | — | `leblanc-process` |
 | **+0** | +0 | `cyanamide-hydrolysis` | — | `frank-caro` |
 | **+0** | +0 | `deflagration` | — | `gunpowder` |
 | **+0** | +0 | `disproportionation-hydrolysis` | — | `birkeland-eyde` |
+| **+0** | +0 | `dissolution` | — | `leblanc-process` |
 | **+0** | +0 | `formulation` | — | `gunpowder` |
 | **+0** | +0 | `gas-solid-fixation` | — | `frank-caro` |
 | **+0** | +0 | `oxidative-dissolution` | — | `white-lead-route` |
 | **+0** | +0 | `oxidative-nitrosation` | — | `mercury-fulminate-route` |
 | **+0** | +0 | `precipitation` | — | `bayer-process`, `citric-acid-fermentation` |
 | **+0** | +0 | `radical-halogenation` | — | `chloral-route` |
+| **+0** | +0 | `salt-metathesis` | — | `leblanc-process` |
 | **+0** | +0 | `slagging` | — | `blast-furnace` |
+| **+0** | +0 | `sulfide-carbonation` | — | `leblanc-process` |
 | **+0** | +0 | `thermal-fixation` | **row exists** | `birkeland-eyde` |
 
-**4 of the 27 classes already have an extracted `literal` row** that reproduces its catalog step — `pyrolysis`, `pyrolysis-dehydration`, `carbonyl-hydration`, `thermal-fixation`. For those the session is not *write a template*: it is check the atom mapping by hand, argue a barrier for it, and move the row into `templates.psv` at tier `family`. The other 23 still need a mechanism written from nothing.
+**4 of the 31 classes already have an extracted `literal` row** that reproduces its catalog step — `pyrolysis`, `pyrolysis-dehydration`, `carbonyl-hydration`, `thermal-fixation`. For those the session is not *write a template*: it is check the atom mapping by hand, argue a barrier for it, and move the row into `templates.psv` at tier `family`. The other 27 still need a mechanism written from nothing.
 
 ⚠⚠⚠ **THE BIGGEST SINGLE CLASS IS +1** (`aerobic-overflow-fermentation`, `biological-transformation`, `direct-combination`, `haloform`, `molten-salt-electrolysis`, `oxidative-complexation`, `pyrolysis`, `pyrolysis-dehydration`) — and §8's `+3` top row is **not** at the top here. Granting `molten-salt-electrolysis` leaves `hall-heroult` unrunnable, because its cryolite is refused a price as well; the class lands its point on `downs-cell` instead. **A row's worth assumes every OTHER blocker away, and a template only removes one of them.**
 
@@ -379,9 +384,9 @@ Grant a player one species free and re-run the fixed point. Base is 23.
 
 ### The ceiling, and it is the goal
 
-Grant **all 23** of them and the fixed point reaches **50 playable routes** at depth 3 — because 4 more routes fall out for free once the shelf grows: `deacon-process`, `haber-bosch`, `lead-chamber`, `thermite`.
+Grant **all 24** of them and the fixed point reaches **52 playable routes** at depth 3 — because 5 more routes fall out for free once the shelf grows: `claus-process`, `deacon-process`, `haber-bosch`, `lead-chamber`, `thermite`.
 
-⚠⚠⚠ **THAT IS THE GOAL, AND IT IS NOW A FINITE NAMED LIST.** The G-series goal is ~40 targets reachable from the ground; this corpus tops out at **50** on the natural list in §2, and the entire distance from today's 23 to that 50 is the 23 rows above. **The C-series is not an open-ended grind against 173 routes; it is this table.** Everything outside it is coverage work that no player can reach until something in it lands first.
+⚠⚠⚠ **THAT IS THE GOAL, AND IT IS NOW A FINITE NAMED LIST.** The G-series goal is ~40 targets reachable from the ground; this corpus tops out at **52** on the natural list in §2, and the entire distance from today's 23 to that 52 is the 24 rows above. **The C-series is not an open-ended grind against 173 routes; it is this table.** Everything outside it is coverage work that no player can reach until something in it lands first.
 
 ## What this file does NOT license
 
@@ -390,4 +395,4 @@ Grant **all 23** of them and the fixed point reaches **50 playable routes** at d
 - **The tiers rest on §2's hand judgement.** Argue with that list and every number here moves. That is why it is printed.
 - **`COVERAGE_REPORT.md`'s BOTH column is not re-scored here**, and this file's 51 runnable routes include G4's five. See MILESTONES §G4 §6 for why a hand judgement does not go into a mechanical column.
 
-*173 routes, 1583 compounds, 45 declared natural, 51 runnable, 23 playable, 3 tiers deep, 23 fed but unrunnable.*
+*173 routes, 1583 compounds, 45 declared natural, 51 runnable, 23 playable, 3 tiers deep, 24 fed but unrunnable.*

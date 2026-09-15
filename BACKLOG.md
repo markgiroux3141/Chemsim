@@ -43,22 +43,16 @@ runnable. What is left of the slope is promoting rows (T2c). Argued in
   all-tier dict, and `bp.RUNNABLE`/`bp.PLAYABLE` are family — a level on one
   measurement path against a set on the other, and every DIFFERENCE they pin
   held on both. Two were real moves, re-pinned with their reasons in the tests.
-  A green `pytest -q` is the half owed, and it belongs to T32.
+  A green `pytest -q` was the half owed; T32 ran it.
+- **T32, a route charged with its own target.** Closed. `needs` unioned
+  `route_roles().catalysts` in and a catalyst is derived by IDENTITY, so four
+  routes making their target in one row and consuming it in the next demanded
+  it as a charge. Dropping the union IS `first_made < first_used`, provably: a
+  catalyst's own step makes and uses it, so the ORDER rule had it already.
+  `route_reachable` had the mirror defect. Reasoning in both docstrings.
 - **The furfural false credit cannot pay, for a structural reason** — 29b's
   spelling makes xylose chargeable, so the class need never be covered for the
   route to reach its target. Argued in `test_vitriol.py`'s pentosan test.
-
-### T32 — `needs()` hands a route its own TARGET as a starting charge (S, from T30)
-`needs` unions the route's CATALYSTS in and `route_roles` calls a species on
-both sides of a step a catalyst — so `nitroglycerin-route`'s no-op kieselguhr
-step asks the shelf for the thing the route exists to make, which
-`route_reachable`'s *the target may not be charged* rule forbids. Hence
-`test_playable_levers` wanting `nitroglycerin` in `shelf.psv`, and why it must
-NOT be given. Rule to try: a catalyst MADE before it is first needed is not a
-charge (`first_made < first_used`), which keeps `lead-chamber`'s NO2 a charge
-and `lime-cycle`'s limestone external. T17's mirror fix moved nine pins.
-**Done when:** `nitroglycerin` leaves that work order without a shelf row and
-every pin it moves is re-pinned with its reason.
 
 ### T33 — `CHANGELOG.md` is past the 400 lines its own header rolls at (S, from T30)
 Nothing enforces it (`check_docs.py` caps an ENTRY, not the file), so it is a
@@ -85,13 +79,18 @@ the substituent lands.
 **Done when:** the count of rows whose mapping their own step does not constrain
 is measured, or the idea is refused in writing.
 
-### T29 — species stranded by a template, and the shelf was not updated (S, from T2)
+### T29 — `ammonia` and `platinum`: the last red test, and it is a design call (S)
 `test_playable_levers.py::test_the_shelf_file_holds_exactly_what_this_audit_measured`
-is RED and was already red at `5964f16`. READ THE FAILURE, NOT THIS ITEM: the
-set changes with every template session — five species at T3, `ammonia` and
-`platinum` after T28, plus `nitroglycerin` after T30, which is T32's bug and
-not a design call. `shelf.psv` is hand-maintained game design, so a row is a
-decision about what a player is GIVEN. Do T32 first.
+is the ONLY failure in the suite (T32's run, 1 failed / 1360 passed). Its two
+halves were independent and T32 closed the scorer half, so what is left is
+genuine: `andrussow`'s platinum and `tollens-test`'s ammonia are real same-step
+catalysts nothing in the corpus makes, and the audit is right to demand them.
+`shelf.psv` is hand-maintained game design, so a row is a decision about what a
+player is GIVEN -- and the file's own header already argues SEVEN unpriceable
+natural rows into staying. Either is defensible; giving a player platinum is
+the larger claim, and `shelf.psv`'s NOT_NATURAL_NOTES calls the catalyst metals
+the rule that decides the third tier. READ THE FAILURE, NOT THIS ITEM: the set
+moves with every template session.
 **Done when:** each species the test names is a shelf row with a note, or is
 argued down in `shelf.psv`'s header, and the test is green.
 

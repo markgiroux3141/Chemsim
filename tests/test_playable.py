@@ -209,10 +209,12 @@ def test_the_tech_tree_is_a_shallow_bush(bp):
 
 
 def test_the_ceiling_is_the_goal_and_it_is_a_finite_named_list(bp):
-    """Granting all 22 fed-but-unrunnable routes reaches 45, against a goal of ~40.
+    """Granting all 24 fed-but-unrunnable routes reaches 52, against a goal of ~40.
 
-    This is the whole point of the work order: the distance from 21 to 45 is a
-    named table, not an open-ended grind against 173 routes.
+    This is the whole point of the work order: the distance from today's 23 to
+    52 is a named table, not an open-ended grind against 173 routes. The prose
+    below is the history of this one cell, and it is kept because the cell has
+    moved for a different reason almost every time.
 
     ⚠⚠ **AND C5 IS THE FIRST SESSION SINCE C2 THAT DID NOT MOVE THE CEILING.**
     C4 moved it 41 -> 45 because a fermentation puts four solvents on the shelf
@@ -250,13 +252,20 @@ def test_the_ceiling_is_the_goal_and_it_is_a_finite_named_list(bp):
     and it measures how much of the goal was hidden inside routes the scorer
     ran and then took the output of.
     """
-    assert len(bp.FED_BUT_UNRUNNABLE) == 23
+    # T32 moved it 50 -> 52 by DELETING two demands rather than by building
+    # anything: `leblanc-process` joins the fed list once it stops being asked
+    # for its own sodium carbonate, and `claus-process` falls out free behind
+    # it on the hydrogen sulfide leblanc's row 4 throws away. That is the second
+    # time this cell moved on a scorer fix and not on chemistry (T17, 46 -> 50),
+    # and both times the goal was hidden inside the instrument.
+    assert len(bp.FED_BUT_UNRUNNABLE) == 24
     ceiling, _ = bp.closure(pool=bp.RUNNABLE | set(bp.FED_BUT_UNRUNNABLE))
-    assert len(ceiling) == 50
-    # two fall out for free once the shelf grows -- G3 had four, C3 had three,
-    # and `acetic-fermentation` is the one C4 promoted into PLAYABLE outright
+    assert len(ceiling) == 52
+    # G3 had four, C3 had three, and `acetic-fermentation` is the one C4
+    # promoted into PLAYABLE outright
     free = set(ceiling) - set(bp.PLAYABLE) - set(bp.FED_BUT_UNRUNNABLE)
-    assert free == {"deacon-process", "haber-bosch", "lead-chamber", "thermite"}
+    assert free == {"claus-process", "deacon-process", "haber-bosch",
+                    "lead-chamber", "thermite"}
 
 
 # ---------------------------------------------------------------------------
@@ -506,30 +515,81 @@ def test_hydrogen_reaches_tier_one_as_a_byproduct_of_caustic_soda(bp):
 
 
 # ---------------------------------------------------------------------------
-# 4. THE LEVER, AND THE HISTOGRAM THAT DISAGREES WITH IT
+# 4. THE LEVER, AND THE HISTOGRAM THAT AGREED WITH IT ONCE T32 LANDED
 # ---------------------------------------------------------------------------
-def test_there_is_no_lever_and_the_frequent_blocker_is_not_the_valuable_one(bp):
-    """The most-frequent blocker is worth +1; the most valuable one blocks ONE.
+def test_no_route_is_charged_with_its_own_target(bp):
+    """T32's invariant, and the one assertion here that cannot go stale.
 
-    A histogram of blockers is not a work order, and this is the measurement that
-    says so.
+    `route_reachable` has always refused to let a route BUY the thing it exists
+    to make. `needs` unioned `route_roles().catalysts` in, and a catalyst is
+    derived by IDENTITY -- a species on both sides of one step -- so a route
+    that makes its target in one row and consumes it in the next was asking the
+    player to already hold it. Four routes spelled a formulation or a workup
+    that way: `aspirin-route`, `leblanc-process`, `nitroglycerin-route` and
+    `soap-saponification`. The two instruments contradicted each other and the
+    demand was unsatisfiable, so no template and no price could ever have paid
+    it off.
 
-    ⚠⚠ C1 RE-MEASURED THIS AND THE FINDING SURVIVED WITH ALL NEW NUMBERS. G3's
-    example was `sulfuric-acid`, 4 routes and worth +1 -- and C1 put the acid on
-    the shelf, so it is not a blocker at all any more. The shape held: `nickel`
-    and `benzaldehyde` now block three routes each and are worth +1, while
-    `aluminium` blocks ONE and is worth +2. *A finding that survives having its
-    own example removed was about the shape and not about the example.*
-    ⚠ And `nitrogen-dioxide` fell from +2 to +1 for the same reason -- fragility
-    31's lead-chamber pinch is worth half what G3 priced it at, because
-    `saltpetre-nitric` no longer needs the chamber's acid.
+    BUT "NEVER" IS THE WRONG RULE, AND THE EXCEPTION IS THE WHOLE POINT. A
+    recycle loop has to be PRIMED, and the corpus spells two of them:
+    `contact-process` absorbs its trioxide into 98% acid in row 3 and only makes
+    acid in row 4, and `bayer-process` digests bauxite in caustic it recovers
+    later. Those are starting charges in exactly the sense `lead-chamber`'s NO2
+    is, and a player really does need some. So the rule is ORDER, not identity:
+    a target may be demanded only where the route WANTS it before anything makes
+    it. That is what separates them from the four above, whose target is made
+    first and consumed afterwards by a formulation that moves nothing.
 
-    ⚠⚠ **C5 RE-MEASURED IT AND THE FINDING SURVIVED A SECOND EXAMPLE CHANGE.**
-    The most frequent blocker is `nickel` at FOUR routes now, because
-    `furfural-route` went runnable and its last step is a nickel hydrogenation.
-    It is still worth +1. `aluminium` still blocks ONE route and is still worth
-    +2. **Three sessions, three different top blockers, and the same shape every
-    time.**
+    The numbers in the other tests will move again. This one is the claim, so it
+    is asserted over every route rather than on the four that happened to show
+    it -- which is also why it would have caught the bug at `1c84fe9` instead of
+    two sessions later.
+    """
+    primed = set()
+    for rid, route in bp.routes.items():
+        if route.target not in bp.needs(rid):
+            continue
+        mine = bp.route_steps(rid)
+        made = min((s.index for s in mine if route.target in s.products),
+                   default=1 << 30)
+        used = min((s.index for s in mine if route.target in s.reactants),
+                   default=1 << 30)
+        assert used <= made, (
+            f"{rid} is asked to start from {route.target}, which is its own "
+            f"target and is MADE in row {made} before row {used} wants it -- "
+            f"that is a formulation step, not a recycle loop. See needs(), T32"
+        )
+        primed.add(rid)
+
+    assert primed == {"bayer-process", "contact-process"}, (
+        "the set of routes primed with their own target moved -- each one is a "
+        "recycle loop and a new one is a judgement, not a refresh"
+    )
+    for rid in ("aspirin-route", "leblanc-process", "nitroglycerin-route",
+                "soap-saponification"):
+        assert bp.routes[rid].target not in bp.needs(rid), f"T32 regressed: {rid}"
+
+
+def test_the_frequent_blocker_is_now_also_the_valuable_one(bp):
+    """`nickel` blocks 4 routes AND is the unique most valuable grant at +3.
+
+    THE FINDING THIS TEST WAS WRITTEN FOR HAS FLIPPED, AND T32 IS WHY.
+    G3, C1 and C5 each re-measured "the most frequent blocker is not the most
+    valuable one" and each time it held with new numbers: the frequent blocker
+    was worth +1 and `aluminium` blocked ONE route for +2. It held because the
+    chain that would have made it false was cut in two places by the bug above.
+
+    Granting `nickel` now opens a three-route cascade, and it is the corpus's
+    own history: harden the fat (`hydrogenation-margarine` makes tristearin),
+    boil it (`soap-saponification` makes sodium stearate and GLYCEROL), nitrate
+    the byproduct (`nitroglycerin-route`). Saponification was demanding its own
+    sodium stearate and the nitroglycerin route its own nitroglycerin, so links
+    two and three were both unreachable for a reason that was never chemistry.
+
+    The +1 lever survives in the CLASS table: no single class is worth more
+    than +1 (`test_the_ceiling_is_the_goal_...`). What died is the claim about
+    the SPECIES histogram, and it died because the histogram was right and the
+    fixed point was reading a corrupt `needs`.
     """
     from collections import Counter
 
@@ -542,17 +602,25 @@ def test_there_is_no_lever_and_the_frequent_blocker_is_not_the_valuable_one(bp):
         return len(bp.closure(extra={x})[0]) - len(bp.PLAYABLE)
 
     assert "sulfuric-acid" not in blockers, "C1 put it on the shelf"
-    top = blockers.most_common(1)[0][1]
-    assert top == 4
-    for x, n in blockers.items():
-        if n == top:
-            assert worth(x) == 1, x
+    assert blockers.most_common(1)[0] == ("nickel", 4)
+
+    # the difference this test pins, asserted as a difference and not as a pair
+    # of levels: the top of the histogram is now the top of the fixed point too.
+    best = max(worth(x) for x in blockers)
+    assert best == 3
+    assert [x for x in blockers if worth(x) == best] == ["nickel"]
+    assert worth("nickel") == best
+
+    # and the cascade is the reason, named
+    assert set(bp.closure(extra={"nickel"})[0]) - set(bp.PLAYABLE) == {
+        "hydrogenation-margarine", "soap-saponification", "nitroglycerin-route",
+    }
+    # both of the newly-reached links were charged with their own target
+    assert worth("tristearin") == 2 and blockers["tristearin"] == 1
 
     assert worth("aluminium") == 2
     assert blockers["aluminium"] == 1
     assert worth("nitrogen-dioxide") == 1   # G3 priced it at 2
-    # nothing is worth more than 2 -- there is no lever
-    assert max(worth(x) for x in blockers) == 2
 
 
 def test_the_top_content_row_is_hall_heroult_and_it_opens_the_deepest_chain(bp):

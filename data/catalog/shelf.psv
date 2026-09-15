@@ -29,12 +29,19 @@
 #   bottle        nothing in 173 catalog routes makes it at all. Bought, or the
 #                 corpus grows a route.
 #
-# Measured by `validation/playable_levers.py` panel 3 on 2026-09-13: granting
-# the 25 intermediate and 4 bottle species takes playable routes from 23 to 44,
-# with no new chemistry of any kind. Granting every one of the 46 missing
-# template classes instead is worth +14 (tests/test_playable_levers.py), so a
-# shelf edit is still the cheapest distance on the board by a wide margin, and
-# that is why this file exists before any more templates do.
+# Measured by `validation/playable_levers.py` panel 3 on 2026-09-14: granting
+# the 26 chain species and the 4 bottle species takes playable routes from 23
+# to 48, with no new chemistry of any kind. Granting every one of the 46
+# missing template classes instead is worth +14 (tests/test_playable_levers.py),
+# so a shelf edit is still the cheapest distance on the board by a wide margin,
+# and that is why this file exists before any more templates do.
+#
+# That read 44 on 2026-09-13 and no route, template or price changed between:
+# T32 stopped four routes demanding their own target as a starting charge, one
+# of them `soap-saponification`, which reconnected the chain this tier sits on.
+# THE CHAIN SET IS NOT THIS BLOCK -- 26 species against 24 rows.
+# `tests/test_playable_levers.py` compares them and prints the difference as
+# the work order, which is how a row gets added or deleted here.
 #
 # ## FOUR THINGS THIS FILE IS NOT
 #
@@ -140,7 +147,6 @@ palladium                  | intermediate | 0.02  | solid  | chain: a catalyst m
 phenol                     | intermediate | 0.3   | solid  | chain: cumene, or a fused benzenesulfonate -- and it MELTS at 314 K
 propylene                  | intermediate | 0.05  | gas    | chain: a cracker product
 sodium-acetate             | intermediate | 0.3   | liquid | chain: soda and vinegar -- dissolved: no lattice record
-sodium-stearate            | intermediate | 0.2   | liquid | chain: a fat saponified -- dissolved: no lattice record
 tristearin                 | intermediate | 0.1   | solid  | chain: a hardened fat -- margarine makes it and needs nickel
 xylose                     | intermediate | 0.3   | solid  | chain: hemicellulose hydrolysed
 

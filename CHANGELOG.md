@@ -4,6 +4,21 @@ Newest first. One entry per session, twelve lines at most, enforced by
 `tools/check_docs.py`. When this file passes 400 lines the older half rolls into
 `docs/history/changelog-YYYY-MM.md`.
 
+## 2026-09-15 — T32: four routes were charged with the thing they exist to make
+
+`needs()` unioned `route_roles().catalysts` in, and a catalyst is derived by
+IDENTITY -- both sides of one step -- so `aspirin-route`, `leblanc-process`,
+`nitroglycerin-route` and `soap-saponification`, which each make their target in
+one row and consume it in the next, demanded it as a starting charge that
+`route_reachable` forbids one layer down. Dropping the union IS the
+`first_made < first_used` rule and provably so. `route_reachable` had the mirror
+defect: `made_by` let a no-op row make its own input, which scored `dissolution`
+at +3 atop the C-series ranking; guarded, and no route's verdict moves (51).
+Headline holds at 23 playable / 51 runnable, but fed-but-unrunnable 23 -> 24 and
+the ceiling 50 -> 52 (`tools/build_playable.py`); `sodium-stearate` off the shelf
+(71 rows); six pins re-pinned. Full suite at the user's ask: 1 failed / 1360
+passed in 29m51s, from T28's 7 / 1353. Survivor is T29. Glyphs tools 143, tests 819.
+
 ## 2026-09-14 — T31: six red scoreboard pins, and four of them were one defect
 
 The six in `test_fermentation`, `test_vanillin` and `test_vitriol` are green;

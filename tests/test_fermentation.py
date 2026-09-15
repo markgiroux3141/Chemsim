@@ -555,14 +555,21 @@ def test_granting_the_top_row_made_the_work_order_LONGER_again():
     # building nothing: crediting every step product to the shelf promoted
     # `bleaching-powder` out of the list and fed three more routes into it.
     # The four routes this test is about are still all here.
-    assert len(bp.FED_BUT_UNRUNNABLE) == 23
+    # T32 put one more on it (23 -> 24) and moved the ceiling 50 -> 52, also
+    # while building nothing: `leblanc-process` was being asked for its own
+    # sodium carbonate, so it could never read as FED however much of its
+    # chemistry existed. It is the second time in five sessions that this list
+    # and its ceiling moved on a scorer fix rather than on content, and both
+    # times the correction was in what `needs` counts.
+    assert len(bp.FED_BUT_UNRUNNABLE) == 24
+    assert "leblanc-process" in bp.FED_BUT_UNRUNNABLE
     assert "abe-fermentation" not in bp.FED_BUT_UNRUNNABLE
     assert "acetic-fermentation" not in bp.FED_BUT_UNRUNNABLE
     for grown in ("white-lead-route", "chloral-route",
                   "acetic-anhydride-ketene", "mercury-fulminate-route"):
         assert grown in bp.FED_BUT_UNRUNNABLE
     ceiling, _ = bp.closure(pool=bp.RUNNABLE | set(bp.FED_BUT_UNRUNNABLE))
-    assert len(ceiling) == 50
+    assert len(ceiling) == 52
 
 
 def test_the_work_order_no_longer_has_a_PLUS_TWO_ROW():
@@ -591,7 +598,17 @@ def test_the_work_order_no_longer_has_a_PLUS_TWO_ROW():
     # can move the price of a class it never touched. The table also lost two
     # rows to T3 and T30 covering them outright, which is why 22 at +0 became
     # 19. The claim is still the `max` line: no +2 row, the cheap end is over.
+    # T32 added FOUR +0 rows (19 -> 23) without touching the +1 end, because
+    # `leblanc-process` joined the fed list and it needs four classes at once.
+    # A joint grant enters this table as four separate rows each worth nothing,
+    # which is the same mis-pricing the paragraph under it already names -- and
+    # `dissolution` is one of the four. It is worth +0 only because T32 also
+    # stopped `route_reachable` crediting leblanc's row 3, a no-op that makes
+    # sodium carbonate out of sodium carbonate; without that guard granting
+    # `dissolution` alone read +3 and would have topped this table on a row
+    # that moves no atoms.
     worths = {c: g for g, _r, c, _ in bp.CLASS_WORTH}
     assert max(worths.values()) == 1
     assert sum(1 for w in worths.values() if w == 1) == 8
-    assert sum(1 for w in worths.values() if w == 0) == 19
+    assert sum(1 for w in worths.values() if w == 0) == 23
+    assert worths["dissolution"] == 0

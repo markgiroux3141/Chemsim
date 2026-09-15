@@ -33,6 +33,9 @@ a property of the corpus.
    same catalog row broke G4's scorer from the other side.
 3. **A CATALYST IS A FEEDSTOCK.** A route whose catalyst nobody can make is not
    playable, and this is the rule that gives the corpus its third tier at all.
+   T32: it holds through rule 2's ORDER test and not through ``route_roles``,
+   which derives a catalyst by identity and so handed four routes their own
+   target as a starting charge. See ``needs``.
 """
 
 from __future__ import annotations
@@ -219,9 +222,30 @@ def needs(rid: str) -> set[str]:
       the NOx carrier reads as an intermediate. **It is a starting charge**, and
       G4's own run of this route had to hand it 0.004 mol of NO2 by hand.
 
-    ⚠ THE CATALYSTS ARE UNIONED IN. A route whose catalyst nobody in the corpus
-    can make is not playable however good its chemistry is, and that rule is what
-    gives this corpus a third tier rather than stopping at two.
+    THE CATALYSTS ARE NO LONGER UNIONED IN, AND THE UNION WAS T32'S BUG. A
+    catalyst is a species on both sides of one step, so ``route_roles`` finds it
+    by identity rather than by order -- and unioning that set in handed four
+    routes their own TARGET as a starting charge: ``aspirin-route``,
+    ``leblanc-process``, ``nitroglycerin-route`` and ``soap-saponification`` each
+    make their target in one row and consume it in the next, which is a
+    formulation or a workup step and not a catalytic cycle. That is exactly what
+    ``route_reachable``'s *the target may not be charged* rule forbids one layer
+    down, so the two instruments disagreed and this one was the flattering half.
+
+    The rule that removes it: a species MADE before it is first needed is not a
+    charge (``first_made < first_used``). Dropping the union outright is the same
+    edit, and provably so rather than only on today's corpus -- a catalyst's own
+    step both makes and uses it, so ``first_used == first_made`` and the ORDER
+    rule above has already put it in ``external``. The union could therefore only
+    ever add a species made STRICTLY earlier than it is wanted, which is the one
+    thing the rule rejects. Measured on 2026-09-14: the union added five species
+    across all 173 routes, four of them the route's own target, and the fifth was
+    ``vitamin-c-reichstein``'s water, made in row 2 and wanted in row 5.
+
+    So the third tier survives on the order rule alone: ``andrussow``'s platinum
+    and ``tollens-test``'s ammonia are still charges, still blocked and still in
+    panel 3's work order. A route whose catalyst nobody can make is still not
+    playable.
     """
     mine = route_steps(rid)
     first_made: dict[str, int] = {}
@@ -231,9 +255,8 @@ def needs(rid: str) -> set[str]:
             first_made.setdefault(p, s.index)
         for x in s.reactants:
             first_used.setdefault(x, s.index)
-    external = {x for x, i in first_used.items()
-                if i <= first_made.get(x, 1 << 30)}
-    return external | set(cat.route_roles(steps, rid).catalysts)
+    return {x for x, i in first_used.items()
+            if i <= first_made.get(x, 1 << 30)}
 
 
 def needs_by_roles(rid: str) -> set[str]:
@@ -841,11 +864,28 @@ def main(argv: list[str] | None = None) -> int:
     w("")
     freq = blockers.most_common(1)[0]
     freq_gain = next(g for g, _, x in gains if x == freq[0])
-    w(f"⚠⚠ **AND THE MOST FREQUENT BLOCKER IS NOT THE MOST VALUABLE ONE.** "
-      f"`{freq[0]}` blocks {freq[1]} routes and granting it is worth "
-      f"{freq_gain:+d}, because every route it blocks is blocked by something "
-      "else as well. **A histogram of blockers is not a work order** — the "
-      "fixed point is, and they disagree.")
+    # THE RELATION IS COMPUTED, NOT ASSERTED. Three sessions read "the most
+    # frequent blocker is not the most valuable one" off this table and C5
+    # re-pinned it as a standing finding; T32 flipped it, because two of the
+    # routes that made it true were demanding their OWN TARGET and neither
+    # could ever be bought. A generated file that hard-codes which way a
+    # comparison came out is a claim waiting to go stale behind its own
+    # numbers -- the same shape as the count `derive don't assert` caught.
+    if freq_gain < best_g:
+        w(f"⚠⚠ **AND THE MOST FREQUENT BLOCKER IS NOT THE MOST VALUABLE ONE.** "
+          f"`{freq[0]}` blocks {freq[1]} routes and granting it is worth "
+          f"{freq_gain:+d}, because every route it blocks is blocked by "
+          "something else as well. **A histogram of blockers is not a work "
+          "order** — the fixed point is, and they disagree.")
+    else:
+        w(f"**AND THE MOST FREQUENT BLOCKER IS ALSO THE MOST VALUABLE ONE, "
+          f"WHICH IT WAS NOT BEFORE T32.** `{freq[0]}` blocks {freq[1]} routes "
+          f"and granting it is worth {freq_gain:+d}. It is not that a histogram "
+          "became a work order: two of the routes standing between them were "
+          "demanding their own target as a starting charge, so the chain was "
+          "cut in two places that no template or price could ever have "
+          "repaired. **A histogram of blockers is still not a work order** — "
+          "the fixed point is, and here they happen to agree.")
     w("")
 
     # --- 8 the work order ------------------------------------------------
