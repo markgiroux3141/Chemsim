@@ -142,7 +142,9 @@ NATURAL_IDS = {k for group in NATURAL.values() for k in group}
 NOT_NATURAL_NOTES = [
     ("the catalyst metals -- `nickel`, `cobalt`, `platinum`, `palladium`",
      "a player who cannot smelt them cannot have them, and nothing in the "
-     "corpus smelts them. This is the rule that decides the third tier."),
+     "corpus smelts them -- the corpus writes a catalyst on BOTH sides of "
+     "its step, which is not making it. That is the rule that decides the "
+     "third tier, and since T29 all four are bottle rows: bought."),
     ("`iron` and `copper` and `aluminium` as METAL",
      "the ore is natural and the metal is not. `blast-furnace`, "
      "`copper-smelting` and `hall-heroult` are how you get them, and two of "
@@ -336,7 +338,16 @@ def closure(pool=None, extra=frozenset(), with_catalysts=True, shelf_rule="both"
 
 PLAYABLE, SHELF = closure()
 PLAYABLE_WITH_LITERAL, _SHELF_WITH_LITERAL = closure(pool=RUNNABLE_WITH_LITERAL)
-MADE_SOMEWHERE = {p for s in steps for p in s.products} | {
+# A STEP THAT CONSUMES x DOES NOT MAKE x -- the same guard as
+# `catalog.made_by`, whose comment already named this file, and the same rule
+# T32 put in `needs` and in `route_reachable`. The corpus spells a catalyst
+# with the metal on both sides, so without `p not in s.reactants` the ten
+# `nickel` rows claim the corpus smelts nickel; `furfural-route` row 1 is
+# `xylose + water -> xylose` and claims it hydrolyses its own pentose. 21
+# species leave this set, every one of them a catalyst or a no-op spectator,
+# and each is a thing a player must BUY rather than one a stranded route owes
+# them.
+MADE_SOMEWHERE = {p for s in steps for p in s.products if p not in s.reactants} | {
     r.target for r in routes.values()
 }
 
@@ -348,6 +359,19 @@ for rid in sorted(RUNNABLE - set(PLAYABLE)):
     miss = sorted(needs(rid) - SHELF)
     orphan = [x for x in miss if x not in MADE_SOMEWHERE]
     (BOTTLE if orphan else BLOCKED).append((rid, miss, orphan))
+
+# THE SHELF'S TWO EARNED TIERS ARE A QUESTION ABOUT A SPECIES, NOT ABOUT A
+# ROUTE. The buckets above sort ROUTES, and they have to: "why is this route
+# stuck" is answered by its worst need. But a route can want one of each, and
+# then the per-route split loses the other -- `steam-reforming` wants `nickel`
+# (nothing makes it) and `methane` (the cracker does), and reading the tiers
+# off the buckets filed methane under neither. So partition the species the
+# unfed routes are missing, directly, by the only question the tier column
+# asks: does anything in the corpus make it?
+_UNFED_NEEDS = {x for rid in sorted(RUNNABLE - set(PLAYABLE))
+                for x in needs(rid) - SHELF}
+CHAIN_SPECIES = {x for x in _UNFED_NEEDS if x in MADE_SOMEWHERE}
+BOTTLE_SPECIES = _UNFED_NEEDS - CHAIN_SPECIES
 
 # the work order -------------------------------------------------------------
 UNRUNNABLE = set(routes) - RUNNABLE
@@ -792,6 +816,8 @@ def main(argv: list[str] | None = None) -> int:
     w("")
 
     # --- 6 the buckets ---------------------------------------------------
+    from collections import Counter
+
     w("## 6. What blocks the rest")
     w("")
     w(f"### Blocked on something the corpus MAKES but cannot RUN ({len(BLOCKED)})")
@@ -819,10 +845,13 @@ def main(argv: list[str] | None = None) -> int:
     w("")
     w(f"### Blocked on a reagent bottle ({len(BOTTLE)})")
     w("")
+    _oc = Counter(x for _r, _m, orph in BOTTLE for x in orph)
+    _top, _n = _oc.most_common(1)[0]
     w("Nothing in 173 named industrial routes makes these at all, so no amount "
-      "of engine work reaches them. They are a **corpus** gap, and the cheapest "
-      "of the four buckets to close: a route that makes benzaldehyde would free "
-      "three of the four.")
+      "of engine work reaches them: a catalyst the corpus writes on both sides "
+      "of its step is not made by it. They are a **corpus** gap, and the "
+      f"single most common one is `{_top}`, the bottle for {_n} of the "
+      f"{len(BOTTLE)} routes here.")
     w("")
     w("| route | the bottle | also waiting on |")
     w("|---|---|---|")
@@ -832,8 +861,6 @@ def main(argv: list[str] | None = None) -> int:
     w("")
 
     # --- 7 the lever -----------------------------------------------------
-    from collections import Counter
-
     blockers: Counter[str] = Counter()
     for rid in sorted(RUNNABLE - set(PLAYABLE)):
         for x in needs(rid) - SHELF:

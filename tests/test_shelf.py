@@ -61,7 +61,7 @@ def test_the_psv_and_the_generated_module_say_the_same_thing():
 
 
 def test_the_three_tiers_are_the_measured_ones():
-    """43 / 23 / 4, and the relation rather than the level is what is pinned.
+    """43 / 21 / 11, and the relation rather than the level is what is pinned.
 
     ⚠ C4's rule: a test that pins a LEVEL gets re-numbered by the next session
     that moves it and the claim quietly becomes someone else's arithmetic. So the
@@ -86,11 +86,27 @@ def test_the_three_tiers_are_the_measured_ones():
     # catalysts in -- which made a route that makes its target in row 1 and
     # consumes it in row 2 ask the player to already hold it. Nothing became
     # reachable to earn this deletion. A demand was withdrawn.
-    assert got["intermediate"] == 24
+    #
+    # T29 MOVED FIVE MORE OUT OF IT AND INTO `bottle`, and again no route
+    # became reachable: `build_playable.MADE_SOMEWHERE` was crediting a step
+    # that carries a species on BOTH sides with making it, so the corpus read
+    # as smelting its own catalysts. A catalyst is not earnable, so the tier
+    # that is supposed to shrink shrinks and the one that never shrinks grows.
+    # 24 -> 21 and 4 -> 11, net +4 rows, two of which (`ammonia` and
+    # `acetic-anhydride`) were owed and unrecorded.
+    assert got["intermediate"] == 21
     assert "sodium-stearate" not in {e.id for e in SHELF}, (
         "T32: soap-saponification makes it; it is earnable and not a gift"
     )
-    assert got["bottle"] == 4
+    assert got["bottle"] == 11
+    # THE RELATION, not the level: a catalyst metal is bought, for ever. If
+    # one of these is ever `intermediate` again, something is crediting a
+    # no-op row with making it -- see `catalog.made_by` and T29.
+    tiers = {e.id: e.tier for e in SHELF}
+    for metal in ("nickel", "cobalt", "palladium", "platinum"):
+        assert tiers.get(metal) == "bottle", (
+            f"{metal} is {tiers.get(metal)}: nothing in the corpus smelts it"
+        )
     assert got["intermediate"] > 0, (
         "an empty intermediate tier means every stranded route became "
         "reachable, which is the goal -- update this test and delete the rows"

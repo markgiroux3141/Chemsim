@@ -4,6 +4,21 @@ Newest first. One entry per session, twelve lines at most, enforced by
 `tools/check_docs.py`. When this file passes 400 lines the older half rolls into
 `docs/history/changelog-YYYY-MM.md`.
 
+## 2026-09-16 — T29: the corpus does not smelt its own catalysts
+
+`build_playable.MADE_SOMEWHERE` took every step product raw, so a catalyst --
+written on BOTH sides of its step -- counted as made by the corpus: ten `nickel`
+rows read as smelting nickel, `furfural-route` row 1 (`xylose + water ->
+xylose`) as hydrolysing its own pentose. Same guard as `catalog.made_by`, whose
+comment already named this file; 21 species leave the set. Second defect: tiers
+were read off the per-ROUTE buckets, and a route can miss one species the corpus
+makes and one it does not (`steam-reforming` wants `methane` and `nickel`), so
+`methane` and `acetic-anhydride` were filed under neither. Tiers are now
+species-level. Shelf 71 -> 75 rows, 43/24/4 -> 43/21/11; granting it takes
+playable 23 -> 51, every runnable route, against 23 -> 48 before. No chemistry
+moved: `check.ps1` green, template products 96/16/9/3/2 unchanged, the other
+artefacts byte-identical, and the suite's last red test is green. Next: T33.
+
 ## 2026-09-15 — T32: four routes were charged with the thing they exist to make
 
 `needs()` unioned `route_roles().catalysts` in, and a catalyst is derived by

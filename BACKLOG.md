@@ -79,21 +79,6 @@ the substituent lands.
 **Done when:** the count of rows whose mapping their own step does not constrain
 is measured, or the idea is refused in writing.
 
-### T29 — `ammonia` and `platinum`: the last red test, and it is a design call (S)
-`test_playable_levers.py::test_the_shelf_file_holds_exactly_what_this_audit_measured`
-is the ONLY failure in the suite (T32's run, 1 failed / 1360 passed). Its two
-halves were independent and T32 closed the scorer half, so what is left is
-genuine: `andrussow`'s platinum and `tollens-test`'s ammonia are real same-step
-catalysts nothing in the corpus makes, and the audit is right to demand them.
-`shelf.psv` is hand-maintained game design, so a row is a decision about what a
-player is GIVEN -- and the file's own header already argues SEVEN unpriceable
-natural rows into staying. Either is defensible; giving a player platinum is
-the larger claim, and `shelf.psv`'s NOT_NATURAL_NOTES calls the catalyst metals
-the rule that decides the third tier. READ THE FAILURE, NOT THIS ITEM: the set
-moves with every template session.
-**Done when:** each species the test names is a shelf row with a note, or is
-argued down in `shelf.psv`'s header, and the test is green.
-
 ### T23 — the corpus half of the pKa gap, one row at a time (M, running)
 `validation/pka_domains.py` prints the queue and the route-demand ranking; take
 it from there rather than from a count typed here. Method: query PubChem

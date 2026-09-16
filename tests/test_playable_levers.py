@@ -92,8 +92,7 @@ def test_routes_are_stranded_rather_than_missing_chemistry(bp):
     stranded = bp.BLOCKED + bp.BOTTLE
     assert len(stranded) >= 15, "the stranded bucket is the P-series' premise"
 
-    want = {x for _rid, miss, _o in bp.BLOCKED for x in miss}
-    want |= {x for _rid, _m, orphan in bp.BOTTLE for x in orphan}
+    want = bp.CHAIN_SPECIES | bp.BOTTLE_SPECIES
     granted = len(bp.closure(extra=want)[0])
     assert granted - base >= len(stranded) - 5, (
         f"granting {len(want)} species moved playable by {granted - base} "
@@ -189,8 +188,11 @@ def test_the_shelf_file_holds_exactly_what_this_audit_measured(bp):
     from chemsim.engine.shelf_data import SHELF
 
     rows = {e.tier: {x.id for x in SHELF if x.tier == e.tier} for e in SHELF}
-    chain = {x for _rid, miss, _o in bp.BLOCKED for x in miss}
-    bottle = {x for _rid, _m, orphan in bp.BOTTLE for x in orphan}
+    # The SPECIES-level sets, not the per-route buckets: a route can be missing
+    # one species the corpus makes and one it does not, and reading the tiers
+    # off `BLOCKED`/`BOTTLE` filed the first of those two under neither tier.
+    chain = bp.CHAIN_SPECIES
+    bottle = bp.BOTTLE_SPECIES
     markers = {c for c in bp.NATURAL_IDS if c not in bp.compounds}
 
     assert markers == {"coal-marker", "collagen-marker"}, (
@@ -210,6 +212,9 @@ def test_the_shelf_file_holds_exactly_what_this_audit_measured(bp):
         f"  newly stranded, ADD to shelf.psv: {sorted(chain - rows['intermediate'])}"
     )
     assert rows["bottle"] == bottle, (
-        f"the BOTTLE species moved: file {sorted(rows['bottle'])} vs measured "
-        f"{sorted(bottle)}"
+        f"the BOTTLE species moved -- nothing in the corpus makes these, so a "
+        f"row here is a purchase and never becomes earnable.\n"
+        f"  now made somewhere, RETIER in shelf.psv: "
+        f"{sorted(rows['bottle'] - bottle)}\n"
+        f"  newly unmakeable, ADD to shelf.psv: {sorted(bottle - rows['bottle'])}"
     )

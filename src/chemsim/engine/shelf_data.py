@@ -5,7 +5,7 @@ docstring carries the resolution rule and the measurements behind it. The two
 inputs are ``data/catalog/shelf.psv`` (the three tiers, hand-maintained) and
 ``data/catalog/compounds`` (all 1583 corpus species, audited).
 
-``SHELF``   the 71 starting rows, in file order.
+``SHELF``   the 75 starting rows, in file order.
 ``ROSTER``  every corpus species by id -- the picker's whole content, including
             the 401 that are REFUSED a price and may never be charged.
             A refused row carries its REASON, because GAME_DESIGN.md 8.3 says a
@@ -17,17 +17,17 @@ MEASURED AT GENERATION:
     corpus species                               1583
     ... chargeable                               1182
     ... REFUSED a price                           401
-    shelf rows                                     71
-    ... natural / intermediate / bottle            43 /  24 /   4
+    shelf rows                                     75
+    ... natural / intermediate / bottle            43 /  21 /  11
     ... refused, and kept anyway                    6
-    ... charged as a reacting mineral LATTICE      15
+    ... charged as a reacting mineral LATTICE      16
     ... charged as IONS                            14
     ... a lattice that CANNOT be dissolved
         because it reacts as a crystal instead      6
     ... where the declared phase and the
         engine's own estimate DISAGREE              1
 
-Generated 2026-09-14.
+Generated 2026-09-16.
 """
 
 from __future__ import annotations
@@ -170,8 +170,12 @@ SHELF: tuple[ShelfEntry, ...] = (
                'wood lignin'),
     ShelfEntry('acrylonitrile', 'intermediate', 0.3, 'liquid',
                'chain: propylene ammoxidation, itself stranded'),
+    ShelfEntry('acetic-anhydride', 'intermediate', 0.2, 'liquid',
+               'chain: ketene absorbed in acetic acid'),
     ShelfEntry('aluminium', 'intermediate', 0.3, 'solid',
                'chain: Hall-Heroult'),
+    ShelfEntry('ammonia', 'intermediate', 0.05, 'gas',
+               'chain: Haber-Bosch, itself stranded'),
     ShelfEntry('aniline', 'intermediate', 0.3, 'liquid',
                'chain: nitrobenzene reduced'),
     ShelfEntry('aspirin', 'intermediate', 0.2, 'solid',
@@ -180,10 +184,6 @@ SHELF: tuple[ShelfEntry, ...] = (
                'chain: ethanol chlorinated'),
     ShelfEntry('chlorobenzene', 'intermediate', 0.3, 'liquid',
                'chain: benzene chlorinated'),
-    ShelfEntry('cobalt', 'intermediate', 0.05, 'solid',
-               'chain: a catalyst metal nothing in the corpus smelts'),
-    ShelfEntry('copper-ii-ion', 'intermediate', 0.1, 'liquid',
-               'chain: dissolved copper -- it IS an ion, there is no lattice to charge'),
     ShelfEntry('ethylene', 'intermediate', 0.05, 'gas',
                'chain: a cracker product'),
     ShelfEntry('glycerol', 'intermediate', 0.3, 'liquid',
@@ -198,14 +198,10 @@ SHELF: tuple[ShelfEntry, ...] = (
                'chain: the blast furnace'),
     ShelfEntry('methane', 'intermediate', 0.05, 'gas',
                'chain: a cracker product -- natural gas is DELIBERATELY not natural'),
-    ShelfEntry('nickel', 'intermediate', 0.05, 'solid',
-               'chain: a catalyst metal nothing in the corpus smelts'),
     ShelfEntry('nitrobenzene', 'intermediate', 0.3, 'liquid',
                'chain: benzene nitrated'),
     ShelfEntry('nitrogen-dioxide', 'intermediate', 0.02, 'gas',
                "chain: the lead chamber's NOx carrier -- 0.5 mmol makes 40 mmol of acid"),
-    ShelfEntry('palladium', 'intermediate', 0.02, 'solid',
-               'chain: a catalyst metal nothing in the corpus smelts'),
     ShelfEntry('phenol', 'intermediate', 0.3, 'solid',
                'chain: cumene, or a fused benzenesulfonate -- and it MELTS at 314 K'),
     ShelfEntry('propylene', 'intermediate', 0.05, 'gas',
@@ -214,8 +210,6 @@ SHELF: tuple[ShelfEntry, ...] = (
                'chain: soda and vinegar -- dissolved: no lattice record'),
     ShelfEntry('tristearin', 'intermediate', 0.1, 'solid',
                'chain: a hardened fat -- margarine makes it and needs nickel'),
-    ShelfEntry('xylose', 'intermediate', 0.3, 'solid',
-               'chain: hemicellulose hydrolysed'),
     ShelfEntry('benzaldehyde', 'bottle', 0.3, 'liquid',
                'bought: no route in the corpus makes it'),
     ShelfEntry('malonic-acid', 'bottle', 0.2, 'solid',
@@ -224,6 +218,20 @@ SHELF: tuple[ShelfEntry, ...] = (
                'bought: no route in the corpus makes it'),
     ShelfEntry('bromoethane', 'bottle', 0.3, 'liquid',
                'bought: no route in the corpus makes it'),
+    ShelfEntry('cobalt', 'bottle', 0.05, 'solid',
+               'bought: a catalyst metal nothing in the corpus smelts'),
+    ShelfEntry('nickel', 'bottle', 0.05, 'solid',
+               'bought: a catalyst metal nothing in the corpus smelts'),
+    ShelfEntry('palladium', 'bottle', 0.02, 'solid',
+               'bought: a catalyst metal nothing in the corpus smelts'),
+    ShelfEntry('platinum', 'bottle', 0.02, 'solid',
+               'bought: a catalyst metal nothing in the corpus smelts'),
+    ShelfEntry('copper-ii-ion', 'bottle', 0.1, 'liquid',
+               'bought: dissolved copper -- it IS an ion, there is no lattice to charge'),
+    ShelfEntry('piperidine', 'bottle', 0.1, 'liquid',
+               'bought: the Knoevenagel base, and it leaves the step unchanged'),
+    ShelfEntry('xylose', 'bottle', 0.3, 'solid',
+               "bought: the corpus's only pentosan step is `xylose + water -> xylose`"),
 )
 
 ROSTER: dict[str, RosterEntry] = {

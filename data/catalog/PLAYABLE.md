@@ -93,7 +93,7 @@ The GOAL in `docs/history/MILESTONES.md` § THE G-SERIES is stated as **~10 natu
 
 This half of the judgement is the arguable half, because every row here is a species that blocks a route the engine can already run.
 
-- **the catalyst metals -- `nickel`, `cobalt`, `platinum`, `palladium`** — a player who cannot smelt them cannot have them, and nothing in the corpus smelts them. This is the rule that decides the third tier.
+- **the catalyst metals -- `nickel`, `cobalt`, `platinum`, `palladium`** — a player who cannot smelt them cannot have them, and nothing in the corpus smelts them -- the corpus writes a catalyst on BOTH sides of its step, which is not making it. That is the rule that decides the third tier, and since T29 all four are bottle rows: bought.
 - **`iron` and `copper` and `aluminium` as METAL** — the ore is natural and the metal is not. `blast-furnace`, `copper-smelting` and `hall-heroult` are how you get them, and two of the three are the routes under test.
 - **`methane`** — arguably natural gas, and calling it natural would light up `steam-reforming`. Left out because the corpus's own step reads it as a cracker product, and because a seep is not a bench reagent.
 - **`benzaldehyde`, `malonic-acid`, `4-nitrophenol`, `bromoethane`** — the reagent bottle. Nothing in 173 industrial routes makes any of them, and they block four named syntheses -- see the fourth bucket.
@@ -226,7 +226,7 @@ The other tier-1 routes are exercised elsewhere — `zinc-smelting`, `copper-sme
 
 ## 6. What blocks the rest
 
-### Blocked on something the corpus MAKES but cannot RUN (24)
+### Blocked on something the corpus MAKES but cannot RUN (18)
 
 These are the routes a player can see the shape of and not reach. Each one is runnable today and waiting on a route that is not.
 
@@ -234,41 +234,41 @@ These are the routes a player can see the shape of and not reach. Each one is ru
 |---|---|---|
 | `acrylonitrile-sohio` | 2-propenenitrile | ammonia, propylene |
 | `adiponitrile-route` | hexanedinitrile | acrylonitrile |
-| `andrussow` | hydrogen cyanide | ammonia, methane, platinum |
 | `aniline-route` | phenylamine | hydrogen-chloride, iron, nitrobenzene |
 | `aspirin-impurity` | 2-hydroxybenzoic acid | aspirin |
 | `claus-process` | sulfur (S8 crown) | hydrogen-sulfide |
 | `ddt-route` | dichlorodiphenyltrichloroethane | chloral, chlorobenzene |
 | `deacon-process` | dichlorine | hydrogen-chloride |
 | `ethanol-hydration` | ethanol | ethylene |
-| `furfural-route` | 2-furaldehyde | nickel, palladium, xylose |
 | `glycerol-epichlorohydrin` | epichlorohydrin | glycerol, hydrogen-chloride |
 | `haber-bosch` | ammonia | iron |
-| `hydrogenation-margarine` | glyceryl tristearate | nickel |
 | `kolbe-electrolysis` | ethane | sodium-acetate |
 | `lead-chamber` | sulfuric acid | nitrogen-dioxide |
 | `nitroglycerin-route` | glyceryl trinitrate | glycerol |
-| `oxo-process` | butanal | cobalt, propylene |
 | `salicylic-kolbe` | 2-hydroxybenzoic acid | phenol |
 | `skraup-route` | quinoline | aniline, glycerol, nitrobenzene |
 | `soap-saponification` | sodium stearate | tristearin |
-| `steam-reforming` | hydrogen | methane, nickel |
 | `thermite` | iron metal | aluminium |
-| `wacker-process` | ethanal | copper-ii-ion, ethylene |
 | `williamson-ether` | methoxybenzene | iodomethane, phenol |
 
 ⚠⚠ **THE MOST IMPORTANT ROW IN THAT TABLE IS `lead-chamber`, AND IT IS BLOCKED ON A PINCH.** The lead chamber is the 18th century's sulfuric acid and G4 measured it running end to end from native sulfur — but its NOx carrier is *catalytic*, so it needs a starting charge of nitrogen dioxide that it then recovers, and **nothing a player can reach makes any.** Three routes in the corpus make NO₂ — `birkeland-eyde`, `ostwald-process` and the lead chamber itself — and none of the first two is runnable. Historically the charge came from saltpetre, and the corpus has saltpetre as a natural material and **no step that turns it into NOx**. So this is a *corpus* gap and not an engine one, and it is one of the two most valuable single species in the file — see §7, where it ties with aluminium at the top.
 
-### Blocked on a reagent bottle (4)
+### Blocked on a reagent bottle (10)
 
-Nothing in 173 named industrial routes makes these at all, so no amount of engine work reaches them. They are a **corpus** gap, and the cheapest of the four buckets to close: a route that makes benzaldehyde would free three of the four.
+Nothing in 173 named industrial routes makes these at all, so no amount of engine work reaches them: a catalyst the corpus writes on both sides of its step is not made by it. They are a **corpus** gap, and the single most common one is `nickel`, the bottle for 4 of the 10 routes here.
 
 | route | the bottle | also waiting on |
 |---|---|---|
+| `andrussow` | **platinum** | ammonia, methane |
 | `cannizzaro-route` | **benzaldehyde** | — |
-| `knoevenagel-route` | **benzaldehyde, malonic-acid** | piperidine |
+| `furfural-route` | **nickel, palladium, xylose** | — |
+| `hydrogenation-margarine` | **nickel** | — |
+| `knoevenagel-route` | **benzaldehyde, malonic-acid, piperidine** | — |
+| `oxo-process` | **cobalt** | propylene |
 | `perkin-route` | **benzaldehyde** | acetic-anhydride, sodium-acetate |
-| `phenacetin-route` | **4-nitrophenol, bromoethane** | acetic-anhydride, nickel |
+| `phenacetin-route` | **4-nitrophenol, bromoethane, nickel** | acetic-anhydride |
+| `steam-reforming` | **nickel** | methane |
+| `wacker-process` | **copper-ii-ion** | ethylene |
 
 ## 7. Is there a lever? No — and the frequent blocker is not the valuable one
 

@@ -29,19 +29,26 @@
 #   bottle        nothing in 173 catalog routes makes it at all. Bought, or the
 #                 corpus grows a route.
 #
-# Measured by `validation/playable_levers.py` panel 3 on 2026-09-14: granting
-# the 26 chain species and the 4 bottle species takes playable routes from 23
-# to 48, with no new chemistry of any kind. Granting every one of the 46
-# missing template classes instead is worth +14 (tests/test_playable_levers.py),
-# so a shelf edit is still the cheapest distance on the board by a wide margin,
-# and that is why this file exists before any more templates do.
+# Measured on 2026-09-16 by `tests/test_playable_levers.py`: granting the 21
+# chain species and the 11 bottle species takes playable routes from 23 to 51,
+# with no new chemistry of any kind -- and 51 is every route the engine can
+# RUN, so this file closes the feedstock gap completely and what is left is
+# template work. Granting every one of the 31 missing template classes instead
+# is worth +16. A shelf edit is still the cheapest distance on the board by a
+# wide margin, and that is why this file exists before any more templates do.
 #
-# That read 44 on 2026-09-13 and no route, template or price changed between:
-# T32 stopped four routes demanding their own target as a starting charge, one
-# of them `soap-saponification`, which reconnected the chain this tier sits on.
-# THE CHAIN SET IS NOT THIS BLOCK -- 26 species against 24 rows.
-# `tests/test_playable_levers.py` compares them and prints the difference as
-# the work order, which is how a row gets added or deleted here.
+# That read 23 -> 48 on 2026-09-14 over 26 chain and 4 bottle species. No
+# route, template or price moved between: T29 found that the audit sorted
+# SPECIES into tiers by asking which bucket their ROUTE fell in, and a route
+# can want one species the corpus makes and one it does not.
+# `steam-reforming` wants `methane` and `nickel`, and the old reading filed
+# methane under neither tier -- so the work order was short by two rows and
+# granting it left routes stranded. The tier is now read off the species.
+#
+# THE TIER SETS ARE NOT THESE BLOCKS by construction -- they are measured, and
+# `tests/test_playable_levers.py` compares them against the file and prints
+# the difference as the work order. That is how a row gets added, retiered or
+# deleted here, and it is the only way one should be.
 #
 # ## FOUR THINGS THIS FILE IS NOT
 #
@@ -123,16 +130,16 @@ alpha-pinene               | natural      | 0.3   | liquid | turpentine from pin
 citronellal                | natural      | 0.3   | liquid | citronella oil
 lignin-monomer-coniferyl   | natural      | 0.2   | solid  | wood lignin
 
-# --- INTERMEDIATE: 24 rows. A stranded route makes each of these, so
+# --- INTERMEDIATE: 21 rows. A stranded route makes each of these, so
 # every one of them is EARNABLE and this block is meant to get shorter.
 acrylonitrile              | intermediate | 0.3   | liquid | chain: propylene ammoxidation, itself stranded
+acetic-anhydride           | intermediate | 0.2   | liquid | chain: ketene absorbed in acetic acid
 aluminium                  | intermediate | 0.3   | solid  | chain: Hall-Heroult
+ammonia                    | intermediate | 0.05  | gas    | chain: Haber-Bosch, itself stranded
 aniline                    | intermediate | 0.3   | liquid | chain: nitrobenzene reduced
 aspirin                    | intermediate | 0.2   | solid  | chain: salicylic acid acetylated
 chloral                    | intermediate | 0.2   | liquid | chain: ethanol chlorinated
 chlorobenzene              | intermediate | 0.3   | liquid | chain: benzene chlorinated
-cobalt                     | intermediate | 0.05  | solid  | chain: a catalyst metal nothing in the corpus smelts
-copper-ii-ion              | intermediate | 0.1   | liquid | chain: dissolved copper -- it IS an ion, there is no lattice to charge
 ethylene                   | intermediate | 0.05  | gas    | chain: a cracker product
 glycerol                   | intermediate | 0.3   | liquid | chain: a fat saponified
 hydrogen-chloride          | intermediate | 0.05  | gas    | chain: salt and vitriol
@@ -140,20 +147,32 @@ hydrogen-sulfide           | intermediate | 0.05  | gas    | chain: acid on a me
 iodomethane                | intermediate | 0.2   | liquid | chain: methanol and hydriodic acid
 iron                       | intermediate | 0.5   | solid  | chain: the blast furnace
 methane                    | intermediate | 0.05  | gas    | chain: a cracker product -- natural gas is DELIBERATELY not natural
-nickel                     | intermediate | 0.05  | solid  | chain: a catalyst metal nothing in the corpus smelts
 nitrobenzene               | intermediate | 0.3   | liquid | chain: benzene nitrated
 nitrogen-dioxide           | intermediate | 0.02  | gas    | chain: the lead chamber's NOx carrier -- 0.5 mmol makes 40 mmol of acid
-palladium                  | intermediate | 0.02  | solid  | chain: a catalyst metal nothing in the corpus smelts
 phenol                     | intermediate | 0.3   | solid  | chain: cumene, or a fused benzenesulfonate -- and it MELTS at 314 K
 propylene                  | intermediate | 0.05  | gas    | chain: a cracker product
 sodium-acetate             | intermediate | 0.3   | liquid | chain: soda and vinegar -- dissolved: no lattice record
 tristearin                 | intermediate | 0.1   | solid  | chain: a hardened fat -- margarine makes it and needs nickel
-xylose                     | intermediate | 0.3   | solid  | chain: hemicellulose hydrolysed
 
-# --- BOTTLE: 4 rows. NOTHING in 173 routes makes any of these, and they
-# are worth only +1 route together, because each of those routes is short
-# of something else as well. A reagent catalogue, not a work order.
+# --- BOTTLE: 11 rows. NOTHING in 173 routes makes any of these, so unlike
+# the block above NO amount of engine work earns them: they are bought, or
+# the corpus grows a route. A reagent catalogue, not a work order.
+#
+# SEVEN OF THESE ROWS SAT IN THE BLOCK ABOVE UNTIL T29, and three of them
+# said so in their own note while the tier column said the opposite. The
+# audit credited a step that carries a species on BOTH sides with making
+# it, so ten `nickel` rows read as the corpus smelting nickel and
+# `furfural-route` row 1 -- `xylose + water -> xylose` -- read as it
+# hydrolysing its own pentose. A catalyst is not earnable. See
+# `catalog.made_by`, which has carried the same guard since T32.
 benzaldehyde               | bottle       | 0.3   | liquid | bought: no route in the corpus makes it
 malonic-acid               | bottle       | 0.2   | solid  | bought: no route in the corpus makes it
 4-nitrophenol              | bottle       | 0.2   | solid  | bought: no route in the corpus makes it
 bromoethane                | bottle       | 0.3   | liquid | bought: no route in the corpus makes it
+cobalt                     | bottle       | 0.05  | solid  | bought: a catalyst metal nothing in the corpus smelts
+nickel                     | bottle       | 0.05  | solid  | bought: a catalyst metal nothing in the corpus smelts
+palladium                  | bottle       | 0.02  | solid  | bought: a catalyst metal nothing in the corpus smelts
+platinum                   | bottle       | 0.02  | solid  | bought: a catalyst metal nothing in the corpus smelts
+copper-ii-ion              | bottle       | 0.1   | liquid | bought: dissolved copper -- it IS an ion, there is no lattice to charge
+piperidine                 | bottle       | 0.1   | liquid | bought: the Knoevenagel base, and it leaves the step unchanged
+xylose                     | bottle       | 0.3   | solid  | bought: the corpus's only pentosan step is `xylose + water -> xylose`
