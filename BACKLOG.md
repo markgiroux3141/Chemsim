@@ -54,15 +54,11 @@ runnable. What is left of the slope is promoting rows (T2c). Argued in
   spelling makes xylose chargeable, so the class need never be covered for the
   route to reach its target. Argued in `test_vitriol.py`'s pentosan test.
 
-### T33 — `CHANGELOG.md` is past the 400 lines its own header rolls at (S, from T30)
-Nothing enforces it (`check_docs.py` caps an ENTRY, not the file), so it is a
-convention going stale rather than a red check. A whole-file move, CRLF.
-**Done when:** under 400 lines, the rolled half one new `docs/history/` file.
-
 ### T2c — promote a literal row, the cheap way to buy a playable route (M)
 `PLAYABLE.md` scores the `family` tier alone, because that is what
-`load_templates` loads. Granting the extracted rows takes runnable 50 -> 60 and
-playable 23 -> 25 (`acetic-anhydride-ketene`, `wood-distillation`); §8b marks
+`load_templates` loads. Granting the extracted rows takes runnable 51 -> 61 and
+playable 23 -> 25 (`acetic-anhydride-ketene`, `wood-distillation`), measured
+2026-09-16 off `bp.RUNNABLE_WITH_LITERAL`; §8b marks
 the work-order classes that already have a row. A promotion is not a copy:
 check the atom mapping by hand (T2d), argue a barrier, move the row into
 `templates.psv` at `tier=family`.
@@ -133,7 +129,7 @@ clears its DUE, and `python tools/cadence.py` explains which of the two happened
 `validation/tolerance_audit.py` is red on `activity` and `multistep_prep`: a
 quotable digit moves between the default tolerance and rtol 1e-8, and
 `named_routes` raises there. Pre-existing, and reproduced to the same digits on
-three runs now (T23, T27, T28), so the debt is stable and a run that MOVES is a
+four runs now (T23, T27, T28, T33), so the debt is stable and a run that MOVES is a
 real finding -- `python tools/cadence.py` prints the digits. The fix the audit
 prescribes is a tight per-example tolerance, as `lime_cycle.py` has.
 **Done when:** `python validation/tolerance_audit.py` exits 0, or the ledger
@@ -173,6 +169,18 @@ reached 243 oligoesters six condensations deep and 11 of 36 flasks hit the cap.
 A bound question -- molar mass, condensation depth, or the cap naming it.
 **Done when:** most of the 36 flasks reach a fixpoint, or `Snapshot.notices`
 names the template filling the cap.
+
+### T34 — nitric acid is the only substrate blocking two templates (S, found in T33)
+T33's sweep regeneration put T30's `nitrate_esterification` on the silent list,
+and it wants the same slot `aromatic_nitration` does. So
+`[OX2H1][N+](=[O])[O-]` now reads `2 blocked, 2 alone` at the top of
+`silent_templates.psv`'s work order, where every other row is 1 and 1: one
+species unblocks two templates, and T30's row has never fired from the shelf.
+The open question is the tier -- the corpus makes nitric acid, so this is a
+`shelf.psv` argument, not a purchase, and it belongs with the playable audit
+rather than against it.
+**Done when:** the slot is off the work order and `python tools/classify_silent.py`
+reports 29 silent, or the tier argument is refused in writing.
 
 ### T16 — the other loose sulfur-dioxide slot (S, found in T12)
 `sulfur_dioxide_oxidation_by_nitrogen_dioxide` still writes SO2 as

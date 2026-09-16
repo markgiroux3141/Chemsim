@@ -39,8 +39,8 @@
 # pKa, mostly. They are not in the pool: a flask cannot be CHARGED
 # with one, and nothing can react with what has no standard state.
 #! needs-more-than-a-pair = 10
-#! no-substrate = 20
-#! silent = 30
+#! no-substrate = 21
+#! silent = 31
 #! closure_rows = 24
 #! closure_species = 50
 #! closure_frontier = 0
@@ -50,12 +50,14 @@
 #! pool_unpriceable = 0
 #
 # THE WORK ORDER: one missing substrate holds several
-# templates, so the queue is this list and not the 30.
+# templates, so the queue is this list and not the 31.
 # 'blocked' is how many templates name this slot; 'alone' is how
 # many name it and nothing else, so 'alone' is what sourcing it
 # would unblock.
 #! blocking_substrates = 24
-#! substrates_that_unblock_alone = 17
+#! substrates_that_unblock_alone = 18
+#   2 blocked, 2 alone  [OX2H1][N+](=[O])[O-]
+#      aromatic_nitration, nitrate_esterification
 #   1 blocked, 1 alone  [C;H4]
 #      steam_reforming
 #   1 blocked, 1 alone  [CH2X3]=[CX2]=[OX1]
@@ -80,8 +82,6 @@
 #      amide_methylolation
 #   1 blocked, 1 alone  [OX1]=[SX3](=[OX1])=[OX1]
 #      sulfur_trioxide_hydration
-#   1 blocked, 1 alone  [OX2H1][N+](=[O])[O-]
-#      aromatic_nitration
 #   1 blocked, 1 alone  [OX2H][CH2][C;H1;@,@@]1[OX2][C;H1;@,@@]([OX2H])[C;H1;@,@@]([OX2H])[C;H1;@,@@]1[OX2H]
 #      aldofuranose_dehydration
 #   1 blocked, 1 alone  [OX2H][CH2][c]1[cH][cH][c]([CH]=[O])[o]1
@@ -126,6 +126,7 @@ kolbe_schmitt_carboxylation | needs-more-than-a-pair | 2 | 2 | eugenol@1 |  | re
 methane_ammoxidation | no-substrate | 3 | 0 |  | [CX4;H4] | nothing the shelf holds or can make matches it
 mineral_oxyacid_dissociation | no-substrate | 2 | 0 |  | [S,N,P;+0,+1](=[O])[OX2H1] | nothing the shelf holds or can make matches it
 n_acylation | no-substrate | 2 | 0 |  | [NX3;H1,H2;!$(N[#6]=[O,S,N])] + [CX3](=[O])[OX2][CX3]=[O] | nothing the shelf holds or can make matches it
+nitrate_esterification | no-substrate | 2 | 0 |  | [OX2H1][N+](=[O])[O-] | nothing the shelf holds or can make matches it
 nitric_oxide_reoxidation | no-substrate | 3 | 1 | closure | [N;H0]=[O] | no rewrite survives: the pool matches it only inside a larger molecule
 nitro_hydrogenation | no-substrate | 4 | 0 |  | [c][N+](=[O])[O-] | nothing the shelf holds or can make matches it
 perkin_condensation | no-substrate | 2 | 0 |  | [CH3][CX3](=[O])[OX2][CX3]=[O] | nothing the shelf holds or can make matches it

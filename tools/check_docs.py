@@ -8,7 +8,8 @@ Two kinds of rule:
 
 * **Caps** apply to the five files of the working set, which are new and small,
   and are absolute. `CLAUDE.md` may not exceed 150 lines; a `CHANGELOG.md` entry
-  may not exceed 12.
+  may not exceed 12 and the file 400, at which point its older half rolls into
+  `docs/history/changelog-YYYY-MM.md`.
 * **Ratchets** apply to the debt that already exists -- 662 lines of `README.md`,
   1,050 warning glyphs in `src/chemsim` — where an absolute rule would fail on
   the day it was written and be deleted. A ratchet records today's count and
@@ -37,6 +38,8 @@ LINE_CAPS = {
     "CLAUDE.md": 150,
     "NEXT.md": 120,
     "BACKLOG.md": 300,
+    # At the cap, roll the older half into docs/history/changelog-YYYY-MM.md.
+    "CHANGELOG.md": 400,
 }
 
 CHANGELOG_ENTRY_CAP = 12

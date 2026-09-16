@@ -1,6 +1,6 @@
 # DERIVED by tools/build_reachable.py -- do not hand-edit.
 # Every pair of chargeable natural shelf rows, expanded to a fixpoint
-# with all 67 'family' templates and a 400-species cap.
+# with all 68 'family' templates and a 400-species cap.
 # a | b | species | reactions | stop | frontier
 #
 # A capped pair is a LOWER bound on its own reaction count, and the
@@ -13,9 +13,9 @@
 #! capped_pairs = 271
 #! inert_pairs = 347
 #! crashed_pairs = 0
-#! templates = 67
+#! templates = 68
 #! tier = family
-#! silent_templates = alcohol_halide_substitution, aldofuranose_dehydration, alkene_hydrodimerisation, alkyne_hydration, allylic_ammoxidation, amide_methylolation, aromatic_nitration, cannizzaro_disproportionation, carbanion_alkylation, cyanide_imine_addition, hydroformylation_branched, hydroformylation_linear, hydroxymethylfurfural_rehydration, intramolecular_williamson, ketene_acid_addition, ketofuranose_dehydration, knoevenagel_doebner_condensation, kolbe_schmitt_carboxylation, methane_ammoxidation, mineral_oxyacid_dissociation, n_acylation, nitric_oxide_reoxidation, nitro_hydrogenation, perkin_condensation, skraup_cyclisation, steam_reforming, sulfur_dioxide_oxidation_by_nitrogen_dioxide, sulfur_trioxide_hydration, wacker_oxidation, williamson_ether_synthesis
+#! silent_templates = alcohol_halide_substitution, aldofuranose_dehydration, alkene_hydrodimerisation, alkyne_hydration, allylic_ammoxidation, amide_methylolation, aromatic_nitration, cannizzaro_disproportionation, carbanion_alkylation, cyanide_imine_addition, hydroformylation_branched, hydroformylation_linear, hydroxymethylfurfural_rehydration, intramolecular_williamson, ketene_acid_addition, ketofuranose_dehydration, knoevenagel_doebner_condensation, kolbe_schmitt_carboxylation, methane_ammoxidation, mineral_oxyacid_dissociation, n_acylation, nitrate_esterification, nitric_oxide_reoxidation, nitro_hydrogenation, perkin_condensation, skraup_cyclisation, steam_reforming, sulfur_dioxide_oxidation_by_nitrogen_dioxide, sulfur_trioxide_hydration, wacker_oxidation, williamson_ether_synthesis
 # the ten busiest templates, distinct reactions each
 # (a reverse counts toward its forward, as in templates_fired):
 #    10270  ether_condensation

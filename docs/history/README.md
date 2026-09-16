@@ -12,6 +12,7 @@ arrives at the code with nothing left.
 | `HANDOFF.md` | 574 KB, 8,637 lines, **zero headings** | grep only. It cannot be split and should not be opened. |
 | `NEXT_SESSION.md` | a superseded bootstrap | superseded by `NEXT.md` at the root |
 | `NEXT_PROMPT.md` | the previous bootstrap | superseded by `NEXT.md` at the root |
+| `changelog-2026-09.md` | 14 rolled `CHANGELOG.md` entries, 2026-09-02 to 2026-09-12 | grep it; the live file at the root carries 2026-09-13 onward |
 | `ASSESSMENT.md` | the 2026-08-17 self-assessment | its conclusion is in `fable analysis/01-CRITIQUE.md` |
 | `EQUIPMENT_PLAN.md`, `EQUIPMENT_CATALOG.md` | the equipment design | design rationale still live moves to `docs/design/` when a task needs it |
 
@@ -30,7 +31,7 @@ The replacement is five files with size caps, enforced by `tools/check_docs.py`:
 | `CLAUDE.md` | 150 lines | stable; auto-loaded |
 | `NEXT.md` | 120 lines | **overwritten** every session, never appended |
 | `BACKLOG.md` | 300 lines | edited in place; a done item is **deleted** |
-| `CHANGELOG.md` | 12 lines per entry | append-only, newest first |
+| `CHANGELOG.md` | 12 lines per entry, 400 per file | append-only, newest first; rolls here at the cap |
 | `docs/design/*.md` | 300 lines each | one topic per file, edited rarely |
 
 A finished task's record is its `CHANGELOG.md` entry and its commit. If it taught

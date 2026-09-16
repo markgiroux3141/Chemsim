@@ -136,12 +136,14 @@ of record, a live arc or a file that moved is now lying to every future session.
 ## Step 7 — Hold the caps
 
 `python tools/check_docs.py` must pass. It enforces absolute caps on
-`CLAUDE.md` (150), `NEXT.md` (120), `BACKLOG.md` (300) and a CHANGELOG entry
-(12), and it **ratchets** the existing debt — README lines, warning-glyph counts
+`CLAUDE.md` (150), `NEXT.md` (120), `BACKLOG.md` (300), `CHANGELOG.md` (400)
+and a CHANGELOG entry (12), and it **ratchets** the existing debt — README lines, warning-glyph counts
 per tree — failing when a count moves in *either* direction.
 
 - Over a cap: cut content or move it (`docs/design/` for rationale,
   `docs/manual/chapters/` for physics). Never raise a cap to fit the text.
+- Over the CHANGELOG's 400: roll its older half into
+  `docs/history/changelog-YYYY-MM.md`, whole entries only, CRLF both sides.
 - Debt paid down: `python tools/check_docs.py --fix-budgets`, and say in the
   CHANGELOG what moved.
 - Debt grown: that is the check working. Undo the growth.
