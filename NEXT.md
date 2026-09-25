@@ -30,10 +30,19 @@ the suite on every push; memory went 125 -> 26 notes.
 
 ## Do this now
 
-1. **Read CI first.** `python tools/ci_status.py --slowest`. A red job on HEAD
-   is task 1: the failing test ids are printed. If the suite job timed out
-   again, the `never finished` annotations name the test that hangs only on
-   the runner -- it is green locally, so start from what differs there.
+1. **Make the CI suite job finish.** The suite is green locally (1,361/1,361,
+   9m40s on 8 workers) and has run past CI's time limit three times. What is
+   known, all from `python tools/ci_status.py --slowest`: three xdist workers
+   were killed at the 900 s per-test timeout in the SETUP of `test_playable`,
+   `test_vanillin` and `test_fermentation`, which is `import build_playable`;
+   that same import takes 29 s standalone on the runner (the `profile` job).
+   The `profile` job on 36b615a times `test_playable` alone (notices titled
+   `serial`) and the four scoreboard modules together (`four at once`).
+   Read those first. Slow only four-at-once: give the scoreboard modules
+   their own CI job and keep them out of the xdist run. Slow serially too:
+   the cost is in the pytest process, so profile the fixture under pytest.
+   *Done when:* `pytest (full suite)` is `success` on HEAD, and the `profile`
+   job is deleted from `ci.yml` once it has answered.
 2. **B1 -- price what the new rows wait on.** 54 benchmark cases pass as
    rewrites and cannot run: the `unpriced` column of `scores.psv` and the
    `#! unpriced` footer of `literal.psv` are the work order (phenyl isocyanate,
