@@ -244,5 +244,7 @@ def test_the_rule_is_what_lets_the_acid_dissociate_at_all() -> None:
                               volatility=VolatilityProvider(on), max_species=60)
 
     assert "CCCCCCCCCCCCCCCCCC(=O)[O-]" in without.unpriced
-    assert not with_rule.unpriced
+    # the rule prices the stearate; an enolate the carbanion rows discover is a
+    # separate data gap, reported through the same `unpriced`
+    assert "CCCCCCCCCCCCCCCCCC(=O)[O-]" not in with_rule.unpriced
     assert len(with_rule.reactions) > len(without.reactions)

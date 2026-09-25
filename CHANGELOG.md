@@ -9,11 +9,12 @@ into `docs/history/changelog-YYYY-MM.md`, where 2026-09-02 to 2026-09-12 is.
 The first CI run named three tests that pinned one machine's round-off: an
 abs 5e-11 on an ODE result, a sealed flask's aldehyde at 1e-9 (CI 6e-9), an
 exact 0.0 where CI got 1.5e-22 mol. Each now pins the claim at solver
-precision. The suite took 32.9 min on four workers under `loadfile`, one
-module being the critical path; it runs `worksteal` now, and the slowest ten
-modules are published as notices (`python tools/ci_status.py --slowest`),
-which is T0.4's measurement. `check.ps1` names its failing steps as an
-annotation in Actions, so a session reads them without a token.
+precision. Then the suite ran past CI's 150-minute limit twice after the
+new rows (`worksteal`, then `loadfile` with a 900 s per-test timeout) while
+it runs green here in 9m40s on 8 workers, 1,361/1,361. CI now writes a
+per-test reportlog and names what started and never finished. The two
+carbanion rows stopped deprotonating a carboxylic acid at carbon, which
+`test_fatty_acid_pka` caught; its assertion now pins the stearate only.
 
 ## 2026-09-24 — 38 textbook family rows, and the benchmark goes 20 -> 56 of 63
 

@@ -17,7 +17,7 @@ Every number came from a command run on 2026-09-24 or 25.
 | the shelf | 82 rows: 43 natural, 26 intermediate, 13 bottle | `python tools/build_shelf.py` |
 | the shelf sweep | 666 pairs, 24,710 reactions, 47 of 106 family templates fire, 1,301 s; 59 silent, classified | `derived/reachable.psv`, `derived/silent_templates.psv` |
 | tests | 1,361 collected. CI runs them on every push | `python tools/ci_status.py` |
-| CI on the last pushed commit | the probe push before this close-out: 3 tests pinned one machine's round-off, fixed here. This push is unread | `python tools/ci_status.py` |
+| CI | fast job green. The SUITE job ran past its 150-min limit twice (no report) while the suite is green locally, 1,361/1,361 in 9m40s on 8 workers. `ci.yml` now writes a reportlog that names what never finished: read it first | `python tools/ci_status.py` |
 | `SAVE_VERSION` | 9 | `src/chemsim/engine/world.py` |
 
 ## Last session, in five lines
@@ -31,9 +31,9 @@ the suite on every push; memory went 125 -> 26 notes.
 ## Do this now
 
 1. **Read CI first.** `python tools/ci_status.py --slowest`. A red job on HEAD
-   is task 1: the failing test ids are printed. The last run before this
-   session's push found three tests that pinned solver round-off (fixed here);
-   anything new is this session's rows moving a pin.
+   is task 1: the failing test ids are printed. If the suite job timed out
+   again, the `never finished` annotations name the test that hangs only on
+   the runner -- it is green locally, so start from what differs there.
 2. **B1 -- price what the new rows wait on.** 54 benchmark cases pass as
    rewrites and cannot run: the `unpriced` column of `scores.psv` and the
    `#! unpriced` footer of `literal.psv` are the work order (phenyl isocyanate,

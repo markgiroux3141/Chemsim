@@ -48,13 +48,16 @@ jobs:
           cache-dependency-path: .github/requirements-ci.txt
       - run: python -m pip install -r .github/requirements-ci.txt -e .
       # loadfile keeps each module on one worker, so a module-scoped fixture is
-      # built once: worksteal ran past the 150-minute job limit. --timeout names
-      # a hung test instead of letting it eat the job without a report.
-      - run: python -m pytest -q -n auto --dist loadfile --timeout 900 --durations=0 --junitxml=junit.xml
+      # built once. The suite is ~10 min on the user's machine and ran past 150
+      # here twice with no report, so the step has its own limit and the
+      # reportlog is written test by test: whatever kills the run, the next
+      # step can name what started and never finished.
+      - run: python -m pytest -q -n auto --dist loadfile --timeout 900 --durations=0 --junitxml=junit.xml --report-log=reportlog.jsonl
         shell: pwsh
-      - name: annotate failures and the slowest modules
+        timeout-minutes: 110
+      - name: annotate failures, the slowest modules, and anything unfinished
         if: always()
-        run: python .github/annotate_junit.py junit.xml
+        run: python .github/annotate_junit.py junit.xml reportlog.jsonl
       - uses: actions/upload-artifact@v4
         if: always()
         with:
