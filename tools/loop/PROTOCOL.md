@@ -15,10 +15,11 @@ nobody is watching.
    `NEXT.md`'s open questions, and you take work that does not depend on the
    answer. Stalling on a question is the one failure mode that wastes a whole
    iteration.
-3. **The commands that need asking are not run.** The full suite (~30 min) and
-   `validation/tolerance_audit.py` (~10 min) are asked for, and there is nobody
-   to ask. If task 1's done-when needs one, leave that task where it is, take
-   the next one that does not, and say why in the report.
+3. **The slow checks are CI's.** The full suite, the tolerance audit and the
+   shelf sweep run in GitHub Actions on the push your `handoff` makes; the next
+   iteration reads them with `python tools/ci_status.py` before taking a task,
+   and a red job there is its task. Never run them locally unattended -- the
+   machine is the user's.
 4. **Still exactly one task.** The loop is what makes the work continue, not
    you. A second task taken here is a task done with a full context instead of
    an empty one, which is the thing the loop exists to avoid.

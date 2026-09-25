@@ -4,6 +4,19 @@ Newest first. One entry per session, twelve lines an entry and 400 lines the
 file, both enforced by `tools/check_docs.py`. At the cap the older half rolls
 into `docs/history/changelog-YYYY-MM.md`, where 2026-09-02 to 2026-09-12 is.
 
+## 2026-09-24 — retro: a benchmark that rewards generality, and CI for the suite
+
+`data/benchmark/reactions.psv`: 216 textbook cases over 63 classes, none a
+catalog step, each checked to parse and balance; `tools/benchmark.py` (3 s, in
+`check.ps1`) fires every row of a class at them and asks `build_network` too.
+Baseline: 20 classes general (family rows pass every case), 17 also run; 81/216
+cases pass on family rows, 24 on literal, and 6 literal cases make the WRONG
+product -- the mis-mapping T2d asked about, measured. `.github/workflows/`: the
+full suite on every push (windows, xdist, pinned versions), tolerance audit and
+sweep on pushes that could move them; `tools/ci_status.py` reads it with no
+token. `check_docs` ratchets fail only on growth. Memory 125 notes -> 26.
+CLAUDE.md, both skills and the loop protocol take the benchmark as the priority.
+
 ## 2026-09-16 — T33: the changelog rolls, and three slow checks come back
 
 `CHANGELOG.md` 458 -> 253 lines: 14 entries, 2026-09-02 to 2026-09-12, moved

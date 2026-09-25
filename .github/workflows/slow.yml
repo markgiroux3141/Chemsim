@@ -1,0 +1,61 @@
+# The two checks too slow for every push, run when a push could have moved them.
+#
+#   tolerance  validation/tolerance_audit.py, owed when a trajectory could move.
+#              It has stood red on the same three pre-existing findings (T10)
+#              since it was written, so it reports and does not gate.
+#   reachable  tools/build_reachable.py --check, the shelf sweep, owed when the
+#              templates, the shelf or the network builder change. Red means
+#              data/catalog/derived/reachable.psv is stale: regenerate it locally
+#              and commit it with the change that moved it (rule 5).
+#
+# `schedule` only fires from the repository's DEFAULT branch, so the weekly run
+# needs `main` to be the default branch on GitHub.
+name: slow
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/chemsim/**"
+      - "data/templates/**"
+      - "data/catalog/shelf.psv"
+      - "data/catalog/route_steps.psv"
+      - "validation/tolerance_audit.py"
+      - "tools/build_reachable.py"
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+concurrency:
+  group: slow-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tolerance:
+    name: tolerance audit
+    runs-on: windows-latest
+    timeout-minutes: 60
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: .github/requirements-ci.txt
+      - run: python -m pip install -r .github/requirements-ci.txt -e .
+      - run: python validation/tolerance_audit.py
+
+  reachable:
+    name: shelf sweep
+    runs-on: windows-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: .github/requirements-ci.txt
+      - run: python -m pip install -r .github/requirements-ci.txt -e .
+      - run: python tools/build_reachable.py --check

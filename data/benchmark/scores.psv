@@ -1,0 +1,249 @@
+# THE REACTION BENCHMARK, SCORED -- GENERATED, do not edit.
+#
+#   python tools/benchmark.py
+#
+# Columns: case | class | family | family_engine | literal | literal_engine | template | missing
+#
+# family, literal   the best template verdict any row of that tier claiming the
+#                   class reached on this case (tools/benchmark.py says what each
+#                   verdict means).
+# *_engine          runs | unpriced | no | -  -- did build_network register every
+#                   expected product, one generation, that tier's rows only.
+# template          the row that reached the family verdict, else the literal one.
+# missing           expected products that did not come back, canonical SMILES.
+#
+# The `#!` keys at the foot are derived from the rows above, never typed.
+# `classes_general` counts classes whose family rows pass EVERY case: the
+# headline, because it is the one a single-substrate row cannot move.
+
+esterification/propanoic-methanol | esterification | pass | runs | no-template | - | fischer_esterification | 
+esterification/benzoic-ethanol | esterification | pass | runs | no-template | - | fischer_esterification | 
+esterification/acetic-butanol | esterification | pass | runs | no-template | - | fischer_esterification | 
+esterification/acetic-isopropanol | esterification | pass | runs | no-template | - | fischer_esterification | 
+ester-hydrolysis/ethyl-propanoate | ester-hydrolysis | pass | runs | no-template | - | ester_hydrolysis | 
+ester-hydrolysis/methyl-benzoate | ester-hydrolysis | pass | runs | no-template | - | ester_hydrolysis | 
+ester-hydrolysis/isopropyl-acetate | ester-hydrolysis | pass | runs | no-template | - | ester_hydrolysis | 
+ester-hydrolysis/phenyl-acetate | ester-hydrolysis | pass | runs | no-template | - | ester_hydrolysis | 
+saponification/methyl-acetate | saponification | pass | runs | no-template | - | saponification | 
+saponification/ethyl-benzoate | saponification | pass | runs | no-template | - | saponification | 
+saponification/propyl-butanoate | saponification | pass | runs | no-template | - | saponification | 
+transesterification/methyl-acetate-ethanol | transesterification | pass | runs | no-template | - | transesterification | 
+transesterification/ethyl-benzoate-methanol | transesterification | pass | runs | no-template | - | transesterification | 
+transesterification/methyl-propanoate-propanol | transesterification | pass | runs | no-template | - | transesterification | 
+alcohol-oxidation/1-propanol | alcohol-oxidation | pass | runs | no-template | - | aerobic_oxidation | 
+alcohol-oxidation/2-butanol | alcohol-oxidation | pass | runs | no-template | - | aerobic_oxidation | 
+alcohol-oxidation/benzyl-alcohol | alcohol-oxidation | pass | runs | no-template | - | aerobic_oxidation | 
+alcohol-oxidation/cyclohexanol | alcohol-oxidation | pass | runs | no-template | - | aerobic_oxidation | 
+aldehyde-oxidation/propanal | aldehyde-oxidation | pass | runs | no-template | - | peroxide_over_oxidation | 
+aldehyde-oxidation/benzaldehyde | aldehyde-oxidation | pass | runs | no-template | - | peroxide_over_oxidation | 
+aldehyde-oxidation/butanal | aldehyde-oxidation | pass | runs | no-template | - | peroxide_over_oxidation | 
+dehydration/cyclohexanol | dehydration | pass | runs | no-template | - | alkene_dehydration | 
+dehydration/tert-butanol | dehydration | pass | runs | no-template | - | alkene_dehydration | 
+dehydration/2-propanol | dehydration | pass | runs | no-template | - | alkene_dehydration | 
+dehydration/1-phenylethanol | dehydration | pass | runs | no-template | - | alkene_dehydration | 
+ether-condensation/methanol | ether-condensation | pass | runs | no-template | - | ether_condensation | 
+ether-condensation/1-propanol | ether-condensation | pass | runs | no-template | - | ether_condensation | 
+ether-condensation/1-butanol | ether-condensation | pass | runs | no-template | - | ether_condensation | 
+williamson-ether-synthesis/ethoxide-bromopropane | williamson-ether-synthesis | pass | unpriced | no-template | - | williamson_ether_synthesis | 
+williamson-ether-synthesis/methoxide-benzyl-bromide | williamson-ether-synthesis | pass | unpriced | no-template | - | williamson_ether_synthesis | 
+williamson-ether-synthesis/phenoxide-bromoethane | williamson-ether-synthesis | pass | runs | no-template | - | williamson_ether_synthesis | 
+williamson-ether-synthesis/cresolate-iodomethane | williamson-ether-synthesis | pass | unpriced | no-template | - | williamson_ether_synthesis | 
+n-acylation/ethylamine | n-acylation | pass | runs | no-template | - | n_acylation | 
+n-acylation/benzylamine | n-acylation | pass | runs | no-template | - | n_acylation | 
+n-acylation/diethylamine | n-acylation | pass | runs | no-template | - | n_acylation | 
+n-acylation/p-toluidine | n-acylation | pass | runs | no-template | - | n_acylation | 
+alkene-hydration/propene | alkene-hydration | pass | runs | no-template | - | alkene_hydration | 
+alkene-hydration/isobutene | alkene-hydration | pass | runs | no-template | - | alkene_hydration | 
+alkene-hydration/cyclohexene | alkene-hydration | pass | runs | no-template | - | alkene_hydration | 
+alkene-hydration/styrene | alkene-hydration | pass | runs | no-template | - | alkene_hydration | 
+alkyne-hydration/propyne | alkyne-hydration | pass | runs | no-template | - | alkyne_hydration | 
+alkyne-hydration/1-butyne | alkyne-hydration | pass | runs | no-template | - | alkyne_hydration | 
+alkyne-hydration/phenylacetylene | alkyne-hydration | pass | runs | no-template | - | alkyne_hydration | 
+alkene-hydrogenation/propene | alkene-hydrogenation | pass | runs | no-template | - | alkene_hydrogenation | 
+alkene-hydrogenation/cyclohexene | alkene-hydrogenation | pass | runs | no-template | - | alkene_hydrogenation | 
+alkene-hydrogenation/styrene | alkene-hydrogenation | pass | runs | no-template | - | alkene_hydrogenation | 
+alkene-hydrogenation/methyl-acrylate | alkene-hydrogenation | pass | runs | no-template | - | alkene_hydrogenation | 
+nitro-hydrogenation/4-nitrotoluene | nitro-hydrogenation | pass | runs | no-template | - | nitro_hydrogenation | 
+nitro-hydrogenation/4-chloronitrobenzene | nitro-hydrogenation | pass | runs | no-template | - | nitro_hydrogenation | 
+nitro-hydrogenation/nitromethane | nitro-hydrogenation | no-substrate | - | no-template | - | nitro_hydrogenation | CN
+nitro-hydrogenation/1-nitropropane | nitro-hydrogenation | no-substrate | - | no-template | - | nitro_hydrogenation | CCCN
+electrophilic-aromatic-nitration/p-xylene | electrophilic-aromatic-nitration | pass | runs | no-template | - | aromatic_nitration | 
+electrophilic-aromatic-nitration/anisole | electrophilic-aromatic-nitration | pass | runs | no-template | - | aromatic_nitration | 
+electrophilic-aromatic-nitration/chlorobenzene | electrophilic-aromatic-nitration | pass | runs | no-template | - | aromatic_nitration | 
+electrophilic-aromatic-nitration/naphthalene | electrophilic-aromatic-nitration | pass | runs | no-template | - | aromatic_nitration | 
+nucleophilic-substitution/butanol-hbr | nucleophilic-substitution | pass | runs | no-template | - | alcohol_halide_substitution | 
+nucleophilic-substitution/cyclohexanol-hcl | nucleophilic-substitution | pass | runs | no-template | - | alcohol_halide_substitution | 
+nucleophilic-substitution/malonate-iodomethane | nucleophilic-substitution | pass | unpriced | no-template | - | carbanion_alkylation | 
+nucleophilic-substitution/cyanide-bromoethane | nucleophilic-substitution | no-substrate | - | no-template | - | alcohol_halide_substitution | CCC#N
+nucleophilic-substitution/iodide-bromobutane | nucleophilic-substitution | no-substrate | - | no-template | - | alcohol_halide_substitution | CCCCI
+nucleophilic-substitution/ammonia-benzyl-chloride | nucleophilic-substitution | no-substrate | - | no-template | - | alcohol_halide_substitution | NCc1ccccc1
+proton-transfer/propanoic-water | proton-transfer | pass | runs | no-template | - | carboxylic_acid_dissociation | 
+proton-transfer/cresol-water | proton-transfer | pass | unpriced | no-template | - | phenol_dissociation | 
+proton-transfer/methylamine-hydronium | proton-transfer | pass | runs | no-template | - | amine_protonation | 
+proton-transfer/hbr-water | proton-transfer | pass | runs | no-template | - | hydrogen_halide_dissociation | 
+cannizzaro-disproportionation/4-methylbenzaldehyde | cannizzaro-disproportionation | pass | unpriced | no-template | - | cannizzaro_disproportionation | 
+cannizzaro-disproportionation/4-chlorobenzaldehyde | cannizzaro-disproportionation | pass | unpriced | no-template | - | cannizzaro_disproportionation | 
+cannizzaro-disproportionation/formaldehyde | cannizzaro-disproportionation | no-substrate | - | no-template | - | cannizzaro_disproportionation | CO,O=C[O-]
+knoevenagel-doebner-condensation/anisaldehyde | knoevenagel-doebner-condensation | pass | runs | no-template | - | knoevenagel_doebner_condensation | 
+knoevenagel-doebner-condensation/furfural | knoevenagel-doebner-condensation | pass | runs | no-template | - | knoevenagel_doebner_condensation | 
+knoevenagel-doebner-condensation/butanal | knoevenagel-doebner-condensation | no-substrate | - | no-template | - | knoevenagel_doebner_condensation | CCCC=CC(=O)O
+perkin-condensation/4-chlorobenzaldehyde | perkin-condensation | pass | unpriced | no-template | - | perkin_condensation | 
+perkin-condensation/4-methylbenzaldehyde | perkin-condensation | pass | runs | no-template | - | perkin_condensation | 
+perkin-condensation/propanoic-anhydride | perkin-condensation | no-substrate | - | no-template | - | perkin_condensation | CC(=Cc1ccccc1)C(=O)O
+alkene-isomerisation/allylbenzene | alkene-isomerisation | pass | runs | no-template | - | alkene_isomerisation | 
+alkene-isomerisation/estragole | alkene-isomerisation | pass | runs | no-template | - | alkene_isomerisation | 
+alkene-isomerisation/1-butene | alkene-isomerisation | no-substrate | - | no-template | - | alkene_isomerisation | CC=CC
+oxidative-cleavage/stilbene | oxidative-cleavage | pass | runs | no-template | - | oxidative_cleavage | 
+oxidative-cleavage/anethole | oxidative-cleavage | pass | runs | no-template | - | oxidative_cleavage | 
+oxidative-cleavage/1-phenylpropene | oxidative-cleavage | pass | runs | no-template | - | oxidative_cleavage | 
+hydroformylation/1-butene | hydroformylation | pass | runs | no-template | - | hydroformylation_linear | 
+hydroformylation/styrene | hydroformylation | pass | runs | no-template | - | hydroformylation_linear | 
+hydroformylation/1-hexene | hydroformylation | pass | runs | no-template | - | hydroformylation_linear | 
+friedel-crafts-hydroxyalkylation/benzene-formaldehyde | friedel-crafts-hydroxyalkylation | pass | runs | no-template | - | friedel_crafts_hydroxyalkylation | 
+friedel-crafts-hydroxyalkylation/phenol-butanone | friedel-crafts-hydroxyalkylation | pass | runs | no-template | - | friedel_crafts_hydroxyalkylation | 
+friedel-crafts-hydroxyalkylation/anisole-acetone | friedel-crafts-hydroxyalkylation | pass | runs | no-template | - | friedel_crafts_hydroxyalkylation | 
+kolbe-schmitt-carboxylation/4-methylphenoxide | kolbe-schmitt-carboxylation | pass | unpriced | no-template | - | kolbe_schmitt_carboxylation | 
+kolbe-schmitt-carboxylation/4-chlorophenoxide | kolbe-schmitt-carboxylation | pass | unpriced | no-template | - | kolbe_schmitt_carboxylation | 
+intramolecular-williamson/1-chloro-2-propanol | intramolecular-williamson | pass | runs | no-template | - | intramolecular_williamson | 
+intramolecular-williamson/2-chlorocyclohexanol | intramolecular-williamson | pass | runs | no-template | - | intramolecular_williamson | 
+cyanohydrin-formation/benzaldehyde | cyanohydrin-formation | no-template | - | no-substrate | - | cyanohydrin_formation_mma_ach_1 | N#CC(O)c1ccccc1
+cyanohydrin-formation/acetaldehyde | cyanohydrin-formation | no-template | - | no-substrate | - | cyanohydrin_formation_mma_ach_1 | CC(O)C#N
+cyanohydrin-formation/cyclohexanone | cyanohydrin-formation | no-template | - | pass | runs | cyanohydrin_formation_mma_ach_1 | 
+diels-alder-cycloaddition/butadiene-maleic-anhydride | diels-alder-cycloaddition | no-template | - | no-substrate | - | diels_alder_cycloaddition_diels_alder_route_1 | O=C1OC(=O)C2CC=CCC12
+diels-alder-cycloaddition/cyclopentadiene-methyl-acrylate | diels-alder-cycloaddition | no-template | - | wrong-product | - | diels_alder_cycloaddition_diels_alder_route_2 | COC(=O)C1CC2C=CC1C2
+diels-alder-cycloaddition/isoprene-acrylonitrile | diels-alder-cycloaddition | no-template | - | no-substrate | - | diels_alder_cycloaddition_diels_alder_route_1 | CC1=CCC(C#N)CC1
+diels-alder-cycloaddition/butadiene-acrolein | diels-alder-cycloaddition | no-template | - | no-substrate | - | diels_alder_cycloaddition_diels_alder_route_1 | O=CC1CC=CCC1
+wittig-olefination/methylene-cyclohexanone | wittig-olefination | no-template | - | no-substrate | - | wittig_olefination_wittig_route_3 | C=C1CCCCC1,O=P(c1ccccc1)(c1ccccc1)c1ccccc1
+wittig-olefination/methylene-acetone | wittig-olefination | no-template | - | no-substrate | - | wittig_olefination_wittig_route_3 | C=C(C)C,O=P(c1ccccc1)(c1ccccc1)c1ccccc1
+wittig-olefination/ethylidene-benzaldehyde | wittig-olefination | no-template | - | no-substrate | - | wittig_olefination_wittig_route_3 | CC=Cc1ccccc1,O=P(c1ccccc1)(c1ccccc1)c1ccccc1
+wittig-olefination/methylene-anisaldehyde | wittig-olefination | no-template | - | pass | unpriced | wittig_olefination_wittig_route_3 | 
+oxidative-insertion/bromoethane | oxidative-insertion | no-template | - | no-substrate | - | oxidative_insertion_grignard_route_1 | C[CH2][Mg][Br]
+oxidative-insertion/iodomethane | oxidative-insertion | no-template | - | no-substrate | - | oxidative_insertion_grignard_route_1 | [CH3][Mg][I]
+oxidative-insertion/bromocyclohexane | oxidative-insertion | no-template | - | no-substrate | - | oxidative_insertion_grignard_route_1 | [Br][Mg][CH]1CCCCC1
+oxidative-insertion/4-bromotoluene | oxidative-insertion | no-template | - | pass | unpriced | oxidative_insertion_grignard_route_1 | 
+carbanion-generation/acetone-hydroxide | carbanion-generation | no-template | - | pass | unpriced | carbanion_generation_aldol_route_1 | 
+carbanion-generation/acetoacetate-ethoxide | carbanion-generation | no-template | - | wrong-product | - | carbanion_generation_aldol_route_1 | CCOC(=O)[CH-]C(C)=O
+carbanion-generation/nitromethane-hydroxide | carbanion-generation | no-template | - | no-substrate | - | carbanion_generation_aldol_route_1 | [CH2-][N+](=O)[O-]
+carbanion-generation/propanal-hydroxide | carbanion-generation | no-template | - | wrong-product | - | carbanion_generation_aldol_route_1 | C[CH-]C=O
+aldol-addition/acetone-enolate-acetaldehyde | aldol-addition | no-template | - | no-template | - |  | 
+aldol-addition/acetaldehyde-enolate-benzaldehyde | aldol-addition | no-template | - | no-template | - |  | 
+aldol-addition/propanal-enolate-propanal | aldol-addition | no-template | - | no-template | - |  | 
+aldol-condensation/benzaldehyde-acetone | aldol-condensation | no-template | - | no-template | - |  | 
+aldol-condensation/cyclohexanone-benzaldehyde | aldol-condensation | no-template | - | no-template | - |  | 
+aldol-condensation/acetone-self | aldol-condensation | no-template | - | no-template | - |  | 
+aldol-condensation/propanal-self | aldol-condensation | no-template | - | no-template | - |  | 
+claisen-condensation/methyl-acetate-self | claisen-condensation | no-template | - | pass | unpriced | claisen_condensation_claisen_route_2 | 
+claisen-condensation/acetate-enolate-ethyl-benzoate | claisen-condensation | no-template | - | wrong-product | - | claisen_condensation_claisen_route_2 | CCOC(=O)CC(=O)c1ccccc1
+claisen-condensation/ethyl-propanoate-self | claisen-condensation | no-template | - | no-substrate | - | claisen_condensation_claisen_route_2 | CCOC(=O)C(C)C(=O)CC
+michael-addition/malonate-mvk | michael-addition | no-template | - | wrong-product | - | michael_addition_michael_robinson_1 | CCOC(=O)C(CCC(C)=O)C(=O)OCC
+michael-addition/nitromethane-methyl-acrylate | michael-addition | no-template | - | no-substrate | - | michael_addition_michael_robinson_1 | COC(=O)CCC[N+](=O)[O-]
+michael-addition/acetylacetone-acrylonitrile | michael-addition | no-template | - | wrong-product | - | michael_addition_michael_robinson_1 | CC(=O)C(CCC#N)C(C)=O
+beckmann-rearrangement/acetophenone-oxime | beckmann-rearrangement | no-template | - | no-substrate | - | beckmann_rearrangement_beckmann_route_2 | CC(=O)Nc1ccccc1
+beckmann-rearrangement/acetone-oxime | beckmann-rearrangement | no-template | - | no-substrate | - | beckmann_rearrangement_beckmann_route_2 | CNC(C)=O
+beckmann-rearrangement/cyclopentanone-oxime | beckmann-rearrangement | no-template | - | pass | runs | beckmann_rearrangement_beckmann_route_2 | 
+curtius-rearrangement/acetyl-azide | curtius-rearrangement | no-template | - | no-substrate | - | curtius_rearrangement_curtius_route_2 | CN=C=O,N#N
+curtius-rearrangement/propanoyl-azide | curtius-rearrangement | no-template | - | no-substrate | - | curtius_rearrangement_curtius_route_2 | CCN=C=O,N#N
+curtius-rearrangement/4-methylbenzoyl-azide | curtius-rearrangement | no-template | - | partial | - | curtius_rearrangement_curtius_route_2 | Cc1ccc(N=C=O)cc1
+isocyanate-hydrolysis/methyl-isocyanate | isocyanate-hydrolysis | no-template | - | no-substrate | - | isocyanate_hydrolysis_hofmann_route_3 | CN,O=C=O
+isocyanate-hydrolysis/ethyl-isocyanate | isocyanate-hydrolysis | no-template | - | no-substrate | - | isocyanate_hydrolysis_hofmann_route_3 | CCN,O=C=O
+isocyanate-hydrolysis/p-tolyl-isocyanate | isocyanate-hydrolysis | no-template | - | pass | unpriced | isocyanate_hydrolysis_hofmann_route_3 | 
+nucleophilic-acyl-substitution/acetyl-chloride-ethanol | nucleophilic-acyl-substitution | no-template | - | no-substrate | - | nucleophilic_acyl_substitution_curtius_route_1 | CCOC(C)=O
+nucleophilic-acyl-substitution/benzoyl-chloride-methanol | nucleophilic-acyl-substitution | no-template | - | no-substrate | - | nucleophilic_acyl_substitution_curtius_route_1 | COC(=O)c1ccccc1
+nucleophilic-acyl-substitution/acetyl-chloride-hydrazoic-acid | nucleophilic-acyl-substitution | no-template | - | no-substrate | - | nucleophilic_acyl_substitution_curtius_route_1 | CC(=O)N=[N+]=[N-]
+nucleophilic-acyl-substitution/acetyl-chloride-methylamine | nucleophilic-acyl-substitution | no-template | - | no-substrate | - | nucleophilic_acyl_substitution_curtius_route_1 | CNC(C)=O
+hydrazone-formation/acetone-phenylhydrazine | hydrazone-formation | no-template | - | pass | unpriced | hydrazone_formation_fischer_indole_1 | 
+hydrazone-formation/cyclohexanone-phenylhydrazine | hydrazone-formation | no-template | - | pass | unpriced | hydrazone_formation_fischer_indole_1 | 
+hydrazone-formation/benzaldehyde-hydrazine | hydrazone-formation | no-template | - | no-substrate | - | hydrazone_formation_fischer_indole_1 | NN=Cc1ccccc1
+imine-formation/benzaldehyde-methylamine | imine-formation | no-template | - | no-substrate | - | imine_formation_strecker_amino_acid_1 | CN=Cc1ccccc1
+imine-formation/acetone-ethylamine | imine-formation | no-template | - | no-substrate | - | imine_formation_strecker_amino_acid_1 | CCN=C(C)C
+imine-formation/butanal-aniline | imine-formation | no-template | - | no-substrate | - | imine_formation_strecker_amino_acid_1 | CCCC=Nc1ccccc1
+imine-formation/benzaldehyde-ammonia | imine-formation | no-template | - | no-substrate | - | imine_formation_strecker_amino_acid_1 | N=Cc1ccccc1
+oxime-formation/acetone | oxime-formation | no-template | - | pass | runs | oxime_formation_nylon6_route_1 | 
+oxime-formation/benzaldehyde | oxime-formation | no-template | - | no-substrate | - | oxime_formation_nylon6_route_1 | ON=Cc1ccccc1
+oxime-formation/cyclopentanone | oxime-formation | no-template | - | pass | runs | oxime_formation_nylon6_route_1 | 
+halogen-addition/propene-bromine | halogen-addition | no-template | - | no-substrate | - | halogen_addition_vinyl_chloride_route_1 | CC(Br)CBr
+halogen-addition/cyclohexene-chlorine | halogen-addition | no-template | - | no-substrate | - | halogen_addition_vinyl_chloride_route_1 | ClC1CCCCC1Cl
+halogen-addition/styrene-bromine | halogen-addition | no-template | - | no-substrate | - | halogen_addition_vinyl_chloride_route_1 | BrCC(Br)c1ccccc1
+hydrohalogenation/propene-hbr | hydrohalogenation | no-template | - | no-substrate | - | hydrohalogenation_neoprene_route_2 | CC(C)Br
+hydrohalogenation/isobutene-hcl | hydrohalogenation | no-template | - | no-substrate | - | hydrohalogenation_neoprene_route_2 | CC(C)(C)Cl
+hydrohalogenation/cyclohexene-hbr | hydrohalogenation | no-template | - | no-substrate | - | hydrohalogenation_neoprene_route_2 | BrC1CCCCC1
+hydrohalogenation/styrene-hcl | hydrohalogenation | no-template | - | no-substrate | - | hydrohalogenation_neoprene_route_2 | CC(Cl)c1ccccc1
+dehydrohalogenation/tert-butyl-bromide | dehydrohalogenation | no-template | - | no-substrate | - | dehydrohalogenation_vinyl_chloride_route_3 | C=C(C)C
+dehydrohalogenation/chlorocyclohexane | dehydrohalogenation | no-template | - | no-substrate | - | dehydrohalogenation_vinyl_chloride_route_3 | C1=CCCCC1
+dehydrohalogenation/1-bromopropane | dehydrohalogenation | no-template | - | no-substrate | - | dehydrohalogenation_vinyl_chloride_route_3 | C=CC
+dehydrohalogenation/1-chloroethylbenzene | dehydrohalogenation | no-template | - | no-substrate | - | dehydrohalogenation_vinyl_chloride_route_3 | C=Cc1ccccc1
+electrophilic-aromatic-halogenation/toluene-bromine | electrophilic-aromatic-halogenation | no-template | - | no-substrate | - | electrophilic_aromatic_halogenation_phenol_dow_1 | Cc1ccc(Br)cc1
+electrophilic-aromatic-halogenation/p-xylene-chlorine | electrophilic-aromatic-halogenation | no-template | - | pass | runs | electrophilic_aromatic_halogenation_phenol_dow_1 | 
+electrophilic-aromatic-halogenation/anisole-bromine | electrophilic-aromatic-halogenation | no-template | - | no-substrate | - | electrophilic_aromatic_halogenation_phenol_dow_1 | COc1ccc(Br)cc1
+electrophilic-aromatic-halogenation/benzene-bromine | electrophilic-aromatic-halogenation | no-template | - | no-substrate | - | electrophilic_aromatic_halogenation_phenol_dow_1 | Brc1ccccc1
+electrophilic-aromatic-sulfonation/toluene | electrophilic-aromatic-sulfonation | no-template | - | pass | unpriced | electrophilic_aromatic_sulfonation_phenol_sulfonation_1 | 
+electrophilic-aromatic-sulfonation/chlorobenzene | electrophilic-aromatic-sulfonation | no-template | - | pass | unpriced | electrophilic_aromatic_sulfonation_phenol_sulfonation_1 | 
+electrophilic-aromatic-sulfonation/p-xylene | electrophilic-aromatic-sulfonation | no-template | - | pass | unpriced | electrophilic_aromatic_sulfonation_phenol_sulfonation_1 | 
+friedel-crafts-alkylation/toluene-propene | friedel-crafts-alkylation | no-template | - | pass | runs | friedel_crafts_alkylation_phenol_cumene_1 | 
+friedel-crafts-alkylation/benzene-isobutene | friedel-crafts-alkylation | no-template | - | no-substrate | - | friedel_crafts_alkylation_phenol_cumene_1 | CC(C)(C)c1ccccc1
+friedel-crafts-alkylation/p-xylene-ethylene | friedel-crafts-alkylation | no-template | - | pass | runs | friedel_crafts_alkylation_styrene_route_1 | 
+friedel-crafts-alkylation/benzene-cyclohexene | friedel-crafts-alkylation | no-template | - | no-substrate | - | friedel_crafts_alkylation_phenol_cumene_1 | c1ccc(C2CCCCC2)cc1
+friedel-crafts-acylation/toluene-acetyl-chloride | friedel-crafts-acylation | no-template | - | no-template | - |  | 
+friedel-crafts-acylation/benzene-propanoyl-chloride | friedel-crafts-acylation | no-template | - | no-template | - |  | 
+friedel-crafts-acylation/anisole-acetic-anhydride | friedel-crafts-acylation | no-template | - | no-template | - |  | 
+friedel-crafts-acylation/benzene-acetyl-chloride | friedel-crafts-acylation | no-template | - | no-template | - |  | 
+epoxide-hydrolysis/propylene-oxide | epoxide-hydrolysis | no-template | - | pass | runs | epoxide_hydrolysis_ethylene_glycol_route_1 | 
+epoxide-hydrolysis/cyclohexene-oxide | epoxide-hydrolysis | no-template | - | no-substrate | - | epoxide_hydrolysis_ethylene_glycol_route_1 | OC1CCCCC1O
+epoxide-hydrolysis/styrene-oxide | epoxide-hydrolysis | no-template | - | pass | runs | epoxide_hydrolysis_ethylene_glycol_route_1 | 
+epoxide-alkoxylation/ethylene-oxide-methanol | epoxide-alkoxylation | no-template | - | pass | runs | epoxide_alkoxylation_ethylene_glycol_route_2 | 
+epoxide-alkoxylation/propylene-oxide-ethanol | epoxide-alkoxylation | no-template | - | pass | runs | epoxide_alkoxylation_ethylene_glycol_route_2 | 
+epoxide-alkoxylation/ethylene-oxide-phenol | epoxide-alkoxylation | no-template | - | no-substrate | - | epoxide_alkoxylation_ethylene_glycol_route_2 | OCCOc1ccccc1
+halohydrin-formation/propene | halohydrin-formation | no-template | - | pass | runs | halohydrin_formation_epoxy_route_2 | 
+halohydrin-formation/cyclohexene | halohydrin-formation | no-template | - | no-substrate | - | halohydrin_formation_chlorohydrin_route_1 | OC1CCCCC1Br
+halohydrin-formation/styrene | halohydrin-formation | no-template | - | no-substrate | - | halohydrin_formation_chlorohydrin_route_1 | OC(CBr)c1ccccc1
+decarboxylation/acetoacetic-acid | decarboxylation | no-template | - | no-substrate | - | decarboxylation_ethanol_fermentation_3 | CC(C)=O
+decarboxylation/methylmalonic-acid | decarboxylation | no-template | - | pass | runs | decarboxylation_malonic_ester_synthesis_4 | 
+decarboxylation/phenylmalonic-acid | decarboxylation | no-template | - | no-substrate | - | decarboxylation_ethanol_fermentation_3 | O=C(O)Cc1ccccc1
+decarboxylation/malonic-acid | decarboxylation | no-template | - | no-substrate | - | decarboxylation_ethanol_fermentation_3 | CC(=O)O
+nitrile-hydrolysis/acetonitrile | nitrile-hydrolysis | no-template | - | no-template | - |  | 
+nitrile-hydrolysis/benzonitrile | nitrile-hydrolysis | no-template | - | no-template | - |  | 
+nitrile-hydrolysis/propionitrile | nitrile-hydrolysis | no-template | - | no-template | - |  | 
+amide-hydrolysis/acetamide | amide-hydrolysis | no-template | - | no-template | - |  | 
+amide-hydrolysis/n-methylacetamide | amide-hydrolysis | no-template | - | no-template | - |  | 
+amide-hydrolysis/benzamide | amide-hydrolysis | no-template | - | no-template | - |  | 
+acetal-formation/acetaldehyde-ethanol | acetal-formation | no-template | - | no-template | - |  | 
+acetal-formation/benzaldehyde-methanol | acetal-formation | no-template | - | no-template | - |  | 
+acetal-formation/acetone-ethylene-glycol | acetal-formation | no-template | - | no-template | - |  | 
+acetal-formation/cyclohexanone-ethylene-glycol | acetal-formation | no-template | - | no-template | - |  | 
+carbonyl-hydrogenation/acetone | carbonyl-hydrogenation | no-template | - | no-template | - |  | 
+carbonyl-hydrogenation/benzaldehyde | carbonyl-hydrogenation | no-template | - | no-template | - |  | 
+carbonyl-hydrogenation/cyclohexanone | carbonyl-hydrogenation | no-template | - | no-template | - |  | 
+carbonyl-hydrogenation/butanal | carbonyl-hydrogenation | no-template | - | no-template | - |  | 
+nitrile-hydrogenation/acetonitrile | nitrile-hydrogenation | no-template | - | no-template | - |  | 
+nitrile-hydrogenation/benzonitrile | nitrile-hydrogenation | no-template | - | no-template | - |  | 
+nitrile-hydrogenation/propionitrile | nitrile-hydrogenation | no-template | - | no-template | - |  | 
+radical-halogenation/methane-chlorine | radical-halogenation | no-template | - | no-template | - |  | 
+radical-halogenation/toluene-chlorine | radical-halogenation | no-template | - | no-template | - |  | 
+radical-halogenation/cyclohexane-bromine | radical-halogenation | no-template | - | no-template | - |  | 
+radical-halogenation/ethane-chlorine | radical-halogenation | no-template | - | no-template | - |  | 
+diazotisation/p-toluidine | diazotisation | no-template | - | no-template | - |  | 
+diazotisation/4-chloroaniline | diazotisation | no-template | - | no-template | - |  | 
+diazotisation/aniline | diazotisation | no-template | - | no-template | - |  | 
+azo-coupling/phenol | azo-coupling | no-template | - | no-template | - |  | 
+azo-coupling/2-naphthol | azo-coupling | no-template | - | no-template | - |  | 
+azo-coupling/tolyl-dimethylaniline | azo-coupling | no-template | - | no-template | - |  | 
+catalytic-dehydrogenation/cumene | catalytic-dehydrogenation | no-template | - | no-substrate | - | catalytic_dehydrogenation_styrene_route_2 | C=C(C)c1ccccc1
+catalytic-dehydrogenation/4-ethyltoluene | catalytic-dehydrogenation | no-template | - | pass | runs | catalytic_dehydrogenation_styrene_route_2 | 
+catalytic-dehydrogenation/ethane | catalytic-dehydrogenation | no-template | - | no-substrate | - | catalytic_dehydrogenation_styrene_route_2 | C=C
+sulfonamide-formation/benzenesulfonyl-chloride-ammonia | sulfonamide-formation | no-template | - | no-template | - |  | 
+sulfonamide-formation/tosyl-chloride-methylamine | sulfonamide-formation | no-template | - | no-template | - |  | 
+
+#! cases = 216
+#! classes = 63
+#! classes_general = 20
+#! classes_general_and_running = 17
+#! classes_with_a_family_row = 26
+#! classes_with_only_a_literal_row = 25
+#! classes_with_no_row = 12
+#! family_pass = 81
+#! family_runs = 71
+#! family_unpriced = 10
+#! family_wrong_product = 0
+#! literal_pass = 24
+#! literal_runs = 14
+#! literal_wrong_product = 6

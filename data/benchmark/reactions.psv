@@ -1,0 +1,251 @@
+# THE REACTION BENCHMARK -- hand-typed, pipe-separated, one row per case.
+#
+#   case | class | reactants | products | coproducts | note
+#
+# What it is for. The catalog scores NAMED ROUTES, and a template that works on
+# one substrate pair scores the same there as one that works on five hundred.
+# This file scores GENERALITY: each class is tried on substrates it was never
+# written from, and a template that only knows its own step fails here.
+#
+# case        class/short-name, unique.
+# class       a route_steps.psv reaction class. A template is graded on the
+#             classes it claims, so a class name the catalog does not use is
+#             one no template can pass yet -- which is allowed, and counted.
+# reactants   ' + '-separated SMILES, spelled the way this repo spells them:
+#             [H][H], O=O, [C-]#[O+], ions as ions. Water, hydronium and
+#             hydroxide are always available as the medium and need not be
+#             listed unless they are consumed.
+# products    the textbook major product(s), flat (no stereo). ALL must come
+#             back from one application of one template for a pass.
+# coproducts  the rest of the balanced equation. Not required of a template
+#             (a row may write H2O2 where this writes water); used only so
+#             tools/benchmark.py can check the case balances uniquely.
+# note        why this case is here, when it is not obvious.
+#
+# Rules, all enforced by tools/benchmark.py --check:
+#   - every SMILES parses, and reactants -> products + coproducts balances by
+#     element and charge with every coefficient between 1 and 4;
+#   - no case is a catalog step of the same class (a held-out set that
+#     contains its own training row measures nothing);
+#   - a case never names stereochemistry.
+# Each outcome is the standard textbook one; the balance check guards the
+# typing, not the chemistry, so a regiochemistry claim is stated in `note`.
+#
+# ---------------------------------------------------------------- family-covered
+esterification/propanoic-methanol | esterification | CCC(=O)O + CO | CCC(=O)OC | O |
+esterification/benzoic-ethanol | esterification | OC(=O)c1ccccc1 + CCO | CCOC(=O)c1ccccc1 | O |
+esterification/acetic-butanol | esterification | CC(=O)O + CCCCO | CCCCOC(C)=O | O |
+esterification/acetic-isopropanol | esterification | CC(=O)O + CC(C)O | CC(=O)OC(C)C | O | secondary alcohol
+ester-hydrolysis/ethyl-propanoate | ester-hydrolysis | CCOC(=O)CC + O | CCC(=O)O + CCO |  |
+ester-hydrolysis/methyl-benzoate | ester-hydrolysis | COC(=O)c1ccccc1 + O | OC(=O)c1ccccc1 + CO |  |
+ester-hydrolysis/isopropyl-acetate | ester-hydrolysis | CC(=O)OC(C)C + O | CC(=O)O + CC(C)O |  |
+ester-hydrolysis/phenyl-acetate | ester-hydrolysis | CC(=O)Oc1ccccc1 + O | CC(=O)O + Oc1ccccc1 |  | an aryl ester
+saponification/methyl-acetate | saponification | CC(=O)OC + [OH-] | CC(=O)[O-] + CO |  |
+saponification/ethyl-benzoate | saponification | CCOC(=O)c1ccccc1 + [OH-] | [O-]C(=O)c1ccccc1 + CCO |  |
+saponification/propyl-butanoate | saponification | CCCOC(=O)CCC + [OH-] | CCCC(=O)[O-] + CCCO |  |
+transesterification/methyl-acetate-ethanol | transesterification | CC(=O)OC + CCO | CCOC(C)=O + CO |  |
+transesterification/ethyl-benzoate-methanol | transesterification | CCOC(=O)c1ccccc1 + CO | COC(=O)c1ccccc1 + CCO |  |
+transesterification/methyl-propanoate-propanol | transesterification | CCC(=O)OC + CCCO | CCCOC(=O)CC + CO |  |
+alcohol-oxidation/1-propanol | alcohol-oxidation | CCCO + O=O | CCC=O | OO |
+alcohol-oxidation/2-butanol | alcohol-oxidation | CCC(C)O + O=O | CCC(C)=O | OO | secondary to ketone
+alcohol-oxidation/benzyl-alcohol | alcohol-oxidation | OCc1ccccc1 + O=O | O=Cc1ccccc1 | OO |
+alcohol-oxidation/cyclohexanol | alcohol-oxidation | OC1CCCCC1 + O=O | O=C1CCCCC1 | OO |
+aldehyde-oxidation/propanal | aldehyde-oxidation | CCC=O + OO | CCC(=O)O | O |
+aldehyde-oxidation/benzaldehyde | aldehyde-oxidation | O=Cc1ccccc1 + OO | OC(=O)c1ccccc1 | O |
+aldehyde-oxidation/butanal | aldehyde-oxidation | CCCC=O + OO | CCCC(=O)O | O |
+dehydration/cyclohexanol | dehydration | OC1CCCCC1 | C1=CCCCC1 | O |
+dehydration/tert-butanol | dehydration | CC(C)(C)O | C=C(C)C | O |
+dehydration/2-propanol | dehydration | CC(C)O | C=CC | O |
+dehydration/1-phenylethanol | dehydration | CC(O)c1ccccc1 | C=Cc1ccccc1 | O |
+ether-condensation/methanol | ether-condensation | CO | COC | O |
+ether-condensation/1-propanol | ether-condensation | CCCO | CCCOCCC | O |
+ether-condensation/1-butanol | ether-condensation | CCCCO | CCCCOCCCC | O |
+williamson-ether-synthesis/ethoxide-bromopropane | williamson-ether-synthesis | CC[O-] + CCCBr | CCCOCC | [Br-] |
+williamson-ether-synthesis/methoxide-benzyl-bromide | williamson-ether-synthesis | C[O-] + BrCc1ccccc1 | COCc1ccccc1 | [Br-] |
+williamson-ether-synthesis/phenoxide-bromoethane | williamson-ether-synthesis | [O-]c1ccccc1 + CCBr | CCOc1ccccc1 | [Br-] |
+williamson-ether-synthesis/cresolate-iodomethane | williamson-ether-synthesis | Cc1ccc([O-])cc1 + CI | COc1ccc(C)cc1 | [I-] |
+n-acylation/ethylamine | n-acylation | CCN + CC(=O)OC(C)=O | CCNC(C)=O | CC(=O)O |
+n-acylation/benzylamine | n-acylation | NCc1ccccc1 + CC(=O)OC(C)=O | CC(=O)NCc1ccccc1 | CC(=O)O |
+n-acylation/diethylamine | n-acylation | CCNCC + CC(=O)OC(C)=O | CCN(CC)C(C)=O | CC(=O)O | secondary amine
+n-acylation/p-toluidine | n-acylation | Cc1ccc(N)cc1 + CC(=O)OC(C)=O | CC(=O)Nc1ccc(C)cc1 | CC(=O)O |
+alkene-hydration/propene | alkene-hydration | C=CC + O | CC(C)O |  | Markovnikov
+alkene-hydration/isobutene | alkene-hydration | C=C(C)C + O | CC(C)(C)O |  | Markovnikov
+alkene-hydration/cyclohexene | alkene-hydration | C1=CCCCC1 + O | OC1CCCCC1 |  |
+alkene-hydration/styrene | alkene-hydration | C=Cc1ccccc1 + O | CC(O)c1ccccc1 |  | Markovnikov, benzylic
+alkyne-hydration/propyne | alkyne-hydration | C#CC + O | CC(C)=O |  | Markovnikov, via the enol
+alkyne-hydration/1-butyne | alkyne-hydration | C#CCC + O | CCC(C)=O |  | Markovnikov
+alkyne-hydration/phenylacetylene | alkyne-hydration | C#Cc1ccccc1 + O | CC(=O)c1ccccc1 |  | Markovnikov
+alkene-hydrogenation/propene | alkene-hydrogenation | C=CC + [H][H] | CCC |  |
+alkene-hydrogenation/cyclohexene | alkene-hydrogenation | C1=CCCCC1 + [H][H] | C1CCCCC1 |  |
+alkene-hydrogenation/styrene | alkene-hydrogenation | C=Cc1ccccc1 + [H][H] | CCc1ccccc1 |  | the ring survives
+alkene-hydrogenation/methyl-acrylate | alkene-hydrogenation | C=CC(=O)OC + [H][H] | CCC(=O)OC |  | the ester survives
+nitro-hydrogenation/4-nitrotoluene | nitro-hydrogenation | Cc1ccc([N+](=O)[O-])cc1 + [H][H] | Cc1ccc(N)cc1 | O |
+nitro-hydrogenation/4-chloronitrobenzene | nitro-hydrogenation | O=[N+]([O-])c1ccc(Cl)cc1 + [H][H] | Nc1ccc(Cl)cc1 | O |
+nitro-hydrogenation/nitromethane | nitro-hydrogenation | C[N+](=O)[O-] + [H][H] | CN | O | aliphatic nitro
+nitro-hydrogenation/1-nitropropane | nitro-hydrogenation | CCC[N+](=O)[O-] + [H][H] | CCCN | O | aliphatic nitro
+electrophilic-aromatic-nitration/p-xylene | electrophilic-aromatic-nitration | Cc1ccc(C)cc1 + O[N+](=O)[O-] | Cc1ccc(C)c([N+](=O)[O-])c1 | O | one ring position
+electrophilic-aromatic-nitration/anisole | electrophilic-aromatic-nitration | COc1ccccc1 + O[N+](=O)[O-] | COc1ccc([N+](=O)[O-])cc1 | O | para of an o/p director
+electrophilic-aromatic-nitration/chlorobenzene | electrophilic-aromatic-nitration | Clc1ccccc1 + O[N+](=O)[O-] | O=[N+]([O-])c1ccc(Cl)cc1 | O | para of a deactivating o/p director
+electrophilic-aromatic-nitration/naphthalene | electrophilic-aromatic-nitration | c1ccc2ccccc2c1 + O[N+](=O)[O-] | O=[N+]([O-])c1cccc2ccccc12 | O | alpha position
+nucleophilic-substitution/butanol-hbr | nucleophilic-substitution | CCCCO + Br | CCCCBr | O |
+nucleophilic-substitution/cyclohexanol-hcl | nucleophilic-substitution | OC1CCCCC1 + Cl | ClC1CCCCC1 | O |
+nucleophilic-substitution/malonate-iodomethane | nucleophilic-substitution | CCOC(=O)[CH-]C(=O)OCC + CI | CCOC(=O)C(C)C(=O)OCC | [I-] |
+nucleophilic-substitution/cyanide-bromoethane | nucleophilic-substitution | [C-]#N + CCBr | CCC#N | [Br-] | Kolbe nitrile synthesis
+nucleophilic-substitution/iodide-bromobutane | nucleophilic-substitution | [I-] + CCCCBr | CCCCI | [Br-] | Finkelstein
+nucleophilic-substitution/ammonia-benzyl-chloride | nucleophilic-substitution | N + ClCc1ccccc1 | NCc1ccccc1 | Cl |
+proton-transfer/propanoic-water | proton-transfer | CCC(=O)O + O | CCC(=O)[O-] + [OH3+] |  |
+proton-transfer/cresol-water | proton-transfer | Cc1ccc(O)cc1 + O | Cc1ccc([O-])cc1 + [OH3+] |  |
+proton-transfer/methylamine-hydronium | proton-transfer | CN + [OH3+] | C[NH3+] + O |  |
+proton-transfer/hbr-water | proton-transfer | Br + O | [Br-] + [OH3+] |  |
+cannizzaro-disproportionation/4-methylbenzaldehyde | cannizzaro-disproportionation | Cc1ccc(C=O)cc1 + [OH-] | Cc1ccc(CO)cc1 + Cc1ccc(C(=O)[O-])cc1 |  |
+cannizzaro-disproportionation/4-chlorobenzaldehyde | cannizzaro-disproportionation | O=Cc1ccc(Cl)cc1 + [OH-] | OCc1ccc(Cl)cc1 + [O-]C(=O)c1ccc(Cl)cc1 |  |
+cannizzaro-disproportionation/formaldehyde | cannizzaro-disproportionation | C=O + [OH-] | CO + O=C[O-] |  | an aldehyde with no alpha-H that is not aromatic
+knoevenagel-doebner-condensation/anisaldehyde | knoevenagel-doebner-condensation | COc1ccc(C=O)cc1 + OC(=O)CC(=O)O | COc1ccc(C=CC(=O)O)cc1 | O=C=O + O |
+knoevenagel-doebner-condensation/furfural | knoevenagel-doebner-condensation | O=Cc1ccco1 + OC(=O)CC(=O)O | OC(=O)C=Cc1ccco1 | O=C=O + O | a heteroaromatic aldehyde
+knoevenagel-doebner-condensation/butanal | knoevenagel-doebner-condensation | CCCC=O + OC(=O)CC(=O)O | CCCC=CC(=O)O | O=C=O + O | an aliphatic aldehyde
+perkin-condensation/4-chlorobenzaldehyde | perkin-condensation | O=Cc1ccc(Cl)cc1 + CC(=O)OC(C)=O | OC(=O)C=Cc1ccc(Cl)cc1 | CC(=O)O |
+perkin-condensation/4-methylbenzaldehyde | perkin-condensation | Cc1ccc(C=O)cc1 + CC(=O)OC(C)=O | Cc1ccc(C=CC(=O)O)cc1 | CC(=O)O |
+perkin-condensation/propanoic-anhydride | perkin-condensation | O=Cc1ccccc1 + CCC(=O)OC(=O)CC | CC(=Cc1ccccc1)C(=O)O | CCC(=O)O | an anhydride with a CH2, not a CH3
+alkene-isomerisation/allylbenzene | alkene-isomerisation | C=CCc1ccccc1 | CC=Cc1ccccc1 |  | into conjugation
+alkene-isomerisation/estragole | alkene-isomerisation | C=CCc1ccc(OC)cc1 | CC=Cc1ccc(OC)cc1 |  | estragole to anethole
+alkene-isomerisation/1-butene | alkene-isomerisation | C=CCC | CC=CC |  | terminal to internal, no ring
+oxidative-cleavage/stilbene | oxidative-cleavage | C(=Cc1ccccc1)c1ccccc1 + O=O | O=Cc1ccccc1 |  |
+oxidative-cleavage/anethole | oxidative-cleavage | CC=Cc1ccc(OC)cc1 + O=O | COc1ccc(C=O)cc1 + CC=O |  |
+oxidative-cleavage/1-phenylpropene | oxidative-cleavage | CC=Cc1ccccc1 + O=O | O=Cc1ccccc1 + CC=O |  |
+hydroformylation/1-butene | hydroformylation | C=CCC + [C-]#[O+] + [H][H] | CCCCC=O |  | linear
+hydroformylation/styrene | hydroformylation | C=Cc1ccccc1 + [C-]#[O+] + [H][H] | O=CCCc1ccccc1 |  | linear
+hydroformylation/1-hexene | hydroformylation | C=CCCCC + [C-]#[O+] + [H][H] | CCCCCCC=O |  | linear
+friedel-crafts-hydroxyalkylation/benzene-formaldehyde | friedel-crafts-hydroxyalkylation | c1ccccc1 + C=O | c1ccc(Cc2ccccc2)cc1 | O |
+friedel-crafts-hydroxyalkylation/phenol-butanone | friedel-crafts-hydroxyalkylation | Oc1ccccc1 + CCC(C)=O | CCC(C)(c1ccc(O)cc1)c1ccc(O)cc1 | O | bisphenol B, para
+friedel-crafts-hydroxyalkylation/anisole-acetone | friedel-crafts-hydroxyalkylation | COc1ccccc1 + CC(C)=O | COc1ccc(C(C)(C)c2ccc(OC)cc2)cc1 | O | para
+kolbe-schmitt-carboxylation/4-methylphenoxide | kolbe-schmitt-carboxylation | Cc1ccc([O-])cc1 + O=C=O | Cc1ccc(O)c(C(=O)[O-])c1 |  | ortho
+kolbe-schmitt-carboxylation/4-chlorophenoxide | kolbe-schmitt-carboxylation | [O-]c1ccc(Cl)cc1 + O=C=O | O=C([O-])c1cc(Cl)ccc1O |  | ortho
+intramolecular-williamson/1-chloro-2-propanol | intramolecular-williamson | CC(O)CCl + [OH-] | CC1CO1 | [Cl-] + O |
+intramolecular-williamson/2-chlorocyclohexanol | intramolecular-williamson | OC1CCCCC1Cl + [OH-] | C1CCC2OC2C1 | [Cl-] + O |
+cyanohydrin-formation/benzaldehyde | cyanohydrin-formation | O=Cc1ccccc1 + C#N | N#CC(O)c1ccccc1 |  |
+cyanohydrin-formation/acetaldehyde | cyanohydrin-formation | CC=O + C#N | CC(O)C#N |  |
+cyanohydrin-formation/cyclohexanone | cyanohydrin-formation | O=C1CCCCC1 + C#N | N#CC1(O)CCCCC1 |  |
+# ---------------------------------------------------------------- literal-only or uncovered
+diels-alder-cycloaddition/butadiene-maleic-anhydride | diels-alder-cycloaddition | C=CC=C + O=C1C=CC(=O)O1 | O=C1OC(=O)C2CC=CCC12 |  |
+diels-alder-cycloaddition/cyclopentadiene-methyl-acrylate | diels-alder-cycloaddition | C1=CCC=C1 + C=CC(=O)OC | COC(=O)C1CC2C=CC1C2 |  | a bicyclic adduct
+diels-alder-cycloaddition/isoprene-acrylonitrile | diels-alder-cycloaddition | C=CC(C)=C + C=CC#N | CC1=CCC(C#N)CC1 |  | the para adduct
+diels-alder-cycloaddition/butadiene-acrolein | diels-alder-cycloaddition | C=CC=C + C=CC=O | O=CC1CCC=CC1 |  |
+wittig-olefination/methylene-cyclohexanone | wittig-olefination | [CH2-][P+](c1ccccc1)(c1ccccc1)c1ccccc1 + O=C1CCCCC1 | C=C1CCCCC1 + O=P(c1ccccc1)(c1ccccc1)c1ccccc1 |  | a ketone
+wittig-olefination/methylene-acetone | wittig-olefination | [CH2-][P+](c1ccccc1)(c1ccccc1)c1ccccc1 + CC(C)=O | C=C(C)C + O=P(c1ccccc1)(c1ccccc1)c1ccccc1 |  | a ketone
+wittig-olefination/ethylidene-benzaldehyde | wittig-olefination | C[CH-][P+](c1ccccc1)(c1ccccc1)c1ccccc1 + O=Cc1ccccc1 | CC=Cc1ccccc1 + O=P(c1ccccc1)(c1ccccc1)c1ccccc1 |  | a substituted ylide
+wittig-olefination/methylene-anisaldehyde | wittig-olefination | [CH2-][P+](c1ccccc1)(c1ccccc1)c1ccccc1 + COc1ccc(C=O)cc1 | C=Cc1ccc(OC)cc1 + O=P(c1ccccc1)(c1ccccc1)c1ccccc1 |  |
+oxidative-insertion/bromoethane | oxidative-insertion | CCBr + [Mg] | CC[Mg]Br |  | an alkyl Grignard
+oxidative-insertion/iodomethane | oxidative-insertion | CI + [Mg] | C[Mg]I |  |
+oxidative-insertion/bromocyclohexane | oxidative-insertion | BrC1CCCCC1 + [Mg] | Br[Mg]C1CCCCC1 |  |
+oxidative-insertion/4-bromotoluene | oxidative-insertion | Cc1ccc(Br)cc1 + [Mg] | Cc1ccc([Mg]Br)cc1 |  |
+carbanion-generation/acetone-hydroxide | carbanion-generation | CC(C)=O + [OH-] | [CH2-]C(C)=O | O |
+carbanion-generation/acetoacetate-ethoxide | carbanion-generation | CCOC(=O)CC(C)=O + CC[O-] | CCOC(=O)[CH-]C(C)=O | CCO |
+carbanion-generation/nitromethane-hydroxide | carbanion-generation | C[N+](=O)[O-] + [OH-] | [CH2-][N+](=O)[O-] | O |
+carbanion-generation/propanal-hydroxide | carbanion-generation | CCC=O + [OH-] | C[CH-]C=O | O |
+aldol-addition/acetone-enolate-acetaldehyde | aldol-addition | [CH2-]C(C)=O + CC=O + O | CC(O)CC(C)=O | [OH-] | the alkoxide takes a proton from the water
+aldol-addition/acetaldehyde-enolate-benzaldehyde | aldol-addition | [CH2-]C=O + O=Cc1ccccc1 + O | O=CCC(O)c1ccccc1 | [OH-] |
+aldol-addition/propanal-enolate-propanal | aldol-addition | C[CH-]C=O + CCC=O + O | CCC(O)C(C)C=O | [OH-] |
+aldol-condensation/benzaldehyde-acetone | aldol-condensation | O=Cc1ccccc1 + CC(C)=O | CC(=O)C=Cc1ccccc1 | O | Claisen-Schmidt
+aldol-condensation/cyclohexanone-benzaldehyde | aldol-condensation | O=C1CCCCC1 + O=Cc1ccccc1 | O=C1CCCCC1=Cc1ccccc1 | O |
+aldol-condensation/acetone-self | aldol-condensation | CC(C)=O | CC(=O)C=C(C)C | O | mesityl oxide
+aldol-condensation/propanal-self | aldol-condensation | CCC=O | CCC=C(C)C=O | O |
+claisen-condensation/methyl-acetate-self | claisen-condensation | [CH2-]C(=O)OC + CC(=O)OC | COC(=O)CC(C)=O | C[O-] |
+claisen-condensation/acetate-enolate-ethyl-benzoate | claisen-condensation | CCOC(=O)[CH2-] + CCOC(=O)c1ccccc1 | CCOC(=O)CC(=O)c1ccccc1 | CC[O-] | crossed, onto an ester with no alpha-H
+claisen-condensation/ethyl-propanoate-self | claisen-condensation | CCOC(=O)[CH-]C + CCOC(=O)CC | CCOC(=O)C(C)C(=O)CC | CC[O-] |
+michael-addition/malonate-mvk | michael-addition | CCOC(=O)CC(=O)OCC + C=CC(C)=O | CCOC(=O)C(CCC(C)=O)C(=O)OCC |  | 1,4-addition
+michael-addition/nitromethane-methyl-acrylate | michael-addition | C[N+](=O)[O-] + C=CC(=O)OC | COC(=O)CCC[N+](=O)[O-] |  | 1,4-addition
+michael-addition/acetylacetone-acrylonitrile | michael-addition | CC(=O)CC(C)=O + C=CC#N | CC(=O)C(CCC#N)C(C)=O |  | 1,4-addition
+beckmann-rearrangement/acetophenone-oxime | beckmann-rearrangement | CC(=NO)c1ccccc1 | CC(=O)Nc1ccccc1 |  | the aryl group migrates
+beckmann-rearrangement/acetone-oxime | beckmann-rearrangement | CC(C)=NO | CNC(C)=O |  |
+beckmann-rearrangement/cyclopentanone-oxime | beckmann-rearrangement | ON=C1CCCC1 | O=C1CCCCN1 |  | ring expansion to a lactam
+curtius-rearrangement/acetyl-azide | curtius-rearrangement | CC(=O)N=[N+]=[N-] | CN=C=O + N#N |  |
+curtius-rearrangement/propanoyl-azide | curtius-rearrangement | CCC(=O)N=[N+]=[N-] | CCN=C=O + N#N |  |
+curtius-rearrangement/4-methylbenzoyl-azide | curtius-rearrangement | Cc1ccc(C(=O)N=[N+]=[N-])cc1 | Cc1ccc(N=C=O)cc1 + N#N |  |
+isocyanate-hydrolysis/methyl-isocyanate | isocyanate-hydrolysis | CN=C=O + O | CN + O=C=O |  |
+isocyanate-hydrolysis/ethyl-isocyanate | isocyanate-hydrolysis | CCN=C=O + O | CCN + O=C=O |  |
+isocyanate-hydrolysis/p-tolyl-isocyanate | isocyanate-hydrolysis | Cc1ccc(N=C=O)cc1 + O | Cc1ccc(N)cc1 + O=C=O |  |
+nucleophilic-acyl-substitution/acetyl-chloride-ethanol | nucleophilic-acyl-substitution | CC(=O)Cl + CCO | CCOC(C)=O | Cl |
+nucleophilic-acyl-substitution/benzoyl-chloride-methanol | nucleophilic-acyl-substitution | O=C(Cl)c1ccccc1 + CO | COC(=O)c1ccccc1 | Cl |
+nucleophilic-acyl-substitution/acetyl-chloride-hydrazoic-acid | nucleophilic-acyl-substitution | CC(=O)Cl + [N-]=[N+]=N | CC(=O)N=[N+]=[N-] | Cl |
+nucleophilic-acyl-substitution/acetyl-chloride-methylamine | nucleophilic-acyl-substitution | CC(=O)Cl + CN | CNC(C)=O | Cl |
+hydrazone-formation/acetone-phenylhydrazine | hydrazone-formation | CC(C)=O + NNc1ccccc1 | CC(C)=NNc1ccccc1 | O |
+hydrazone-formation/cyclohexanone-phenylhydrazine | hydrazone-formation | O=C1CCCCC1 + NNc1ccccc1 | C1CCC(=NNc2ccccc2)CC1 | O |
+hydrazone-formation/benzaldehyde-hydrazine | hydrazone-formation | O=Cc1ccccc1 + NN | NN=Cc1ccccc1 | O |
+imine-formation/benzaldehyde-methylamine | imine-formation | O=Cc1ccccc1 + CN | CN=Cc1ccccc1 | O |
+imine-formation/acetone-ethylamine | imine-formation | CC(C)=O + CCN | CCN=C(C)C | O |
+imine-formation/butanal-aniline | imine-formation | CCCC=O + Nc1ccccc1 | CCCC=Nc1ccccc1 | O |
+imine-formation/benzaldehyde-ammonia | imine-formation | O=Cc1ccccc1 + N | N=Cc1ccccc1 | O |
+oxime-formation/acetone | oxime-formation | CC(C)=O + NO | CC(C)=NO | O |
+oxime-formation/benzaldehyde | oxime-formation | O=Cc1ccccc1 + NO | ON=Cc1ccccc1 | O |
+oxime-formation/cyclopentanone | oxime-formation | O=C1CCCC1 + NO | ON=C1CCCC1 | O |
+halogen-addition/propene-bromine | halogen-addition | C=CC + BrBr | CC(Br)CBr |  |
+halogen-addition/cyclohexene-chlorine | halogen-addition | C1=CCCCC1 + ClCl | ClC1CCCCC1Cl |  |
+halogen-addition/styrene-bromine | halogen-addition | C=Cc1ccccc1 + BrBr | BrCC(Br)c1ccccc1 |  |
+hydrohalogenation/propene-hbr | hydrohalogenation | C=CC + Br | CC(C)Br |  | Markovnikov
+hydrohalogenation/isobutene-hcl | hydrohalogenation | C=C(C)C + Cl | CC(C)(C)Cl |  | Markovnikov
+hydrohalogenation/cyclohexene-hbr | hydrohalogenation | C1=CCCCC1 + Br | BrC1CCCCC1 |  |
+hydrohalogenation/styrene-hcl | hydrohalogenation | C=Cc1ccccc1 + Cl | CC(Cl)c1ccccc1 |  | Markovnikov, benzylic
+dehydrohalogenation/tert-butyl-bromide | dehydrohalogenation | CC(C)(C)Br | C=C(C)C | Br |
+dehydrohalogenation/chlorocyclohexane | dehydrohalogenation | ClC1CCCCC1 | C1=CCCCC1 | Cl |
+dehydrohalogenation/1-bromopropane | dehydrohalogenation | CCCBr | C=CC | Br |
+dehydrohalogenation/1-chloroethylbenzene | dehydrohalogenation | CC(Cl)c1ccccc1 | C=Cc1ccccc1 | Cl |
+electrophilic-aromatic-halogenation/toluene-bromine | electrophilic-aromatic-halogenation | Cc1ccccc1 + BrBr | Cc1ccc(Br)cc1 | Br | para
+electrophilic-aromatic-halogenation/p-xylene-chlorine | electrophilic-aromatic-halogenation | Cc1ccc(C)cc1 + ClCl | Cc1ccc(C)c(Cl)c1 | Cl |
+electrophilic-aromatic-halogenation/anisole-bromine | electrophilic-aromatic-halogenation | COc1ccccc1 + BrBr | COc1ccc(Br)cc1 | Br | para
+electrophilic-aromatic-halogenation/benzene-bromine | electrophilic-aromatic-halogenation | c1ccccc1 + BrBr | Brc1ccccc1 | Br |
+electrophilic-aromatic-sulfonation/toluene | electrophilic-aromatic-sulfonation | Cc1ccccc1 + OS(=O)(=O)O | Cc1ccc(S(=O)(=O)O)cc1 | O | para
+electrophilic-aromatic-sulfonation/chlorobenzene | electrophilic-aromatic-sulfonation | Clc1ccccc1 + OS(=O)(=O)O | O=S(=O)(O)c1ccc(Cl)cc1 | O | para
+electrophilic-aromatic-sulfonation/p-xylene | electrophilic-aromatic-sulfonation | Cc1ccc(C)cc1 + OS(=O)(=O)O | Cc1ccc(C)c(S(=O)(=O)O)c1 | O |
+friedel-crafts-alkylation/toluene-propene | friedel-crafts-alkylation | Cc1ccccc1 + C=CC | Cc1ccc(C(C)C)cc1 |  | para, Markovnikov
+friedel-crafts-alkylation/benzene-isobutene | friedel-crafts-alkylation | c1ccccc1 + C=C(C)C | CC(C)(C)c1ccccc1 |  | Markovnikov
+friedel-crafts-alkylation/p-xylene-ethylene | friedel-crafts-alkylation | Cc1ccc(C)cc1 + C=C | CCc1cc(C)ccc1C |  |
+friedel-crafts-alkylation/benzene-cyclohexene | friedel-crafts-alkylation | c1ccccc1 + C1=CCCCC1 | c1ccc(C2CCCCC2)cc1 |  |
+friedel-crafts-acylation/toluene-acetyl-chloride | friedel-crafts-acylation | Cc1ccccc1 + CC(=O)Cl | CC(=O)c1ccc(C)cc1 | Cl | para
+friedel-crafts-acylation/benzene-propanoyl-chloride | friedel-crafts-acylation | c1ccccc1 + CCC(=O)Cl | CCC(=O)c1ccccc1 | Cl |
+friedel-crafts-acylation/anisole-acetic-anhydride | friedel-crafts-acylation | COc1ccccc1 + CC(=O)OC(C)=O | COc1ccc(C(C)=O)cc1 | CC(=O)O | para
+friedel-crafts-acylation/benzene-acetyl-chloride | friedel-crafts-acylation | c1ccccc1 + CC(=O)Cl | CC(=O)c1ccccc1 | Cl |
+epoxide-hydrolysis/propylene-oxide | epoxide-hydrolysis | CC1CO1 + O | CC(O)CO |  |
+epoxide-hydrolysis/cyclohexene-oxide | epoxide-hydrolysis | C1CCC2OC2C1 + O | OC1CCCCC1O |  |
+epoxide-hydrolysis/styrene-oxide | epoxide-hydrolysis | c1ccc(C2CO2)cc1 + O | OCC(O)c1ccccc1 |  |
+epoxide-alkoxylation/ethylene-oxide-methanol | epoxide-alkoxylation | C1CO1 + CO | COCCO |  |
+epoxide-alkoxylation/propylene-oxide-ethanol | epoxide-alkoxylation | CC1CO1 + CCO | CCOCC(C)O |  | attack at the less hindered carbon
+epoxide-alkoxylation/ethylene-oxide-phenol | epoxide-alkoxylation | C1CO1 + Oc1ccccc1 | OCCOc1ccccc1 |  |
+halohydrin-formation/propene | halohydrin-formation | C=CC + ClCl + O | CC(O)CCl | Cl | the OH on the more substituted carbon
+halohydrin-formation/cyclohexene | halohydrin-formation | C1=CCCCC1 + BrBr + O | OC1CCCCC1Br | Br |
+halohydrin-formation/styrene | halohydrin-formation | C=Cc1ccccc1 + BrBr + O | OC(CBr)c1ccccc1 | Br | the OH on the benzylic carbon
+decarboxylation/acetoacetic-acid | decarboxylation | CC(=O)CC(=O)O | CC(C)=O | O=C=O | a beta-keto acid
+decarboxylation/methylmalonic-acid | decarboxylation | CC(C(=O)O)C(=O)O | CCC(=O)O | O=C=O |
+decarboxylation/phenylmalonic-acid | decarboxylation | OC(=O)C(C(=O)O)c1ccccc1 | OC(=O)Cc1ccccc1 | O=C=O |
+decarboxylation/malonic-acid | decarboxylation | OC(=O)CC(=O)O | CC(=O)O | O=C=O |
+nitrile-hydrolysis/acetonitrile | nitrile-hydrolysis | CC#N + O | CC(=O)O | N |
+nitrile-hydrolysis/benzonitrile | nitrile-hydrolysis | N#Cc1ccccc1 + O | OC(=O)c1ccccc1 | N |
+nitrile-hydrolysis/propionitrile | nitrile-hydrolysis | CCC#N + O | CCC(=O)O | N |
+amide-hydrolysis/acetamide | amide-hydrolysis | CC(N)=O + O | CC(=O)O + N |  |
+amide-hydrolysis/n-methylacetamide | amide-hydrolysis | CNC(C)=O + O | CC(=O)O + CN |  |
+amide-hydrolysis/benzamide | amide-hydrolysis | NC(=O)c1ccccc1 + O | OC(=O)c1ccccc1 + N |  |
+acetal-formation/acetaldehyde-ethanol | acetal-formation | CC=O + CCO | CCOC(C)OCC | O |
+acetal-formation/benzaldehyde-methanol | acetal-formation | O=Cc1ccccc1 + CO | COC(OC)c1ccccc1 | O |
+acetal-formation/acetone-ethylene-glycol | acetal-formation | CC(C)=O + OCCO | CC1(C)OCCO1 | O |
+acetal-formation/cyclohexanone-ethylene-glycol | acetal-formation | O=C1CCCCC1 + OCCO | C1CCC2(CC1)OCCO2 | O |
+carbonyl-hydrogenation/acetone | carbonyl-hydrogenation | CC(C)=O + [H][H] | CC(C)O |  |
+carbonyl-hydrogenation/benzaldehyde | carbonyl-hydrogenation | O=Cc1ccccc1 + [H][H] | OCc1ccccc1 |  |
+carbonyl-hydrogenation/cyclohexanone | carbonyl-hydrogenation | O=C1CCCCC1 + [H][H] | OC1CCCCC1 |  |
+carbonyl-hydrogenation/butanal | carbonyl-hydrogenation | CCCC=O + [H][H] | CCCCO |  |
+nitrile-hydrogenation/acetonitrile | nitrile-hydrogenation | CC#N + [H][H] | CCN |  |
+nitrile-hydrogenation/benzonitrile | nitrile-hydrogenation | N#Cc1ccccc1 + [H][H] | NCc1ccccc1 |  |
+nitrile-hydrogenation/propionitrile | nitrile-hydrogenation | CCC#N + [H][H] | CCCN |  |
+radical-halogenation/methane-chlorine | radical-halogenation | C + ClCl | CCl | Cl |
+radical-halogenation/toluene-chlorine | radical-halogenation | Cc1ccccc1 + ClCl | ClCc1ccccc1 | Cl | benzylic, not the ring
+radical-halogenation/cyclohexane-bromine | radical-halogenation | C1CCCCC1 + BrBr | BrC1CCCCC1 | Br |
+radical-halogenation/ethane-chlorine | radical-halogenation | CC + ClCl | CCCl | Cl |
+diazotisation/p-toluidine | diazotisation | Cc1ccc(N)cc1 + O=NO + [OH3+] | Cc1ccc([N+]#N)cc1 | O |
+diazotisation/4-chloroaniline | diazotisation | Nc1ccc(Cl)cc1 + O=NO + [OH3+] | N#[N+]c1ccc(Cl)cc1 | O |
+diazotisation/aniline | diazotisation | Nc1ccccc1 + O=NO + [OH3+] | N#[N+]c1ccccc1 | O | nitrous acid, not the catalog's nitrite + HCl
+azo-coupling/phenol | azo-coupling | N#[N+]c1ccccc1 + Oc1ccccc1 + O | Oc1ccc(N=Nc2ccccc2)cc1 | [OH3+] | para
+azo-coupling/2-naphthol | azo-coupling | N#[N+]c1ccccc1 + Oc1ccc2ccccc2c1 + O | Oc1ccc2ccccc2c1N=Nc1ccccc1 | [OH3+] | the 1-position
+azo-coupling/tolyl-dimethylaniline | azo-coupling | Cc1ccc([N+]#N)cc1 + CN(C)c1ccccc1 + O | Cc1ccc(N=Nc2ccc(N(C)C)cc2)cc1 | [OH3+] | para
+catalytic-dehydrogenation/cumene | catalytic-dehydrogenation | CC(C)c1ccccc1 | C=C(C)c1ccccc1 | [H][H] |
+catalytic-dehydrogenation/4-ethyltoluene | catalytic-dehydrogenation | CCc1ccc(C)cc1 | C=Cc1ccc(C)cc1 | [H][H] |
+catalytic-dehydrogenation/ethane | catalytic-dehydrogenation | CC | C=C | [H][H] |
+sulfonamide-formation/benzenesulfonyl-chloride-ammonia | sulfonamide-formation | O=S(=O)(Cl)c1ccccc1 + N | NS(=O)(=O)c1ccccc1 | Cl |
+sulfonamide-formation/tosyl-chloride-methylamine | sulfonamide-formation | Cc1ccc(S(=O)(=O)Cl)cc1 + CN | CNS(=O)(=O)c1ccc(C)cc1 | Cl |

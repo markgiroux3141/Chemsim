@@ -21,56 +21,51 @@ A request to "increase coverage", "get more routes", "add breadth" or anything
 else aimed at the 173 is NOT a free choice of task. It resolves to the standing
 priority below, because that priority IS the measured answer to it.
 
-## Step 0b — The standing priority: change the rate, do not grind the queue
+## Step 0b — The standing priority: coverage of chemistry, measured by the benchmark
 
-Decided 2026-09-13 from `docs/design/route-coverage-ceiling.md`, which carries
-the derivation and the script. Do not re-derive it and do not relitigate it
-inside a session; if a measurement contradicts it, that is a finding for the
-report and the backlog.
+Decided 2026-09-24 in a retro, and not relitigated inside a session.
 
-**173 is not reachable and is not the target.** 7 routes name a species with no
-molecular graph, 14 reaction classes are credited to integrator terms where no
-SMARTS can exist, and the rest of the gap is steps that will not balance. If
-every extractable step in the corpus became a template the ceiling is **110
-template-ready and about 66 runnable**. The box stands at 46 / 47. The gap is
-roughly twenty routes, it is bounded, and it is worth finishing.
+**Two scoreboards, two questions.** `data/benchmark/` (scored by
+`tools/benchmark.py`) fires every template row at held-out textbook substrates
+and is the measure of how much chemistry the engine covers. Its headline is
+`classes_general`: classes whose `family` rows pass every case. The 173-route
+catalog measures the game's progression and its ceiling is ~66 runnable
+(`docs/design/route-coverage-ceiling.md`); it is not the coverage target.
 
-So when the choice is yours, rank the open work this way:
+When the choice is yours, rank the open work this way:
 
-1. **Work that changes the rate** at which content arrives — T2's extractor
-   above all, then T3. One extractor writes ~132 classes mechanically; the
-   historical hand-written rate is three to five a session, which is thirty
-   sessions for the same content.
+1. **Work that moves the benchmark** -- a family row that makes a class general,
+   an extractor change that writes rows for a whole refusal category, a priced
+   species that turns `unpriced` into `runs`. A family row must pass its class's
+   held-out cases; a class with none gets cases first (they are data rows in
+   `data/benchmark/reactions.psv`, checked for balance and held-out-ness).
 2. **Work that unblocks a named route or template**, where the item says which.
 3. **A measurement that could cancel expensive work**, as before.
-4. **Queue-grinding curation** — the per-row pKa work of T23 and T26, one
-   sourced paper at a time — comes LAST while T2 is open. It is not worthless:
-   T18's rule took stearic acid from 4 reactions to 21. It is mis-scored, and
-   it must not be task 1. T23 and T27 each spent a whole session and wrote
-   "coverage does not move" as their own result, with 444 ions still queued at
-   two to four a session.
+4. **Scoreboard or instrument work** -- at most one session in four, unless a
+   check is red. Look at the last three CHANGELOG entries: if two of them were
+   instrument work and nothing is red, the session moves a content number.
+5. **Queue-grinding curation** -- one sourced pKa row at a time -- last.
 
-If `NEXT.md`'s task 1 is queue-grinding curation while a rate-changing item is
-open, take the rate-changing item instead and say so in one line of the report.
-That is the one case where you may reorder `NEXT.md` without being told to.
+If `NEXT.md`'s task 1 ranks below an open item from tier 1, take the tier-1 item
+and say so in one line of the report. That is the one case where you may
+reorder `NEXT.md` without being told to.
 
 ## Step 1 — Take the task
 
-Read `CLAUDE.md` and `NEXT.md`. Nothing else yet. Take the chosen task and
-read only the files it names; grep for anything else. If task 1's done-when
-requires the full suite (~30 min) or `validation/tolerance_audit.py` (~10 min),
-you may not run them unasked: leave that task where it is, take the next one
-that does not need them, and say why in the report.
+Read `CLAUDE.md` and `NEXT.md`. Nothing else yet. Then `python
+tools/ci_status.py`: CI runs the full suite on every push and the tolerance
+audit and shelf sweep when a push could move them. A red job on HEAD outranks
+task 1 -- it is the previous session's defect, and its failing test ids are
+printed. `python tools/ci_status.py --record` stamps the ledger from a finished
+run. Take the chosen task and read only the files it names; grep for the rest.
 
-Commit to one task. Do not take a second one afterwards, however short it
-looks; the user asked for a predictable unit, and the second task belongs to
-the next invocation with a fresh context.
+Commit to one task, sized as an arc: finish the whole of what it names, not a
+first slice of it. Do not take a second task afterwards; it belongs to the
+next invocation with a fresh context.
 
-Then run `python tools/cadence.py` and read what it says before you start. It
-names the expensive checks that are owed, how long it has been in commits, and
-where the fix goes if one comes back red. A due row under two minutes is run
-now; a due row over ten is the user's call, and the answer to "is this task
-safe without it" belongs in the report either way.
+Then run `python tools/cadence.py`. A due row CI covers is answered by CI, not
+by running it here; a due row under two minutes is run now; running a long one
+on the user's machine is still their call.
 
 ## Step 2 — Do it
 
@@ -82,6 +77,10 @@ write down comes from a command you ran today.
 If you ran a slow check, record it (`python tools/cadence.py --record <check>
 --result pass|fail --note "..."`) in the same breath, pass or fail. A result
 that is not recorded did not happen as far as the next session can tell.
+
+A change that moves template rows re-runs `tools/benchmark.py` and quotes its
+headline beside the catalog's, so every session's effect on coverage of
+chemistry is in its CHANGELOG entry.
 
 When a task turns out to be wrong as written — the measurement it asked for
 cannot be made, the file it names has moved, its premise is false — do not

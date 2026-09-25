@@ -10,13 +10,12 @@ Two kinds of rule:
   and are absolute. `CLAUDE.md` may not exceed 150 lines; a `CHANGELOG.md` entry
   may not exceed 12 and the file 400, at which point its older half rolls into
   `docs/history/changelog-YYYY-MM.md`.
-* **Ratchets** apply to the debt that already exists -- 662 lines of `README.md`,
-  1,050 warning glyphs in `src/chemsim` — where an absolute rule would fail on
-  the day it was written and be deleted. A ratchet records today's count and
-  fails when it *moves*, in either direction: upward because the debt grew,
-  downward because a number in this file is now wrong and rule 4 says a number
-  that cannot be regenerated is deleted. Paying debt down therefore costs one
-  line here, and the budget can never quietly drift.
+* **Ratchets** apply to the debt that already exists -- lines of `README.md`,
+  warning glyphs in `src/chemsim` -- where an absolute rule would fail on the
+  day it was written and be deleted. A ratchet records a count and fails when
+  the debt GROWS. A reduction passes and prints a note, so paying debt down
+  costs nothing in the session that does it; ``--fix-budgets`` tightens the
+  numbers whenever somebody next wants the lower ceiling.
 
 Run ``python tools/check_docs.py`` to check, ``--fix-budgets`` to rewrite the
 ratchet block after a deliberate reduction.
@@ -129,8 +128,10 @@ def _latest_commit_date() -> str | None:
     return out.stdout.strip() or None if out.returncode == 0 else None
 
 
-def check() -> list[str]:
+def check(notes: list[str] | None = None) -> list[str]:
     fail: list[str] = []
+    if notes is None:
+        notes = []
 
     for name, cap in LINE_CAPS.items():
         path = ROOT / name
@@ -190,10 +191,7 @@ def check() -> list[str]:
                 f"(target {target}); it is meant to shrink"
             )
         elif n < budget:
-            fail.append(
-                f"{name} is down to {n} lines from {budget}: set its budget to "
-                f"{n} in tools/check_docs.py (or run --fix-budgets)"
-            )
+            notes.append(f"{name} is down to {n} lines from {budget}")
 
     for name, budget in GLYPH_BUDGETS.items():
         target = ROOT / name
@@ -206,10 +204,7 @@ def check() -> list[str]:
                 f"new text does not use it"
             )
         elif n < budget:
-            fail.append(
-                f"{name} is down to {n} {GLYPH_NAME} from {budget}: set its budget to "
-                f"{n} in tools/check_docs.py (or run --fix-budgets)"
-            )
+            notes.append(f"{name} is down to {n} {GLYPH_NAME} from {budget}")
 
     nxt = ROOT / "NEXT.md"
     if nxt.exists():
@@ -258,7 +253,10 @@ def main() -> int:
     if args.fix_budgets:
         return fix_budgets()
 
-    fail = check()
+    notes: list[str] = []
+    fail = check(notes)
+    for line in notes:
+        print(f"  debt paid down: {line} (--fix-budgets tightens the ceiling)")
     if fail:
         print(f"check_docs: {len(fail)} problem(s)")
         for line in fail:

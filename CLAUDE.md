@@ -7,8 +7,10 @@ is one stiff ODE over `[n_liquid | n_liquid2 | n_gas | n_solid | T]` with UNIFAC
 activity, Henry's law, solubility products, an energy balance and multi-vessel
 rigs. Boiling points, equilibria and pH are *consequences*, never lookups. A
 Tkinter window sits on a worker thread over a `World` that records a replayable
-script. Coverage is scored against a hand-typed catalog of 1,583 compounds and
-173 named industrial routes.
+script. Two scoreboards: `data/benchmark/` fires every template at held-out
+textbook substrates it was never written from, which measures coverage of
+chemistry; the hand-typed catalog of 1,583 compounds and 173 named industrial
+routes measures the game's progression from natural materials.
 
 ## Where to start
 
@@ -25,13 +27,15 @@ script. Coverage is scored against a hand-typed catalog of 1,583 compounds and
 python -m pip install -e ".[dev,viz]"
 python -m chemsim.ui                            # the window
 ./check.ps1                                     # ruff + fast tests + catalog structure
-python -m pytest -q                             # full suite, ~30 min, ASK FIRST
+python tools/ci_status.py                       # what CI said about HEAD; the full suite runs there
+python -m pytest -q -n auto                     # full suite locally, ~30 min, ASK FIRST
 ruff check src tests tools validation
 python tools/catalog.py                         # structural validation of the PSVs
 python validation/catalog_coverage.py           # regenerates data/catalog/COVERAGE_REPORT.md
 python tools/build_playable.py                  # regenerates data/catalog/PLAYABLE.md (~50 s)
 python tools/build_route_index.py               # regenerates data/catalog/ROUTE_INDEX.md
 python tools/check_template_products.py         # each row against the step it claims, ~2 s
+python tools/benchmark.py                       # every row against held-out cases, ~3 s
 python tools/classify_silent.py                 # why each silent template is silent, ~2 s
 python tools/cadence.py                         # which expensive checks are owed
 python tools/build_reachable.py                 # regenerates derived/reachable.psv, ~35 min
@@ -79,10 +83,11 @@ directly, so the README's "nothing above Layer 0 imports rdkit" is false today.
    `GAME_DESIGN.md` and the history files are CRLF, most source is LF. A
    whole-file rewrite with the wrong terminator turns a one-line edit into a
    600-line diff. Prefer `Edit`; check before rewriting.
-7. **Fast checks always, the slow suite only when asked.** `./check.ps1` after
-   every change. The full suite is ~30 minutes on the user's own machine — ask.
-   `validation/tolerance_audit.py` (~10 min) is owed when a trajectory could move.
-   State which checks you ran, including the failures.
+7. **Fast checks always; the slow ones run in CI.** `./check.ps1` after every
+   change. The full suite runs in GitHub Actions on every push, the tolerance
+   audit and the shelf sweep when a push could move them; read the result with
+   `python tools/ci_status.py`. Running them on the user's machine still needs
+   asking. State which checks you ran, including the failures.
 8. **A class names a mechanism, not an outcome.** "fermentation" and "pyrolysis"
    are outcomes and were correctly refused. Every `A` is an order-of-magnitude
    choice for the molecularity and every `Ea` a band midpoint; say so once,
@@ -101,7 +106,7 @@ directly, so the README's "nothing above Layer 0 imports rdkit" is false today.
 ## Session shape
 
 ```
-1. Read CLAUDE.md and NEXT.md. Take task 1.
+1. Read CLAUDE.md and NEXT.md; run tools/ci_status.py. Take task 1.
 2. Read only the files that task names. Grep for anything else.
 3. Do it. Run ./check.ps1 and the task's own done-when check.
 4. Regenerate any generated file touched; run its --check.
@@ -111,8 +116,10 @@ directly, so the README's "nothing above Layer 0 imports rdkit" is false today.
 ```
 
 The `session` skill (.claude/skills/session/) runs all five steps as one unit:
-one task, done to its done-when, closed out and pushed. `/session` is how the
-user advances the box; `/handoff` alone is for closing out work already done.
+one task, done to its done-when, closed out and pushed. A task is sized as an
+arc -- "extractor v2 to done", not "measure one row" -- because a session has
+the context for one. `/session` is how the user advances the box; `/handoff`
+alone is for closing out work already done.
 
 `tools/loop/run-loop.ps1` runs `/session` on repeat, each iteration a fresh
 `claude -p` process with an empty context, until the goal in `tools/loop/GOAL.md`
@@ -127,8 +134,13 @@ steering when they give it, and put anything only they can settle under
 
 - Adding a physics module because the chemistry is interesting. The engine is an
   order of magnitude ahead of its content. Add content.
-- Correcting the coverage scoreboard again. Four corrections are in; it is
-  accurate enough.
+- Correcting a scoreboard no check says is wrong. At most one session in four
+  is instrument work, unless a check is red; every other session moves a
+  content number -- a benchmark class, a template row, a priced species.
+- Promoting a row to `family` because it passes its own catalog step. A family
+  row is a claim about a mechanism, and `tools/benchmark.py` is its evidence:
+  it must pass the class's held-out cases, and a class without cases gets them
+  first.
 - Writing a bespoke 400-line test file for one template.
 - Reading `docs/history/MILESTONES.md` to find out what is next. `NEXT.md` is.
 - Explaining a decision in a 40-line comment at the call site.

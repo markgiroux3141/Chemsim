@@ -1,0 +1,61 @@
+# The full suite on every push, so it no longer waits for somebody to ask for
+# thirty minutes of the user's machine. Windows, because every pin in tests/ was
+# measured on Windows, and a platform's floating-point noise is not a finding.
+#
+# A session reads the result with `python tools/ci_status.py`, which needs no
+# token: the failing test ids are published as job annotations below.
+name: ci
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  fast:
+    name: check.ps1 -Full
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0          # check_docs and cadence read the history
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: .github/requirements-ci.txt
+      - run: python -m pip install -r .github/requirements-ci.txt -e .
+      - run: ./check.ps1 -Full
+        shell: pwsh
+
+  suite:
+    name: pytest (full suite)
+    runs-on: windows-latest
+    timeout-minutes: 150
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: .github/requirements-ci.txt
+      - run: python -m pip install -r .github/requirements-ci.txt -e .
+      # loadfile keeps each module on one worker, so module-scoped fixtures are
+      # built once. --durations=0 is the per-test timing T0.4 needs.
+      - run: python -m pytest -q -n auto --dist loadfile --durations=0 --junitxml=junit.xml
+        shell: pwsh
+      - name: annotate failures
+        if: failure()
+        run: python .github/annotate_junit.py junit.xml
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: junit
+          path: junit.xml

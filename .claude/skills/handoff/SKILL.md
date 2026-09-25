@@ -26,7 +26,8 @@ touched; re-use a number already measured *this* session rather than re-running.
 
 | number | command |
 |---|---|
-| tests | `python -m pytest --co -q` |
+| tests | `python -m pytest --co -q`, and the result from `python tools/ci_status.py` |
+| benchmark | `data/benchmark/scores.psv` footer (regenerate with `python tools/benchmark.py`, ~3 s) |
 | templates | `python tools/build_templates.py --check` (the row count; the old `grep -c 'ReactionTemplate('` counts loaders now) |
 | catalog shape | `python tools/catalog.py` |
 | readiness columns | `data/catalog/COVERAGE_REPORT.md` (regenerate with `python validation/catalog_coverage.py`) |
@@ -44,9 +45,10 @@ table is stale is worse than no table.
 commit input and output together — `*_data.py`, `COVERAGE_REPORT.md`,
 `PLAYABLE.md`, `ROUTE_INDEX.md` are never hand-edited.
 
-**Ask before** the full suite (~30 min on the user's own machine) or
-`validation/tolerance_audit.py` (~10 min). The audit is owed when a trajectory
-could have moved — anything in `numerics/`, `vessel/` or `network/`.
+The full suite, the tolerance audit and the shelf sweep run in GitHub Actions
+(`.github/workflows/`); the push in Step 8 starts them, and the next session
+reads them with `python tools/ci_status.py`. Running any of them locally still
+needs asking -- it is the user's machine.
 
 Report failures plainly, in the CHANGELOG entry as well as to the user. A
 handoff that hides a red check hands over a trap.
@@ -119,13 +121,13 @@ file becomes the next monolith. Cap 120 lines.
 
 Task one should be startable with no reading beyond the files it names.
 
-## Step 6 — Memory: transferable lessons only
+## Step 6 — Memory: traps only, and usually nothing
 
-Write a note only for something that would change how the *next* session works
-and is not derivable from the code, the commit or the backlog: a trap that bit,
-a constraint discovered, a measurement that overturned an assumption. One fact
-per file, with the `why` and the `how to apply`, a line in `MEMORY.md`, and
-`[[links]]` to the related notes.
+Most sessions write no memory. Write only for a trap that bit and would bite
+again -- something not derivable from the code, the commit or the backlog.
+Add it to the existing note on its theme rather than a new file: memory is
+~25 thematic notes and its index is loaded into every session, so a note per
+session is how it reached 125 files. No session tags, no emphasis capitals.
 
 Task state is `NEXT.md`. History is `CHANGELOG.md`. Numbers are generated files.
 None of those belong in memory.
@@ -138,14 +140,14 @@ of record, a live arc or a file that moved is now lying to every future session.
 `python tools/check_docs.py` must pass. It enforces absolute caps on
 `CLAUDE.md` (150), `NEXT.md` (120), `BACKLOG.md` (300), `CHANGELOG.md` (400)
 and a CHANGELOG entry (12), and it **ratchets** the existing debt — README lines, warning-glyph counts
-per tree — failing when a count moves in *either* direction.
+per tree — failing when a count grows. A reduction passes and prints a note.
 
 - Over a cap: cut content or move it (`docs/design/` for rationale,
   `docs/manual/chapters/` for physics). Never raise a cap to fit the text.
 - Over the CHANGELOG's 400: roll its older half into
   `docs/history/changelog-YYYY-MM.md`, whole entries only, CRLF both sides.
-- Debt paid down: `python tools/check_docs.py --fix-budgets`, and say in the
-  CHANGELOG what moved.
+- Debt paid down: nothing is required. `--fix-budgets` tightens the ceiling
+  whenever a session wants the lower number locked in.
 - Debt grown: that is the check working. Undo the growth.
 
 Never append to anything in `docs/history/`. It is frozen.

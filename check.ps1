@@ -3,21 +3,22 @@
     The check to run after every change. Fast by default.
 
 .DESCRIPTION
-    Eight steps: lint, the documentation caps, the catalog's structural
+    Nine steps: lint, the documentation caps, the catalog's structural
     validation, the extracted half of the template table against the catalog
     steps it was written from, the whole table against the constructors it
     copies, each template row against the catalog step it claims, the
-    classification of the templates the shelf cannot reach, and a smoke subset
-    of the test suite.
+    held-out reaction benchmark, the classification of the templates the
+    shelf cannot reach, and a smoke subset of the test suite.
 
     The smoke subset is a hand-named list because the suite has no markers yet.
     T0.4 in BACKLOG.md replaces it with `pytest -m "not slow"`; when that lands,
     delete $SmokeTests and use the marker.
 
     The full suite is about 30 minutes on the user's own machine. It is not run
-    here, and it is not run without asking. What IS printed here is how long it
-    has been: `data/checks/cadence.psv` carries every expensive check, its
-    cadence in commits, and where the fix goes if one comes back red.
+    here: it runs in GitHub Actions on every push (.github/workflows/ci.yml),
+    and `python tools/ci_status.py` reads the result. What IS printed here is
+    the ledger, `data/checks/cadence.psv`, which says what is owed and where
+    the fix goes if one comes back red.
 
 .PARAMETER Full
     Also run the two report generators with --check, so a stale committed report
@@ -73,6 +74,10 @@ Step 'templates' { python tools/build_templates.py --check }
 # compares the product set. --check refuses a stale artefact, so a SMARTS edit
 # that changes which species a row makes fails here rather than drifting.
 Step 'template products' { python tools/check_template_products.py --check }
+# ~3 s. The coverage metric that rewards generality: every row fired at
+# textbook substrates it was never written from. --check refuses a stale
+# scores.psv and any case that does not parse, balance or stay held out.
+Step 'benchmark' { python tools/benchmark.py --check }
 # T6's classifier over T4's silent list. ~23 s, and it re-derives rather than
 # re-reading: a template that stops being silent, or a shelf row that changes
 # what the closure can make, fails here instead of drifting in a committed file.

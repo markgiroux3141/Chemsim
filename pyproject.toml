@@ -22,7 +22,7 @@ chemsim-ui = "chemsim.ui.app:launch"
 viz = ["matplotlib>=3.8"]
 # `thermo` is a test-only oracle: the suite cross-checks our Joback group table
 # and fragmentation against it. Not a runtime dependency.
-dev = ["pytest>=8", "thermo>=0.6"]
+dev = ["pytest>=8", "pytest-xdist>=3.5", "ruff>=0.15", "thermo>=0.6"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
