@@ -1,6 +1,6 @@
 # DERIVED by tools/build_reachable.py -- do not hand-edit.
 # Every pair of chargeable natural shelf rows, expanded to a fixpoint
-# with all 68 'family' templates and a 400-species cap.
+# with all 106 'family' templates and a 400-species cap.
 # a | b | species | reactions | stop | frontier
 #
 # A capped pair is a LOWER bound on its own reaction count, and the
@@ -8,26 +8,26 @@
 # third starting material is invisible to a sweep over pairs.
 #! natural_rows = 37
 #! pairs = 666
-#! distinct_reactions = 23140
-#! templates_fired = 37
-#! capped_pairs = 271
-#! inert_pairs = 347
+#! distinct_reactions = 24710
+#! templates_fired = 47
+#! capped_pairs = 273
+#! inert_pairs = 321
 #! crashed_pairs = 0
-#! templates = 68
+#! templates = 106
 #! tier = family
-#! silent_templates = alcohol_halide_substitution, aldofuranose_dehydration, alkene_hydrodimerisation, alkyne_hydration, allylic_ammoxidation, amide_methylolation, aromatic_nitration, cannizzaro_disproportionation, carbanion_alkylation, cyanide_imine_addition, hydroformylation_branched, hydroformylation_linear, hydroxymethylfurfural_rehydration, intramolecular_williamson, ketene_acid_addition, ketofuranose_dehydration, knoevenagel_doebner_condensation, kolbe_schmitt_carboxylation, methane_ammoxidation, mineral_oxyacid_dissociation, n_acylation, nitrate_esterification, nitric_oxide_reoxidation, nitro_hydrogenation, perkin_condensation, skraup_cyclisation, steam_reforming, sulfur_dioxide_oxidation_by_nitrogen_dioxide, sulfur_trioxide_hydration, wacker_oxidation, williamson_ether_synthesis
+#! silent_templates = acyl_chloride_substitution, alcohol_halide_substitution, aldofuranose_dehydration, aldol_addition, alkene_hydrodimerisation, alkyl_halide_amination, alkyl_halide_anion_substitution, alkyne_hydration, allylic_ammoxidation, amide_hydrolysis, amide_methylolation, aromatic_nitration, aromatic_sulfonation, azo_coupling, beckmann_rearrangement, cannizzaro_disproportionation, carbanion_alkylation, carbanion_generation_by_alkoxide, carbanion_generation_by_hydroxide, carbonyl_amine_condensation, claisen_condensation, curtius_rearrangement, cyanide_imine_addition, cyanohydrin_formation, cyclic_acetal_formation, dehydrohalogenation, diazotisation, epoxide_ring_opening, friedel_crafts_acylation, friedel_crafts_anhydride_acylation, grignard_formation, hydroformylation_branched, hydroformylation_linear, hydrohalogenation, hydroxymethylfurfural_rehydration, intramolecular_williamson, isocyanate_hydrolysis, ketene_acid_addition, ketofuranose_dehydration, knoevenagel_doebner_condensation, kolbe_schmitt_carboxylation, methane_ammoxidation, michael_addition, mineral_oxyacid_dissociation, n_acylation, nitrate_esterification, nitric_oxide_reoxidation, nitrile_hydrogenation, nitrile_hydrolysis, nitro_hydrogenation, perkin_condensation, skraup_cyclisation, steam_reforming, sulfonamide_formation, sulfur_dioxide_oxidation_by_nitrogen_dioxide, sulfur_trioxide_hydration, wacker_oxidation, williamson_ether_synthesis, wittig_olefination
 # the ten busiest templates, distinct reactions each
 # (a reverse counts toward its forward, as in templates_fired):
-#    10270  ether_condensation
-#     9238  fischer_esterification
-#     2455  friedel_crafts_hydroxyalkylation
-#      520  transesterification
-#      316  alkene_hydration
-#       66  alkene_dehydration
-#       54  ester_hydrolysis
-#       40  aerobic_oxidation
-#       33  alkene_hydrogenation
-#       30  carboxylic_acid_dissociation
+#    11076  ether_condensation
+#     9664  fischer_esterification
+#     2274  friedel_crafts_hydroxyalkylation
+#      532  transesterification
+#      270  alkene_hydration
+#      179  aldol_condensation
+#      154  friedel_crafts_alkylation
+#      120  alkene_dehydration
+#       57  aerobic_oxidation
+#       52  alkene_hydrogenation
 #
 alpha-pinene | aluminium-oxide | 9 | 0 | fixpoint | 0
 alpha-pinene | calcium-carbonate | 9 | 0 | fixpoint | 0
@@ -39,31 +39,31 @@ alpha-pinene | carbon-graphite | 9 | 0 | fixpoint | 0
 alpha-pinene | cellulose-unit | 400 | 737 | capped | 371
 alpha-pinene | citronellal | 9 | 0 | fixpoint | 0
 alpha-pinene | copper-sulfide | 9 | 0 | fixpoint | 0
-alpha-pinene | eugenol | 9 | 0 | fixpoint | 0
+alpha-pinene | eugenol | 16 | 12 | fixpoint | 0
 alpha-pinene | glucose | 400 | 737 | capped | 371
-alpha-pinene | gypsum | 41 | 79 | fixpoint | 0
-alpha-pinene | indican | 400 | 480 | capped | 380
+alpha-pinene | gypsum | 400 | 526 | capped | 291
+alpha-pinene | indican | 400 | 480 | capped | 375
 alpha-pinene | iron-ii-sulfate | 9 | 0 | fixpoint | 0
 alpha-pinene | iron-ii-sulfide | 10 | 0 | fixpoint | 0
 alpha-pinene | iron-iii-oxide | 8 | 0 | fixpoint | 0
 alpha-pinene | lead-sulfide | 9 | 0 | fixpoint | 0
-alpha-pinene | lignin-monomer-coniferyl | 400 | 580 | capped | 308
+alpha-pinene | lignin-monomer-coniferyl | 400 | 411 | capped | 357
 alpha-pinene | magnesium-carbonate | 10 | 0 | fixpoint | 0
 alpha-pinene | mercury-sulfide | 9 | 0 | fixpoint | 0
 alpha-pinene | nitrogen | 9 | 0 | fixpoint | 0
-alpha-pinene | oleic-acid | 9 | 0 | fixpoint | 0
+alpha-pinene | oleic-acid | 11 | 1 | fixpoint | 0
 alpha-pinene | oxygen | 9 | 0 | fixpoint | 0
 alpha-pinene | potassium-nitrate | 10 | 0 | fixpoint | 0
-alpha-pinene | salicin | 400 | 630 | capped | 375
+alpha-pinene | salicin | 400 | 630 | capped | 371
 alpha-pinene | silver | 9 | 0 | fixpoint | 0
 alpha-pinene | sodium-chloride | 10 | 0 | fixpoint | 0
 alpha-pinene | sodium-nitrate | 10 | 0 | fixpoint | 0
 alpha-pinene | starch-unit | 400 | 737 | capped | 371
 alpha-pinene | sucrose | 400 | 402 | capped | 354
 alpha-pinene | sulfur-s8 | 9 | 0 | fixpoint | 0
-alpha-pinene | tannic-acid-core | 400 | 421 | capped | 373
+alpha-pinene | tannic-acid-core | 400 | 421 | capped | 371
 alpha-pinene | triolein | 9 | 0 | fixpoint | 0
-alpha-pinene | water | 39 | 79 | fixpoint | 0
+alpha-pinene | water | 400 | 534 | capped | 293
 alpha-pinene | zinc-sulfide | 9 | 0 | fixpoint | 0
 aluminium-oxide | calcium-carbonate | 9 | 0 | fixpoint | 0
 aluminium-oxide | calcium-fluoride | 10 | 0 | fixpoint | 0
@@ -82,11 +82,11 @@ aluminium-oxide | iron-ii-sulfate | 9 | 0 | fixpoint | 0
 aluminium-oxide | iron-ii-sulfide | 10 | 0 | fixpoint | 0
 aluminium-oxide | iron-iii-oxide | 8 | 0 | fixpoint | 0
 aluminium-oxide | lead-sulfide | 9 | 0 | fixpoint | 0
-aluminium-oxide | lignin-monomer-coniferyl | 400 | 518 | capped | 331
+aluminium-oxide | lignin-monomer-coniferyl | 400 | 522 | capped | 327
 aluminium-oxide | magnesium-carbonate | 10 | 0 | fixpoint | 0
 aluminium-oxide | mercury-sulfide | 9 | 0 | fixpoint | 0
 aluminium-oxide | nitrogen | 9 | 0 | fixpoint | 0
-aluminium-oxide | oleic-acid | 9 | 0 | fixpoint | 0
+aluminium-oxide | oleic-acid | 11 | 1 | fixpoint | 0
 aluminium-oxide | oxygen | 9 | 0 | fixpoint | 0
 aluminium-oxide | potassium-nitrate | 10 | 0 | fixpoint | 0
 aluminium-oxide | salicin | 400 | 630 | capped | 375
@@ -116,11 +116,11 @@ calcium-carbonate | iron-ii-sulfate | 9 | 0 | fixpoint | 0
 calcium-carbonate | iron-ii-sulfide | 10 | 0 | fixpoint | 0
 calcium-carbonate | iron-iii-oxide | 8 | 0 | fixpoint | 0
 calcium-carbonate | lead-sulfide | 9 | 0 | fixpoint | 0
-calcium-carbonate | lignin-monomer-coniferyl | 400 | 518 | capped | 331
+calcium-carbonate | lignin-monomer-coniferyl | 400 | 522 | capped | 327
 calcium-carbonate | magnesium-carbonate | 10 | 0 | fixpoint | 0
 calcium-carbonate | mercury-sulfide | 9 | 0 | fixpoint | 0
 calcium-carbonate | nitrogen | 9 | 0 | fixpoint | 0
-calcium-carbonate | oleic-acid | 9 | 0 | fixpoint | 0
+calcium-carbonate | oleic-acid | 11 | 1 | fixpoint | 0
 calcium-carbonate | oxygen | 9 | 0 | fixpoint | 0
 calcium-carbonate | potassium-nitrate | 10 | 0 | fixpoint | 0
 calcium-carbonate | salicin | 400 | 630 | capped | 375
@@ -149,11 +149,11 @@ calcium-fluoride | iron-ii-sulfate | 10 | 0 | fixpoint | 0
 calcium-fluoride | iron-ii-sulfide | 11 | 0 | fixpoint | 0
 calcium-fluoride | iron-iii-oxide | 9 | 0 | fixpoint | 0
 calcium-fluoride | lead-sulfide | 10 | 0 | fixpoint | 0
-calcium-fluoride | lignin-monomer-coniferyl | 400 | 517 | capped | 330
+calcium-fluoride | lignin-monomer-coniferyl | 400 | 521 | capped | 326
 calcium-fluoride | magnesium-carbonate | 11 | 0 | fixpoint | 0
 calcium-fluoride | mercury-sulfide | 10 | 0 | fixpoint | 0
 calcium-fluoride | nitrogen | 10 | 0 | fixpoint | 0
-calcium-fluoride | oleic-acid | 10 | 0 | fixpoint | 0
+calcium-fluoride | oleic-acid | 12 | 1 | fixpoint | 0
 calcium-fluoride | oxygen | 10 | 0 | fixpoint | 0
 calcium-fluoride | potassium-nitrate | 11 | 0 | fixpoint | 0
 calcium-fluoride | salicin | 400 | 629 | capped | 374
@@ -181,11 +181,11 @@ calcium-phosphate | iron-ii-sulfate | 10 | 0 | fixpoint | 0
 calcium-phosphate | iron-ii-sulfide | 11 | 0 | fixpoint | 0
 calcium-phosphate | iron-iii-oxide | 9 | 0 | fixpoint | 0
 calcium-phosphate | lead-sulfide | 10 | 0 | fixpoint | 0
-calcium-phosphate | lignin-monomer-coniferyl | 400 | 517 | capped | 330
+calcium-phosphate | lignin-monomer-coniferyl | 400 | 521 | capped | 326
 calcium-phosphate | magnesium-carbonate | 11 | 0 | fixpoint | 0
 calcium-phosphate | mercury-sulfide | 10 | 0 | fixpoint | 0
 calcium-phosphate | nitrogen | 10 | 0 | fixpoint | 0
-calcium-phosphate | oleic-acid | 10 | 0 | fixpoint | 0
+calcium-phosphate | oleic-acid | 12 | 1 | fixpoint | 0
 calcium-phosphate | oxygen | 10 | 0 | fixpoint | 0
 calcium-phosphate | potassium-nitrate | 11 | 0 | fixpoint | 0
 calcium-phosphate | salicin | 400 | 629 | capped | 374
@@ -212,11 +212,11 @@ calcium-sulfate | iron-ii-sulfate | 10 | 0 | fixpoint | 0
 calcium-sulfate | iron-ii-sulfide | 11 | 0 | fixpoint | 0
 calcium-sulfate | iron-iii-oxide | 9 | 0 | fixpoint | 0
 calcium-sulfate | lead-sulfide | 10 | 0 | fixpoint | 0
-calcium-sulfate | lignin-monomer-coniferyl | 400 | 517 | capped | 330
+calcium-sulfate | lignin-monomer-coniferyl | 400 | 521 | capped | 326
 calcium-sulfate | magnesium-carbonate | 11 | 0 | fixpoint | 0
 calcium-sulfate | mercury-sulfide | 10 | 0 | fixpoint | 0
 calcium-sulfate | nitrogen | 10 | 0 | fixpoint | 0
-calcium-sulfate | oleic-acid | 10 | 0 | fixpoint | 0
+calcium-sulfate | oleic-acid | 12 | 1 | fixpoint | 0
 calcium-sulfate | oxygen | 10 | 0 | fixpoint | 0
 calcium-sulfate | potassium-nitrate | 11 | 0 | fixpoint | 0
 calcium-sulfate | salicin | 400 | 629 | capped | 374
@@ -236,17 +236,17 @@ carbon-dioxide | citronellal | 9 | 0 | fixpoint | 0
 carbon-dioxide | copper-sulfide | 9 | 0 | fixpoint | 0
 carbon-dioxide | eugenol | 9 | 0 | fixpoint | 0
 carbon-dioxide | glucose | 400 | 738 | capped | 372
-carbon-dioxide | gypsum | 20 | 12 | fixpoint | 0
+carbon-dioxide | gypsum | 21 | 15 | fixpoint | 0
 carbon-dioxide | indican | 400 | 480 | capped | 380
 carbon-dioxide | iron-ii-sulfate | 9 | 0 | fixpoint | 0
 carbon-dioxide | iron-ii-sulfide | 10 | 0 | fixpoint | 0
 carbon-dioxide | iron-iii-oxide | 8 | 0 | fixpoint | 0
 carbon-dioxide | lead-sulfide | 9 | 0 | fixpoint | 0
-carbon-dioxide | lignin-monomer-coniferyl | 400 | 518 | capped | 329
+carbon-dioxide | lignin-monomer-coniferyl | 400 | 524 | capped | 325
 carbon-dioxide | magnesium-carbonate | 10 | 0 | fixpoint | 0
 carbon-dioxide | mercury-sulfide | 9 | 0 | fixpoint | 0
 carbon-dioxide | nitrogen | 9 | 0 | fixpoint | 0
-carbon-dioxide | oleic-acid | 9 | 0 | fixpoint | 0
+carbon-dioxide | oleic-acid | 10 | 1 | fixpoint | 0
 carbon-dioxide | oxygen | 9 | 0 | fixpoint | 0
 carbon-dioxide | potassium-nitrate | 10 | 0 | fixpoint | 0
 carbon-dioxide | salicin | 400 | 630 | capped | 375
@@ -258,7 +258,7 @@ carbon-dioxide | sucrose | 400 | 402 | capped | 354
 carbon-dioxide | sulfur-s8 | 9 | 0 | fixpoint | 0
 carbon-dioxide | tannic-acid-core | 400 | 421 | capped | 373
 carbon-dioxide | triolein | 9 | 0 | fixpoint | 0
-carbon-dioxide | water | 18 | 12 | fixpoint | 0
+carbon-dioxide | water | 19 | 15 | fixpoint | 0
 carbon-dioxide | zinc-sulfide | 9 | 0 | fixpoint | 0
 carbon-graphite | cellulose-unit | 400 | 737 | capped | 371
 carbon-graphite | citronellal | 9 | 0 | fixpoint | 0
@@ -271,11 +271,11 @@ carbon-graphite | iron-ii-sulfate | 9 | 0 | fixpoint | 0
 carbon-graphite | iron-ii-sulfide | 10 | 0 | fixpoint | 0
 carbon-graphite | iron-iii-oxide | 8 | 0 | fixpoint | 0
 carbon-graphite | lead-sulfide | 9 | 0 | fixpoint | 0
-carbon-graphite | lignin-monomer-coniferyl | 400 | 518 | capped | 331
+carbon-graphite | lignin-monomer-coniferyl | 400 | 522 | capped | 327
 carbon-graphite | magnesium-carbonate | 10 | 0 | fixpoint | 0
 carbon-graphite | mercury-sulfide | 9 | 0 | fixpoint | 0
 carbon-graphite | nitrogen | 9 | 0 | fixpoint | 0
-carbon-graphite | oleic-acid | 9 | 0 | fixpoint | 0
+carbon-graphite | oleic-acid | 11 | 1 | fixpoint | 0
 carbon-graphite | oxygen | 9 | 0 | fixpoint | 0
 carbon-graphite | potassium-nitrate | 10 | 0 | fixpoint | 0
 carbon-graphite | salicin | 400 | 630 | capped | 375
@@ -303,7 +303,7 @@ cellulose-unit | lignin-monomer-coniferyl | 400 | 640 | capped | 365
 cellulose-unit | magnesium-carbonate | 400 | 736 | capped | 370
 cellulose-unit | mercury-sulfide | 400 | 737 | capped | 371
 cellulose-unit | nitrogen | 400 | 737 | capped | 371
-cellulose-unit | oleic-acid | 400 | 774 | capped | 366
+cellulose-unit | oleic-acid | 400 | 767 | capped | 365
 cellulose-unit | oxygen | 400 | 740 | capped | 369
 cellulose-unit | potassium-nitrate | 400 | 736 | capped | 370
 cellulose-unit | salicin | 400 | 720 | capped | 331
@@ -318,31 +318,31 @@ cellulose-unit | triolein | 400 | 661 | capped | 364
 cellulose-unit | water | 400 | 738 | capped | 367
 cellulose-unit | zinc-sulfide | 400 | 737 | capped | 371
 citronellal | copper-sulfide | 9 | 0 | fixpoint | 0
-citronellal | eugenol | 400 | 449 | capped | 147
+citronellal | eugenol | 400 | 414 | capped | 381
 citronellal | glucose | 400 | 737 | capped | 371
-citronellal | gypsum | 400 | 877 | capped | 277
-citronellal | indican | 400 | 480 | capped | 365
+citronellal | gypsum | 400 | 511 | capped | 363
+citronellal | indican | 400 | 480 | capped | 360
 citronellal | iron-ii-sulfate | 9 | 0 | fixpoint | 0
 citronellal | iron-ii-sulfide | 10 | 0 | fixpoint | 0
 citronellal | iron-iii-oxide | 8 | 0 | fixpoint | 0
 citronellal | lead-sulfide | 9 | 0 | fixpoint | 0
-citronellal | lignin-monomer-coniferyl | 400 | 469 | capped | 30
+citronellal | lignin-monomer-coniferyl | 400 | 423 | capped | 380
 citronellal | magnesium-carbonate | 10 | 0 | fixpoint | 0
 citronellal | mercury-sulfide | 9 | 0 | fixpoint | 0
 citronellal | nitrogen | 9 | 0 | fixpoint | 0
-citronellal | oleic-acid | 9 | 0 | fixpoint | 0
+citronellal | oleic-acid | 11 | 1 | fixpoint | 0
 citronellal | oxygen | 9 | 0 | fixpoint | 0
 citronellal | potassium-nitrate | 10 | 0 | fixpoint | 0
-citronellal | salicin | 400 | 630 | capped | 365
+citronellal | salicin | 400 | 630 | capped | 361
 citronellal | silver | 9 | 0 | fixpoint | 0
 citronellal | sodium-chloride | 10 | 0 | fixpoint | 0
 citronellal | sodium-nitrate | 10 | 0 | fixpoint | 0
 citronellal | starch-unit | 400 | 737 | capped | 371
 citronellal | sucrose | 400 | 402 | capped | 354
 citronellal | sulfur-s8 | 9 | 0 | fixpoint | 0
-citronellal | tannic-acid-core | 400 | 421 | capped | 370
+citronellal | tannic-acid-core | 400 | 421 | capped | 368
 citronellal | triolein | 9 | 0 | fixpoint | 0
-citronellal | water | 400 | 881 | capped | 279
+citronellal | water | 400 | 513 | capped | 365
 citronellal | zinc-sulfide | 9 | 0 | fixpoint | 0
 copper-sulfide | eugenol | 9 | 0 | fixpoint | 0
 copper-sulfide | glucose | 400 | 737 | capped | 371
@@ -352,11 +352,11 @@ copper-sulfide | iron-ii-sulfate | 9 | 0 | fixpoint | 0
 copper-sulfide | iron-ii-sulfide | 10 | 0 | fixpoint | 0
 copper-sulfide | iron-iii-oxide | 8 | 0 | fixpoint | 0
 copper-sulfide | lead-sulfide | 9 | 0 | fixpoint | 0
-copper-sulfide | lignin-monomer-coniferyl | 400 | 518 | capped | 331
+copper-sulfide | lignin-monomer-coniferyl | 400 | 522 | capped | 327
 copper-sulfide | magnesium-carbonate | 10 | 0 | fixpoint | 0
 copper-sulfide | mercury-sulfide | 9 | 0 | fixpoint | 0
 copper-sulfide | nitrogen | 9 | 0 | fixpoint | 0
-copper-sulfide | oleic-acid | 9 | 0 | fixpoint | 0
+copper-sulfide | oleic-acid | 11 | 1 | fixpoint | 0
 copper-sulfide | oxygen | 9 | 0 | fixpoint | 0
 copper-sulfide | potassium-nitrate | 10 | 0 | fixpoint | 0
 copper-sulfide | salicin | 400 | 630 | capped | 375
@@ -371,17 +371,17 @@ copper-sulfide | triolein | 9 | 0 | fixpoint | 0
 copper-sulfide | water | 13 | 4 | fixpoint | 0
 copper-sulfide | zinc-sulfide | 9 | 0 | fixpoint | 0
 eugenol | glucose | 400 | 737 | capped | 371
-eugenol | gypsum | 400 | 395 | capped | 374
+eugenol | gypsum | 400 | 397 | capped | 372
 eugenol | indican | 400 | 480 | capped | 380
 eugenol | iron-ii-sulfate | 9 | 0 | fixpoint | 0
 eugenol | iron-ii-sulfide | 10 | 0 | fixpoint | 0
 eugenol | iron-iii-oxide | 8 | 0 | fixpoint | 0
 eugenol | lead-sulfide | 9 | 0 | fixpoint | 0
-eugenol | lignin-monomer-coniferyl | 400 | 584 | capped | 311
+eugenol | lignin-monomer-coniferyl | 400 | 592 | capped | 306
 eugenol | magnesium-carbonate | 10 | 0 | fixpoint | 0
 eugenol | mercury-sulfide | 9 | 0 | fixpoint | 0
 eugenol | nitrogen | 9 | 0 | fixpoint | 0
-eugenol | oleic-acid | 400 | 569 | capped | 113
+eugenol | oleic-acid | 400 | 449 | capped | 376
 eugenol | oxygen | 9 | 0 | fixpoint | 0
 eugenol | potassium-nitrate | 10 | 0 | fixpoint | 0
 eugenol | salicin | 400 | 630 | capped | 375
@@ -392,8 +392,8 @@ eugenol | starch-unit | 400 | 737 | capped | 371
 eugenol | sucrose | 400 | 402 | capped | 354
 eugenol | sulfur-s8 | 9 | 0 | fixpoint | 0
 eugenol | tannic-acid-core | 400 | 421 | capped | 349
-eugenol | triolein | 400 | 443 | capped | 378
-eugenol | water | 400 | 397 | capped | 376
+eugenol | triolein | 400 | 441 | capped | 366
+eugenol | water | 400 | 399 | capped | 374
 eugenol | zinc-sulfide | 9 | 0 | fixpoint | 0
 glucose | gypsum | 400 | 736 | capped | 365
 glucose | indican | 400 | 690 | capped | 341
@@ -405,7 +405,7 @@ glucose | lignin-monomer-coniferyl | 400 | 640 | capped | 365
 glucose | magnesium-carbonate | 400 | 736 | capped | 370
 glucose | mercury-sulfide | 400 | 737 | capped | 371
 glucose | nitrogen | 400 | 737 | capped | 371
-glucose | oleic-acid | 400 | 774 | capped | 366
+glucose | oleic-acid | 400 | 767 | capped | 365
 glucose | oxygen | 400 | 740 | capped | 369
 glucose | potassium-nitrate | 400 | 736 | capped | 370
 glucose | salicin | 400 | 720 | capped | 331
@@ -424,11 +424,11 @@ gypsum | iron-ii-sulfate | 15 | 4 | fixpoint | 0
 gypsum | iron-ii-sulfide | 20 | 11 | fixpoint | 0
 gypsum | iron-iii-oxide | 14 | 4 | fixpoint | 0
 gypsum | lead-sulfide | 15 | 4 | fixpoint | 0
-gypsum | lignin-monomer-coniferyl | 400 | 445 | capped | 351
+gypsum | lignin-monomer-coniferyl | 400 | 447 | capped | 349
 gypsum | magnesium-carbonate | 16 | 4 | fixpoint | 0
 gypsum | mercury-sulfide | 15 | 4 | fixpoint | 0
 gypsum | nitrogen | 17 | 8 | fixpoint | 0
-gypsum | oleic-acid | 400 | 1087 | capped | 207
+gypsum | oleic-acid | 400 | 1065 | capped | 101
 gypsum | oxygen | 14 | 4 | fixpoint | 0
 gypsum | potassium-nitrate | 16 | 4 | fixpoint | 0
 gypsum | salicin | 400 | 628 | capped | 368
@@ -439,7 +439,7 @@ gypsum | starch-unit | 400 | 736 | capped | 365
 gypsum | sucrose | 400 | 400 | capped | 347
 gypsum | sulfur-s8 | 16 | 5 | fixpoint | 0
 gypsum | tannic-acid-core | 400 | 527 | capped | 367
-gypsum | triolein | 400 | 894 | capped | 298
+gypsum | triolein | 400 | 893 | capped | 296
 gypsum | water | 14 | 4 | fixpoint | 0
 gypsum | zinc-sulfide | 15 | 4 | fixpoint | 0
 indican | iron-ii-sulfate | 400 | 480 | capped | 380
@@ -450,7 +450,7 @@ indican | lignin-monomer-coniferyl | 400 | 534 | capped | 375
 indican | magnesium-carbonate | 400 | 479 | capped | 379
 indican | mercury-sulfide | 400 | 480 | capped | 380
 indican | nitrogen | 400 | 480 | capped | 380
-indican | oleic-acid | 400 | 713 | capped | 361
+indican | oleic-acid | 400 | 754 | capped | 349
 indican | oxygen | 400 | 479 | capped | 378
 indican | potassium-nitrate | 400 | 479 | capped | 379
 indican | salicin | 400 | 528 | capped | 345
@@ -461,17 +461,17 @@ indican | starch-unit | 400 | 694 | capped | 341
 indican | sucrose | 400 | 495 | capped | 312
 indican | sulfur-s8 | 400 | 480 | capped | 380
 indican | tannic-acid-core | 400 | 487 | capped | 297
-indican | triolein | 400 | 490 | capped | 344
+indican | triolein | 400 | 490 | capped | 324
 indican | water | 400 | 480 | capped | 375
 indican | zinc-sulfide | 400 | 480 | capped | 380
 iron-ii-sulfate | iron-ii-sulfide | 10 | 0 | fixpoint | 0
 iron-ii-sulfate | iron-iii-oxide | 8 | 0 | fixpoint | 0
 iron-ii-sulfate | lead-sulfide | 9 | 0 | fixpoint | 0
-iron-ii-sulfate | lignin-monomer-coniferyl | 400 | 518 | capped | 331
+iron-ii-sulfate | lignin-monomer-coniferyl | 400 | 522 | capped | 327
 iron-ii-sulfate | magnesium-carbonate | 10 | 0 | fixpoint | 0
 iron-ii-sulfate | mercury-sulfide | 9 | 0 | fixpoint | 0
 iron-ii-sulfate | nitrogen | 9 | 0 | fixpoint | 0
-iron-ii-sulfate | oleic-acid | 9 | 0 | fixpoint | 0
+iron-ii-sulfate | oleic-acid | 11 | 1 | fixpoint | 0
 iron-ii-sulfate | oxygen | 9 | 0 | fixpoint | 0
 iron-ii-sulfate | potassium-nitrate | 10 | 0 | fixpoint | 0
 iron-ii-sulfate | salicin | 400 | 630 | capped | 375
@@ -487,11 +487,11 @@ iron-ii-sulfate | water | 13 | 4 | fixpoint | 0
 iron-ii-sulfate | zinc-sulfide | 9 | 0 | fixpoint | 0
 iron-ii-sulfide | iron-iii-oxide | 9 | 0 | fixpoint | 0
 iron-ii-sulfide | lead-sulfide | 10 | 0 | fixpoint | 0
-iron-ii-sulfide | lignin-monomer-coniferyl | 400 | 518 | capped | 329
+iron-ii-sulfide | lignin-monomer-coniferyl | 400 | 522 | capped | 325
 iron-ii-sulfide | magnesium-carbonate | 11 | 0 | fixpoint | 0
 iron-ii-sulfide | mercury-sulfide | 10 | 0 | fixpoint | 0
 iron-ii-sulfide | nitrogen | 10 | 0 | fixpoint | 0
-iron-ii-sulfide | oleic-acid | 10 | 0 | fixpoint | 0
+iron-ii-sulfide | oleic-acid | 12 | 1 | fixpoint | 0
 iron-ii-sulfide | oxygen | 10 | 0 | fixpoint | 0
 iron-ii-sulfide | potassium-nitrate | 11 | 0 | fixpoint | 0
 iron-ii-sulfide | salicin | 400 | 629 | capped | 374
@@ -506,11 +506,11 @@ iron-ii-sulfide | triolein | 10 | 0 | fixpoint | 0
 iron-ii-sulfide | water | 18 | 11 | fixpoint | 0
 iron-ii-sulfide | zinc-sulfide | 10 | 0 | fixpoint | 0
 iron-iii-oxide | lead-sulfide | 8 | 0 | fixpoint | 0
-iron-iii-oxide | lignin-monomer-coniferyl | 400 | 519 | capped | 332
+iron-iii-oxide | lignin-monomer-coniferyl | 400 | 523 | capped | 328
 iron-iii-oxide | magnesium-carbonate | 9 | 0 | fixpoint | 0
 iron-iii-oxide | mercury-sulfide | 8 | 0 | fixpoint | 0
 iron-iii-oxide | nitrogen | 8 | 0 | fixpoint | 0
-iron-iii-oxide | oleic-acid | 8 | 0 | fixpoint | 0
+iron-iii-oxide | oleic-acid | 10 | 1 | fixpoint | 0
 iron-iii-oxide | oxygen | 8 | 0 | fixpoint | 0
 iron-iii-oxide | potassium-nitrate | 9 | 0 | fixpoint | 0
 iron-iii-oxide | salicin | 400 | 631 | capped | 376
@@ -524,11 +524,11 @@ iron-iii-oxide | tannic-acid-core | 400 | 422 | capped | 374
 iron-iii-oxide | triolein | 8 | 0 | fixpoint | 0
 iron-iii-oxide | water | 12 | 4 | fixpoint | 0
 iron-iii-oxide | zinc-sulfide | 8 | 0 | fixpoint | 0
-lead-sulfide | lignin-monomer-coniferyl | 400 | 518 | capped | 331
+lead-sulfide | lignin-monomer-coniferyl | 400 | 522 | capped | 327
 lead-sulfide | magnesium-carbonate | 10 | 0 | fixpoint | 0
 lead-sulfide | mercury-sulfide | 9 | 0 | fixpoint | 0
 lead-sulfide | nitrogen | 9 | 0 | fixpoint | 0
-lead-sulfide | oleic-acid | 9 | 0 | fixpoint | 0
+lead-sulfide | oleic-acid | 11 | 1 | fixpoint | 0
 lead-sulfide | oxygen | 9 | 0 | fixpoint | 0
 lead-sulfide | potassium-nitrate | 10 | 0 | fixpoint | 0
 lead-sulfide | salicin | 400 | 630 | capped | 375
@@ -542,26 +542,26 @@ lead-sulfide | tannic-acid-core | 400 | 421 | capped | 373
 lead-sulfide | triolein | 9 | 0 | fixpoint | 0
 lead-sulfide | water | 13 | 4 | fixpoint | 0
 lead-sulfide | zinc-sulfide | 9 | 0 | fixpoint | 0
-lignin-monomer-coniferyl | magnesium-carbonate | 400 | 517 | capped | 330
-lignin-monomer-coniferyl | mercury-sulfide | 400 | 518 | capped | 331
-lignin-monomer-coniferyl | nitrogen | 400 | 519 | capped | 330
-lignin-monomer-coniferyl | oleic-acid | 400 | 454 | capped | 382
+lignin-monomer-coniferyl | magnesium-carbonate | 400 | 521 | capped | 326
+lignin-monomer-coniferyl | mercury-sulfide | 400 | 522 | capped | 327
+lignin-monomer-coniferyl | nitrogen | 400 | 523 | capped | 326
+lignin-monomer-coniferyl | oleic-acid | 400 | 543 | capped | 374
 lignin-monomer-coniferyl | oxygen | 400 | 632 | capped | 233
-lignin-monomer-coniferyl | potassium-nitrate | 400 | 517 | capped | 330
+lignin-monomer-coniferyl | potassium-nitrate | 400 | 521 | capped | 326
 lignin-monomer-coniferyl | salicin | 400 | 740 | capped | 369
-lignin-monomer-coniferyl | silver | 400 | 518 | capped | 331
-lignin-monomer-coniferyl | sodium-chloride | 400 | 520 | capped | 327
-lignin-monomer-coniferyl | sodium-nitrate | 400 | 517 | capped | 330
+lignin-monomer-coniferyl | silver | 400 | 522 | capped | 327
+lignin-monomer-coniferyl | sodium-chloride | 400 | 494 | capped | 287
+lignin-monomer-coniferyl | sodium-nitrate | 400 | 521 | capped | 326
 lignin-monomer-coniferyl | starch-unit | 400 | 640 | capped | 365
 lignin-monomer-coniferyl | sucrose | 400 | 418 | capped | 345
-lignin-monomer-coniferyl | sulfur-s8 | 400 | 518 | capped | 330
+lignin-monomer-coniferyl | sulfur-s8 | 400 | 522 | capped | 326
 lignin-monomer-coniferyl | tannic-acid-core | 400 | 445 | capped | 344
-lignin-monomer-coniferyl | triolein | 400 | 460 | capped | 374
-lignin-monomer-coniferyl | water | 400 | 447 | capped | 353
-lignin-monomer-coniferyl | zinc-sulfide | 400 | 518 | capped | 331
+lignin-monomer-coniferyl | triolein | 400 | 391 | capped | 362
+lignin-monomer-coniferyl | water | 400 | 449 | capped | 351
+lignin-monomer-coniferyl | zinc-sulfide | 400 | 522 | capped | 327
 magnesium-carbonate | mercury-sulfide | 10 | 0 | fixpoint | 0
 magnesium-carbonate | nitrogen | 10 | 0 | fixpoint | 0
-magnesium-carbonate | oleic-acid | 10 | 0 | fixpoint | 0
+magnesium-carbonate | oleic-acid | 12 | 1 | fixpoint | 0
 magnesium-carbonate | oxygen | 10 | 0 | fixpoint | 0
 magnesium-carbonate | potassium-nitrate | 11 | 0 | fixpoint | 0
 magnesium-carbonate | salicin | 400 | 629 | capped | 374
@@ -576,7 +576,7 @@ magnesium-carbonate | triolein | 10 | 0 | fixpoint | 0
 magnesium-carbonate | water | 14 | 4 | fixpoint | 0
 magnesium-carbonate | zinc-sulfide | 10 | 0 | fixpoint | 0
 mercury-sulfide | nitrogen | 9 | 0 | fixpoint | 0
-mercury-sulfide | oleic-acid | 9 | 0 | fixpoint | 0
+mercury-sulfide | oleic-acid | 11 | 1 | fixpoint | 0
 mercury-sulfide | oxygen | 9 | 0 | fixpoint | 0
 mercury-sulfide | potassium-nitrate | 10 | 0 | fixpoint | 0
 mercury-sulfide | salicin | 400 | 630 | capped | 375
@@ -590,7 +590,7 @@ mercury-sulfide | tannic-acid-core | 400 | 421 | capped | 373
 mercury-sulfide | triolein | 9 | 0 | fixpoint | 0
 mercury-sulfide | water | 13 | 4 | fixpoint | 0
 mercury-sulfide | zinc-sulfide | 9 | 0 | fixpoint | 0
-nitrogen | oleic-acid | 9 | 0 | fixpoint | 0
+nitrogen | oleic-acid | 11 | 1 | fixpoint | 0
 nitrogen | oxygen | 9 | 0 | fixpoint | 0
 nitrogen | potassium-nitrate | 10 | 0 | fixpoint | 0
 nitrogen | salicin | 400 | 630 | capped | 375
@@ -604,19 +604,19 @@ nitrogen | tannic-acid-core | 400 | 421 | capped | 373
 nitrogen | triolein | 9 | 0 | fixpoint | 0
 nitrogen | water | 15 | 8 | fixpoint | 0
 nitrogen | zinc-sulfide | 9 | 0 | fixpoint | 0
-oleic-acid | oxygen | 9 | 0 | fixpoint | 0
-oleic-acid | potassium-nitrate | 10 | 0 | fixpoint | 0
-oleic-acid | salicin | 400 | 744 | capped | 360
-oleic-acid | silver | 9 | 0 | fixpoint | 0
-oleic-acid | sodium-chloride | 10 | 0 | fixpoint | 0
-oleic-acid | sodium-nitrate | 10 | 0 | fixpoint | 0
-oleic-acid | starch-unit | 400 | 774 | capped | 366
-oleic-acid | sucrose | 400 | 800 | capped | 346
-oleic-acid | sulfur-s8 | 9 | 0 | fixpoint | 0
-oleic-acid | tannic-acid-core | 400 | 540 | capped | 367
-oleic-acid | triolein | 9 | 0 | fixpoint | 0
-oleic-acid | water | 400 | 1091 | capped | 209
-oleic-acid | zinc-sulfide | 9 | 0 | fixpoint | 0
+oleic-acid | oxygen | 11 | 1 | fixpoint | 0
+oleic-acid | potassium-nitrate | 12 | 1 | fixpoint | 0
+oleic-acid | salicin | 400 | 764 | capped | 350
+oleic-acid | silver | 11 | 1 | fixpoint | 0
+oleic-acid | sodium-chloride | 12 | 1 | fixpoint | 0
+oleic-acid | sodium-nitrate | 12 | 1 | fixpoint | 0
+oleic-acid | starch-unit | 400 | 767 | capped | 365
+oleic-acid | sucrose | 400 | 797 | capped | 344
+oleic-acid | sulfur-s8 | 11 | 1 | fixpoint | 0
+oleic-acid | tannic-acid-core | 400 | 766 | capped | 361
+oleic-acid | triolein | 11 | 1 | fixpoint | 0
+oleic-acid | water | 400 | 1069 | capped | 103
+oleic-acid | zinc-sulfide | 11 | 1 | fixpoint | 0
 oxygen | potassium-nitrate | 10 | 0 | fixpoint | 0
 oxygen | salicin | 400 | 629 | capped | 373
 oxygen | silver | 9 | 0 | fixpoint | 0
@@ -647,7 +647,7 @@ salicin | starch-unit | 400 | 720 | capped | 331
 salicin | sucrose | 400 | 402 | capped | 299
 salicin | sulfur-s8 | 400 | 630 | capped | 375
 salicin | tannic-acid-core | 400 | 526 | capped | 302
-salicin | triolein | 400 | 643 | capped | 348
+salicin | triolein | 400 | 643 | capped | 332
 salicin | water | 400 | 630 | capped | 370
 salicin | zinc-sulfide | 400 | 630 | capped | 375
 silver | sodium-chloride | 10 | 0 | fixpoint | 0
@@ -689,9 +689,9 @@ sulfur-s8 | tannic-acid-core | 400 | 421 | capped | 373
 sulfur-s8 | triolein | 9 | 0 | fixpoint | 0
 sulfur-s8 | water | 14 | 5 | fixpoint | 0
 sulfur-s8 | zinc-sulfide | 9 | 0 | fixpoint | 0
-tannic-acid-core | triolein | 400 | 428 | capped | 362
+tannic-acid-core | triolein | 400 | 428 | capped | 354
 tannic-acid-core | water | 400 | 529 | capped | 369
 tannic-acid-core | zinc-sulfide | 400 | 421 | capped | 373
-triolein | water | 400 | 896 | capped | 300
+triolein | water | 400 | 895 | capped | 298
 triolein | zinc-sulfide | 9 | 0 | fixpoint | 0
 water | zinc-sulfide | 13 | 4 | fixpoint | 0

@@ -126,13 +126,17 @@ def test_the_headline_and_the_tiers_are_what_the_report_says(bp):
     guncotton among the rows a template cannot buy -- the disagreement was
     printed in the file before the work started. See the third test below,
     which is where guncotton now shows up.
+
+    2026-09-24 moved RUNNABLE 51 -> 56 with the textbook family rows the
+    benchmark graded, and RUNNABLE_WITH_LITERAL 61 -> 65. Playable did not move:
+    none of the five new runnable routes is fed from the shelf.
     """
     assert len(bp.routes) == 173
     assert len(bp.PLAYABLE) == 23
     assert max(bp.PLAYABLE.values()) == 3
-    assert len(bp.RUNNABLE) == 51
+    assert len(bp.RUNNABLE) == 56
     assert bp.TC is cc.FAMILY_TEMPLATE_CLASSES
-    assert len(bp.RUNNABLE_WITH_LITERAL) == 61
+    assert len(bp.RUNNABLE_WITH_LITERAL) == 65
     assert len(bp.PLAYABLE_WITH_LITERAL) == 25
     assert set(bp.PLAYABLE) < set(bp.PLAYABLE_WITH_LITERAL)
     assert bp.PLAYABLE["hmf-route"] == 2
@@ -590,6 +594,12 @@ def test_the_frequent_blocker_is_now_also_the_valuable_one(bp):
     than +1 (`test_the_ceiling_is_the_goal_...`). What died is the claim about
     the SPECIES histogram, and it died because the histogram was right and the
     fixed point was reading a corrupt `needs`.
+
+    2026-09-24: the textbook family rows made three species tie at the top of
+    the histogram (nickel, ethylene, hydrogen chloride, 4 routes each) and the
+    best grant is now ethylene at +4. The relation this test is for still holds
+    -- the most valuable grant is one of the most frequent blockers -- so it is
+    asserted as that relation.
     """
     from collections import Counter
 
@@ -602,14 +612,17 @@ def test_the_frequent_blocker_is_now_also_the_valuable_one(bp):
         return len(bp.closure(extra={x})[0]) - len(bp.PLAYABLE)
 
     assert "sulfuric-acid" not in blockers, "C1 put it on the shelf"
-    assert blockers.most_common(1)[0] == ("nickel", 4)
+    top = blockers.most_common(1)[0][1]
+    frequent = {x for x, n in blockers.items() if n == top}
+    assert top == 4
+    assert frequent == {"nickel", "ethylene", "hydrogen-chloride"}
 
-    # the difference this test pins, asserted as a difference and not as a pair
-    # of levels: the top of the histogram is now the top of the fixed point too.
+    # the relation this test pins: the unique best grant is a frequent blocker.
     best = max(worth(x) for x in blockers)
-    assert best == 3
-    assert [x for x in blockers if worth(x) == best] == ["nickel"]
-    assert worth("nickel") == best
+    valuable = [x for x in blockers if worth(x) == best]
+    assert best == 4
+    assert valuable == ["ethylene"]
+    assert set(valuable) <= frequent
 
     # and the cascade is the reason, named
     assert set(bp.closure(extra={"nickel"})[0]) - set(bp.PLAYABLE) == {

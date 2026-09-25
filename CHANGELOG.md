@@ -4,6 +4,30 @@ Newest first. One entry per session, twelve lines an entry and 400 lines the
 file, both enforced by `tools/check_docs.py`. At the cap the older half rolls
 into `docs/history/changelog-YYYY-MM.md`, where 2026-09-02 to 2026-09-12 is.
 
+## 2026-09-24 — CI is portable: three pins on solver round-off, and worksteal
+
+The first CI run named three tests that pinned one machine's round-off: an
+abs 5e-11 on an ODE result, a sealed flask's aldehyde at 1e-9 (CI 6e-9), an
+exact 0.0 where CI got 1.5e-22 mol. Each now pins the claim at solver
+precision. The suite took 32.9 min on four workers under `loadfile`, one
+module being the critical path; it runs `worksteal` now, and the slowest ten
+modules are published as notices (`python tools/ci_status.py --slowest`),
+which is T0.4's measurement. `check.ps1` names its failing steps as an
+annotation in Actions, so a session reads them without a token.
+
+## 2026-09-24 — 38 textbook family rows, and the benchmark goes 20 -> 56 of 63
+
+Diels-Alder, Wittig, Grignard, aldol (addition and condensation), Claisen,
+Michael, Beckmann, Curtius, imine/oxime/hydrazone (one row, three classes),
+halogenation, sulfonation, Friedel-Crafts, epoxide opening, acetals and more
+into `templates.psv`, each graded on held-out cases: 206/216 pass, 152 run,
+54 unpriced (B1). A radical audit split `carbanion_generation` on H count; the
+sweep caught Friedel-Crafts alkylation feeding on eugenol (800 s a pair) and
+its alkene slot now refuses a ring within two bonds. Runnable 51 -> 56,
+template-ready (family) 50 -> 63, playable 23 unmoved -- none of the five is
+fed, and ethylene is now the +4 grant (B2). Shelf +5 intermediate, +2 bottle,
+five pins re-numbered. Sweep 1,301 s: 24,710 reactions, 47 of 106 templates fire.
+
 ## 2026-09-24 — extractor v2: salts read as ions, stereo flat, 58 -> 79 literal rows
 
 An aqueous step's salts are read as their net ionic equation, a furnace's stay

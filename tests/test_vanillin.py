@@ -299,14 +299,17 @@ def test_the_route_needs_its_TEMPERATURE(net):
     assert hot / SUBSTRATE > 0.9
 
 
-def test_the_base_is_the_gate_and_a_flask_without_it_is_EXACTLY_inert(net):
+def test_the_base_is_the_gate_and_a_flask_without_it_is_inert_to_round_off(net):
     """⚠⚠ AND THE GATE IS NOT WHERE EITHER TEMPLATE PUTS IT.
     ``oxidative_cleavage`` declares no catalyst at all and would cleave any
     isoeugenol in the flask. There is none, because the step that MAKES
     isoeugenol is the base-catalysed one. **A two-template route is gated by
     whichever step comes first, and neither template says so on its own.**
+
+    Inert to round-off, not to the bit: the user's machine returned exactly 0.0
+    and a CI runner 1.5e-22 mol, the linear algebra summing in another order.
     """
-    assert _flask(net, oh=0.0).state().total(VANILLIN) == 0.0
+    assert _flask(net, oh=0.0).state().total(VANILLIN) <= 1e-15 * SUBSTRATE
     lo = _flask(net, oh=0.01).state().total(VANILLIN)
     hi = _flask(net, oh=0.50).state().total(VANILLIN)
     assert 0.0 < lo < hi

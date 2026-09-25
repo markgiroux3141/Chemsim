@@ -128,15 +128,15 @@ named; if a number here cannot be reproduced by running it, the number is wrong.
 | | | from |
 |---|---|---|
 | layers complete | 0-7 | this file's Architecture table |
-| tests | 1,264, no skips, no xfails | `python -m pytest --co -q` |
-| full suite | ~30 min; `./check.ps1` is the fast one | — |
-| reaction templates | 57 | `grep -c 'ReactionTemplate(' src/chemsim/reactions/*.py src/chemsim/properties/electrolyte.py` |
+| tests | 1,361; the full suite (~30 min) runs in CI on every push | `python -m pytest --co -q`, `python tools/ci_status.py` |
+| reaction templates | 151: 106 `family`, 45 `literal` | `python tools/build_templates.py --check` |
+| **held-out benchmark, the coverage headline** | **56 / 63 classes general, 206 / 216 cases** | `data/benchmark/scores.psv` |
 | catalog | 1,583 compounds, 173 routes, 377 steps, 240 classes | `python tools/catalog.py` |
-| classes with a template | 59 / 240 | `data/catalog/COVERAGE_REPORT.md` |
-| routes template-ready | 46 / 173 | `data/catalog/COVERAGE_REPORT.md` |
-| routes species-ready | 85 / 173 | `data/catalog/COVERAGE_REPORT.md` |
-| **routes that are both, the one to quote** | **38 / 173** | `data/catalog/COVERAGE_REPORT.md` |
-| routes reachable from natural materials | 21 / 173, three tiers deep | `data/catalog/PLAYABLE.md` |
+| classes with a template | 144 / 240 | `data/catalog/COVERAGE_REPORT.md` |
+| routes template-ready | 81 / 173 | `data/catalog/COVERAGE_REPORT.md` |
+| routes species-ready | 95 / 173 | `data/catalog/COVERAGE_REPORT.md` |
+| routes that are both | 58 / 173 | `data/catalog/COVERAGE_REPORT.md` |
+| routes reachable from natural materials | 23 / 173, three tiers deep | `data/catalog/PLAYABLE.md` |
 | save format | `SAVE_VERSION = 9` | `src/chemsim/engine/world.py` |
 
 Layer 4.5 (`discovery/`) is the exception to "complete": `refine_network` exists,

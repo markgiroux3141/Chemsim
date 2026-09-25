@@ -153,6 +153,11 @@ phenol                     | intermediate | 0.3   | solid  | chain: cumene, or a
 propylene                  | intermediate | 0.05  | gas    | chain: a cracker product
 sodium-acetate             | intermediate | 0.3   | liquid | chain: soda and vinegar -- dissolved: no lattice record
 tristearin                 | intermediate | 0.1   | solid  | chain: a hardened fat -- margarine makes it and needs nickel
+1,3-butadiene              | intermediate | 0.05  | gas    | chain: ethanol over a Lebedev catalyst, or a cracker
+cyclohexanone              | intermediate | 0.3   | liquid | chain: cyclohexane air-oxidised
+ethylene-oxide             | intermediate | 0.05  | gas    | chain: ethylene over silver, or through the chlorohydrin
+hydrogen-cyanide           | intermediate | 0.05  | liquid | chain: the Andrussow process -- it boils at 299 K
+maleic-anhydride           | intermediate | 0.2   | solid  | chain: butane or benzene oxidised over vanadia
 
 # --- BOTTLE: 11 rows. NOTHING in 173 routes makes any of these, so unlike
 # the block above NO amount of engine work earns them: they are bought, or
@@ -176,3 +181,5 @@ platinum                   | bottle       | 0.02  | solid  | bought: a catalyst 
 copper-ii-ion              | bottle       | 0.1   | liquid | bought: dissolved copper -- it IS an ion, there is no lattice to charge
 piperidine                 | bottle       | 0.1   | liquid | bought: the Knoevenagel base, and it leaves the step unchanged
 xylose                     | bottle       | 0.3   | solid  | bought: the corpus's only pentosan step is `xylose + water -> xylose`
+cyclopentadiene            | bottle       | 0.2   | liquid | bought: no route in the corpus makes it -- cracked from its dimer in practice
+hydroxylamine              | bottle       | 0.1   | solid  | bought: no route in the corpus makes it -- it melts at 306 K

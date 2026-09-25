@@ -195,7 +195,9 @@ def test_an_air_leak_makes_an_aldehyde_and_MORE_ACID(net):
     """
     sealed, leaky = run(net, 360.0), run(net, 360.0, leak=1.0e-4)
 
-    assert sealed.total(ALDEHYDE) == pytest.approx(0.0, abs=1e-9)
+    # solver noise, three decades under the leaky flask: 1e-10 on the user's
+    # machine and 6e-9 on a CI runner, which sums in a different order
+    assert sealed.total(ALDEHYDE) == pytest.approx(0.0, abs=1e-7)
     assert leaky.total(ALDEHYDE) > 1e-4                     # the aldehyde appears
     assert leaky.total(PEROXIDE) > 1e-4                     # ... via the peroxide
     assert leaky.total(ACOH) > sealed.total(ACOH) + 0.5     # ... and on to acid

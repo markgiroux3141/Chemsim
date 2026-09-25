@@ -342,12 +342,15 @@ def test_the_eight_are_covered_one_row_at_a_time(steps):
              "pentosan-hydrolysis", "organometallic-protonolysis")
     assert [c for c in eight if c in cc.FAMILY_TEMPLATE_CLASSES] == [
         "sulfur-trioxide-hydration"]
+    # Extractor v2 (2026-09-24) reads an aqueous salt as its ions, which wrote
+    # literal rows for the carbonation and the carbide hydrolysis too.
     assert [c for c in eight if c in cc.TEMPLATE_CLASSES] == [
-        "oleum-hydrolysis", "sulfur-trioxide-hydration"]
-    # one row per class, which is the whole point of the split: two covered
-    # classes here mean two templates written, not one template credited twice.
+        "oleum-hydrolysis", "sulfur-trioxide-hydration", "sulfide-carbonation",
+        "carbide-hydrolysis"]
+    # one row per class, which is the whole point of the split: four covered
+    # classes here mean four templates written, not one template credited twice.
     assert len({cc.TEMPLATE_CLASSES[c] for c in eight
-                if c in cc.TEMPLATE_CLASSES}) == 2
+                if c in cc.TEMPLATE_CLASSES}) == 4
 
 
 def test_the_vitriol_row_names_what_the_engine_actually_makes(steps):

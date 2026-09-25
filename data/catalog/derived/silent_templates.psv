@@ -38,26 +38,38 @@
 # thermochemistry then refused to price -- an ion with no measured
 # pKa, mostly. They are not in the pool: a flask cannot be CHARGED
 # with one, and nothing can react with what has no standard state.
-#! needs-more-than-a-pair = 10
-#! no-substrate = 21
-#! silent = 31
+#! needs-more-than-a-pair = 20
+#! no-substrate = 39
+#! silent = 59
 #! closure_rows = 24
-#! closure_species = 50
+#! closure_species = 57
 #! closure_frontier = 0
 #! step_rows = 13
-#! step_frontier = 304
-#! pool_species = 325
+#! step_frontier = 400
+#! pool_species = 423
 #! pool_unpriceable = 0
 #
 # THE WORK ORDER: one missing substrate holds several
-# templates, so the queue is this list and not the 31.
+# templates, so the queue is this list and not the 59.
 # 'blocked' is how many templates name this slot; 'alone' is how
 # many name it and nothing else, so 'alone' is what sourcing it
 # would unblock.
-#! blocking_substrates = 24
-#! substrates_that_unblock_alone = 18
+#! blocking_substrates = 40
+#! substrates_that_unblock_alone = 37
+#   2 blocked, 2 alone  [CX2;H1]#[NX1]
+#      cyanide_imine_addition, cyanohydrin_formation
 #   2 blocked, 2 alone  [OX2H1][N+](=[O])[O-]
 #      aromatic_nitration, nitrate_esterification
+#   1 blocked, 1 alone  [#6][N+](=[O])[O-]
+#      nitro_hydrogenation
+#   1 blocked, 1 alone  [#6][NX2]=[CX2]=[OX1]
+#      isocyanate_hydrolysis
+#   1 blocked, 1 alone  [C-][CX3](=[OX1])[OX2]
+#      claisen_condensation
+#   1 blocked, 1 alone  [C-][CX3]=[OX1]
+#      aldol_addition
+#   1 blocked, 1 alone  [C-][P+]
+#      wittig_olefination
 #   1 blocked, 1 alone  [C;H4]
 #      steam_reforming
 #   1 blocked, 1 alone  [CH2X3]=[CX2]=[OX1]
@@ -72,67 +84,115 @@
 #      alkyne_hydration
 #   1 blocked, 1 alone  [CX3;-1]
 #      carbanion_alkylation
+#   1 blocked, 1 alone  [CX3](=[NX2][OX2H1])([#6])[#6]
+#      beckmann_rearrangement
+#   1 blocked, 1 alone  [CX3](=[OX1])([#6])[Cl]
+#      friedel_crafts_acylation
+#   1 blocked, 1 alone  [CX3](=[OX1])([#6])[NX2]=[N+]=[N-]
+#      curtius_rearrangement
+#   1 blocked, 1 alone  [CX3](=[OX1])([#6])[NX3;!$(N=*)]
+#      amide_hydrolysis
+#   1 blocked, 1 alone  [CX3](=[OX1])([#6])[OX2][CX3]=[OX1]
+#      friedel_crafts_anhydride_acylation
+#   1 blocked, 1 alone  [CX3](=[OX1])[Cl]
+#      acyl_chloride_substitution
+#   1 blocked, 1 alone  [CX3](=[O])[OX2][CX3]=[O]
+#      n_acylation
 #   1 blocked, 1 alone  [CX4;H4]
 #      methane_ammoxidation
 #   1 blocked, 1 alone  [CX4H2]([CX3](=[O])[OX2H1])[CX3](=[O])[OX2H1]
 #      knoevenagel_doebner_condensation
+#   1 blocked, 1 alone  [CX4]1[OX2][CX4]1
+#      epoxide_ring_opening
+#   1 blocked, 1 alone  [Mg;X0;+0]
+#      grignard_formation
 #   1 blocked, 1 alone  [N;H0]=[O]
 #      nitric_oxide_reoxidation
 #   1 blocked, 1 alone  [NX3;H2][CX3]=[OX1]
 #      amide_methylolation
+#   1 blocked, 1 alone  [O-;X1][CX4]
+#      carbanion_generation_by_alkoxide
 #   1 blocked, 1 alone  [OX1]=[SX3](=[OX1])=[OX1]
 #      sulfur_trioxide_hydration
+#   1 blocked, 1 alone  [OX2H1][SX4](=[OX1])(=[OX1])[OX2H1]
+#      aromatic_sulfonation
 #   1 blocked, 1 alone  [OX2H][CH2][C;H1;@,@@]1[OX2][C;H1;@,@@]([OX2H])[C;H1;@,@@]([OX2H])[C;H1;@,@@]1[OX2H]
 #      aldofuranose_dehydration
 #   1 blocked, 1 alone  [OX2H][CH2][c]1[cH][cH][c]([CH]=[O])[o]1
 #      hydroxymethylfurfural_rehydration
 #   1 blocked, 1 alone  [S,N,P;+0,+1](=[O])[OX2H1]
 #      mineral_oxyacid_dissociation
-#   1 blocked, 1 alone  [c][N+](=[O])[O-]
-#      nitro_hydrogenation
+#   1 blocked, 1 alone  [SX4](=[OX1])(=[OX1])[Cl]
+#      sulfonamide_formation
+#   1 blocked, 1 alone  [c][N+]#[N]
+#      azo_coupling
 #   1 blocked, 0 alone  [C;H2]=[C;H1][C;H1]=[O;+0]
 #      skraup_cyclisation
-#   1 blocked, 0 alone  [CX2;H1]#[NX1]
-#      cyanide_imine_addition
-#   1 blocked, 0 alone  [CX3](=[O])[OX2][CX3]=[O]
-#      n_acylation
-#   1 blocked, 0 alone  [CX3]=[NX2;H1]
-#      cyanide_imine_addition
 #   1 blocked, 0 alone  [N;H2;+0][c]1[c;H1][c][c][c][c]1
 #      skraup_cyclisation
-#   1 blocked, 0 alone  [NX3;H1,H2;!$(N[#6]=[O,S,N])]
-#      n_acylation
 #   1 blocked, 0 alone  [O;+0]=[N;+1]([O;-1])[c]1[c][c][c][c][c]1
 #      skraup_cyclisation
+#   1 blocked, 0 alone  [OX2H1][NX2]=[OX1]
+#      diazotisation
+#   1 blocked, 0 alone  [c][NX3;H2]
+#      diazotisation
 #
+acyl_chloride_substitution | no-substrate | 2 | 0 |  | [CX3](=[OX1])[Cl] | nothing the shelf holds or can make matches it
 alcohol_halide_substitution | needs-more-than-a-pair | 2 | 1 | closure |  | fires on the closure, which is 24 rows, and 0 row(s) of its own
 aldofuranose_dehydration | no-substrate | 1 | 0 |  | [OX2H][CH2][C;H1;@,@@]1[OX2][C;H1;@,@@]([OX2H])[C;H1;@,@@]([OX2H])[C;H1;@,@@]1[OX2H] | nothing the shelf holds or can make matches it
+aldol_addition | no-substrate | 3 | 0 |  | [C-][CX3]=[OX1] | nothing the shelf holds or can make matches it
 alkene_hydrodimerisation | no-substrate | 3 | 0 |  | [CH2]=[CH1][C]#[N] | nothing the shelf holds or can make matches it
+alkyl_halide_amination | needs-more-than-a-pair | 2 | 1 | closure |  | fires on the closure, which is 24 rows, and 0 row(s) of its own
+alkyl_halide_anion_substitution | needs-more-than-a-pair | 2 | 1 | closure |  | fires on the closure, which is 24 rows, and 0 row(s) of its own
 alkyne_hydration | no-substrate | 2 | 0 |  | [CX2]#[CX2] | nothing the shelf holds or can make matches it
 allylic_ammoxidation | needs-more-than-a-pair | 3 | 2 | alpha-pinene+closure |  | fires on the closure, which is 24 rows, and 1 row(s) of its own
+amide_hydrolysis | no-substrate | 2 | 0 |  | [CX3](=[OX1])([#6])[NX3;!$(N=*)] | nothing the shelf holds or can make matches it
 amide_methylolation | no-substrate | 2 | 0 |  | [NX3;H2][CX3]=[OX1] | nothing the shelf holds or can make matches it
 aromatic_nitration | no-substrate | 2 | 0 |  | [OX2H1][N+](=[O])[O-] | nothing the shelf holds or can make matches it
+aromatic_sulfonation | no-substrate | 2 | 0 |  | [OX2H1][SX4](=[OX1])(=[OX1])[OX2H1] | nothing the shelf holds or can make matches it
+azo_coupling | no-substrate | 3 | 0 |  | [c][N+]#[N] | nothing the shelf holds or can make matches it
+beckmann_rearrangement | no-substrate | 2 | 0 |  | [CX3](=[NX2][OX2H1])([#6])[#6] | nothing the shelf holds or can make matches it
 cannizzaro_disproportionation | needs-more-than-a-pair | 3 | 2 | lignin-monomer-coniferyl@1 |  | reachable only above a pair (lignin-monomer-coniferyl@1), and then the template applies and the rewrite is discarded: 1 product species cannot be priced
 carbanion_alkylation | no-substrate | 2 | 0 |  | [CX3;-1] | nothing the shelf holds or can make matches it
-cyanide_imine_addition | no-substrate | 2 | 0 |  | [CX3]=[NX2;H1] + [CX2;H1]#[NX1] | nothing the shelf holds or can make matches it
+carbanion_generation_by_alkoxide | no-substrate | 2 | 0 |  | [O-;X1][CX4] | nothing the shelf holds or can make matches it
+carbanion_generation_by_hydroxide | needs-more-than-a-pair | 2 | 2 | citronellal+closure |  | reachable only above a pair (citronellal+closure), and then the template applies and the rewrite is discarded: 1 product species cannot be priced
+carbonyl_amine_condensation | needs-more-than-a-pair | 2 | 1 | closure |  | fires on the closure, which is 24 rows, and 0 row(s) of its own
+claisen_condensation | no-substrate | 2 | 0 |  | [C-][CX3](=[OX1])[OX2] | nothing the shelf holds or can make matches it
+curtius_rearrangement | no-substrate | 1 | 0 |  | [CX3](=[OX1])([#6])[NX2]=[N+]=[N-] | nothing the shelf holds or can make matches it
+cyanide_imine_addition | no-substrate | 2 | 0 |  | [CX2;H1]#[NX1] | nothing the shelf holds or can make matches it
+cyanohydrin_formation | no-substrate | 2 | 0 |  | [CX2;H1]#[NX1] | nothing the shelf holds or can make matches it
+cyclic_acetal_formation | needs-more-than-a-pair | 3 | 2 | cellulose-unit+closure |  | fires on the closure, which is 24 rows, and 1 row(s) of its own
+dehydrohalogenation | needs-more-than-a-pair | 1 | 2 | alpha-pinene@1 |  | fires on alpha-pinene@1 -- a row expanded one generation against the closure's 24 rows
+diazotisation | no-substrate | 3 | 0 |  | [c][NX3;H2] + [OX2H1][NX2]=[OX1] | nothing the shelf holds or can make matches it
+epoxide_ring_opening | no-substrate | 2 | 0 |  | [CX4]1[OX2][CX4]1 | nothing the shelf holds or can make matches it
+friedel_crafts_acylation | no-substrate | 2 | 0 |  | [CX3](=[OX1])([#6])[Cl] | nothing the shelf holds or can make matches it
+friedel_crafts_anhydride_acylation | no-substrate | 2 | 0 |  | [CX3](=[OX1])([#6])[OX2][CX3]=[OX1] | nothing the shelf holds or can make matches it
+grignard_formation | no-substrate | 2 | 0 |  | [Mg;X0;+0] | nothing the shelf holds or can make matches it
 hydroformylation_branched | needs-more-than-a-pair | 3 | 2 | closure+eugenol |  | fires on the closure, which is 24 rows, and 1 row(s) of its own
 hydroformylation_linear | needs-more-than-a-pair | 3 | 2 | closure+eugenol |  | fires on the closure, which is 24 rows, and 1 row(s) of its own
+hydrohalogenation | needs-more-than-a-pair | 2 | 2 | alpha-pinene+closure |  | fires on the closure, which is 24 rows, and 1 row(s) of its own
 hydroxymethylfurfural_rehydration | no-substrate | 3 | 0 |  | [OX2H][CH2][c]1[cH][cH][c]([CH]=[O])[o]1 | nothing the shelf holds or can make matches it
-intramolecular_williamson | needs-more-than-a-pair | 2 | 2 | cellulose-unit@1 |  | fires on cellulose-unit@1 -- a row expanded one generation against the closure's 24 rows
+intramolecular_williamson | needs-more-than-a-pair | 2 | 2 | alpha-pinene@1 |  | fires on alpha-pinene@1 -- a row expanded one generation against the closure's 24 rows
+isocyanate_hydrolysis | no-substrate | 2 | 0 |  | [#6][NX2]=[CX2]=[OX1] | nothing the shelf holds or can make matches it
 ketene_acid_addition | no-substrate | 2 | 0 |  | [CH2X3]=[CX2]=[OX1] | nothing the shelf holds or can make matches it
 ketofuranose_dehydration | needs-more-than-a-pair | 1 | 2 | sucrose@1 |  | fires on sucrose@1 -- a row expanded one generation against the closure's 24 rows
 knoevenagel_doebner_condensation | no-substrate | 2 | 0 |  | [CX4H2]([CX3](=[O])[OX2H1])[CX3](=[O])[OX2H1] | nothing the shelf holds or can make matches it
 kolbe_schmitt_carboxylation | needs-more-than-a-pair | 2 | 2 | eugenol@1 |  | reachable only above a pair (eugenol@1), and then the template applies and the rewrite is discarded: 1 product species cannot be priced
 methane_ammoxidation | no-substrate | 3 | 0 |  | [CX4;H4] | nothing the shelf holds or can make matches it
+michael_addition | needs-more-than-a-pair | 3 | 2 | citronellal@1 |  | fires on citronellal@1 -- a row expanded one generation against the closure's 24 rows
 mineral_oxyacid_dissociation | no-substrate | 2 | 0 |  | [S,N,P;+0,+1](=[O])[OX2H1] | nothing the shelf holds or can make matches it
-n_acylation | no-substrate | 2 | 0 |  | [NX3;H1,H2;!$(N[#6]=[O,S,N])] + [CX3](=[O])[OX2][CX3]=[O] | nothing the shelf holds or can make matches it
+n_acylation | no-substrate | 2 | 0 |  | [CX3](=[O])[OX2][CX3]=[O] | nothing the shelf holds or can make matches it
 nitrate_esterification | no-substrate | 2 | 0 |  | [OX2H1][N+](=[O])[O-] | nothing the shelf holds or can make matches it
 nitric_oxide_reoxidation | no-substrate | 3 | 1 | closure | [N;H0]=[O] | no rewrite survives: the pool matches it only inside a larger molecule
-nitro_hydrogenation | no-substrate | 4 | 0 |  | [c][N+](=[O])[O-] | nothing the shelf holds or can make matches it
+nitrile_hydrogenation | needs-more-than-a-pair | 3 | 2 | alpha-pinene@1 |  | fires on alpha-pinene@1 -- a row expanded one generation against the closure's 24 rows
+nitrile_hydrolysis | needs-more-than-a-pair | 3 | 2 | alpha-pinene@1 |  | fires on alpha-pinene@1 -- a row expanded one generation against the closure's 24 rows
+nitro_hydrogenation | no-substrate | 4 | 0 |  | [#6][N+](=[O])[O-] | nothing the shelf holds or can make matches it
 perkin_condensation | no-substrate | 2 | 0 |  | [CH3][CX3](=[O])[OX2][CX3]=[O] | nothing the shelf holds or can make matches it
 skraup_cyclisation | no-substrate | 8 | 0 |  | [N;H2;+0][c]1[c;H1][c][c][c][c]1 + [C;H2]=[C;H1][C;H1]=[O;+0] + [O;+0]=[N;+1]([O;-1])[c]1[c][c][c][c][c]1 | nothing the shelf holds or can make matches it
 steam_reforming | no-substrate | 2 | 0 |  | [C;H4] | nothing the shelf holds or can make matches it
+sulfonamide_formation | no-substrate | 2 | 0 |  | [SX4](=[OX1])(=[OX1])[Cl] | nothing the shelf holds or can make matches it
 sulfur_dioxide_oxidation_by_nitrogen_dioxide | needs-more-than-a-pair | 3 | 1 | closure |  | reachable only above a pair (closure), and then the template applies and the rewrite is discarded: 1 product species cannot be priced
 sulfur_trioxide_hydration | no-substrate | 2 | 0 |  | [OX1]=[SX3](=[OX1])=[OX1] | nothing the shelf holds or can make matches it
 wacker_oxidation | no-substrate | 4 | 0 |  | [CH2]=[CH2] | nothing the shelf holds or can make matches it
 williamson_ether_synthesis | needs-more-than-a-pair | 2 | 1 | closure |  | reachable only above a pair (closure), and then the template applies and the rewrite is discarded: 1 product species cannot be priced
+wittig_olefination | no-substrate | 2 | 0 |  | [C-][P+] | nothing the shelf holds or can make matches it

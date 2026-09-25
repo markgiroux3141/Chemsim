@@ -17,3 +17,10 @@ An example, for shape:
     from the PSV, and `template_counts()` still says 57.
 
 ## Goal
+
+Move the reaction benchmark. `classes_general` from 56 to at least 60 and
+`family_runs` from 152 to at least 180, both read off the footer of
+`data/benchmark/scores.psv`, with no family row that fails its own class's
+held-out cases and CI green on HEAD. BACKLOG B1 (pricing) and B3 (the
+remaining failures) are the work. Done when `python tools/benchmark.py --check`
+passes and its footer shows both numbers.

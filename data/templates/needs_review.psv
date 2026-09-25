@@ -34,7 +34,6 @@ castner-kellner | 2 | amalgam-decomposition | no-graph | a species has no molecu
 gunpowder | 1 | formulation | net-ionic-empty | every ion is a spectator once the salts are read as ions: a metathesis or precipitation, which a solubility product does, not a rewrite
 gunpowder | 2 | deflagration | stoichiometry | no coefficient vector: the elements do not balance
 nitroglycerin-route | 2 | formulation | closed-cycle | every product is also a reactant
-picric-acid-route | 1 | electrophilic-aromatic-sulfonation | stoichiometry | no coefficient vector: the elements do not balance
 picric-acid-route | 2 | ipso-nitrodesulfonation | stoichiometry | no coefficient vector: the elements do not balance
 rdx-route | 1 | condensation | coefficients | a coefficient of 6 is more slots than a rewrite can carry: {'formaldehyde': 6, 'ammonia': 4, 'hexamethylenetetramine': 1, 'water': 6}
 rdx-route | 2 | nitrolysis | coefficients | a coefficient of 12 is more slots than a rewrite can carry: {'hexamethylenetetramine': 3, 'nitric-acid': 12, 'rdx': 4, 'formaldehyde': 6, 'water': 6}
@@ -51,8 +50,6 @@ alizarin-route | 3 | alkali-fusion | stoichiometry | no coefficient vector: the 
 indigo-baeyer-drewson | 2 | side-chain-oxidation | stoichiometry | no coefficient vector: the elements do not balance
 indigo-baeyer-drewson | 3 | aldol-cyclisation | stoichiometry | the only balance sets a species to zero or negative
 indigo-heumann | 2 | alkali-fusion | stoichiometry | the only balance sets a species to zero or negative
-azo-dye-coupling | 1 | diazotisation | stoichiometry | no coefficient vector: the elements do not balance
-azo-dye-coupling | 2 | azo-coupling | stoichiometry | no coefficient vector: the elements do not balance
 triarylmethane-dyes | 2 | leuco-dye-oxidation | stoichiometry | no coefficient vector: the elements do not balance
 prussian-blue-route | 1 | pyrolytic-synthesis | stoichiometry | no coefficient vector: the elements do not balance
 white-lead-route | 1 | oxidative-dissolution | coefficients | a coefficient of 4 is more slots than a rewrite can carry: {'[Pb]': 2, 'CC(=O)O': 4, 'O=O': 1, '[Pb+2]': 2, 'CC(=O)[O-]': 4, 'O': 2}
@@ -64,9 +61,6 @@ bakelite-route | 2 | polycondensation | coefficients | a coefficient of 3 is mor
 aspirin-route | 1 | acylation-esterification | stoichiometry | the balance is not unique -- 2 independent coefficient vectors, so the row does not determine its own stoichiometry
 aspirin-route | 2 | crystallisation | closed-cycle | every product is also a reactant
 paracetamol-route | 2 | bamberger-rearrangement | centre | no reaction centre, or a slot whose written atoms are not connected to each other
-sulfa-drug-route | 2 | electrophilic-aromatic-sulfonation | stoichiometry | the only balance sets a species to zero or negative
-sulfa-drug-route | 4 | amide-hydrolysis | stoichiometry | the only balance sets a species to zero or negative
-prontosil-route | 1 | diazotisation | slots | 4 reactant and 5 product slots
 penicillin-route | 1 | secondary-metabolite-fermentation | stoichiometry | the balance is not unique -- 2 independent coefficient vectors, so the row does not determine its own stoichiometry
 chloroform-route | 1 | haloform | coefficients | a coefficient of 6 is more slots than a rewrite can carry: {'CC(C)=O': 2, '[O-]Cl': 6, 'ClC(Cl)Cl': 2, 'CC(=O)[O-]': 2, '[OH-]': 4}
 chloral-route | 1 | radical-halogenation | stoichiometry | the only balance sets a species to zero or negative
@@ -76,15 +70,12 @@ fischer-tropsch | 1 | fischer-tropsch | coefficients | a coefficient of 17 is mo
 calcium-carbide | 1 | carbide-formation | salt | a salt in a furnace or melt is a lattice, not a pair of ions, and the engine turns a lattice into ions nowhere yet (E1)
 steam-cracking | 1 | thermal-cracking | stoichiometry | the balance is not unique -- 4 independent coefficient vectors, so the row does not determine its own stoichiometry
 ethylene-oxide-route | 2 | hydrocarbon-combustion | coefficients | a coefficient of 3 is more slots than a rewrite can carry: {'ethylene': 1, 'oxygen': 3, 'carbon-dioxide': 2, 'water': 2}
-ethylene-glycol-route | 3 | epoxide-alkoxylation | duplicate | another step of this corpus extracts the same rewrite
 p-xylene-oxidation | 1 | catalytic-air-oxidation | coefficients | a coefficient of 3 is more slots than a rewrite can carry: {'p-xylene': 1, 'oxygen': 3, 'terephthalic-acid': 1, 'water': 2}
 pet-route | 2 | polycondensation | stoichiometry | no coefficient vector: the elements do not balance
 adipic-acid-route | 1 | autoxidation | stoichiometry | the balance is not unique -- 2 independent coefficient vectors, so the row does not determine its own stoichiometry
 adipic-acid-route | 2 | nitric-acid-oxidation | centre | no reaction centre, or a slot whose written atoms are not connected to each other
 adipic-acid-route | 3 | nitric-acid-oxidation | coefficients | a coefficient of 6 is more slots than a rewrite can carry: {'cyclohexanone': 4, 'nitric-acid': 6, 'adipic-acid': 4, 'nitrous-oxide': 3, 'water': 3}
-nylon66-route | 1 | nitrile-hydrogenation | coefficients | a coefficient of 4 is more slots than a rewrite can carry: {'adiponitrile': 1, 'hydrogen': 4, 'hexamethylenediamine': 1}
 nylon66-route | 3 | polycondensation | duplicate | another step of this corpus extracts the same rewrite
-nylon6-route | 2 | beckmann-rearrangement | stoichiometry | the only balance sets a species to zero or negative
 nylon6-route | 4 | ring-opening-polymerisation | centre | no reaction centre, or a slot whose written atoms are not connected to each other
 vinyl-chloride-route | 2 | oxychlorination | coefficients | a coefficient of 4 is more slots than a rewrite can carry: {'ethylene': 2, 'hydrogen-chloride': 4, 'oxygen': 1, '1,2-dichloroethane': 2, 'water': 2}
 vinyl-chloride-route | 4 | radical-polymerisation | stoichiometry | no coefficient vector: the elements do not balance
@@ -131,25 +122,13 @@ iron-gall-ink | 2 | oxidative-complexation | no-graph | a species has no molecul
 photography-silver | 2 | photoreduction | slots | 4 reactant and 3 product slots
 photography-silver | 3 | chemical-reduction | slots | 5 reactant and 5 product slots
 photography-silver | 4 | complexation-dissolution | net-ionic-empty | every ion is a spectator once the salts are read as ions: a metathesis or precipitation, which a solubility product does, not a rewrite
-vitamin-c-reichstein | 1 | carbonyl-hydrogenation | centre | no reaction centre, or a slot whose written atoms are not connected to each other
 vitamin-c-reichstein | 2 | biological-oxidation | centre | no reaction centre, or a slot whose written atoms are not connected to each other
-vitamin-c-reichstein | 3 | acetal-formation | coefficients | a coefficient of 30 is more slots than a rewrite can carry: {'sorbose': 5, 'acetone': 30, 'diacetone-sorbose': 12, 'water': 12}
 vitamin-c-reichstein | 4 | permanganate-alcohol-oxidation | stoichiometry | no coefficient vector: the elements do not balance
 vitamin-c-reichstein | 5 | hydrolysis-lactonisation | stoichiometry | no coefficient vector: the elements do not balance
-strecker-amino-acid | 3 | nitrile-hydrolysis | slots | 4 reactant and 3 product slots
-malonic-ester-synthesis | 1 | carbanion-generation | stoichiometry | no coefficient vector: the elements do not balance
-acetoacetic-ester-synthesis | 1 | carbanion-generation | stoichiometry | no coefficient vector: the elements do not balance
 acetoacetic-ester-synthesis | 3 | ester-hydrolysis-decarboxylation | stoichiometry | the balance is not unique -- 2 independent coefficient vectors, so the row does not determine its own stoichiometry
 grignard-route | 3 | organometallic-protonolysis | stoichiometry | no coefficient vector: the elements do not balance
-wittig-route | 2 | carbanion-generation | stoichiometry | no coefficient vector: the elements do not balance
-aldol-route | 2 | aldol-addition | stoichiometry | the only balance sets a species to zero or negative
-claisen-route | 1 | carbanion-generation | stoichiometry | no coefficient vector: the elements do not balance
 friedel-crafts-route | 1 | lewis-acid-activation | stoichiometry | no coefficient vector: the elements do not balance
-friedel-crafts-route | 2 | friedel-crafts-acylation | stoichiometry | no coefficient vector: the elements do not balance
-beckmann-route | 1 | oxime-formation | duplicate | another step of this corpus extracts the same rewrite
 hofmann-route | 1 | n-halogenation | stoichiometry | no coefficient vector: the elements do not balance
-curtius-route | 3 | isocyanate-hydrolysis | duplicate | another step of this corpus extracts the same rewrite
-sandmeyer-route | 1 | diazotisation | slots | 4 reactant and 5 product slots
 reimer-tiemann | 2 | electrophilic-formylation | stoichiometry | no coefficient vector: the elements do not balance
 fischer-indole | 2 | fischer-indolisation | stoichiometry | no coefficient vector: the elements do not balance
 hantzsch-pyridine | 1 | multicomponent-condensation | coefficients | a coefficient of 3 is more slots than a rewrite can carry: {'ethyl-acetoacetate': 2, 'acetaldehyde': 1, 'ammonia': 1, 'hantzsch-dihydropyridine': 1, 'water': 3}
@@ -165,14 +144,14 @@ marsh-test | 1 | dissolving-metal-reduction | stoichiometry | the balance is not
 marsh-test | 2 | hydride-thermal-deposition | coefficients | a coefficient of 3 is more slots than a rewrite can carry: {'arsine': 2, 'arsenic': 2, 'hydrogen': 3}
 kjeldahl | 1 | oxidative-digestion | stoichiometry | the only balance sets a species to zero or negative
 
-#! centre = 6
+#! centre = 5
 #! closed-cycle = 5
-#! coefficients = 34
-#! duplicate = 5
+#! coefficients = 32
+#! duplicate = 2
 #! net-ionic-empty = 3
 #! no-graph = 10
 #! salt = 10
-#! slots = 7
-#! stoichiometry = 74
-#! refused = 154
-#! classes_refused = 117
+#! slots = 4
+#! stoichiometry = 62
+#! refused = 133
+#! classes_refused = 102

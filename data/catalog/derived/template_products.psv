@@ -90,6 +90,44 @@ amide_methylolation | pass | 2 | no | nucleophilic-addition | urea-formaldehyde-
 ketene_acid_addition | pass | 1 | no | nucleophilic-addition | acetic-anhydride-ketene:2 |  | written
 cyanide_imine_addition | pass | 3 | no | nucleophilic-addition | strecker-amino-acid:2 |  | written
 nitrate_esterification | partial | 3 | no | esterification-nitration | nitroglycerin-route:1 | O=[N+]([O-])OCC(CO[N+](=O)[O-])O[N+](=O)[O-] | written
+diels_alder_cycloaddition | pass | 1 | no | diels-alder-cycloaddition | diels-alder-route:1 |  | written
+wittig_olefination | pass | 1 | no | wittig-olefination | wittig-route:3 |  | written
+grignard_formation | pass | 1 | no | oxidative-insertion | grignard-route:1 |  | written
+aldol_condensation | pass | 1 | no | aldol-condensation | 2-ethylhexanol-route:1 |  | engine
+aldol_addition | pass | 1 | yes | aldol-addition | aldol-route:2 |  | written
+claisen_condensation | pass | 1 | no | claisen-condensation | claisen-route:2 |  | written
+michael_addition | pass | 1 | no | michael-addition | michael-robinson:1 |  | written
+beckmann_rearrangement | pass | 2 | yes | beckmann-rearrangement | beckmann-route:2 |  | written
+curtius_rearrangement | pass | 1 | no | curtius-rearrangement | curtius-route:2 |  | written
+isocyanate_hydrolysis | pass | 1 | no | isocyanate-hydrolysis | hofmann-route:3 |  | written
+acyl_chloride_substitution | pass | 1 | no | nucleophilic-acyl-substitution | curtius-route:1 |  | written
+carbonyl_amine_condensation | pass | 1 | no | imine-formation | strecker-amino-acid:1 |  | written
+alkene_halogenation | pass | 1 | no | halogen-addition | vinyl-chloride-route:1 |  | written
+hydrohalogenation | wrong-product | 1 | no | hydrohalogenation | neoprene-route:2 | C=CC(=C)Cl | written
+dehydrohalogenation | pass | 1 | no | dehydrohalogenation | vinyl-chloride-route:3 |  | written
+aromatic_halogenation | pass | 1 | no | electrophilic-aromatic-halogenation | phenol-dow:1 |  | written
+aromatic_sulfonation | pass | 3 | no | electrophilic-aromatic-sulfonation | phenol-sulfonation:1 |  | written
+friedel_crafts_alkylation | pass | 1 | no | friedel-crafts-alkylation | phenol-cumene:1 |  | written
+friedel_crafts_acylation | no-substrate | 1 | no | friedel-crafts-acylation | friedel-crafts-route:2 |  | written
+friedel_crafts_anhydride_acylation | no-substrate | 1 | no | friedel-crafts-acylation | friedel-crafts-route:2 |  | written
+epoxide_ring_opening | pass | 1 | no | epoxide-hydrolysis | ethylene-glycol-route:1 |  | written
+halohydrin_formation | pass | 1 | no | halohydrin-formation | chlorohydrin-route:1 |  | written
+cyanohydrin_formation | pass | 1 | no | cyanohydrin-formation | mma-ach:1 |  | written
+beta_carbonyl_decarboxylation | pass | 2 | no | decarboxylation | malonic-ester-synthesis:4 |  | written
+nitrile_hydrolysis | partial | 1 | no | nitrile-hydrolysis | strecker-amino-acid:3 | [Cl-],[NH4+] | engine
+amide_hydrolysis | pass | 1 | no | amide-hydrolysis | sulfa-drug-route:4 |  | written
+carbonyl_hydrogenation | no-substrate | 1 | no | carbonyl-hydrogenation | vitamin-c-reichstein:1 |  | written
+nitrile_hydrogenation | wrong-product | 1 | no | nitrile-hydrogenation | nylon66-route:1 | NCCCCCCN | written
+diazotisation | no-substrate | 3 | no | diazotisation | azo-dye-coupling:1 |  | written
+azo_coupling | partial | 2 | yes | azo-coupling | prontosil-route:2 | Cl | engine
+alkylarene_dehydrogenation | pass | 1 | no | catalytic-dehydrogenation | styrene-route:2 |  | written
+sulfonamide_formation | partial | 1 | no | sulfonamide-formation | sulfa-drug-route:3 | [Cl-].[NH4+] | written
+alkyl_halide_anion_substitution | partial | 6 | yes | nucleophilic-substitution | gabriel-synthesis:2 | O=C1c2ccccc2C(=O)N1Cc1ccccc1 | engine
+alkyl_halide_amination | no-substrate | 6 | no | nucleophilic-substitution | monsanto-acetic:1 |  | written
+carbanion_generation_by_hydroxide | pass | 4 | no | carbanion-generation | aldol-route:1 |  | written
+carbanion_generation_by_alkoxide | pass | 1 | no | carbanion-generation | malonic-ester-synthesis:1 |  | written
+cyclic_acetal_formation | partial | 1 | yes | acetal-formation | vitamin-c-reichstein:3 | CC1(C)OC[C@H]2OC(C)(C)[C@@H](O)[C@@H]2O1 | written
+acetal_formation | partial | 1 | yes | acetal-formation | vitamin-c-reichstein:3 | CC1(C)OC[C@H]2OC(C)(C)[C@@H](O)[C@@H]2O1 | written
 catalytic_sulfur_dioxide_oxidation_contact_process_2 | pass | 1 | no | catalytic-sulfur-dioxide-oxidation | contact-process:2 |  | written
 acid_anhydride_absorption_contact_process_3 | pass | 1 | no | acid-anhydride-absorption | contact-process:3 |  | written
 oleum_hydrolysis_contact_process_4 | pass | 1 | no | oleum-hydrolysis | contact-process:4 |  | written
@@ -98,19 +136,12 @@ carbonate_equilibrium_solvay_process_1 | pass | 1 | no | carbonate-equilibrium |
 thermal_fixation_birkeland_eyde_1 | pass | 1 | no | thermal-fixation | birkeland-eyde:1 |  | written
 slagging_blast_furnace_5 | pass | 1 | no | slagging | blast-furnace:5 |  | engine
 nitronium_generation_benzene_nitration_1 | pass | 1 | no | nitronium-generation | benzene-nitration:1 |  | written
-electrophilic_aromatic_sulfonation_alizarin_route_2 | pass | 2 | no | electrophilic-aromatic-sulfonation | alizarin-route:2 |  | written
 n_alkylation_indigo_heumann_1 | pass | 1 | no | n-alkylation | indigo-heumann:1 |  | written
 oxidative_dimerisation_indigo_heumann_3 | pass | 1 | no | oxidative-dimerisation | indigo-heumann:3 |  | engine
-friedel_crafts_alkylation_phenol_cumene_1 | pass | 1 | no | friedel-crafts-alkylation | phenol-cumene:1 |  | written
 autoxidation_phenol_cumene_2 | pass | 1 | no | autoxidation | phenol-cumene:2 |  | written
 hock_rearrangement_phenol_cumene_3 | pass | 1 | no | hock-rearrangement | phenol-cumene:3 |  | written
-electrophilic_aromatic_halogenation_phenol_dow_1 | pass | 1 | no | electrophilic-aromatic-halogenation | phenol-dow:1 |  | written
-electrophilic_aromatic_sulfonation_phenol_sulfonation_1 | pass | 3 | no | electrophilic-aromatic-sulfonation | phenol-sulfonation:1 |  | written
 electrophilic_hydroxymethylation_bakelite_route_1 | pass | 1 | no | electrophilic-hydroxymethylation | bakelite-route:1 |  | written
 nitro_partial_hydrogenation_paracetamol_route_1 | pass | 1 | no | nitro-partial-hydrogenation | paracetamol-route:1 |  | written
-sulfonamide_formation_sulfa_drug_route_3 | pass | 1 | no | sulfonamide-formation | sulfa-drug-route:3 |  | engine
-azo_coupling_prontosil_route_2 | pass | 2 | no | azo-coupling | prontosil-route:2 |  | engine
-amide_hydrolysis_penicillin_route_2 | pass | 2 | no | amide-hydrolysis | penicillin-route:2 |  | written
 amide_coupling_penicillin_route_3 | pass | 1 | no | amide-coupling | penicillin-route:3 |  | engine
 carbonyl_hydration_chloral_route_2 | pass | 1 | no | carbonyl-hydration | chloral-route:2 |  | written
 swarts_halogen_exchange_freon_route_1 | pass | 1 | no | swarts-halogen-exchange | freon-route:1 |  | written
@@ -120,28 +151,15 @@ carbonylation_monsanto_acetic_2 | pass | 1 | no | carbonylation | monsanto-aceti
 pyrolysis_dehydration_acetic_anhydride_ketene_1 | pass | 1 | no | pyrolysis-dehydration | acetic-anhydride-ketene:1 |  | written
 carbide_hydrolysis_calcium_carbide_2 | pass | 1 | no | carbide-hydrolysis | calcium-carbide:2 |  | engine
 catalytic_epoxidation_ethylene_oxide_route_1 | pass | 1 | no | catalytic-epoxidation | ethylene-oxide-route:1 |  | written
-halohydrin_formation_chlorohydrin_route_1 | pass | 1 | no | halohydrin-formation | chlorohydrin-route:1 |  | written
-epoxide_hydrolysis_ethylene_glycol_route_1 | pass | 1 | no | epoxide-hydrolysis | ethylene-glycol-route:1 |  | written
-epoxide_alkoxylation_ethylene_glycol_route_2 | pass | 1 | no | epoxide-alkoxylation | ethylene-glycol-route:2 |  | written
-oxime_formation_nylon6_route_1 | pass | 1 | no | oxime-formation | nylon6-route:1 |  | written
-halogen_addition_vinyl_chloride_route_1 | pass | 1 | no | halogen-addition | vinyl-chloride-route:1 |  | written
-dehydrohalogenation_vinyl_chloride_route_3 | pass | 1 | no | dehydrohalogenation | vinyl-chloride-route:3 |  | written
-friedel_crafts_alkylation_styrene_route_1 | pass | 2 | no | friedel-crafts-alkylation | styrene-route:1 |  | written
-catalytic_dehydrogenation_styrene_route_2 | pass | 1 | no | catalytic-dehydrogenation | styrene-route:2 |  | written
-cyanohydrin_formation_mma_ach_1 | pass | 1 | no | cyanohydrin-formation | mma-ach:1 |  | written
 ritter_type_hydration_mma_ach_2 | pass | 1 | no | ritter-type-hydration | mma-ach:2 |  | engine
 allylic_chlorination_epoxy_route_1 | pass | 1 | no | allylic-chlorination | epoxy-route:1 |  | written
-halohydrin_formation_epoxy_route_2 | pass | 2 | no | halohydrin-formation | epoxy-route:2 |  | written
 condensation_mdi_route_1 | pass | 2 | no | condensation | mdi-route:1 |  | written
 urea_deammoniation_melamine_route_1 | pass | 1 | no | urea-deammoniation | melamine-route:1 |  | written
 direct_process_silicone_route_1 | pass | 1 | no | direct-process | silicone-route:1 |  | written
 hydrolysis_condensation_silicone_route_2 | pass | 1 | no | hydrolysis-condensation | silicone-route:2 |  | written
 alkyne_dimerisation_neoprene_route_1 | pass | 1 | no | alkyne-dimerisation | neoprene-route:1 |  | written
-hydrohalogenation_neoprene_route_2 | pass | 1 | no | hydrohalogenation | neoprene-route:2 |  | written
 dehydration_dehydrogenation_buna_rubber_1 | pass | 1 | no | dehydration-dehydrogenation | buna-rubber:1 |  | written
-aldol_condensation_2_ethylhexanol_route_1 | pass | 1 | no | aldol-condensation | 2-ethylhexanol-route:1 |  | engine
 enal_hydrogenation_2_ethylhexanol_route_2 | pass | 1 | no | enal-hydrogenation | 2-ethylhexanol-route:2 |  | written
-decarboxylation_ethanol_fermentation_3 | pass | 1 | no | decarboxylation | ethanol-fermentation:3 |  | written
 isomerisation_starch_hydrolysis_3 | pass | 2 | no | isomerisation | starch-hydrolysis:3 |  | written
 decarbonylation_furfural_route_3 | pass | 1 | no | decarbonylation | furfural-route:3 |  | written
 arene_hydrogenation_furfural_route_4 | pass | 1 | no | arene-hydrogenation | furfural-route:4 |  | written
@@ -149,37 +167,23 @@ electrophilic_hydroxyalkylation_vanillin_guaiacol_1 | pass | 1 | no | electrophi
 skeletal_isomerisation_camphor_route_1 | pass | 1 | no | skeletal-isomerisation | camphor-route:1 |  | engine
 markovnikov_addition_camphor_route_2 | pass | 1 | no | markovnikov-addition | camphor-route:2 |  | engine
 leuco_dye_oxidation_indigo_natural_4 | pass | 2 | no | leuco-dye-oxidation | indigo-natural:4 |  | engine
-imine_formation_strecker_amino_acid_1 | pass | 1 | no | imine-formation | strecker-amino-acid:1 |  | written
 imide_deprotonation_gabriel_synthesis_1 | pass | 1 | no | imide-deprotonation | gabriel-synthesis:1 |  | engine
 hydrazinolysis_gabriel_synthesis_3 | pass | 1 | no | hydrazinolysis | gabriel-synthesis:3 |  | written
-decarboxylation_malonic_ester_synthesis_4 | pass | 2 | no | decarboxylation | malonic-ester-synthesis:4 |  | written
-oxidative_insertion_grignard_route_1 | pass | 1 | no | oxidative-insertion | grignard-route:1 |  | written
-wittig_olefination_wittig_route_3 | pass | 1 | no | wittig-olefination | wittig-route:3 |  | written
-diels_alder_cycloaddition_diels_alder_route_1 | pass | 1 | no | diels-alder-cycloaddition | diels-alder-route:1 |  | written
-diels_alder_cycloaddition_diels_alder_route_2 | pass | 2 | no | diels-alder-cycloaddition | diels-alder-route:2 |  | written
-carbanion_generation_aldol_route_1 | pass | 4 | no | carbanion-generation | aldol-route:1 |  | written
-claisen_condensation_claisen_route_2 | pass | 1 | no | claisen-condensation | claisen-route:2 |  | written
-beckmann_rearrangement_beckmann_route_2 | pass | 2 | no | beckmann-rearrangement | beckmann-route:2 |  | written
 hofmann_rearrangement_hofmann_route_2 | pass | 1 | no | hofmann-rearrangement | hofmann-route:2 |  | engine
-isocyanate_hydrolysis_hofmann_route_3 | pass | 1 | no | isocyanate-hydrolysis | hofmann-route:3 |  | written
-nucleophilic_acyl_substitution_curtius_route_1 | pass | 1 | no | nucleophilic-acyl-substitution | curtius-route:1 |  | written
-curtius_rearrangement_curtius_route_2 | pass | 1 | no | curtius-rearrangement | curtius-route:2 |  | written
 sandmeyer_substitution_sandmeyer_route_2 | pass | 1 | no | sandmeyer-substitution | sandmeyer-route:2 |  | written
 alpha_elimination_reimer_tiemann_1 | pass | 1 | no | alpha-elimination | reimer-tiemann:1 |  | engine
-hydrazone_formation_fischer_indole_1 | pass | 1 | no | hydrazone-formation | fischer-indole:1 |  | written
-michael_addition_michael_robinson_1 | pass | 1 | no | michael-addition | michael-robinson:1 |  | written
 haloform_cleavage_haloform_iodoform_2 | pass | 1 | no | haloform-cleavage | haloform-iodoform:2 |  | engine
 
-#! pass = 131
-#! partial = 10
-#! wrong-product = 1
+#! pass = 122
+#! partial = 16
+#! wrong-product = 3
 #! no-fire = 0
-#! no-substrate = 3
+#! no-substrate = 8
 #! no-runnable-step = 0
 #! no-class = 2
-#! steps_tried = 298
-#! through_the_medium = 7
-#! in_the_engine_reading = 36
-#! missing_because_salt = 0
-#! missing_because_stereo = 0
-#! missing_because_other = 11
+#! steps_tried = 309
+#! through_the_medium = 13
+#! in_the_engine_reading = 37
+#! missing_because_salt = 1
+#! missing_because_stereo = 2
+#! missing_because_other = 16

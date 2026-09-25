@@ -5,7 +5,7 @@ docstring carries the resolution rule and the measurements behind it. The two
 inputs are ``data/catalog/shelf.psv`` (the three tiers, hand-maintained) and
 ``data/catalog/compounds`` (all 1583 corpus species, audited).
 
-``SHELF``   the 75 starting rows, in file order.
+``SHELF``   the 82 starting rows, in file order.
 ``ROSTER``  every corpus species by id -- the picker's whole content, including
             the 401 that are REFUSED a price and may never be charged.
             A refused row carries its REASON, because GAME_DESIGN.md 8.3 says a
@@ -17,8 +17,8 @@ MEASURED AT GENERATION:
     corpus species                               1583
     ... chargeable                               1182
     ... REFUSED a price                           401
-    shelf rows                                     75
-    ... natural / intermediate / bottle            43 /  21 /  11
+    shelf rows                                     82
+    ... natural / intermediate / bottle            43 /  26 /  13
     ... refused, and kept anyway                    6
     ... charged as a reacting mineral LATTICE      16
     ... charged as IONS                            14
@@ -27,7 +27,7 @@ MEASURED AT GENERATION:
     ... where the declared phase and the
         engine's own estimate DISAGREE              1
 
-Generated 2026-09-16.
+Generated 2026-09-24.
 """
 
 from __future__ import annotations
@@ -210,6 +210,16 @@ SHELF: tuple[ShelfEntry, ...] = (
                'chain: soda and vinegar -- dissolved: no lattice record'),
     ShelfEntry('tristearin', 'intermediate', 0.1, 'solid',
                'chain: a hardened fat -- margarine makes it and needs nickel'),
+    ShelfEntry('1,3-butadiene', 'intermediate', 0.05, 'gas',
+               'chain: ethanol over a Lebedev catalyst, or a cracker'),
+    ShelfEntry('cyclohexanone', 'intermediate', 0.3, 'liquid',
+               'chain: cyclohexane air-oxidised'),
+    ShelfEntry('ethylene-oxide', 'intermediate', 0.05, 'gas',
+               'chain: ethylene over silver, or through the chlorohydrin'),
+    ShelfEntry('hydrogen-cyanide', 'intermediate', 0.05, 'liquid',
+               'chain: the Andrussow process -- it boils at 299 K'),
+    ShelfEntry('maleic-anhydride', 'intermediate', 0.2, 'solid',
+               'chain: butane or benzene oxidised over vanadia'),
     ShelfEntry('benzaldehyde', 'bottle', 0.3, 'liquid',
                'bought: no route in the corpus makes it'),
     ShelfEntry('malonic-acid', 'bottle', 0.2, 'solid',
@@ -232,6 +242,10 @@ SHELF: tuple[ShelfEntry, ...] = (
                'bought: the Knoevenagel base, and it leaves the step unchanged'),
     ShelfEntry('xylose', 'bottle', 0.3, 'solid',
                "bought: the corpus's only pentosan step is `xylose + water -> xylose`"),
+    ShelfEntry('cyclopentadiene', 'bottle', 0.2, 'liquid',
+               'bought: no route in the corpus makes it -- cracked from its dimer in practice'),
+    ShelfEntry('hydroxylamine', 'bottle', 0.1, 'solid',
+               'bought: no route in the corpus makes it -- it melts at 306 K'),
 )
 
 ROSTER: dict[str, RosterEntry] = {

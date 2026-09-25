@@ -13,13 +13,13 @@ The GOAL in `docs/history/MILESTONES.md` § THE G-SERIES is stated as **~10 natu
 | **1 — from the ground** | 10 | every feedstock and every catalyst is a natural material |
 | **2 — 1 step up** | 12 | needs the output of a tier-1 route |
 | **3 — 2 steps up** | 1 | needs the output of a tier-2 route |
-| *runnable but unfed* | 28 | the engine can run it; nothing can supply it |
-| *not runnable* | 122 | see `COVERAGE_REPORT.md` |
+| *runnable but unfed* | 33 | the engine can run it; nothing can supply it |
+| *not runnable* | 117 | see `COVERAGE_REPORT.md` |
 | | **173** | |
 
 **23 of 173 named routes are playable from natural materials**, against a goal of ~40 targets. The deepest chain in the corpus is **3 tiers**.
 
-> **Every number in this file is scored on hand-typed `family` rows**, because that is the tier `load_templates` loads and a route the bench cannot build is not playable. Granting the 13 routes that `tools/extract_templates.py` extracted a `literal` row for would make **64 runnable and 2 more playable** (`acetic-anhydride-ketene`, `wood-distillation`). Promoting one of those rows is a cheaper session than writing a template from nothing, and it costs the row an argued barrier and a checked atom mapping — which is what the tier is for.
+> **Every number in this file is scored on hand-typed `family` rows**, because that is the tier `load_templates` loads and a route the bench cannot build is not playable. Granting the 9 routes that `tools/extract_templates.py` extracted a `literal` row for would make **65 runnable and 2 more playable** (`acetic-anhydride-ketene`, `wood-distillation`). Promoting one of those rows is a cheaper session than writing a template from nothing, and it costs the row an argued barrier and a checked atom mapping — which is what the tier is for.
 
 ⚠ **THE TECH TREE IS A SHALLOW BUSH, NOT A TREE.** 10 of the 23 playable routes are tier 1 — they touch nothing another route made. The corpus is not a connected progression that happens to be short; it is a fan of one-step routes off the ground with one thin chain hanging off it, and §5 is that chain.
 
@@ -226,7 +226,7 @@ The other tier-1 routes are exercised elsewhere — `zinc-smelting`, `copper-sme
 
 ## 6. What blocks the rest
 
-### Blocked on something the corpus MAKES but cannot RUN (18)
+### Blocked on something the corpus MAKES but cannot RUN (21)
 
 These are the routes a player can see the shape of and not reach. Each one is runnable today and waiting on a route that is not.
 
@@ -236,10 +236,12 @@ These are the routes a player can see the shape of and not reach. Each one is ru
 | `adiponitrile-route` | hexanedinitrile | acrylonitrile |
 | `aniline-route` | phenylamine | hydrogen-chloride, iron, nitrobenzene |
 | `aspirin-impurity` | 2-hydroxybenzoic acid | aspirin |
+| `chlorohydrin-route` | oxirane | ethylene |
 | `claus-process` | sulfur (S8 crown) | hydrogen-sulfide |
 | `ddt-route` | dichlorodiphenyltrichloroethane | chloral, chlorobenzene |
 | `deacon-process` | dichlorine | hydrogen-chloride |
 | `ethanol-hydration` | ethanol | ethylene |
+| `ethylene-glycol-route` | 1,2-ethanediol | ethylene-oxide |
 | `glycerol-epichlorohydrin` | epichlorohydrin | glycerol, hydrogen-chloride |
 | `haber-bosch` | ammonia | iron |
 | `kolbe-electrolysis` | ethane | sodium-acetate |
@@ -248,19 +250,22 @@ These are the routes a player can see the shape of and not reach. Each one is ru
 | `salicylic-kolbe` | 2-hydroxybenzoic acid | phenol |
 | `skraup-route` | quinoline | aniline, glycerol, nitrobenzene |
 | `soap-saponification` | sodium stearate | tristearin |
+| `strecker-amino-acid` | L-alanine | ammonia, hydrogen-chloride, hydrogen-cyanide |
 | `thermite` | iron metal | aluminium |
 | `williamson-ether` | methoxybenzene | iodomethane, phenol |
 
 ⚠⚠ **THE MOST IMPORTANT ROW IN THAT TABLE IS `lead-chamber`, AND IT IS BLOCKED ON A PINCH.** The lead chamber is the 18th century's sulfuric acid and G4 measured it running end to end from native sulfur — but its NOx carrier is *catalytic*, so it needs a starting charge of nitrogen dioxide that it then recovers, and **nothing a player can reach makes any.** Three routes in the corpus make NO₂ — `birkeland-eyde`, `ostwald-process` and the lead chamber itself — and none of the first two is runnable. Historically the charge came from saltpetre, and the corpus has saltpetre as a natural material and **no step that turns it into NOx**. So this is a *corpus* gap and not an engine one, and it is one of the two most valuable single species in the file — see §7, where it ties with aluminium at the top.
 
-### Blocked on a reagent bottle (10)
+### Blocked on a reagent bottle (12)
 
-Nothing in 173 named industrial routes makes these at all, so no amount of engine work reaches them: a catalyst the corpus writes on both sides of its step is not made by it. They are a **corpus** gap, and the single most common one is `nickel`, the bottle for 4 of the 10 routes here.
+Nothing in 173 named industrial routes makes these at all, so no amount of engine work reaches them: a catalyst the corpus writes on both sides of its step is not made by it. They are a **corpus** gap, and the single most common one is `nickel`, the bottle for 4 of the 12 routes here.
 
 | route | the bottle | also waiting on |
 |---|---|---|
 | `andrussow` | **platinum** | ammonia, methane |
+| `beckmann-route` | **hydroxylamine** | cyclohexanone |
 | `cannizzaro-route` | **benzaldehyde** | — |
+| `diels-alder-route` | **cyclopentadiene, palladium** | 1,3-butadiene, ethylene, maleic-anhydride |
 | `furfural-route` | **nickel, palladium, xylose** | — |
 | `hydrogenation-margarine` | **nickel** | — |
 | `knoevenagel-route` | **benzaldehyde, malonic-acid, piperidine** | — |
@@ -276,24 +281,24 @@ Grant a player one species free and re-run the fixed point. Base is 23.
 
 | grant | playable | gain | routes it blocks |
 |---|---:|---:|---:|
+| ethylene | 27 | +4 | 4 |
 | nickel | 26 | +3 | 4 |
 | tristearin | 25 | +2 | 1 |
 | aluminium | 25 | +2 | 1 |
-| hydrogen-chloride | 24 | +1 | 3 |
+| hydrogen-chloride | 24 | +1 | 4 |
 | glycerol | 24 | +1 | 3 |
 | benzaldehyde | 24 | +1 | 3 |
 | sodium-acetate | 24 | +1 | 2 |
 | phenol | 24 | +1 | 2 |
 | iron | 24 | +1 | 2 |
-| ethylene | 24 | +1 | 2 |
 
-⚠ **THE BIGGEST SINGLE GRANT IS +3** (`nickel`), which is the same shape as the coverage report's finding that there is no lever — 47 routes one class away from 37 different classes. **Playability has no lever either**, and that is worth having measured rather than assumed: the two scoreboards disagree about almost everything else.
+⚠ **THE BIGGEST SINGLE GRANT IS +4** (`ethylene`), which is the same shape as the coverage report's finding that there is no lever — 47 routes one class away from 37 different classes. **Playability has no lever either**, and that is worth having measured rather than assumed: the two scoreboards disagree about almost everything else.
 
-**AND THE MOST FREQUENT BLOCKER IS ALSO THE MOST VALUABLE ONE, WHICH IT WAS NOT BEFORE T32.** `nickel` blocks 4 routes and granting it is worth +3. It is not that a histogram became a work order: two of the routes standing between them were demanding their own target as a starting charge, so the chain was cut in two places that no template or price could ever have repaired. **A histogram of blockers is still not a work order** — the fixed point is, and here they happen to agree.
+⚠⚠ **AND THE MOST FREQUENT BLOCKER IS NOT THE MOST VALUABLE ONE.** `hydrogen-chloride` blocks 4 routes and granting it is worth +1, because every route it blocks is blocked by something else as well. **A histogram of blockers is not a work order** — the fixed point is, and they disagree.
 
 ## 8. The work order this file exists to produce
 
-**24 of the 122 routes the engine cannot run are ALREADY FED from the shelf above.** A template built for one of these lights up the tech tree the moment it lands. A template built for the other 98 moves a coverage number and no player can reach it.
+**24 of the 117 routes the engine cannot run are ALREADY FED from the shelf above.** A template built for one of these lights up the tech tree the moment it lands. A template built for the other 93 moves a coverage number and no player can reach it.
 
 ⚠ **THIS IS THE ONLY RANKING IN THE REPO THAT IS ABOUT PLAYABILITY RATHER THAN COVERAGE**, and it is what the C-series should take its order from. `COVERAGE_REPORT.md`'s greedy set-cover curve maximises classes covered per template; this maximises routes a player can actually walk to. They are not the same list.
 
@@ -393,6 +398,6 @@ Grant **all 24** of them and the fixed point reaches **52 playable routes** at d
 - **A yield is not a corpus property.** §5's numbers move whenever a declared constant moves. Read them with their conditions or not at all.
 - **`RUNNABLE` cannot ask whether a number is RIGHT** (S7). Every route in §4 produces its target; none of it says the amount is what a real process gives.
 - **The tiers rest on §2's hand judgement.** Argue with that list and every number here moves. That is why it is printed.
-- **`COVERAGE_REPORT.md`'s BOTH column is not re-scored here**, and this file's 51 runnable routes include G4's five. See MILESTONES §G4 §6 for why a hand judgement does not go into a mechanical column.
+- **`COVERAGE_REPORT.md`'s BOTH column is not re-scored here**, and this file's 56 runnable routes include G4's five. See MILESTONES §G4 §6 for why a hand judgement does not go into a mechanical column.
 
-*173 routes, 1583 compounds, 45 declared natural, 51 runnable, 23 playable, 3 tiers deep, 24 fed but unrunnable.*
+*173 routes, 1583 compounds, 45 declared natural, 56 runnable, 23 playable, 3 tiers deep, 24 fed but unrunnable.*

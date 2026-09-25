@@ -47,12 +47,13 @@ jobs:
           cache: pip
           cache-dependency-path: .github/requirements-ci.txt
       - run: python -m pip install -r .github/requirements-ci.txt -e .
-      # loadfile keeps each module on one worker, so module-scoped fixtures are
-      # built once. --durations=0 is the per-test timing T0.4 needs.
-      - run: python -m pytest -q -n auto --dist loadfile --durations=0 --junitxml=junit.xml
+      # worksteal, not loadfile: under loadfile the first run took 32.9 min on
+      # four workers because one module was the critical path. A module-scoped
+      # fixture is rebuilt on each worker that steals from it, which is cheaper.
+      - run: python -m pytest -q -n auto --dist worksteal --durations=0 --junitxml=junit.xml
         shell: pwsh
-      - name: annotate failures
-        if: failure()
+      - name: annotate failures and the slowest modules
+        if: always()
         run: python .github/annotate_junit.py junit.xml
       - uses: actions/upload-artifact@v4
         if: always()

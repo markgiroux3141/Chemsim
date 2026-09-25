@@ -11,69 +11,90 @@ item while a Tier 0 item is open.
 
 ### T0.4 — a fast test subset (S)
 No pytest markers exist, so running less than the 30-minute suite means naming
-files. `pytest --durations=0 -q` once (ask first), mark everything over 2 s
-`slow`, register the marker, put `pytest -m "not slow"` in `check.ps1`.
+files. CI now publishes the ten slowest modules as notices on every run
+(`python tools/ci_status.py --slowest`), which is the measurement this item
+was waiting on: mark those `slow`, register the marker, put `pytest -m "not
+slow"` in `check.ps1` in place of the hand-named `$SmokeTests`.
 **Done when:** `pytest -m "not slow"` is green in under three minutes.
 
 ---
 
-## Tier 1 — change the slope of coverage
+## Tier 1 — coverage of chemistry, measured by the benchmark
 
-240 reaction classes over 377 catalog steps, 169 used by exactly one step; 116
-have a template, 64 of them hand-typed. Ceiling 110 template-ready / ~66
-runnable. What is left of the slope is promoting rows (T2c). Argued in
-`docs/design/route-coverage-ceiling.md`, `docs/design/extraction-yield.md` and
-`fable analysis/05-COVERAGE-STRATEGY.md`.
+`data/benchmark/reactions.psv` is the coverage metric (216 held-out textbook
+cases over 63 classes, scored by `tools/benchmark.py`); the 173-route catalog is
+the game's progression metric, ceiling ~66 runnable
+(`docs/design/route-coverage-ceiling.md`). The session skill's Step 0b ranks
+the work.
 
 ### DECIDED and closed — the argument is in the file named, do not reopen
-- **T30, the nitration row** (`docs/design/two-refused-template-classes.md`).
-  In at `tier=family`. One class grant moved two scoreboards by one on two
-  DIFFERENT routes: template-ready 65 → 66 on `guncotton`, runnable 50 → 51 on
-  `nitroglycerin-route`.
-- **T28, the air-oxidation split** (same file). Refused on arithmetic: `judge`
-  scores ONE application of ONE row and three of the four stages already have
-  templates. Still worth a bench: a `family` `autoxidation` row for a primary
-  benzylic methyl, worth nothing to the scoreboard.
-- **T2, the extractor's two walls** (`tools/extract_templates.py` docstring).
-  `salt` (75 steps, a claim about the MEDIUM the corpus never makes) and
-  `stereo` (24, a configuration the mechanism does not fix) are refusals, each
-  wanting the per-class judgement a `family` row IS.
-- **T31, the six scoreboard pins.** Green. Four were one defect: T2 split
-  `cc.TEMPLATE_CLASSES` into every-tier and `FAMILY_`, the helpers kept the
-  all-tier dict, and `bp.RUNNABLE`/`bp.PLAYABLE` are family — a level on one
-  measurement path against a set on the other, and every DIFFERENCE they pin
-  held on both. Two were real moves, re-pinned with their reasons in the tests.
-  A green `pytest -q` was the half owed; T32 ran it.
-- **T32, a route charged with its own target.** Closed. `needs` unioned
-  `route_roles().catalysts` in and a catalyst is derived by IDENTITY, so four
-  routes making their target in one row and consuming it in the next demanded
-  it as a charge. Dropping the union IS `first_made < first_used`, provably: a
-  catalyst's own step makes and uses it, so the ORDER rule had it already.
-  `route_reachable` had the mirror defect. Reasoning in both docstrings.
-- **The furfural false credit cannot pay, for a structural reason** — 29b's
-  spelling makes xylose chargeable, so the class need never be covered for the
-  route to reach its target. Argued in `test_vitriol.py`'s pentosan test.
+- **The benchmark, 2026-09-24** (`tools/benchmark.py` docstring). A family row
+  is a claim about a mechanism and must pass its class's held-out cases; a
+  `wrong-product` there is how a mis-mapped row shows itself. It cannot say
+  which product wins -- that is B4.
+- **Extractor v2's two walls** (`tools/extract_templates.py` docstring). An
+  aqueous salt is read as its net ionic equation and a furnace's stays refused
+  as a lattice (E1); a stereo step is extracted flat. The checker judges in the
+  same engine reading, so the two instruments cannot disagree.
+- **A literal row that cannot be priced is still written.** Pricing is the
+  species-ready axis; refusing the row would count the gap twice. The table's
+  footer counts it instead.
+- **T30** (nitration row, `docs/design/two-refused-template-classes.md`), **T28**
+  (air-oxidation split refused, same file), **T31/T32** (scoreboard pins, a
+  route charged with its own target: reasoning in the test and `needs`
+  docstrings), **the furfural false credit** (`test_vitriol.py`).
+- **Left out on purpose, with the reason in the row's note:** halide as an SN2
+  nucleophile (halide exchange through one irreversible row reaches a ratio
+  nothing chose), radical halogenation (discovery is rate-blind and the row
+  matches every C-H), secondary alcohols in the acyclic acetal (two slots over
+  a sugar multiply by every hydroxyl).
 
-### T2c — promote a literal row, the cheap way to buy a playable route (M)
-`PLAYABLE.md` scores the `family` tier alone, because that is what
-`load_templates` loads. Granting the extracted rows takes runnable 51 -> 61 and
-playable 23 -> 25 (`acetic-anhydride-ketene`, `wood-distillation`), measured
-2026-09-16 off `bp.RUNNABLE_WITH_LITERAL`; §8b marks
-the work-order classes that already have a row. A promotion is not a copy:
-check the atom mapping by hand (T2d), argue a barrier, move the row into
-`templates.psv` at `tier=family`.
-**Done when:** one class moves tier and `PLAYABLE.md`'s headline moves with it.
+### B1 — price what the new rows are waiting on (M, repeating)
+The benchmark's `family_unpriced` cases and `literal.psv`'s `#! unpriced`
+footer are the work order: the rewrite is right and a species it makes or
+takes has no thermochemistry. Phenyl isocyanate blocks three literal rows;
+triphenylphosphine oxide, the Grignard reagents, the diazonium ions and the
+enolates (ions, so a pKa) block benchmark classes. Source every value; never
+recall one (memory: formation-data-sourcing).
+**Done when:** `family_runs` in `data/benchmark/scores.psv` has moved, each new
+entry names its source, and `./check.ps1` is green.
 
-### T2d — the gate cannot see a wrong mapping that makes the right species (S)
-Verification compares canonical SMILES, the engine's own identity, so a
-symmetric product hides a mis-mapping: the Diels-Alder row joins the ring at the
-wrong pair of carbons and still writes cyclohexene, and the Lebedev row joins its
-two ethanols at a pair the mechanism does not. Both are right on their own step,
-which is all a `literal` row claims, and both would misplace a substituent -- so
-this gates T2c. Re-run each row on ONE substituted analogue and report where
-the substituent lands.
-**Done when:** the count of rows whose mapping their own step does not constrain
-is measured, or the idea is refused in writing.
+### B2 — ethylene is the +4 grant (S)
+`PLAYABLE.md`: ethylene blocks four runnable routes and granting it is worth
++4, the largest single grant on the board. The corpus makes it (ethanol
+dehydration, the cracker), so the question is why that route is not playable,
+not a purchase. Read `bp.needs` for the routes that make it.
+**Done when:** playable moves, or the blocker upstream of ethylene is named in
+`NEXT.md` as the next task.
+
+### B3 — the benchmark's remaining family failures (S each)
+From `data/benchmark/scores.psv`: aliphatic Knoevenagel, a Perkin anhydride
+with a CH2, a non-aryl alkene isomerisation, formaldehyde Cannizzaro -- four
+existing rows narrower than their mechanism, and widening one moves pins in
+its own test file; Finkelstein (needs a reversible halide-exchange row);
+radical halogenation (needs a gate, see DECIDED); alkane dehydrogenation.
+Also `check_template_products.cause` files a row under `other` when the stereo
+sits on the step's REACTANT (the camphor Markovnikov row).
+**Done when:** each is a passing class or a one-line refusal in its row.
+
+### B4 — which product wins is not measured (M)
+Every new row offers each regiochemistry at one rate: Diels-Alder orientation,
+Zaitsev, epoxide opening, and ortho/meta/para on the EAS rows, which carry no
+Hammett rho (only nitration has one, sourced). A benchmark `pass` means the
+product is among the outcomes. Add a verdict that runs the case in a `Vessel`
+and asks whether the expected product is the MAJOR one, and source rho values
+for halogenation, sulfonation and Friedel-Crafts before writing them.
+**Done when:** the benchmark reports a `major` verdict for the EAS and
+Markovnikov classes, and each rho written names its source.
+
+### B5 — grow the benchmark (S, repeating)
+Classes a chemist would expect that the catalog does not name -- Grignard
+addition to a carbonyl, reductive amination, Baeyer-Villiger, the Mannich --
+get cases first and rows second. Inorganic one-offs stay out: a class that
+exists for one furnace step has no held-out substrate. An external set
+(USPTO-50k, open, coarse class labels) is an option that needs a download.
+**Done when:** each new class has 3+ cases that parse, balance and are held
+out, and its row count is in the CHANGELOG entry.
 
 ### T23 — the corpus half of the pKa gap, one row at a time (M, running)
 `validation/pka_domains.py` prints the queue and the route-demand ranking; take
@@ -116,14 +137,10 @@ neutral thermochemistry for them, curated or the estimator group.
 group is named in a refusal, and the audit's mineral-oxyacid row leaves zero.
 
 ### T11 — an artefact-backed check that changes nothing can never clear (S)
-Found 2026-09-12 and seen again in T23: `playable` re-ran with BYTE-IDENTICAL
-output, so no commit touches `PLAYABLE.md` to derive a last-run from, and
-`--record` refuses an artefact-backed row by design. The row reads DUE until the
-artefact's CONTENT moves, which is the one thing a passing check does not do.
-The fix is a third state — a run confirming no change. Unchanged by T28 or T30,
-each of which happened to move the content it re-ran.
-**Done when:** re-running an artefact-backed check whose output is unchanged
-clears its DUE, and `python tools/cadence.py` explains which of the two happened.
+A re-run with byte-identical output touches no file, so `cadence.py` derives no
+new last-run and `--record` refuses an artefact-backed row by design: it reads
+DUE until the content moves. It needs a third state, a run confirming no change.
+**Done when:** such a re-run clears its DUE and `cadence.py` says which happened.
 
 ### T10 — two examples print a digit that depends on the solver (S)
 `validation/tolerance_audit.py` is red on `activity` and `multistep_prep`: a
@@ -143,14 +160,11 @@ against `PLAYABLE.md`'s footer and §1 table. Chapters 29 and 30 quote counts.
 **Done when:** a command in `check.ps1` fails on a manual chapter whose quoted
 playable counts do not match the artefact, and it is green today.
 
-### T22 — two guards T13 made unreachable, and an instrument that now reports 0 (S, found in T13)
-T13's invariant -- no species `build_network` registers is unpriceable -- makes
-the two `UnpricedIon` catches in `_concrete_reactions` (Evans-Polanyi, T8, and
-detailed balance, T1d) unreachable through it, and T13 deleted the tests
-that pinned them. Same shape in `classify_silent.py`: its `priceable()` filter
-dropped 41 species and now drops 0. Neither is wrong; both are untested claims
-about a path nobody takes. Delete, or keep as defence against a hand-built
-`ReactionNetwork` with one line saying the builder is what makes it dead.
+### T22 — two guards T13 made unreachable (S, found in T13)
+No species `build_network` registers is unpriceable, so the two `UnpricedIon`
+catches in `_concrete_reactions` and `classify_silent.priceable()` (now drops 0)
+guard a path nobody takes. Delete each, or keep it with one line saying the
+builder is what makes it dead.
 **Done when:** each site is deleted or carries that line, and no test pins a
 branch `build_network` cannot reach.
 
@@ -179,8 +193,8 @@ species unblocks two templates, and T30's row has never fired from the shelf.
 The open question is the tier -- the corpus makes nitric acid, so this is a
 `shelf.psv` argument, not a purchase, and it belongs with the playable audit
 rather than against it.
-**Done when:** the slot is off the work order and `python tools/classify_silent.py`
-reports 29 silent, or the tier argument is refused in writing.
+**Done when:** the nitric acid slot is off `silent_templates.psv`'s work order
+and its two templates leave the silent list, or the tier argument is refused.
 
 ### T16 — the other loose sulfur-dioxide slot (S, found in T12)
 `sulfur_dioxide_oxidation_by_nitrogen_dioxide` still writes SO2 as
@@ -209,17 +223,11 @@ as 0.5 mol of its ions, and the six shelf rows that had to pick a representation
 regain the other mechanic.
 
 ### R4 / E3 — delete `discovery/refine.py` (S, decided)
-Decision 2026-09-01: delete it, and with it the `[done]` on Layer 4.5 in the
-README's layer table and the `discovery` layer in `chemsim/__init__.py`. The
-reasoning, so it is not relitigated: rate-aware pruning exists to make a network
-tractable, the R-series measured a fixpoint as free for the chemistry that
-matters, the species cap already bounds the rest and reports itself, and pruning
-would drop species silently where rule 10 forbids it. The module is a sketch --
-zero callers, zero tests, a duplicated `build_network`, a `_rates_of` judging
-species on forward kinetics alone -- and T2's rows are not in the default
-library, so nothing here has changed.
-**Done when:** the module, its `__init__.py`, the layer row and the README
-claim are gone, and `./check.ps1` is green.
+Decided 2026-09-01: delete the module, its `__init__.py`, the `[done]` on Layer
+4.5 in the README and the `discovery` layer in `chemsim/__init__.py`. Pruning
+would drop species silently where rule 10 forbids it, the species cap already
+bounds a network and reports itself, and the module has zero callers and tests.
+**Done when:** all four are gone and `./check.ps1` is green.
 
 ### E2 — "react until done" as the default (S)
 The R-series measured a fixpoint as free for the whole inorganic half of the
@@ -289,4 +297,4 @@ file; the rest is an index or `docs/history/`.
 | a Debye–Hückel / electrolyte activity model | γ for ions blocks no route |
 | LHHW or Michaelis–Menten rate laws | no playable route needs one |
 | a Rust kernel | the RHS is 231 µs; the cost is numpy dispatch, not arithmetic |
-| another coverage-scoreboard correction | four are in; the instrument is fine |
+| scoreboard work while no check is red | at most one session in four; the session skill counts |

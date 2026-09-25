@@ -65,10 +65,10 @@ def jobs_for(repo: str, run: dict) -> list[dict]:
     return _get(f"/repos/{repo}/actions/runs/{run['id']}/jobs")["jobs"]
 
 
-def annotations(repo: str, job: dict) -> list[str]:
+def annotations(repo: str, job: dict, level: str = "failure") -> list[str]:
     rows = _get(f"/repos/{repo}/check-runs/{job['id']}/annotations")
     return [f"{a.get('title') or ''}: {a.get('message') or ''}".strip(": ")
-            for a in rows if a.get("annotation_level") == "failure"]
+            for a in rows if a.get("annotation_level") == level]
 
 
 def main() -> int:
@@ -77,6 +77,8 @@ def main() -> int:
     ap.add_argument("--sha", help="commit to report (default HEAD)")
     ap.add_argument("--record", action="store_true",
                     help="stamp tools/cadence.py rows from finished jobs")
+    ap.add_argument("--slowest", action="store_true",
+                    help="also print the slowest test modules the suite job reported")
     args = ap.parse_args()
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(errors="replace")
@@ -104,6 +106,9 @@ def main() -> int:
                     print(f"          {line}")
             elif job["conclusion"] is None:
                 worst = max(worst, 3)
+            if args.slowest and job["conclusion"] is not None:
+                for line in annotations(repo, job, level="notice"):
+                    print(f"          {line}")
             row = RECORDS.get(job["name"])
             if args.record and row and job["conclusion"] in ("success", "failure"):
                 result = "pass" if job["conclusion"] == "success" else "fail"

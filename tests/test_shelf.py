@@ -94,11 +94,15 @@ def test_the_three_tiers_are_the_measured_ones():
     # that is supposed to shrink shrinks and the one that never shrinks grows.
     # 24 -> 21 and 4 -> 11, net +4 rows, two of which (`ammonia` and
     # `acetic-anhydride`) were owed and unrecorded.
-    assert got["intermediate"] == 21
+    #
+    # 2026-09-24 ADDED FIVE AND TWO, and it is T18's shape: the textbook family
+    # rows made five routes runnable, and the species they are short of are
+    # newly stranded (`intermediate`) or newly wanted and made nowhere (`bottle`).
+    assert got["intermediate"] == 26
     assert "sodium-stearate" not in {e.id for e in SHELF}, (
         "T32: soap-saponification makes it; it is earnable and not a gift"
     )
-    assert got["bottle"] == 11
+    assert got["bottle"] == 13
     # THE RELATION, not the level: a catalyst metal is bought, for ever. If
     # one of these is ever `intermediate` again, something is crediting a
     # no-op row with making it -- see `catalog.made_by` and T29.
