@@ -47,10 +47,10 @@ jobs:
           cache: pip
           cache-dependency-path: .github/requirements-ci.txt
       - run: python -m pip install -r .github/requirements-ci.txt -e .
-      # worksteal, not loadfile: under loadfile the first run took 32.9 min on
-      # four workers because one module was the critical path. A module-scoped
-      # fixture is rebuilt on each worker that steals from it, which is cheaper.
-      - run: python -m pytest -q -n auto --dist worksteal --durations=0 --junitxml=junit.xml
+      # loadfile keeps each module on one worker, so a module-scoped fixture is
+      # built once: worksteal ran past the 150-minute job limit. --timeout names
+      # a hung test instead of letting it eat the job without a report.
+      - run: python -m pytest -q -n auto --dist loadfile --timeout 900 --durations=0 --junitxml=junit.xml
         shell: pwsh
       - name: annotate failures and the slowest modules
         if: always()
