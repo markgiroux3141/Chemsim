@@ -65,5 +65,6 @@ if failed:
 
 # The ten slowest modules as notices: the per-module cost a fast subset (T0.4)
 # needs, readable without a token.
+label = os.environ.get("ANNOTATE_LABEL", "slow module")
 for module, s in sorted(seconds.items(), key=lambda kv: -kv[1])[:10]:
-    print(f"::notice title=slow module::{module} {s:.0f} s")
+    print(f"::notice title={label}::{module} {s:.0f} s")

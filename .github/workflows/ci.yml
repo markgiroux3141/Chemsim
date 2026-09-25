@@ -46,6 +46,18 @@ jobs:
           cache-dependency-path: .github/requirements-ci.txt
       - run: python -m pip install -r .github/requirements-ci.txt -e .
       - run: python .github/profile_import.py build_playable
+      # 29 s standalone on the runner, past 900 s inside the suite: which is it,
+      # pytest or four workers importing the scoreboard at once?
+      - run: python -m pytest -q -p no:xdist tests/test_playable.py --junitxml=serial.xml
+        continue-on-error: true
+      - run: python .github/annotate_junit.py serial.xml
+        env:
+          ANNOTATE_LABEL: serial
+      - run: python -m pytest -q -n 4 --dist loadfile --timeout 2400 tests/test_playable.py tests/test_vanillin.py tests/test_fermentation.py tests/test_playable_levers.py --junitxml=parallel.xml
+        continue-on-error: true
+      - run: python .github/annotate_junit.py parallel.xml
+        env:
+          ANNOTATE_LABEL: four at once
 
   suite:
     name: pytest (full suite)
