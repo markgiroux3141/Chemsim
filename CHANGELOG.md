@@ -4,6 +4,19 @@ Newest first. One entry per session, twelve lines an entry and 400 lines the
 file, both enforced by `tools/check_docs.py`. At the cap the older half rolls
 into `docs/history/changelog-YYYY-MM.md`, where 2026-09-02 to 2026-09-12 is.
 
+## 2026-09-24 — extractor v2: salts read as ions, stereo flat, 58 -> 79 literal rows
+
+An aqueous step's salts are read as their net ionic equation, a furnace's stay
+refused (a lattice, E1); a stereo step is extracted flat, as every template
+emits. `tools/extract_templates.py` 58 -> 79 rows over 73 classes. The checker
+judges a step in the same engine reading when as-written fails, with a
+`reading` column: `template_products.psv` 96/16/9 -> 131/10/1 pass/partial/
+wrong, 36 in the engine reading. Found: T2's "every row builds a reaction" test
+built with thermo=None, which prices nothing -- 56 of 79 rows build a PRICED
+reaction, and `literal.psv`'s footer names the unpriced species (phenyl
+isocyanate blocks 3). Template-ready 66 -> 76, BOTH 53 -> 57, literal grant
+51 -> 64 runnable; playable 23, family 50/43 and the benchmark's 20 unmoved.
+
 ## 2026-09-24 — retro: a benchmark that rewards generality, and CI for the suite
 
 `data/benchmark/reactions.psv`: 216 textbook cases over 63 classes, none a

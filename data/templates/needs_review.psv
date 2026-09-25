@@ -5,84 +5,75 @@
 # Columns: route | step | class | reason | detail
 #
 # Every step whose class has no template and which tools/extract_templates.py
-# did not turn into a row, with the reason. `salt` and `stereo` are the two
-# systematic walls that tool's docstring decides; the rest are per-row.
+# did not turn into a row, with the reason. That tool's docstring says how v2
+# reads through the salt and stereo walls, and where it still refuses.
 #
 # The `#!` keys at the foot are derived from the rows above, never typed.
 
 lead-chamber | 4 | nitrosation | stoichiometry | the only balance sets a species to zero or negative
-leblanc-process | 1 | salt-metathesis | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
-leblanc-process | 2 | carbothermic-sulfate-reduction | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
+leblanc-process | 1 | salt-metathesis | salt | a salt in a furnace or melt is a lattice, not a pair of ions, and the engine turns a lattice into ions nowhere yet (E1)
+leblanc-process | 2 | carbothermic-sulfate-reduction | salt | a salt in a furnace or melt is a lattice, not a pair of ions, and the engine turns a lattice into ions nowhere yet (E1)
 leblanc-process | 3 | dissolution | closed-cycle | every product is also a reactant
-leblanc-process | 4 | sulfide-carbonation | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
-solvay-process | 1 | carbonate-equilibrium | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
 ostwald-process | 1 | catalytic-ammonia-oxidation | coefficients | a coefficient of 6 is more slots than a rewrite can carry: {'ammonia': 4, 'oxygen': 5, 'nitric-oxide': 4, 'water': 6}
 ostwald-process | 3 | disproportionation-hydrolysis | coefficients | a coefficient of 3 is more slots than a rewrite can carry: {'nitrogen-dioxide': 3, 'water': 1, 'nitric-acid': 2, 'nitric-oxide': 1}
 birkeland-eyde | 3 | disproportionation-hydrolysis | coefficients | a coefficient of 3 is more slots than a rewrite can carry: {'nitrogen-dioxide': 3, 'water': 1, 'nitric-acid': 2, 'nitric-oxide': 1}
 aqua-regia | 1 | halide-oxidation | coefficients | a coefficient of 3 is more slots than a rewrite can carry: {'nitric-acid': 1, 'hydrogen-chloride': 3, 'nitrosyl-chloride': 1, 'chlorine': 1, 'water': 2}
-aqua-regia | 2 | oxidative-dissolution | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
-frank-caro | 1 | carbide-formation | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
-frank-caro | 2 | gas-solid-fixation | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
-frank-caro | 3 | cyanamide-hydrolysis | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
-weldon-chlorine | 1 | halide-oxidation | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
-white-phosphorus | 1 | carbothermic-phosphate-reduction | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
-match-chemistry | 1 | chlorate-oxygen-transfer | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
-bayer-process | 1 | amphoteric-dissolution | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
-bayer-process | 2 | precipitation | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
-hall-heroult | 1 | molten-salt-electrolysis | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
-blast-furnace | 5 | slagging | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
-downs-cell | 1 | molten-salt-electrolysis | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
+aqua-regia | 2 | oxidative-dissolution | coefficients | a coefficient of 3 is more slots than a rewrite can carry: {'[Au]': 2, 'ClCl': 3, 'Cl': 2, '[Cl][Au-]([Cl])([Cl])[Cl]': 2, '[H+]': 2}
+frank-caro | 1 | carbide-formation | salt | a salt in a furnace or melt is a lattice, not a pair of ions, and the engine turns a lattice into ions nowhere yet (E1)
+frank-caro | 2 | gas-solid-fixation | salt | a salt in a furnace or melt is a lattice, not a pair of ions, and the engine turns a lattice into ions nowhere yet (E1)
+frank-caro | 3 | cyanamide-hydrolysis | coefficients | a coefficient of 3 is more slots than a rewrite can carry: {'[N-]=C=[N-]': 1, 'O': 3, 'N': 2, 'O=C([O-])[O-]': 1}
+weldon-chlorine | 1 | halide-oxidation | coefficients | a coefficient of 4 is more slots than a rewrite can carry: {'[O]=[Mn]=[O]': 1, 'Cl': 4, 'ClCl': 1, 'O': 2, '[Mn+2]': 1, '[Cl-]': 2}
+white-phosphorus | 1 | carbothermic-phosphate-reduction | salt | a salt in a furnace or melt is a lattice, not a pair of ions, and the engine turns a lattice into ions nowhere yet (E1)
+match-chemistry | 1 | chlorate-oxygen-transfer | coefficients | a coefficient of 10 is more slots than a rewrite can carry: {'[O-][Cl+2]([O-])[O-]': 10, 'p12p3p1p23': 3, 'O=P12OP3(=O)OP(=O)(O1)OP(=O)(O2)O3': 3, '[Cl-]': 10}
+bayer-process | 1 | amphoteric-dissolution | stoichiometry | the only balance sets a species to zero or negative
+bayer-process | 2 | precipitation | coefficients | a coefficient of 4 is more slots than a rewrite can carry: {'[O]=[Al][O-]': 1, 'O': 2, '[Al+3]': 1, '[OH-]': 4}
+hall-heroult | 1 | molten-salt-electrolysis | salt | a salt in a furnace or melt is a lattice, not a pair of ions, and the engine turns a lattice into ions nowhere yet (E1)
+downs-cell | 1 | molten-salt-electrolysis | salt | a salt in a furnace or melt is a lattice, not a pair of ions, and the engine turns a lattice into ions nowhere yet (E1)
 castner-kellner | 1 | amalgam-electrolysis | no-graph | a species has no molecular graph
 castner-kellner | 2 | amalgam-decomposition | no-graph | a species has no molecular graph
-gunpowder | 1 | formulation | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
-gunpowder | 2 | deflagration | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
+gunpowder | 1 | formulation | net-ionic-empty | every ion is a spectator once the salts are read as ions: a metathesis or precipitation, which a solubility product does, not a rewrite
+gunpowder | 2 | deflagration | stoichiometry | no coefficient vector: the elements do not balance
 nitroglycerin-route | 2 | formulation | closed-cycle | every product is also a reactant
 picric-acid-route | 1 | electrophilic-aromatic-sulfonation | stoichiometry | no coefficient vector: the elements do not balance
 picric-acid-route | 2 | ipso-nitrodesulfonation | stoichiometry | no coefficient vector: the elements do not balance
 rdx-route | 1 | condensation | coefficients | a coefficient of 6 is more slots than a rewrite can carry: {'formaldehyde': 6, 'ammonia': 4, 'hexamethylenetetramine': 1, 'water': 6}
 rdx-route | 2 | nitrolysis | coefficients | a coefficient of 12 is more slots than a rewrite can carry: {'hexamethylenetetramine': 3, 'nitric-acid': 12, 'rdx': 4, 'formaldehyde': 6, 'water': 6}
-petn-route | 1 | aldol-cannizzaro | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
-mercury-fulminate-route | 1 | oxidative-nitrosation | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
+petn-route | 1 | aldol-cannizzaro | coefficients | a coefficient of 8 is more slots than a rewrite can carry: {'CC=O': 2, 'C=O': 8, '[OH-]': 2, 'OCC(CO)(CO)CO': 2, 'O=C[O-]': 2}
+mercury-fulminate-route | 1 | oxidative-nitrosation | stoichiometry | the only balance sets a species to zero or negative
 coal-tar-distillation | 1 | separation | no-graph | a species has no molecular graph
 coal-gas | 1 | pyrolysis | no-graph | a species has no molecular graph
 benzene-nitration | 2 | electrophilic-aromatic-substitution | stoichiometry | no coefficient vector: the elements do not balance
 benzene-nitration | 3 | arenium-deprotonation | stoichiometry | no coefficient vector: the elements do not balance
-aniline-route | 1 | dissolving-metal-reduction | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
-mauveine-route | 1 | oxidative-coupling | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
-alizarin-route | 1 | arene-oxidation-to-quinone | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
-alizarin-route | 3 | alkali-fusion | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
+aniline-route | 1 | dissolving-metal-reduction | stoichiometry | the only balance sets a species to zero or negative
+mauveine-route | 1 | oxidative-coupling | stoichiometry | the only balance sets a species to zero or negative
+alizarin-route | 1 | arene-oxidation-to-quinone | stoichiometry | no coefficient vector: the elements do not balance
+alizarin-route | 3 | alkali-fusion | stoichiometry | no coefficient vector: the elements do not balance
 indigo-baeyer-drewson | 2 | side-chain-oxidation | stoichiometry | no coefficient vector: the elements do not balance
-indigo-baeyer-drewson | 3 | aldol-cyclisation | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
-indigo-heumann | 2 | alkali-fusion | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
-indigo-heumann | 3 | oxidative-dimerisation | stereo | the step declares a stereoisomer and a rewrite emits the flat species
-azo-dye-coupling | 1 | diazotisation | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
-azo-dye-coupling | 2 | azo-coupling | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
-triarylmethane-dyes | 2 | leuco-dye-oxidation | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
-prussian-blue-route | 1 | pyrolytic-synthesis | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
-white-lead-route | 1 | oxidative-dissolution | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
-white-lead-route | 2 | basic-carbonate-precipitation | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
-vermilion-route | 1 | direct-combination | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
-phenol-dow | 2 | nucleophilic-aromatic-substitution | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
-phenol-sulfonation | 2 | alkali-fusion | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
+indigo-baeyer-drewson | 3 | aldol-cyclisation | stoichiometry | the only balance sets a species to zero or negative
+indigo-heumann | 2 | alkali-fusion | stoichiometry | the only balance sets a species to zero or negative
+azo-dye-coupling | 1 | diazotisation | stoichiometry | no coefficient vector: the elements do not balance
+azo-dye-coupling | 2 | azo-coupling | stoichiometry | no coefficient vector: the elements do not balance
+triarylmethane-dyes | 2 | leuco-dye-oxidation | stoichiometry | no coefficient vector: the elements do not balance
+prussian-blue-route | 1 | pyrolytic-synthesis | stoichiometry | no coefficient vector: the elements do not balance
+white-lead-route | 1 | oxidative-dissolution | coefficients | a coefficient of 4 is more slots than a rewrite can carry: {'[Pb]': 2, 'CC(=O)O': 4, 'O=O': 1, '[Pb+2]': 2, 'CC(=O)[O-]': 4, 'O': 2}
+white-lead-route | 2 | basic-carbonate-precipitation | coefficients | a coefficient of 6 is more slots than a rewrite can carry: {'CC(=O)[O-]': 6, 'O=C=O': 2, 'O': 4, 'O=C([O-])[O-]': 2, '[OH-]': 2, 'CC(=O)O': 6}
+vermilion-route | 1 | direct-combination | coefficients | a coefficient of 8 is more slots than a rewrite can carry: {'[Hg]': 8, 'S1SSSSSSS1': 1, '[Hg+2]': 8, '[S-2]': 8}
+phenol-dow | 2 | nucleophilic-aromatic-substitution | stoichiometry | no coefficient vector: the elements do not balance
+phenol-sulfonation | 2 | alkali-fusion | salt | a salt in a furnace or melt is a lattice, not a pair of ions, and the engine turns a lattice into ions nowhere yet (E1)
 bakelite-route | 2 | polycondensation | coefficients | a coefficient of 3 is more slots than a rewrite can carry: {'resole-unit': 1, 'phenol': 3, 'bakelite-unit': 2, 'water': 2}
 aspirin-route | 1 | acylation-esterification | stoichiometry | the balance is not unique -- 2 independent coefficient vectors, so the row does not determine its own stoichiometry
 aspirin-route | 2 | crystallisation | closed-cycle | every product is also a reactant
 paracetamol-route | 2 | bamberger-rearrangement | centre | no reaction centre, or a slot whose written atoms are not connected to each other
 sulfa-drug-route | 2 | electrophilic-aromatic-sulfonation | stoichiometry | the only balance sets a species to zero or negative
-sulfa-drug-route | 3 | sulfonamide-formation | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
 sulfa-drug-route | 4 | amide-hydrolysis | stoichiometry | the only balance sets a species to zero or negative
-prontosil-route | 1 | diazotisation | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
-prontosil-route | 2 | azo-coupling | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
-penicillin-route | 1 | secondary-metabolite-fermentation | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
-penicillin-route | 2 | amide-hydrolysis | stereo | the step declares a stereoisomer and a rewrite emits the flat species
-penicillin-route | 3 | amide-coupling | stereo | the step declares a stereoisomer and a rewrite emits the flat species
-chloroform-route | 1 | haloform | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
+prontosil-route | 1 | diazotisation | slots | 4 reactant and 5 product slots
+penicillin-route | 1 | secondary-metabolite-fermentation | stoichiometry | the balance is not unique -- 2 independent coefficient vectors, so the row does not determine its own stoichiometry
+chloroform-route | 1 | haloform | coefficients | a coefficient of 6 is more slots than a rewrite can carry: {'CC(C)=O': 2, '[O-]Cl': 6, 'ClC(Cl)Cl': 2, 'CC(=O)[O-]': 2, '[OH-]': 4}
 chloral-route | 1 | radical-halogenation | stoichiometry | the only balance sets a species to zero or negative
-ptfe-route | 3 | radical-polymerisation | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
-wood-distillation | 1 | pyrolysis | stereo | the step declares a stereoisomer and a rewrite emits the flat species
+ptfe-route | 3 | radical-polymerisation | stoichiometry | no coefficient vector: the elements do not balance
+wood-distillation | 1 | pyrolysis | stoichiometry | the balance is not unique -- 3 independent coefficient vectors, so the row does not determine its own stoichiometry
 fischer-tropsch | 1 | fischer-tropsch | coefficients | a coefficient of 17 is more slots than a rewrite can carry: {'carbon-monoxide': 8, 'hydrogen': 17, 'octane': 1, 'water': 8}
-calcium-carbide | 1 | carbide-formation | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
-calcium-carbide | 2 | carbide-hydrolysis | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
+calcium-carbide | 1 | carbide-formation | salt | a salt in a furnace or melt is a lattice, not a pair of ions, and the engine turns a lattice into ions nowhere yet (E1)
 steam-cracking | 1 | thermal-cracking | stoichiometry | the balance is not unique -- 4 independent coefficient vectors, so the row does not determine its own stoichiometry
 ethylene-oxide-route | 2 | hydrocarbon-combustion | coefficients | a coefficient of 3 is more slots than a rewrite can carry: {'ethylene': 1, 'oxygen': 3, 'carbon-dioxide': 2, 'water': 2}
 ethylene-glycol-route | 3 | epoxide-alkoxylation | duplicate | another step of this corpus extracts the same rewrite
@@ -92,7 +83,7 @@ adipic-acid-route | 1 | autoxidation | stoichiometry | the balance is not unique
 adipic-acid-route | 2 | nitric-acid-oxidation | centre | no reaction centre, or a slot whose written atoms are not connected to each other
 adipic-acid-route | 3 | nitric-acid-oxidation | coefficients | a coefficient of 6 is more slots than a rewrite can carry: {'cyclohexanone': 4, 'nitric-acid': 6, 'adipic-acid': 4, 'nitrous-oxide': 3, 'water': 3}
 nylon66-route | 1 | nitrile-hydrogenation | coefficients | a coefficient of 4 is more slots than a rewrite can carry: {'adiponitrile': 1, 'hydrogen': 4, 'hexamethylenediamine': 1}
-nylon66-route | 3 | polycondensation | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
+nylon66-route | 3 | polycondensation | duplicate | another step of this corpus extracts the same rewrite
 nylon6-route | 2 | beckmann-rearrangement | stoichiometry | the only balance sets a species to zero or negative
 nylon6-route | 4 | ring-opening-polymerisation | centre | no reaction centre, or a slot whose written atoms are not connected to each other
 vinyl-chloride-route | 2 | oxychlorination | coefficients | a coefficient of 4 is more slots than a rewrite can carry: {'ethylene': 2, 'hydrogen-chloride': 4, 'oxygen': 1, '1,2-dichloroethane': 2, 'water': 2}
@@ -100,76 +91,65 @@ vinyl-chloride-route | 4 | radical-polymerisation | stoichiometry | no coefficie
 styrene-route | 3 | radical-polymerisation | stoichiometry | no coefficient vector: the elements do not balance
 polyethylene-route | 1 | radical-polymerisation | stoichiometry | no coefficient vector: the elements do not balance
 polyethylene-route | 2 | coordination-polymerisation | stoichiometry | no coefficient vector: the elements do not balance
-mma-ach | 2 | ritter-type-hydration | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
 mma-ach | 4 | radical-polymerisation | stoichiometry | no coefficient vector: the elements do not balance
-bisphenol-a-route | 2 | interfacial-polycondensation | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
+bisphenol-a-route | 2 | interfacial-polycondensation | slots | 4 reactant and 4 product slots
 polyurethane-route | 3 | phosgenation | coefficients | a coefficient of 4 is more slots than a rewrite can carry: {'toluenediamine': 1, 'phosgene': 2, 'toluene-diisocyanate': 1, 'hydrogen-chloride': 4}
 polyurethane-route | 4 | polyaddition | stoichiometry | the only balance sets a species to zero or negative
 mdi-route | 2 | phosgenation | coefficients | a coefficient of 4 is more slots than a rewrite can carry: {'methylenedianiline': 1, 'phosgene': 2, 'mdi': 1, 'hydrogen-chloride': 4}
 urea-formaldehyde-route | 2 | polycondensation | stoichiometry | no coefficient vector: the elements do not balance
 melamine-route | 2 | trimerisation | coefficients | a coefficient of 6 is more slots than a rewrite can carry: {'cyanic-acid': 6, 'melamine': 1, 'carbon-dioxide': 3}
 silicone-route | 3 | equilibration | stoichiometry | no coefficient vector: the elements do not balance
-neoprene-route | 3 | radical-polymerisation | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
-buna-rubber | 2 | radical-copolymerisation | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
-vulcanisation | 1 | crosslinking | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
+neoprene-route | 3 | radical-polymerisation | stoichiometry | no coefficient vector: the elements do not balance
+buna-rubber | 2 | radical-copolymerisation | stoichiometry | the only balance sets a species to zero or negative
+vulcanisation | 1 | crosslinking | net-ionic-empty | every ion is a spectator once the salts are read as ions: a metathesis or precipitation, which a solubility product does, not a rewrite
 viscose-route | 1 | polysaccharide-alkoxide | no-graph | a species has no molecular graph
 viscose-route | 2 | xanthation | no-graph | a species has no molecular graph
-viscose-route | 3 | regeneration | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
-celluloid-route | 1 | formulation | stereo | the step declares a stereoisomer and a rewrite emits the flat species
-2-ethylhexanol-route | 1 | aldol-condensation | stereo | the step declares a stereoisomer and a rewrite emits the flat species
-2-ethylhexanol-route | 2 | enal-hydrogenation | stereo | the step declares a stereoisomer and a rewrite emits the flat species
+viscose-route | 3 | regeneration | slots | 3 reactant and 5 product slots
+celluloid-route | 1 | formulation | stoichiometry | the only balance sets a species to zero or negative
 phthalic-anhydride-route | 1 | catalytic-air-oxidation | coefficients | a coefficient of 3 is more slots than a rewrite can carry: {'o-xylene': 1, 'oxygen': 3, 'phthalic-anhydride': 1, 'water': 3}
 phthalic-anhydride-route | 2 | catalytic-air-oxidation | stoichiometry | the balance is not unique -- 2 independent coefficient vectors, so the row does not determine its own stoichiometry
 maleic-anhydride-route | 1 | catalytic-air-oxidation | coefficients | a coefficient of 8 is more slots than a rewrite can carry: {'butane': 2, 'oxygen': 7, 'maleic-anhydride': 2, 'water': 8}
 soap-saponification | 2 | salting-out | closed-cycle | every product is also a reactant
-hydrogenation-margarine | 2 | isomerisation | stereo | the step declares a stereoisomer and a rewrite emits the flat species
-ethanol-fermentation | 2 | glycolysis | stereo | the step declares a stereoisomer and a rewrite emits the flat species
+hydrogenation-margarine | 2 | isomerisation | stoichiometry | the only balance sets a species to zero or negative
+ethanol-fermentation | 2 | glycolysis | stoichiometry | no coefficient vector: the elements do not balance
 ethanol-fermentation | 4 | biological-reduction | stoichiometry | no coefficient vector: the elements do not balance
-ethanol-fermentation | 5 | biological-transformation | stereo | the step declares a stereoisomer and a rewrite emits the flat species
-citric-acid-fermentation | 1 | aerobic-overflow-fermentation | stereo | the step declares a stereoisomer and a rewrite emits the flat species
-citric-acid-fermentation | 2 | precipitation | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
+ethanol-fermentation | 5 | biological-transformation | stoichiometry | no coefficient vector: the elements do not balance
+citric-acid-fermentation | 1 | aerobic-overflow-fermentation | coefficients | a coefficient of 3 is more slots than a rewrite can carry: {'sucrose': 1, 'oxygen': 3, 'citric-acid': 2, 'water': 3}
+citric-acid-fermentation | 2 | precipitation | coefficients | a coefficient of 6 is more slots than a rewrite can carry: {'O=C(O)CC(O)(CC(=O)O)C(=O)O': 2, '[OH-]': 6, 'O=C([O-])CC(O)(CC(=O)[O-])C(=O)[O-]': 2, 'O': 6}
 lactic-acid-pla | 2 | polycondensation | no-graph | a species has no molecular graph
 lactic-acid-pla | 3 | depolymerisation | no-graph | a species has no molecular graph
-lactic-acid-pla | 4 | ring-opening-polymerisation | stereo | the step declares a stereoisomer and a rewrite emits the flat species
-msg-route | 1 | amino-acid-fermentation | stereo | the step declares a stereoisomer and a rewrite emits the flat species
-starch-hydrolysis | 3 | isomerisation | stereo | the step declares a stereoisomer and a rewrite emits the flat species
+lactic-acid-pla | 4 | ring-opening-polymerisation | stoichiometry | no coefficient vector: the elements do not balance
+msg-route | 1 | amino-acid-fermentation | stoichiometry | the balance is not unique -- 2 independent coefficient vectors, so the row does not determine its own stoichiometry
 furfural-route | 1 | pentosan-hydrolysis | closed-cycle | every product is also a reactant
 vanillin-guaiacol | 2 | oxidative-decarboxylation | stoichiometry | the balance is not unique -- 2 independent coefficient vectors, so the row does not determine its own stoichiometry
-camphor-route | 1 | skeletal-isomerisation | stereo | the step declares a stereoisomer and a rewrite emits the flat species
-camphor-route | 2 | markovnikov-addition | stereo | the step declares a stereoisomer and a rewrite emits the flat species
 menthol-route | 1 | carbonyl-ene-cyclisation | centre | no reaction centre, or a slot whose written atoms are not connected to each other
-indigo-natural | 2 | oxidative-dimerisation | stereo | the step declares a stereoisomer and a rewrite emits the flat species
-indigo-natural | 3 | reduction | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
-indigo-natural | 4 | leuco-dye-oxidation | stereo | the step declares a stereoisomer and a rewrite emits the flat species
-tyrian-purple-route | 1 | biological-transformation | stereo | the step declares a stereoisomer and a rewrite emits the flat species
+indigo-natural | 2 | oxidative-dimerisation | duplicate | another step of this corpus extracts the same rewrite
+indigo-natural | 3 | reduction | stoichiometry | no coefficient vector: the elements do not balance
+tyrian-purple-route | 1 | biological-transformation | stoichiometry | no coefficient vector: the elements do not balance
 tanning-route | 2 | crosslinking | no-graph | a species has no molecular graph
 iron-gall-ink | 2 | oxidative-complexation | no-graph | a species has no molecular graph
-photography-silver | 2 | photoreduction | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
-photography-silver | 3 | chemical-reduction | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
-photography-silver | 4 | complexation-dissolution | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
-vitamin-c-reichstein | 1 | carbonyl-hydrogenation | stereo | the step declares a stereoisomer and a rewrite emits the flat species
-vitamin-c-reichstein | 2 | biological-oxidation | stereo | the step declares a stereoisomer and a rewrite emits the flat species
-vitamin-c-reichstein | 3 | acetal-formation | stereo | the step declares a stereoisomer and a rewrite emits the flat species
-vitamin-c-reichstein | 4 | permanganate-alcohol-oxidation | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
-vitamin-c-reichstein | 5 | hydrolysis-lactonisation | stereo | the step declares a stereoisomer and a rewrite emits the flat species
-strecker-amino-acid | 3 | nitrile-hydrolysis | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
-gabriel-synthesis | 1 | imide-deprotonation | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
-malonic-ester-synthesis | 1 | carbanion-generation | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
-acetoacetic-ester-synthesis | 1 | carbanion-generation | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
+photography-silver | 2 | photoreduction | slots | 4 reactant and 3 product slots
+photography-silver | 3 | chemical-reduction | slots | 5 reactant and 5 product slots
+photography-silver | 4 | complexation-dissolution | net-ionic-empty | every ion is a spectator once the salts are read as ions: a metathesis or precipitation, which a solubility product does, not a rewrite
+vitamin-c-reichstein | 1 | carbonyl-hydrogenation | centre | no reaction centre, or a slot whose written atoms are not connected to each other
+vitamin-c-reichstein | 2 | biological-oxidation | centre | no reaction centre, or a slot whose written atoms are not connected to each other
+vitamin-c-reichstein | 3 | acetal-formation | coefficients | a coefficient of 30 is more slots than a rewrite can carry: {'sorbose': 5, 'acetone': 30, 'diacetone-sorbose': 12, 'water': 12}
+vitamin-c-reichstein | 4 | permanganate-alcohol-oxidation | stoichiometry | no coefficient vector: the elements do not balance
+vitamin-c-reichstein | 5 | hydrolysis-lactonisation | stoichiometry | no coefficient vector: the elements do not balance
+strecker-amino-acid | 3 | nitrile-hydrolysis | slots | 4 reactant and 3 product slots
+malonic-ester-synthesis | 1 | carbanion-generation | stoichiometry | no coefficient vector: the elements do not balance
+acetoacetic-ester-synthesis | 1 | carbanion-generation | stoichiometry | no coefficient vector: the elements do not balance
 acetoacetic-ester-synthesis | 3 | ester-hydrolysis-decarboxylation | stoichiometry | the balance is not unique -- 2 independent coefficient vectors, so the row does not determine its own stoichiometry
-grignard-route | 3 | organometallic-protonolysis | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
-wittig-route | 2 | carbanion-generation | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
+grignard-route | 3 | organometallic-protonolysis | stoichiometry | no coefficient vector: the elements do not balance
+wittig-route | 2 | carbanion-generation | stoichiometry | no coefficient vector: the elements do not balance
 aldol-route | 2 | aldol-addition | stoichiometry | the only balance sets a species to zero or negative
-claisen-route | 1 | carbanion-generation | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
+claisen-route | 1 | carbanion-generation | stoichiometry | no coefficient vector: the elements do not balance
 friedel-crafts-route | 1 | lewis-acid-activation | stoichiometry | no coefficient vector: the elements do not balance
 friedel-crafts-route | 2 | friedel-crafts-acylation | stoichiometry | no coefficient vector: the elements do not balance
 beckmann-route | 1 | oxime-formation | duplicate | another step of this corpus extracts the same rewrite
-hofmann-route | 1 | n-halogenation | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
-hofmann-route | 2 | hofmann-rearrangement | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
+hofmann-route | 1 | n-halogenation | stoichiometry | no coefficient vector: the elements do not balance
 curtius-route | 3 | isocyanate-hydrolysis | duplicate | another step of this corpus extracts the same rewrite
-sandmeyer-route | 1 | diazotisation | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
-sandmeyer-route | 2 | sandmeyer-substitution | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
-reimer-tiemann | 1 | alpha-elimination | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
+sandmeyer-route | 1 | diazotisation | slots | 4 reactant and 5 product slots
 reimer-tiemann | 2 | electrophilic-formylation | stoichiometry | no coefficient vector: the elements do not balance
 fischer-indole | 2 | fischer-indolisation | stoichiometry | no coefficient vector: the elements do not balance
 hantzsch-pyridine | 1 | multicomponent-condensation | coefficients | a coefficient of 3 is more slots than a rewrite can carry: {'ethyl-acetoacetate': 2, 'acetaldehyde': 1, 'ammonia': 1, 'hantzsch-dihydropyridine': 1, 'water': 3}
@@ -177,22 +157,22 @@ hantzsch-pyridine | 2 | oxidative-aromatisation | stoichiometry | no coefficient
 mannich-route | 1 | iminium-formation | stoichiometry | no coefficient vector: the elements do not balance
 mannich-route | 2 | mannich-reaction | stoichiometry | no coefficient vector: the elements do not balance
 michael-robinson | 2 | intramolecular-aldol | stoichiometry | no coefficient vector: the elements do not balance
-wohler-urea | 2 | isomerisation | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
-haloform-iodoform | 1 | alpha-halogenation | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
-haloform-iodoform | 2 | haloform-cleavage | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
-fehling-test | 1 | metal-ion-aldehyde-oxidation | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
-tollens-test | 1 | metal-ion-aldehyde-oxidation | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
-marsh-test | 1 | dissolving-metal-reduction | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
+wohler-urea | 2 | isomerisation | salt | a salt in a furnace or melt is a lattice, not a pair of ions, and the engine turns a lattice into ions nowhere yet (E1)
+haloform-iodoform | 1 | alpha-halogenation | coefficients | a coefficient of 3 is more slots than a rewrite can carry: {'CC(C)=O': 1, 'II': 3, '[OH-]': 3, 'CC(=O)C(I)(I)I': 1, '[I-]': 3, 'O': 3}
+fehling-test | 1 | metal-ion-aldehyde-oxidation | stoichiometry | no coefficient vector: the elements do not balance
+tollens-test | 1 | metal-ion-aldehyde-oxidation | stoichiometry | no coefficient vector: the elements do not balance
+marsh-test | 1 | dissolving-metal-reduction | stoichiometry | the balance is not unique -- 2 independent coefficient vectors, so the row does not determine its own stoichiometry
 marsh-test | 2 | hydride-thermal-deposition | coefficients | a coefficient of 3 is more slots than a rewrite can carry: {'arsine': 2, 'arsenic': 2, 'hydrogen': 3}
-kjeldahl | 1 | oxidative-digestion | salt | the step spells a salt as one species where the engine holds its ions, and which of the two this step means is not in the corpus
+kjeldahl | 1 | oxidative-digestion | stoichiometry | the only balance sets a species to zero or negative
 
-#! centre = 4
+#! centre = 6
 #! closed-cycle = 5
-#! coefficients = 20
-#! duplicate = 3
+#! coefficients = 34
+#! duplicate = 5
+#! net-ionic-empty = 3
 #! no-graph = 10
-#! salt = 75
-#! stereo = 23
-#! stoichiometry = 35
-#! refused = 175
-#! classes_refused = 133
+#! salt = 10
+#! slots = 7
+#! stoichiometry = 74
+#! refused = 154
+#! classes_refused = 117

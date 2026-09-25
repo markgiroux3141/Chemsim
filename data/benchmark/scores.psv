@@ -128,10 +128,10 @@ carbanion-generation/propanal-hydroxide | carbanion-generation | no-template | -
 aldol-addition/acetone-enolate-acetaldehyde | aldol-addition | no-template | - | no-template | - |  | 
 aldol-addition/acetaldehyde-enolate-benzaldehyde | aldol-addition | no-template | - | no-template | - |  | 
 aldol-addition/propanal-enolate-propanal | aldol-addition | no-template | - | no-template | - |  | 
-aldol-condensation/benzaldehyde-acetone | aldol-condensation | no-template | - | no-template | - |  | 
-aldol-condensation/cyclohexanone-benzaldehyde | aldol-condensation | no-template | - | no-template | - |  | 
-aldol-condensation/acetone-self | aldol-condensation | no-template | - | no-template | - |  | 
-aldol-condensation/propanal-self | aldol-condensation | no-template | - | no-template | - |  | 
+aldol-condensation/benzaldehyde-acetone | aldol-condensation | no-template | - | no-substrate | - | aldol_condensation_2_ethylhexanol_route_1 | CC(=O)C=Cc1ccccc1
+aldol-condensation/cyclohexanone-benzaldehyde | aldol-condensation | no-template | - | no-substrate | - | aldol_condensation_2_ethylhexanol_route_1 | O=C1CCCCC1=Cc1ccccc1
+aldol-condensation/acetone-self | aldol-condensation | no-template | - | no-substrate | - | aldol_condensation_2_ethylhexanol_route_1 | CC(=O)C=C(C)C
+aldol-condensation/propanal-self | aldol-condensation | no-template | - | pass | runs | aldol_condensation_2_ethylhexanol_route_1 | 
 claisen-condensation/methyl-acetate-self | claisen-condensation | no-template | - | pass | unpriced | claisen_condensation_claisen_route_2 | 
 claisen-condensation/acetate-enolate-ethyl-benzoate | claisen-condensation | no-template | - | wrong-product | - | claisen_condensation_claisen_route_2 | CCOC(=O)CC(=O)c1ccccc1
 claisen-condensation/ethyl-propanoate-self | claisen-condensation | no-template | - | no-substrate | - | claisen_condensation_claisen_route_2 | CCOC(=O)C(C)C(=O)CC
@@ -203,9 +203,9 @@ decarboxylation/malonic-acid | decarboxylation | no-template | - | no-substrate 
 nitrile-hydrolysis/acetonitrile | nitrile-hydrolysis | no-template | - | no-template | - |  | 
 nitrile-hydrolysis/benzonitrile | nitrile-hydrolysis | no-template | - | no-template | - |  | 
 nitrile-hydrolysis/propionitrile | nitrile-hydrolysis | no-template | - | no-template | - |  | 
-amide-hydrolysis/acetamide | amide-hydrolysis | no-template | - | no-template | - |  | 
-amide-hydrolysis/n-methylacetamide | amide-hydrolysis | no-template | - | no-template | - |  | 
-amide-hydrolysis/benzamide | amide-hydrolysis | no-template | - | no-template | - |  | 
+amide-hydrolysis/acetamide | amide-hydrolysis | no-template | - | no-substrate | - | amide_hydrolysis_penicillin_route_2 | CC(=O)O,N
+amide-hydrolysis/n-methylacetamide | amide-hydrolysis | no-template | - | pass | runs | amide_hydrolysis_penicillin_route_2 | 
+amide-hydrolysis/benzamide | amide-hydrolysis | no-template | - | no-substrate | - | amide_hydrolysis_penicillin_route_2 | N,O=C(O)c1ccccc1
 acetal-formation/acetaldehyde-ethanol | acetal-formation | no-template | - | no-template | - |  | 
 acetal-formation/benzaldehyde-methanol | acetal-formation | no-template | - | no-template | - |  | 
 acetal-formation/acetone-ethylene-glycol | acetal-formation | no-template | - | no-template | - |  | 
@@ -224,26 +224,26 @@ radical-halogenation/ethane-chlorine | radical-halogenation | no-template | - | 
 diazotisation/p-toluidine | diazotisation | no-template | - | no-template | - |  | 
 diazotisation/4-chloroaniline | diazotisation | no-template | - | no-template | - |  | 
 diazotisation/aniline | diazotisation | no-template | - | no-template | - |  | 
-azo-coupling/phenol | azo-coupling | no-template | - | no-template | - |  | 
-azo-coupling/2-naphthol | azo-coupling | no-template | - | no-template | - |  | 
-azo-coupling/tolyl-dimethylaniline | azo-coupling | no-template | - | no-template | - |  | 
+azo-coupling/phenol | azo-coupling | no-template | - | no-substrate | - | azo_coupling_prontosil_route_2 | Oc1ccc(N=Nc2ccccc2)cc1
+azo-coupling/2-naphthol | azo-coupling | no-template | - | no-substrate | - | azo_coupling_prontosil_route_2 | Oc1ccc2ccccc2c1N=Nc1ccccc1
+azo-coupling/tolyl-dimethylaniline | azo-coupling | no-template | - | no-substrate | - | azo_coupling_prontosil_route_2 | Cc1ccc(N=Nc2ccc(N(C)C)cc2)cc1
 catalytic-dehydrogenation/cumene | catalytic-dehydrogenation | no-template | - | no-substrate | - | catalytic_dehydrogenation_styrene_route_2 | C=C(C)c1ccccc1
 catalytic-dehydrogenation/4-ethyltoluene | catalytic-dehydrogenation | no-template | - | pass | runs | catalytic_dehydrogenation_styrene_route_2 | 
 catalytic-dehydrogenation/ethane | catalytic-dehydrogenation | no-template | - | no-substrate | - | catalytic_dehydrogenation_styrene_route_2 | C=C
-sulfonamide-formation/benzenesulfonyl-chloride-ammonia | sulfonamide-formation | no-template | - | no-template | - |  | 
-sulfonamide-formation/tosyl-chloride-methylamine | sulfonamide-formation | no-template | - | no-template | - |  | 
+sulfonamide-formation/benzenesulfonyl-chloride-ammonia | sulfonamide-formation | no-template | - | pass | unpriced | sulfonamide_formation_sulfa_drug_route_3 | 
+sulfonamide-formation/tosyl-chloride-methylamine | sulfonamide-formation | no-template | - | no-substrate | - | sulfonamide_formation_sulfa_drug_route_3 | CNS(=O)(=O)c1ccc(C)cc1
 
 #! cases = 216
 #! classes = 63
 #! classes_general = 20
 #! classes_general_and_running = 17
 #! classes_with_a_family_row = 26
-#! classes_with_only_a_literal_row = 25
-#! classes_with_no_row = 12
+#! classes_with_only_a_literal_row = 29
+#! classes_with_no_row = 8
 #! family_pass = 81
 #! family_runs = 71
 #! family_unpriced = 10
 #! family_wrong_product = 0
-#! literal_pass = 24
-#! literal_runs = 14
+#! literal_pass = 27
+#! literal_runs = 16
 #! literal_wrong_product = 6

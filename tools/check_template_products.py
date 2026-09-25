@@ -123,7 +123,7 @@ HEADER = """\
 #
 #   python tools/check_template_products.py
 #
-# Columns: template | verdict | steps_tried | medium | class | step | missing
+# Columns: template | verdict | steps_tried | medium | class | step | missing | reading
 #
 # verdict      pass | partial | wrong-product | no-fire | no-substrate |
 #              no-runnable-step | no-class, at the row's best step. The tool's
@@ -134,6 +134,8 @@ HEADER = """\
 # step         the route and index the verdict was reached on.
 # missing      declared products of that step the row did not make, canonical
 #              SMILES, comma-joined. Empty on a pass.
+# reading      written, or engine when the verdict needed the step read the way
+#              the engine holds it -- a salt as its ions, a stereoisomer flat.
 #
 # The `#!` keys at the foot are derived from the rows above, never typed.
 # `missing_because_salt` and `missing_because_stereo` are the two systematic
@@ -141,6 +143,32 @@ HEADER = """\
 # holds its ions, and it declares a stereoisomer where a template emits the flat
 # species. An extractor writing literal rows off this corpus meets both.
 """
+
+
+STEREO_MARKS = ("@", "/", "\\")
+
+
+def flat(smiles: str) -> str:
+    """The species with its stereochemistry dropped, canonical."""
+    if not any(c in smiles for c in STEREO_MARKS):
+        return smiles
+    from rdkit import Chem
+    mol = Chem.MolFromSmiles(smiles)
+    return Chem.MolToSmiles(mol, isomericSmiles=False) if mol is not None else smiles
+
+
+def engine_reading(smiles_list) -> list[str]:
+    """Species as the engine holds them: a salt as its ions, every one flat.
+
+    The one reading ``tools/extract_templates.py`` extracts under and this
+    checker judges under when a step as written cannot pass, so the two
+    instruments cannot disagree about what a row makes.
+    """
+    out: dict[str, None] = {}
+    for s in smiles_list:
+        for frag in s.split("."):
+            out[Molecule.from_smiles(flat(frag)).smiles] = None
+    return list(out)
 
 
 def molecules(compounds):
@@ -185,11 +213,33 @@ def assignments(template, reactants):
 
 
 def judge(template, step, get, medium):
-    """One row against one step -> (verdict, missing products, used medium)."""
+    """One row against one step -> (verdict, missing, used medium, reading).
+
+    The step is judged as written; if that does not pass and the step names a
+    salt or a stereoisomer, it is judged again in ``engine_reading`` and the
+    better verdict is kept, with ``reading`` saying which one it came from.
+    """
     reactants = [get(x) for x in step.reactants]
     products = [get(x) for x in step.products]
     if any(m is None for m in reactants + products):
-        return "no-runnable-step", (), False
+        return "no-runnable-step", (), False, "written"
+    written = _judge(template, reactants, products, medium)
+    smiles = [m.smiles for m in reactants + products]
+    if written[0] == "pass" or not any(
+            "." in s or any(c in s for c in STEREO_MARKS) for s in smiles):
+        return (*written, "written")
+    r = [Molecule.from_smiles(s)
+         for s in engine_reading([m.smiles for m in reactants])]
+    p = [Molecule.from_smiles(s)
+         for s in engine_reading([m.smiles for m in products])]
+    engine = _judge(template, r, p, medium)
+    if engine[0] != "no-runnable-step" and RANK.index(engine[0]) > RANK.index(written[0]):
+        return (*engine, "engine")
+    return (*written, "written")
+
+
+def _judge(template, reactants, products, medium):
+    """One row against resolved species -> (verdict, missing, used medium)."""
     charged = {m.smiles for m in reactants}
     declared = {m.smiles for m in products} - charged
     if not declared:
@@ -235,14 +285,14 @@ def rows_report(verbose: bool = False):
         name = row["name"]
         classes = row["catalog_classes"]
         if not classes:
-            out.append((name, "no-class", 0, "", "", "", ""))
+            out.append((name, "no-class", 0, "", "", "", "", ""))
             continue
         template = bt.build(row)
         best = None
         tried = 0
         for cls in classes:
             for step in by_class.get(cls, []):
-                verdict, missing, used = judge(template, step, get, medium)
+                verdict, missing, used, reading = judge(template, step, get, medium)
                 if verdict != "no-runnable-step":
                     tried += 1
                 where = f"{step.route}:{step.index}"
@@ -252,12 +302,13 @@ def rows_report(verbose: bool = False):
                                  f"{where:28s} {','.join(missing)}")
                 if best is None or RANK.index(verdict) > RANK.index(best[0]):
                     best = (verdict, "yes" if used else "no", cls, where,
-                            ",".join(missing))
+                            ",".join(missing), reading)
                 if best[0] == "pass":
                     break
             if best[0] == "pass":
                 break
-        out.append((name, best[0], tried, best[1], best[2], best[3], best[4]))
+        out.append((name, best[0], tried, best[1], best[2], best[3], best[4],
+                    best[5]))
     return out, lines
 
 
@@ -289,7 +340,7 @@ def footer(report) -> str:
     for _, verdict, *_ in report:
         counts[verdict] = counts.get(verdict, 0) + 1
     causes: dict[str, int] = {}
-    for _, verdict, _, _, _, _, missing in report:
+    for _, verdict, _, _, _, _, missing, _ in report:
         if verdict in ("pass", "no-class", "no-substrate", "no-runnable-step"):
             continue
         key = cause(missing)
@@ -301,14 +352,18 @@ def footer(report) -> str:
     out.append(f"#! steps_tried = {sum(t for _, _, t, *_ in report)}")
     out.append(f"#! through_the_medium = "
                f"{sum(1 for r in report if r[3] == 'yes')}")
+    out.append(f"#! in_the_engine_reading = "
+               f"{sum(1 for r in report if r[7] == 'engine')}")
     for key in ("salt", "stereo", "other"):
         out.append(f"#! missing_because_{key} = {causes.get(key, 0)}")
     return "\n".join(out) + "\n"
 
 
 def render(report) -> str:
-    body = "\n".join(" | ".join((name, verdict, str(tried), med, cls, where, missing))
-                     for name, verdict, tried, med, cls, where, missing in report)
+    body = "\n".join(" | ".join((name, verdict, str(tried), med, cls, where, missing,
+                                reading))
+                     for name, verdict, tried, med, cls, where, missing, reading
+                     in report)
     return HEADER + "\n" + body + "\n" + footer(report)
 
 
@@ -325,8 +380,11 @@ def summarise(report) -> list[str]:
             lines.append(f"  {counts[v]:3d}  {v}")
     med = sum(1 for r in report if r[3] == "yes")
     lines.append(f"  {med:3d}  reached that verdict through the medium")
+    eng = sum(1 for r in report if r[7] == "engine")
+    lines.append(f"  {eng:3d}  reached it only read as the engine holds it "
+                 f"(salts as ions, flat)")
     causes: dict[str, int] = {}
-    for _, verdict, _, _, _, _, missing in report:
+    for _, verdict, _, _, _, _, missing, _ in report:
         if verdict not in ("pass", "no-class", "no-substrate", "no-runnable-step"):
             key = cause(missing)
             causes[key] = causes.get(key, 0) + 1
@@ -351,7 +409,7 @@ def main() -> int:
 
     for line in lines:
         print(line)
-    for name, verdict, tried, med, cls, where, missing in report:
+    for name, verdict, tried, _med, _cls, where, missing, _reading in report:
         if verdict not in ("pass", "no-class"):
             print(f"{name:44s} {verdict:16s} {tried:2d} step(s)  "
                   f"{where:28s} {missing}")

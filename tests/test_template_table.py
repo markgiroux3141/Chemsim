@@ -426,7 +426,10 @@ def test_the_footer_keys_are_counted_from_the_rows_above_them(product_report):
                                    "no-runnable-step"))
     assert (keys["missing_because_salt"] + keys["missing_because_stereo"]
             + keys["missing_because_other"]) == unexplained
-    assert keys["missing_because_salt"] > 0 and keys["missing_because_stereo"] > 0
+    # The two walls are read through now, and the reading column says where.
+    assert keys["in_the_engine_reading"] == sum(
+        1 for r in product_report if r[7] == "engine")
+    assert keys["in_the_engine_reading"] > 0
 
 
 def test_the_two_systematic_causes_are_read_off_the_smiles_and_not_a_list():
@@ -498,54 +501,37 @@ def test_an_extracted_row_declares_nothing_detailed_balance_would_derive(rows):
         assert row["source"].startswith("extracted:"), row["name"]
 
 
-def test_every_extracted_row_builds_a_reaction_and_not_only_a_credit(rows):
+def test_every_extracted_row_builds_a_priced_reaction_or_names_what_is_unpriced(rows):
     """`pass` in the product report is a rewrite; this is a REACTION.
 
-    T28 was the standing proof that the two are different: `methane_ammoxidation`
-    and `cyanide_imine_addition` both reproduced their catalog step and built
-    zero reactions, because HCN had no thermochemistry and `build_network`
-    discards a rewrite it cannot price. Both build a reaction now (T28b, and
-    the test below is what holds it), but the hole is a property of the
-    PIPELINE rather than of those two rows -- an extracted row that scored a
-    class and could never run would be it arriving 58 at a time -- so it is
-    measured rather than assumed: 58 of 58 today, about two seconds.
+    The first version of this test built with ``thermo=None``, and
+    ``build_network`` prices nothing in that configuration, so "58 of 58 build a
+    reaction" was a statement about SMARTS only: 15 of those rows make a species
+    with no thermochemistry and could never run. It now prices, with the
+    electrolyte overlay where a flask would use it, and a row that builds
+    nothing must say which species stopped it -- a data gap, counted in the
+    table's footer, and never a rewrite that fails for a reason of its own.
     """
-    import contextlib
-    import io as _io
-
     import catalog as _cat
-    from chemsim.matter.molecule import Molecule as _Mol
-    from chemsim.network import build_network
+    import extract_templates as et
 
     compounds = _cat.load_compounds()
-    by_class: dict[str, list] = {}
-    for s in _cat.load_steps():
-        by_class.setdefault(s.cls, []).append(s)
-
-    dead = []
+    steps = {et._name(s): s for s in _cat.load_steps()}
+    silent = []
+    runs = 0
     for row in _literal(rows):
-        template = bt.build(row)
-        best = 0
-        for cls in row["catalog_classes"]:
-            for step in by_class.get(cls, []):
-                smiles = sorted({
-                    _Mol.from_smiles(compounds[x].smiles).smiles
-                    for x in step.reactants
-                    if x in compounds and compounds[x].smiles
-                    and not _cat.is_marker(x, compounds)})
-                if not smiles:
-                    continue
-                with contextlib.redirect_stdout(_io.StringIO()):
-                    net = build_network(smiles, [template], generations=1,
-                                        max_species=120)
-                best = max(best, len(net.reactions))
-                if best:
-                    break
-            if best:
-                break
-        if not best:
-            dead.append(row["name"])
-    assert dead == [], dead
+        step = steps[row["name"]]
+        r_ids = [x for x in step.reactants if x not in step.products]
+        ok, unpriced = et.builds(bt.build(row), [compounds[x].smiles for x in r_ids])
+        runs += ok
+        if not ok and not unpriced:
+            silent.append(row["name"])
+    assert silent == [], silent
+    with open(os.path.join(_ROOT, "data", "templates", "literal.psv"),
+              encoding="utf-8") as fh:
+        foot = dict(line[3:].rsplit(" = ", 1) for line in fh
+                    if line.startswith("#! rows"))
+    assert int(foot["rows_that_build_a_priced_reaction"]) == runs
 
 
 def test_the_two_rows_hcn_used_to_kill_build_a_reaction(rows):

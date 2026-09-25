@@ -108,6 +108,9 @@ $LASTEXITCODE = 0
 Write-Host ''
 if ($failures.Count -gt 0) {
     Write-Host ("FAILED: " + ($failures -join ', ')) -ForegroundColor Red
+    # In Actions, name the failing steps as an annotation: the public API serves
+    # annotations without a token, which is how tools/ci_status.py reads them.
+    if ($env:GITHUB_ACTIONS) { Write-Host ("::error title=check.ps1::FAILED: " + ($failures -join ', ')) }
     exit 1
 }
 Write-Host 'all checks passed' -ForegroundColor Green

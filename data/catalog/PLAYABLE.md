@@ -19,7 +19,7 @@ The GOAL in `docs/history/MILESTONES.md` § THE G-SERIES is stated as **~10 natu
 
 **23 of 173 named routes are playable from natural materials**, against a goal of ~40 targets. The deepest chain in the corpus is **3 tiers**.
 
-> **Every number in this file is scored on hand-typed `family` rows**, because that is the tier `load_templates` loads and a route the bench cannot build is not playable. Granting the 10 routes that `tools/extract_templates.py` extracted a `literal` row for would make **61 runnable and 2 more playable** (`acetic-anhydride-ketene`, `wood-distillation`). Promoting one of those rows is a cheaper session than writing a template from nothing, and it costs the row an argued barrier and a checked atom mapping — which is what the tier is for.
+> **Every number in this file is scored on hand-typed `family` rows**, because that is the tier `load_templates` loads and a route the bench cannot build is not playable. Granting the 13 routes that `tools/extract_templates.py` extracted a `literal` row for would make **64 runnable and 2 more playable** (`acetic-anhydride-ketene`, `wood-distillation`). Promoting one of those rows is a cheaper session than writing a template from nothing, and it costs the row an argued barrier and a checked atom mapping — which is what the tier is for.
 
 ⚠ **THE TECH TREE IS A SHALLOW BUSH, NOT A TREE.** 10 of the 23 playable routes are tier 1 — they touch nothing another route made. The corpus is not a connected progression that happens to be short; it is a fan of one-step routes off the ground with one thin chain hanging off it, and §5 is that chain.
 
@@ -349,7 +349,7 @@ Grant a player one species free and re-run the fixed point. Base is 23.
 | **+0** | +0 | `amphoteric-dissolution` | — | `bayer-process` |
 | **+0** | +0 | `basic-carbonate-precipitation` | — | `white-lead-route` |
 | **+0** | +0 | `carbide-formation` | — | `calcium-carbide`, `frank-caro` |
-| **+0** | +0 | `carbide-hydrolysis` | — | `calcium-carbide` |
+| **+0** | +0 | `carbide-hydrolysis` | **row exists** | `calcium-carbide` |
 | **+0** | +0 | `carbonyl-hydration` | **row exists** | `chloral-route` |
 | **+0** | +0 | `carbothermic-phosphate-reduction` | — | `white-phosphorus` |
 | **+0** | +0 | `carbothermic-sulfate-reduction` | — | `leblanc-process` |
@@ -364,11 +364,11 @@ Grant a player one species free and re-run the fixed point. Base is 23.
 | **+0** | +0 | `precipitation` | — | `bayer-process`, `citric-acid-fermentation` |
 | **+0** | +0 | `radical-halogenation` | — | `chloral-route` |
 | **+0** | +0 | `salt-metathesis` | — | `leblanc-process` |
-| **+0** | +0 | `slagging` | — | `blast-furnace` |
-| **+0** | +0 | `sulfide-carbonation` | — | `leblanc-process` |
+| **+0** | +0 | `slagging` | **row exists** | `blast-furnace` |
+| **+0** | +0 | `sulfide-carbonation` | **row exists** | `leblanc-process` |
 | **+0** | +0 | `thermal-fixation` | **row exists** | `birkeland-eyde` |
 
-**4 of the 31 classes already have an extracted `literal` row** that reproduces its catalog step — `pyrolysis`, `pyrolysis-dehydration`, `carbonyl-hydration`, `thermal-fixation`. For those the session is not *write a template*: it is check the atom mapping by hand, argue a barrier for it, and move the row into `templates.psv` at tier `family`. The other 27 still need a mechanism written from nothing.
+**7 of the 31 classes already have an extracted `literal` row** that reproduces its catalog step — `pyrolysis`, `pyrolysis-dehydration`, `carbide-hydrolysis`, `carbonyl-hydration`, `slagging`, `sulfide-carbonation`, `thermal-fixation`. For those the session is not *write a template*: it is check the atom mapping by hand, argue a barrier for it, and move the row into `templates.psv` at tier `family`. The other 24 still need a mechanism written from nothing.
 
 ⚠⚠⚠ **THE BIGGEST SINGLE CLASS IS +1** (`aerobic-overflow-fermentation`, `biological-transformation`, `direct-combination`, `haloform`, `molten-salt-electrolysis`, `oxidative-complexation`, `pyrolysis`, `pyrolysis-dehydration`) — and §8's `+3` top row is **not** at the top here. Granting `molten-salt-electrolysis` leaves `hall-heroult` unrunnable, because its cryolite is refused a price as well; the class lands its point on `downs-cell` instead. **A row's worth assumes every OTHER blocker away, and a template only removes one of them.**
 

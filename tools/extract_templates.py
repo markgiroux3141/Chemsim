@@ -36,31 +36,32 @@ hand-written rate of three to five templates a session.
      gate's, not the mapper's.
   6. kinetics from a policy, not from a class name. See ``A_POLICY`` below.
 
-## WHAT IT REFUSES, AND WHY EACH REFUSAL IS A DECISION AND NOT A GAP
+## The two walls, and how v2 (2026-09-24) reads through them
 
-``tools/check_template_products.py``'s 2026-09-14 run named two systematic walls
-on this corpus, and T2's brief was to decide both BEFORE writing the extractor.
+``tools/check_template_products.py`` named two systematic walls on this corpus.
+T2 refused both; v2 reads through each where the engine's own representation
+settles the question, and refuses where it does not.
 
-``salt``   the catalog spells a precipitated salt as ONE species where the
-           engine holds its ions -- 56 of the 157 extractable rows touch one.
-           Refused. Splitting the species into ions would make a row that is
-           right about the chemistry and cannot reach ``pass`` against the
-           corpus, and it would also be a claim about the MEDIUM that no step
-           makes: whether the NaCl in an 1100 K salt-cake furnace is a lattice
-           or a pair of ions is not in the corpus, and an extractor may not
-           decide it one way for all 56.
-``stereo`` the step declares a stereoisomer where a template emits the flat
-           species (C7's finding from the other side). Refused: the rewrite
-           would have to assert a configuration the mechanism does not fix.
+``salt``   the catalog spells a salt as ONE species where the engine holds its
+           ions. An aqueous step is read as its NET IONIC equation: every lump
+           is split into its ions at its coefficient and a fragment on both
+           sides cancels as a spectator (``net_ionic``). That is what the
+           engine's aqueous phase holds, so it decides nothing the engine has
+           not. A step in a furnace or melt (``phase_of`` says gas) is still
+           refused: there the salt is a lattice, and turning a lattice into
+           ions is engine work (E1), not an extractor's choice. A step whose
+           every ion cancels is a metathesis or precipitation -- a solubility
+           product's job -- and is refused as ``net-ionic-empty``.
+``stereo`` the step declares a stereoisomer and a rewrite emits the flat
+           species. Every family template already does exactly that, so v2
+           extracts the flat reaction and says so in the row's note; the
+           checker still reports the declared isomer missing under ``stereo``.
 
-Neither is a defect in the extractor and neither is silent: both are counted in
-``needs_review.psv`` and in this script's summary. They are ONE follow-up item
-each, not 76 of them.
-
-The rest of the refusals are the ordinary ones -- no coefficient vector, an
-ambiguous one, too many slots for the network builder to enumerate, a mapping
-that did not close, a SMARTS the constructor rejected, and a SMARTS that ran and
-did not make what the step declared.
+The rest of the refusals are the ordinary ones -- no coefficient vector (most
+often a corpus step that omits a counter-ion or water), an ambiguous one, too
+many slots for the network builder to enumerate, a mapping that did not close,
+a SMARTS the constructor rejected, and a SMARTS that ran and did not make what
+the step declared.
 
 ## WHAT THE GATE CANNOT SEE, AND IT IS NOT SMALL
 
@@ -120,6 +121,7 @@ from rdkit.Chem import rdFMCS  # noqa: E402
 
 import build_templates as bt  # noqa: E402
 import catalog as cat  # noqa: E402
+from check_template_products import STEREO_MARKS, engine_reading, flat  # noqa: E402
 import corpus_balance as cb  # noqa: E402
 from catalog_coverage import FAMILY_TEMPLATE_CLASSES  # noqa: E402
 from chemsim.matter.molecule import Molecule  # noqa: E402
@@ -573,16 +575,85 @@ def _product(slots):
     return itertools.product(*slots)
 
 
-def verify(template, reactant_ids, product_ids, compounds) -> bool:
+def verify(template, reactant_smiles, product_smiles) -> bool:
     """Does the extracted rewrite make what the step declares, from the step?"""
-    pool = [Molecule.from_smiles(compounds[x].smiles) for x in reactant_ids]
-    declared = {Molecule.from_smiles(compounds[x].smiles).smiles
-                for x in product_ids}
+    pool = [Molecule.from_smiles(s) for s in dict.fromkeys(reactant_smiles)]
+    declared = {Molecule.from_smiles(s).smiles for s in product_smiles}
     for combo in assignments(template, pool):
         for outcome in template.run(combo):
             if declared <= {m.smiles for m in outcome}:
                 return True
     return False
+
+
+def net_ionic(r_smiles, p_smiles, coeffs):
+    """The step's salts as their ions, spectators cancelled.
+
+    -> (reactant species, their coefficients, product species, theirs, the
+    spectators dropped). Every dot-separated species is split into its
+    fragments at its own coefficient, and a fragment on both sides cancels at
+    the smaller count: the net ionic equation, which is what the engine's
+    aqueous phase holds. Neutral lumps (an adduct written with a dot) split the
+    same way, and for the same reason.
+    """
+    def side(smiles, cs):
+        out: dict[str, int] = {}
+        for s, c in zip(smiles, cs):
+            for frag in s.split("."):
+                key = Molecule.from_smiles(frag).smiles
+                out[key] = out.get(key, 0) + c
+        return out
+
+    n = len(r_smiles)
+    left, right = side(r_smiles, coeffs[:n]), side(p_smiles, coeffs[n:])
+    spectators = []
+    for key in sorted(set(left) & set(right)):
+        k = min(left[key], right[key])
+        left[key] -= k
+        right[key] -= k
+        spectators.append(key)
+    left = {k: v for k, v in left.items() if v}
+    right = {k: v for k, v in right.items() if v}
+    return (list(left), list(left.values()), list(right), list(right.values()),
+            spectators)
+
+
+_PROVIDERS: dict[str, object] = {}
+
+
+def builds(template, reactant_smiles) -> tuple[bool, tuple[str, ...]]:
+    """(does build_network price a reaction from the pool, what it could not price).
+
+    The rewrite reproducing the step is a SMARTS fact; this is the reaction
+    fact. A row that fails it is still written -- whether its species have a
+    price is the species-ready axis of every scoreboard, and refusing the row
+    here would count that gap twice -- but the table's footer counts it, so a
+    literal row that scores a class and cannot run is never mistaken for one
+    that can. Ions are priced by the electrolyte overlay whenever the pool or
+    the row touches one (``engine.inventory.needs_electrolyte``'s rule).
+    """
+    import contextlib
+    import io
+
+    from chemsim.network import build_network
+    from chemsim.properties import ThermochemistryProvider
+    from chemsim.properties.electrolyte import electrolyte_provider
+
+    pool = engine_reading(reactant_smiles)
+    ionic = template.touches_ions or any(Molecule.from_smiles(s).charge
+                                         for s in pool)
+    key = "ionic" if ionic else "plain"
+    if key not in _PROVIDERS:
+        _PROVIDERS[key] = (electrolyte_provider() if ionic
+                           else ThermochemistryProvider())
+    try:
+        with contextlib.redirect_stdout(io.StringIO()):
+            net = build_network(pool, [template], thermo=_PROVIDERS[key],
+                                generations=1, max_species=120)
+    except ValueError as exc:
+        # A CHARGED species with no price refuses before discovery starts.
+        return False, (str(exc).split("'")[1] if "'" in str(exc) else "?",)
+    return bool(net.reactions), tuple(sorted(net.unpriced))
 
 
 def extract(step, compounds) -> tuple[dict | None, str, str]:
@@ -594,14 +665,8 @@ def extract(step, compounds) -> tuple[dict | None, str, str]:
     if any(cat.is_marker(x, compounds) for x in ids):
         return None, "no-graph", "a species has no molecular graph"
     smiles = [compounds[x].smiles for x in ids]
-    if any("." in s for s in smiles):
-        return None, "salt", (
-            "the step spells a salt as one species where the engine holds its "
-            "ions, and which of the two this step means is not in the corpus")
-    if any(c in s for s in smiles for c in ("@", "/", "\\")):
-        return None, "stereo", (
-            "the step declares a stereoisomer and a rewrite emits the flat "
-            "species")
+    flattened = [s for s in smiles if any(c in s for c in STEREO_MARKS)]
+    smiles = [flat(s) for s in smiles]
     try:
         counts = [cb.formula(s) for s in smiles]
     except Exception as exc:  # noqa: BLE001
@@ -609,14 +674,31 @@ def extract(step, compounds) -> tuple[dict | None, str, str]:
     coeffs, why = stoichiometry(counts, len(r_ids))
     if coeffs is None:
         return None, "stoichiometry", why
+    r_smiles, p_smiles = smiles[:len(r_ids)], smiles[len(r_ids):]
+    spectators: list[str] = []
+    if any("." in s for s in smiles):
+        if phase_of(step) == "gas":
+            return None, "salt", (
+                "a salt in a furnace or melt is a lattice, not a pair of ions, "
+                "and the engine turns a lattice into ions nowhere yet (E1)")
+        r_smiles, r_c, p_smiles, p_c, spectators = net_ionic(
+            r_smiles, p_smiles, coeffs)
+        if not r_smiles or not p_smiles:
+            return None, "net-ionic-empty", (
+                "every ion is a spectator once the salts are read as ions: a "
+                "metathesis or precipitation, which a solubility product does, "
+                "not a rewrite")
+        coeffs = r_c + p_c
+        ids = r_smiles + p_smiles
     if max(coeffs) > MAX_COEFFICIENT:
         return None, "coefficients", (
             f"a coefficient of {max(coeffs)} is more slots than a rewrite can "
             f"carry: {dict(zip(ids, coeffs))}")
-    n_r = sum(coeffs[:len(r_ids)])
-    n_p = sum(coeffs[len(r_ids):])
+    n_r = sum(coeffs[:len(r_smiles)])
+    n_p = sum(coeffs[len(r_smiles):])
     if n_r > MAX_REACTANT_SLOTS or n_p > MAX_PRODUCT_SLOTS:
         return None, "slots", f"{n_r} reactant and {n_p} product slots"
+    smiles = r_smiles + p_smiles
     mols = [Molecule.from_smiles(s) for s in smiles]
     r_frags, p_frags = [], []
     r_literal, p_literal = [], []
@@ -627,10 +709,10 @@ def extract(step, compounds) -> tuple[dict | None, str, str]:
                 return None, "no-heavy-atom", (
                     f"{m.smiles} has no heavy atom, so no graph algorithm can "
                     f"map it and no implicit count can carry it")
-            (r_literal if k < len(r_ids) else p_literal).extend(
+            (r_literal if k < len(r_smiles) else p_literal).extend(
                 [literal] * coeffs[k])
             continue
-        (r_frags if k < len(r_ids) else p_frags).extend([m._mol] * coeffs[k])
+        (r_frags if k < len(r_smiles) else p_frags).extend([m._mol] * coeffs[k])
     if not r_frags or not p_frags:
         return None, "no-heavy-atom", "one side is hydrogen and nothing else"
     R, P = combine(r_frags), combine(p_frags)
@@ -653,11 +735,17 @@ def extract(step, compounds) -> tuple[dict | None, str, str]:
             reversible=LITERAL_REVERSIBLE == "yes", phase=phase)
     except Exception as exc:  # noqa: BLE001
         return None, "smarts", f"{type(exc).__name__}: {exc}"
-    if not verify(template, r_ids, p_ids, compounds):
+    if not verify(template, r_smiles, p_smiles):
         return None, "unverified", (
             "the rewrite does not make what the step declares -- the mapping "
             "is wrong, or the step is not one mechanism")
     note = f"extracted from {step.route} step {step.index}; {shape}"
+    if flattened:
+        note += ("; stereo flattened -- the rewrite emits the flat species, as "
+                 "every template does")
+    if spectators:
+        note += (f"; net ionic reading, {', '.join(spectators)} cancelled as "
+                 f"spectators")
     if cats:
         note += f"; {', '.join(cats)} dropped as the step's own catalyst"
     return {
@@ -694,6 +782,9 @@ TABLE_HEADER = """\
 #
 # tier is `literal` on every row here and that is load-bearing: load_templates()
 # defaults to `family`, so none of these enters a flask that did not ask for it.
+#
+# The `#!` keys at the foot are derived: how many rows build_network turns into
+# a PRICED reaction, and which unpriced species stop the rest.
 """
 
 REVIEW_HEADER = """\
@@ -704,8 +795,8 @@ REVIEW_HEADER = """\
 # Columns: route | step | class | reason | detail
 #
 # Every step whose class has no template and which tools/extract_templates.py
-# did not turn into a row, with the reason. `salt` and `stereo` are the two
-# systematic walls that tool's docstring decides; the rest are per-row.
+# did not turn into a row, with the reason. That tool's docstring says how v2
+# reads through the salt and stereo walls, and where it still refuses.
 #
 # The `#!` keys at the foot are derived from the rows above, never typed.
 """
@@ -730,13 +821,28 @@ def rows_and_refusals(only: str | None = None):
                             "another step of this corpus extracts the same rewrite"))
             continue
         seen.add(row["smarts"])
+        template = ReactionTemplate(
+            name=row["name"], smarts=row["smarts"], A=float(row["A"]),
+            Ea=float(row["Ea_J"]), reversible=False, phase=row["phase"])
+        r_ids, _p, _c = _species(step, compounds)
+        runs, unpriced = builds(template, [compounds[x].smiles for x in r_ids])
+        row["_runs"] = runs
+        row["_unpriced"] = unpriced
         rows.append(row)
     return rows, refused
 
 
 def render_table(rows) -> str:
     body = "\n".join(" | ".join(r[c] for c in bt.COLUMNS) for r in rows)
-    return TABLE_HEADER + "\n" + body + "\n"
+    blocked: dict[str, int] = {}
+    for r in rows:
+        for s in r["_unpriced"]:
+            blocked[s] = blocked.get(s, 0) + 1
+    foot = [f"#! rows = {len(rows)}",
+            f"#! rows_that_build_a_priced_reaction = {sum(r['_runs'] for r in rows)}"]
+    foot += [f"#! unpriced {s} = {n}"
+             for s, n in sorted(blocked.items(), key=lambda kv: (-kv[1], kv[0]))]
+    return TABLE_HEADER + "\n" + body + "\n\n" + "\n".join(foot) + "\n"
 
 
 def render_review(refused) -> str:
@@ -761,6 +867,8 @@ def summarise(rows, refused) -> list[str]:
         f"{len(rows) + len(refused)} catalog steps carry a class with no template",
         f"{len(rows):4d} became a literal row, over "
         f"{len({r['class'] for r in rows})} reaction classes",
+        f"     {sum(r['_runs'] for r in rows):4d} of them build a priced reaction; "
+        f"the rest make or take a species with no thermochemistry",
         f"{len(refused):4d} refused:",
     ]
     for k in sorted(counts, key=lambda k: (-counts[k], k)):
