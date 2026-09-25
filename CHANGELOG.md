@@ -4,6 +4,19 @@ Newest first. One entry per session, twelve lines an entry and 400 lines the
 file, both enforced by `tools/check_docs.py`. At the cap the older half rolls
 into `docs/history/changelog-YYYY-MM.md`, where 2026-09-02 to 2026-09-12 is.
 
+## 2026-09-25 — the CI timeout was a Jacobian probe crossing zero
+
+`import build_playable` took 29 s on one CI run and 584-701 s on the next two,
+same code. The cost was one run: the copper smelter on 2x CO, whose empty
+liquid block drifted to -3.4e-4 mol while `num_jac` inflated its probe until it
+crossed zero into a liquid evaporating at 1500 K (1,540-2,889 Jacobians, 27-56 s
+here, >500 s under pytest). `jacobian.sign_bound`: an upward probe of an amount
+below -atol stays on the negative side, where the clamped RHS is flat. Smelter
+33 Jacobians, 1.1 s; the import 46-62 s -> 19 s; PLAYABLE.md byte-identical;
+10 of 18 examples move, converged references favour the new digits
+(`docs/design/jacobian-probe-sign.md`). Benchmark 56/63 unmoved. 380 tests
+local on 18 modules; the suite and tolerance audit are CI's, on this push.
+
 ## 2026-09-24 — CI is portable: three pins on solver round-off, and worksteal
 
 The first CI run named three tests that pinned one machine's round-off: an

@@ -144,6 +144,33 @@ from scipy.sparse import csc_matrix, issparse
 FACTOR_FLOOR = EPS ** 0.5
 
 
+# How far a probe from a negative amount may reach towards zero, as a fraction of
+# that amount. ``num_jac`` retries a flat column at ten times its factor inside one
+# call, so the retry reaches half the amount and neither probe crosses zero.
+# docs/design/jacobian-probe-sign.md has the run that needed it.
+SIGN_FRACTION = 0.05
+
+
+def sign_bound(y: np.ndarray, f: np.ndarray, threshold) -> np.ndarray:
+    """Per-column ceiling on ``factor`` that keeps an upward probe of an amount
+    more negative than ``threshold`` on the negative side of zero; ``inf`` for
+    every other column.
+
+    Every RHS this module serves reads an amount through ``np.maximum(y, 0)``, so
+    at ``y_j < 0`` the true column is zero. ``num_jac`` steps in the direction of
+    ``f_j``, and when that is upward a probe longer than ``|y_j|`` measures the
+    derivative of a state with the amount present instead. Within ``threshold``
+    of zero the old probe is kept: there it is what pulls a round-off overshoot
+    back, and a resolved amount is never that small.
+    """
+    y = np.asarray(y, dtype=float)
+    cap = np.full(y.shape, np.inf)
+    # |y_j| >= threshold, so ``max(threshold, |y_j|)`` is |y_j| and the probe
+    # is SIGN_FRACTION of the amount.
+    cap[(y < -threshold) & (np.asarray(f) >= 0.0)] = SIGN_FRACTION
+    return cap
+
+
 def factor_bound(y: np.ndarray, threshold) -> np.ndarray:
     """Per-column ceiling on ``num_jac``'s ``factor``: the step may not exceed
     the largest component of the state it is probing.
@@ -180,6 +207,8 @@ class BoundedJacobian:
         # wanted to push. Nothing else can see it once it has been clamped.
         self.peak_factor = 0.0
         self.clamped = 0
+        # Probes shortened so they stay on the negative side; see ``sign_bound``.
+        self.crossings = 0
         self.njev = 0
         if sparsity is None:
             self.sparsity = None
@@ -213,8 +242,16 @@ class BoundedJacobian:
         self.njev += 1
         y = np.asarray(y, dtype=float)
         f = np.asarray(self.rhs(t, y), dtype=float)
+        start = self.factor
+        if self.bounded:
+            side = sign_bound(y, f, self.atol)
+            if np.isfinite(side).any():
+                if start is None:
+                    start = np.full(y.shape, EPS ** 0.5)
+                self.crossings += int(np.count_nonzero(start > side))
+                start = np.minimum(start, side)
         J, factor = num_jac(
-            self._vectorized, t, y, f, self.atol, self.factor, self.sparsity,
+            self._vectorized, t, y, f, self.atol, start, self.sparsity,
         )
         peak = np.nanmax(factor) if factor.size else 0.0
         if np.isfinite(peak):

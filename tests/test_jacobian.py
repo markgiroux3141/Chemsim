@@ -20,7 +20,8 @@ from scipy.integrate._ivp.common import EPS, num_jac
 
 from chemsim.matter import Molecule
 from chemsim.network import build_network
-from chemsim.numerics.jacobian import BoundedJacobian, factor_bound
+from chemsim.numerics.jacobian import BoundedJacobian, factor_bound, sign_bound
+from chemsim.properties.mineral_data import MINERALS
 from chemsim.properties import ThermochemistryProvider, VolatilityProvider
 from chemsim.reactions import sulfur_combustion
 from chemsim.vessel import Vessel
@@ -112,6 +113,35 @@ def test_the_number_of_jacobians_it_takes_to_overflow():
     for rounds in (300, 320):
         _, factor = _drive(rounds, bounded=False)
         assert np.isfinite(factor[1]) == (rounds == 300)
+
+
+# A clamped amount below zero, the way every RHS here reads one: its true column
+# is zero, and ``f >= 0`` points ``num_jac``'s probe up towards the clamp.
+def _clamped(t, y):
+    return np.array([-float(y[0]), -1.0e7 * max(float(y[1]), 0.0)])
+
+
+def test_a_probe_from_a_negative_amount_crosses_zero_unless_bounded():
+    """Unbounded, the flat column's factor climbs a decade per Jacobian until the
+    probe lands on the positive side and reads the -1e7 of a layer that is not
+    there. Bounded by sign, every probe stays below zero and the column reads the
+    zero the RHS returns. docs/design/jacobian-probe-sign.md."""
+    y = np.array([1.0, -1.0e-6])
+    free = BoundedJacobian(_clamped, 1e-9, bounded=False)
+    held = BoundedJacobian(_clamped, 1e-9)
+    crossed = [free(0.0, y)[1, 1] for _ in range(40)]
+    assert min(crossed) < -1.0e6
+    assert all(held(0.0, y)[1, 1] == 0.0 for _ in range(40))
+    assert held.crossings > 0
+
+
+def test_the_sign_bound_touches_only_an_upward_probe_of_a_negative_amount():
+    """And not within atol of zero, where the probe that crosses is what pulls
+    a round-off overshoot back: the retort's HgO, which the mercury tests pin."""
+    cap = sign_bound(np.array([1.0, -1.0e-6, -1.0e-6, 0.0, -1.0e-12]),
+                     np.array([0.0, 0.0, -1.0, 1.0, 0.0]), 1e-9)
+    assert np.isinf(cap[[0, 2, 3, 4]]).all()
+    assert cap[1] == 0.05
 
 
 # --- the wrapper is the default path until the clamp binds ------------------
@@ -230,3 +260,25 @@ def test_the_bound_does_not_bind_on_a_single_vessel(burn_net):
     for _ in range(40):
         jac(0.0, y0)
     assert jac.clamped == 0
+
+
+def test_the_smelter_on_two_retorts_of_carbon_monoxide_does_not_thrash():
+    """``build_playable``'s copper smelter at twice the retort's CO. Before the
+    sign bound its empty liquid block drifted to -3.4e-4 mol, the probe crossed
+    into a liquid evaporating at 1500 K, and BDF took 5,891 steps and 1,540 to
+    2,889 Jacobians depending on the machine; one CI runner took 700 s over the
+    import. Measured after: 33 Jacobians, the raw liquid block at -9.9e-7."""
+    lat = {k: MINERALS[k].lattice for k in ("covellite", "tenorite", "copper",
+                                             "carbon-graphite")}
+    co, co2 = canonical("[C-]#[O+]"), canonical("O=C=O")
+    thermo = ThermochemistryProvider()
+    net = build_network([*lat.values(), co, co2, N2, O2, SO2], [],
+                        thermo=thermo, volatility=VolatilityProvider(thermo))
+    v = Vessel(net, volume=10.0, T=1500.0, T_env=1500.0, UA=1.0e4, k_vent=0.0)
+    v.charge({lat["covellite"]: 0.04}, phase="solid")
+    v.charge({co: 0.10858, O2: 0.06, N2: 0.06 * 79.0 / 21.0}, phase="gas")
+    sol = v.run(40000.0, rtol=1.0e-8, atol=1.0e-11)
+    n = v.integrator.n
+    assert sol.y[: 2 * n].min() > -1.0e-5
+    assert sol.njev < 100
+    assert v.state().n_solid[lat["copper"]] == pytest.approx(0.04, rel=1e-3)
